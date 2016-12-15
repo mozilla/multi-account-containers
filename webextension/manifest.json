@@ -1,0 +1,36 @@
+{
+  "manifest_version": 2,
+  "name": "Containers Experiment",
+  "version": "0.0.1",
+
+  "description": "Containers works by isolating cookie jars using separate origin-attributes defined visually by colored ‘Container Tabs’. This add-on is a modified version of the containers feature for Firefox Test Pilot.",
+  "icons": {
+    "48": "img/blok-48.png",
+    "96": "img/blok-96.png"
+  },
+
+  "applications": {
+    "gecko": {
+      "id": "testpilot-containers@mozilla.org",
+      "strict_min_version": "50.0",
+      "update_url": "https://testpilot.firefox.com/files/containers/updates.json"
+    }
+  },
+
+  "homepage_url": "https://testpilot.firefox.com/",
+
+  "permissions": [
+  ],
+
+  "browser_action": {
+    "browser_style": true,
+    "default_icon": {
+      "16": "img/icon-50x50.png",
+      "32": "img/icon-50x50.png"
+    },
+    "default_title": "Containers",
+    "default_popup": "popup.html"
+  }
+
+}
+
