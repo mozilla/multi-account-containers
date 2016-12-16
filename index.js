@@ -1,10 +1,11 @@
 const webExtension = require('sdk/webextension');
+const {ContextualIdentityService} = require('resource://gre/modules/ContextualIdentityService.jsm');
 
 function handleWebExtensionMessage(message, sender, sendReply) {
   console.log(message);
-  if (message === 'message-from-webextension') {
+  if (message === 'get-identities') {
     sendReply({
-      content: 'reply-from-sdk'
+      content: {identities: ContextualIdentityService.getIdentities()}
     });
   }
 }
