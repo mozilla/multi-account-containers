@@ -26,7 +26,7 @@ function getCookieStoreIdForContainer(containerId) {
 class API extends ExtensionAPI {
   getAPI(context) {
     let self = {
-      contextualIdentities: {
+      contextualidentities: {
         get(cookieStoreId) {
           let containerId = getContainerForCookieStoreId(cookieStoreId);
           if (!containerId) {
