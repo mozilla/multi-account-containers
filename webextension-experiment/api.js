@@ -2,6 +2,9 @@
 const {classes: Cc, interfaces: Ci, results: Cr, utils: Cu} = Components;
 
 Cu.import("resource://gre/modules/Services.jsm");
+const {XPCOMUtils} = Cu.import("resource://gre/modules/XPCOMUtils.jsm");
+const CONTAINER_STORE = "firefox-container-";
+
 XPCOMUtils.defineLazyModuleGetter(this, "ContextualIdentityService",
                                   "resource://gre/modules/ContextualIdentityService.jsm");
 
@@ -14,6 +17,10 @@ function convert(identity) {
   };
 
   return result;
+}
+
+function getCookieStoreIdForContainer(containerId) {
+  return CONTAINER_STORE + containerId;
 }
 
 class API extends ExtensionAPI {
