@@ -20,6 +20,8 @@
   "homepage_url": "https://testpilot.firefox.com/",
 
   "permissions": [
+    "experiments.contextualIdentites",
+    "contextualIdentites"
   ],
 
   "browser_action": {
