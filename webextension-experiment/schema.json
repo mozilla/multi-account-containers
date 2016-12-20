@@ -1,22 +1,8 @@
 [
   {
-    "namespace": "manifest",
-    "types": [
-      {
-        "$extend": "Permission",
-        "choices": [{
-          "type": "string",
-          "enum": [
-            "contextualIdentities"
-          ]
-        }]
-      }
-    ]
-  },
-  {
-    "namespace": "contextualIdentities",
+    "namespace": "contextualidentities",
     "description": "Use the <code>browser.contextualIdentities</code> API to query and modify contextual identity, also called as containers.",
-    "permissions": ["contextualIdentities"],
+    "permissions": ["contextualidentities"],
     "types": [
       {
         "id": "ContextualIdentity",
