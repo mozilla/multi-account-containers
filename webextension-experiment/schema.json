@@ -1,6 +1,6 @@
 [
   {
-    "namespace": "contextualidentities",
+    "namespace": "contextualIdentities",
     "description": "Use the <code>browser.contextualIdentities</code> API to query and modify contextual identity, also called as containers.",
     "permissions": ["contextualidentities"],
     "types": [
