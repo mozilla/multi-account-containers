@@ -6,7 +6,7 @@ browser.runtime.sendMessage('get-identities').then(reply=> {
       const identityName = identity.l10nID.match(/userContext(\w*)\.label/)[IDENTITY_L10NID_MATCH_INDEX];
       const identityRow = `
       <tr>
-        <td>i</td>
+        <td><img class="${identity.icon}-icon" src="/img/usercontext.svg#${identity.icon}"></td>
         <td>${identityName}</td>
         <td>&gt;</td>
       </tr>`;
