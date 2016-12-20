@@ -28,6 +28,37 @@ table.unstriped tbody tr {
   background-color: #fefefe;
 }
 
+[data-identity-icon="fingerprint"] {
+  --identity-icon: url('/img/usercontext.svg#fingerprint');
+  --identity-icon-color: #00a7e0;
+}
+
+[data-identity-icon="briefcase"] {
+  --identity-icon: url('/img/usercontext.svg#briefcase');
+  --identity-icon-color: #ff9216;
+}
+
+[data-identity-icon="dollar"] {
+  --identity-icon: url('/img/usercontext.svg#dollar');
+  --identity-icon-color: #7dc14c;
+}
+
+[data-identity-icon="cart"] {
+  --identity-icon: url('/img/usercontext.svg#cart');
+  --identity-icon-color: #ee5195;
+}
+
+.userContext-icon {
+  background-image: var(--identity-icon);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: url('/img/filters.svg#fill');
+  fill: var(--identity-icon-color);
+  width: 32px;
+  height: 32px;
+}
+
 .edit-identities {
   background: #DCDBDC;
 }
