@@ -1,0 +1,42 @@
+body {
+  background: #FAFAFA;
+  min-width: 200px;
+  max-width: 400px;
+}
+
+table {
+  margin-bottom: 0;
+}
+
+.popup-bumper {
+  width: 100%;
+  padding: .5em;
+}
+
+.header-column {
+  padding: 0;
+}
+
+.header-icon {
+  max-width: 16px;
+  height: 16px;
+  margin: 4px;
+}
+
+table.unstriped tbody tr {
+  border-bottom: 1px solid #f1f1f1;
+  background-color: #fefefe;
+}
+
+.edit-identities {
+  background: #DCDBDC;
+}
+
+.edit-containers-text {
+  text-align: center;
+  padding: .5em;
+}
+
+.edit-containers-text a {
+  color: #0a0a0a;
+}

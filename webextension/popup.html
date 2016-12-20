@@ -2,12 +2,29 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <title>Containers browserAction Popup</title>
+  <link rel="stylesheet" href="/css/foundation.min.css">
+  <link rel="stylesheet" href="/css/popup.css">
 </head>
 <body>
-  <h1>Containers!</h1>
-  <ul class="identities-list">
-  </ul>
-  <h3><a href="#">Edit Containers</a></h3>
+  <div class="row popup-bumper">
+    <div class="small-2 columns header-column">
+      <img alt="Containers icon" class="header-icon" src="/img/container-site-d-24.png">
+    </div>
+    <div class="small-8 columns">
+      <h4>Containers</h4>
+    </div>
+    <div class="small-2 columns header-column">
+      <img alt="Sort Containers" class="header-icon" src="/img/container-sort.svg">
+    </div>
+  </div>
+  <table class="unstriped hover">
+    <tbody class="identities-list"></tbody>
+  </table>
+  <div class="row popup-bumper edit-identities">
+    <div class="small-12 columns edit-containers-text">
+      <a href="#">Edit Containers</a>
+    </div>
+  </div>
   <script src="js/popup.js"></script>
 </body>
 </html>
