@@ -16,3 +16,9 @@ browser.runtime.sendMessage('get-identities').then(reply=> {
     console.log('response from sdk addon: ', reply.content);
   }
 });
+
+document.querySelector('#edit-containers-link').addEventListener('click', ()=> {
+  browser.runtime.sendMessage('open-containers-preferences').then(()=> {
+    window.close();
+  });
+});

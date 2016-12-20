@@ -1,12 +1,19 @@
-const webExtension = require('sdk/webextension');
 const {ContextualIdentityService} = require('resource://gre/modules/ContextualIdentityService.jsm');
+const tabs = require('sdk/tabs');
+const webExtension = require('sdk/webextension');
 
 function handleWebExtensionMessage(message, sender, sendReply) {
   console.log(message);
-  if (message === 'get-identities') {
-    sendReply({
-      content: {identities: ContextualIdentityService.getIdentities()}
-    });
+  switch (message) {
+      case 'get-identities':
+        sendReply({
+          content: {identities: ContextualIdentityService.getIdentities()}
+        });
+        break;
+      case 'open-containers-preferences':
+        tabs.open('about:preferences#containers');
+        sendReply({content: 'opened'});
+        break;
   }
 }
 
