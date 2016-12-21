@@ -1,0 +1,89 @@
+[data-identity-color="blue"] {
+  --identity-tab-color: #0996f8;
+  --identity-icon-color: #00a7e0;
+}
+
+[data-identity-color="turquoise"] {
+  --identity-tab-color: #01bdad;
+  --identity-icon-color: #01bdad;
+}
+
+[data-identity-color="green"] {
+  --identity-tab-color: #57bd35;
+  --identity-icon-color:  #7dc14c;
+}
+
+[data-identity-color="yellow"] {
+  --identity-tab-color: #ffcb00;
+  --identity-icon-color: #ffcb00;
+}
+
+[data-identity-color="orange"] {
+  --identity-tab-color: #ff9216;
+  --identity-icon-color: #ff9216;
+}
+
+[data-identity-color="red"] {
+  --identity-tab-color: #d92215;
+  --identity-icon-color: #d92215;
+}
+
+[data-identity-color="pink"] {
+  --identity-tab-color: #ea385e;
+  --identity-icon-color: #ee5195;
+}
+
+[data-identity-color="purple"] {
+  --identity-tab-color: #7a2f7a;
+  --identity-icon-color: #7a2f7a;
+}
+
+[data-identity-icon="fingerprint"] {
+  --identity-icon: url("chrome://browser/content/usercontext.svg#fingerprint");
+}
+
+[data-identity-icon="briefcase"] {
+  --identity-icon: url("chrome://browser/content/usercontext.svg#briefcase");
+}
+
+[data-identity-icon="dollar"] {
+  --identity-icon: url("chrome://browser/content/usercontext.svg#dollar");
+}
+
+[data-identity-icon="cart"] {
+  --identity-icon: url("chrome://browser/content/usercontext.svg#cart");
+}
+
+[data-identity-icon="circle"] {
+  --identity-icon: url("chrome://browser/content/usercontext.svg#circle");
+}
+
+.userContext-indicator {
+  width: 16px;
+  height: 16px;
+  margin-right: 1rem;
+  background-image: var(--identity-icon);
+  filter: url(chrome://global/skin/filters.svg#fill);
+  filter: url(../img/filters.svg#fill);
+  fill: var(--identity-icon-color);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+.identities-list {
+  padding: 0;
+  margin: 0;
+}
+
+.identities-list li {
+  display: flex;
+  padding: 0.5em;
+  background: #f4f4f4;
+  border-bottom: 1px solid #d5d5d5;
+}
+.identities-list li a {
+  display: flex;
+  color: #000;
+  text-decoration: none;
+}
