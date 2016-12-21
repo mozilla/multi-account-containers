@@ -1,0 +1,113 @@
+body {
+  background: #FAFAFA;
+  min-width: 200px;
+  max-width: 400px;
+}
+
+table {
+  margin-bottom: 0;
+}
+
+.popup-bumper {
+  width: 100%;
+  padding: .5em;
+}
+
+.header-column {
+  padding: 0;
+}
+
+.header-icon {
+  max-width: 16px;
+  height: 16px;
+  margin: 4px;
+}
+
+table.unstriped tbody tr {
+  border-bottom: 1px solid #f1f1f1;
+  background-color: #fefefe;
+}
+
+.userContext-icon {
+  background-image: var(--identity-icon);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: url('/img/filters.svg#fill');
+  fill: var(--identity-icon-color);
+  width: 32px;
+  height: 32px;
+}
+
+.edit-identities {
+  background: #DCDBDC;
+}
+
+.edit-containers-text {
+  text-align: center;
+  padding: .5em;
+}
+
+.edit-containers-text a {
+  color: #0a0a0a;
+}
+
+[data-identity-color="blue"] {
+  --identity-tab-color: #0996f8;
+  --identity-icon-color: #00a7e0;
+}
+
+[data-identity-color="turquoise"] {
+  --identity-tab-color: #01bdad;
+  --identity-icon-color: #01bdad;
+}
+
+[data-identity-color="green"] {
+  --identity-tab-color: #57bd35;
+  --identity-icon-color:  #7dc14c;
+}
+
+[data-identity-color="yellow"] {
+  --identity-tab-color: #ffcb00;
+  --identity-icon-color: #ffcb00;
+}
+
+[data-identity-color="orange"] {
+  --identity-tab-color: #ff9216;
+  --identity-icon-color: #ff9216;
+}
+
+[data-identity-color="red"] {
+  --identity-tab-color: #d92215;
+  --identity-icon-color: #d92215;
+}
+
+[data-identity-color="pink"] {
+  --identity-tab-color: #ea385e;
+  --identity-icon-color: #ee5195;
+}
+
+[data-identity-color="purple"] {
+  --identity-tab-color: #7a2f7a;
+  --identity-icon-color: #7a2f7a;
+}
+
+[data-identity-icon="fingerprint"] {
+  --identity-icon: url("chrome://browser/content/usercontext.svg#fingerprint");
+}
+
+[data-identity-icon="briefcase"] {
+  --identity-icon: url("chrome://browser/content/usercontext.svg#briefcase");
+}
+
+[data-identity-icon="dollar"] {
+  --identity-icon: url("chrome://browser/content/usercontext.svg#dollar");
+}
+
+[data-identity-icon="cart"] {
+  --identity-icon: url("chrome://browser/content/usercontext.svg#cart");
+}
+
+[data-identity-icon="circle"] {
+  --identity-icon: url("chrome://browser/content/usercontext.svg#circle");
+}
