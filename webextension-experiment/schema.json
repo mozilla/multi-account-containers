@@ -25,8 +25,34 @@
         "parameters": [
           {
             "type": "string",
-            "name": "cookieStoreId",
-            "description": "The ID of the contextual identity cookie store. "
+            "name": "cookiestoreid",
+            "description": "the id of the contextual identity cookie store. "
+          }
+        ]
+      },
+      {
+        "name": "hide",
+        "type": "function",
+        "description": "hides all of a contextual identity.",
+        "async": true,
+        "parameters": [
+          {
+            "type": "string",
+            "name": "cookiestoreid",
+            "description": "the id of the contextual identity cookie store. "
+          }
+        ]
+      },
+      {
+        "name": "show",
+        "type": "function",
+        "description": "unhides all of a contextual identity.",
+        "async": true,
+        "parameters": [
+          {
+            "type": "string",
+            "name": "cookiestoreid",
+            "description": "the id of the contextual identity cookie store. "
           }
         ]
       },
