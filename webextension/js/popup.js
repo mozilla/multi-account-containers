@@ -72,16 +72,19 @@ document.querySelector('#edit-containers-link').addEventListener('click', ()=> {
 });
 
 function moveTabs(sortedTabsArray) {
-  console.log('sortedTabsArray: ', sortedTabsArray);
+  let positionIndex = 0;
+
+  sortedTabsArray.forEach(tabID=> {
+    browser.tabs.move(tabID, {index: positionIndex});
+    positionIndex++;
+  });
 }
 
 document.querySelector('#sort-containers-link').addEventListener('click', ()=> {
   browser.contextualIdentities.query({}).then(identities=> {
     identities.unshift({cookieStoreId: 'firefox-default'});
-    console.log('identities: ', identities);
 
     browser.tabs.query({}).then(tabsArray=> {
-      console.log('tabsArray: ', tabsArray);
       const sortedTabsArray = [];
 
       identities.forEach(identity=> {
