@@ -13,7 +13,7 @@ function showContainer(containerId) {
 browser.contextualIdentities.query({}).then(identites=> {
   const identitiesListElement = document.querySelector('.identities-list');
 
-  identites.forEach(identity=> {
+  identites.forEach(identity => {
     const identityRow = `
     <tr data-identity-cookie-store-id="${identity.cookieStoreId}" >
       <td><div class="userContext-icon"
@@ -57,3 +57,12 @@ document.querySelector('#edit-containers-link').addEventListener('click', ()=> {
     window.close();
   });
 });
+
+
+function hideContainer(containerId) {
+  browser.contextualIdentities.hide(containerId);
+}
+
+function showContainer(containerId) {
+  browser.contextualIdentities.show(containerId);
+}
