@@ -3,17 +3,23 @@ const identityState = {
 };
 
 function hideContainer(containerId) {
+  const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
+
+  hideorshowIcon.src = '/img/container-unhide.svg';
   browser.contextualIdentities.hide(containerId);
 }
 
 function showContainer(containerId) {
+  const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
+
+  hideorshowIcon.src = '/img/container-hide.svg';
   browser.contextualIdentities.show(containerId);
 }
 
 browser.contextualIdentities.query({}).then(identites=> {
   const identitiesListElement = document.querySelector('.identities-list');
 
-  identites.forEach(identity => {
+  identites.forEach(identity=> {
     const identityRow = `
     <tr data-identity-cookie-store-id="${identity.cookieStoreId}" >
       <td><div class="userContext-icon"
@@ -21,7 +27,14 @@ browser.contextualIdentities.query({}).then(identites=> {
         data-identity-color="${identity.color}"
       ></div></td>
       <td>${identity.name}</td>
-      <td class="hideorshow" >H/S</td>
+      <td class="hideorshow" >
+        <img
+          data-identity-cookie-store-id="${identity.cookieStoreId}"
+          id="${identity.cookieStoreId}-hideorshow-icon"
+          class="hideorshow-icon"
+          src="/img/container-hide.svg"
+        />
+      </td>
       <td>&gt;</td>
     </tr>`;
 
@@ -33,8 +46,8 @@ browser.contextualIdentities.query({}).then(identites=> {
 
   rows.forEach(row=> {
     row.addEventListener('click', e=> {
-      if (e.target.matches('.hideorshow')) {
-        const containerId = e.target.parentElement.dataset.identityCookieStoreId;
+      if (e.target.matches('.hideorshow-icon')) {
+        const containerId = e.target.dataset.identityCookieStoreId;
 
         if (!(containerId in identityState)) {
           identityState[containerId] = true;
@@ -57,12 +70,3 @@ document.querySelector('#edit-containers-link').addEventListener('click', ()=> {
     window.close();
   });
 });
-
-
-function hideContainer(containerId) {
-  browser.contextualIdentities.hide(containerId);
-}
-
-function showContainer(containerId) {
-  browser.contextualIdentities.show(containerId);
-}

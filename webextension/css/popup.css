@@ -39,6 +39,12 @@ table.unstriped tbody tr {
   height: 32px;
 }
 
+.hideorshow-icon {
+  max-width: 16px;
+  height: 16px;
+  margin: 4px;
+}
+
 .edit-identities {
   background: #DCDBDC;
 }
