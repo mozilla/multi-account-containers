@@ -6,17 +6,18 @@ function hideContainer(containerId) {
   const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
 
   hideorshowIcon.src = '/img/container-unhide.svg';
-  browser.contextualIdentities.hide(containerId);
+  browser.runtime.sendMessage({method: 'hide', arguments: containerId});
 }
 
 function showContainer(containerId) {
   const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
 
   hideorshowIcon.src = '/img/container-hide.svg';
-  browser.contextualIdentities.show(containerId);
+  browser.runtime.sendMessage({method: 'show', arguments: containerId});
 }
 
-browser.contextualIdentities.query({}).then(identities=> {
+browser.runtime.sendMessage({method: 'query'}).then(identities=> {
+  console.log('query identities: ', identities);
   const identitiesListElement = document.querySelector('.identities-list');
 
   identities.forEach(identity=> {
@@ -81,7 +82,7 @@ function moveTabs(sortedTabsArray) {
 }
 
 document.querySelector('#sort-containers-link').addEventListener('click', ()=> {
-  browser.contextualIdentities.query({}).then(identities=> {
+  browser.runtime.sendMessage({method: 'query'}).then(identities=> {
     identities.unshift({cookieStoreId: 'firefox-default'});
 
     browser.tabs.query({}).then(tabsArray=> {
