@@ -22,7 +22,9 @@
   "permissions": [
     "cookies",
     "experiments.contextualidentities",
-    "contextualidentities"
+    "contextualidentities",
+    "tabs",
+    "cookies"
   ],
 
   "browser_action": {
@@ -36,4 +38,3 @@
   }
 
 }
-

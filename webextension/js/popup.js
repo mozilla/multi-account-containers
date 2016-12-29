@@ -16,10 +16,10 @@ function showContainer(containerId) {
   browser.contextualIdentities.show(containerId);
 }
 
-browser.contextualIdentities.query({}).then(identites=> {
+browser.contextualIdentities.query({}).then(identities=> {
   const identitiesListElement = document.querySelector('.identities-list');
 
-  identites.forEach(identity=> {
+  identities.forEach(identity=> {
     const identityRow = `
     <tr data-identity-cookie-store-id="${identity.cookieStoreId}" >
       <td><div class="userContext-icon"
@@ -68,5 +68,34 @@ browser.contextualIdentities.query({}).then(identites=> {
 document.querySelector('#edit-containers-link').addEventListener('click', ()=> {
   browser.runtime.sendMessage('open-containers-preferences').then(()=> {
     window.close();
+  });
+});
+
+function moveTabs(sortedTabsArray) {
+  let positionIndex = 0;
+
+  sortedTabsArray.forEach(tabID=> {
+    browser.tabs.move(tabID, {index: positionIndex});
+    positionIndex++;
+  });
+}
+
+document.querySelector('#sort-containers-link').addEventListener('click', ()=> {
+  browser.contextualIdentities.query({}).then(identities=> {
+    identities.unshift({cookieStoreId: 'firefox-default'});
+
+    browser.tabs.query({}).then(tabsArray=> {
+      const sortedTabsArray = [];
+
+      identities.forEach(identity=> {
+        tabsArray.forEach(tab=> {
+          if (tab.cookieStoreId === identity.cookieStoreId) {
+            sortedTabsArray.push(tab.id);
+          }
+        });
+      });
+
+      moveTabs(sortedTabsArray);
+    });
   });
 });
