@@ -6,16 +6,26 @@ const webExtension = require('sdk/webextension');
 
 const CONTAINER_STORE = 'firefox-container-';
 
+const identitiesState = {
+};
+
 function getCookieStoreIdForContainer(containerId) {
   return CONTAINER_STORE + containerId;
 }
 
 function convert(identity) {
+  const cookieStoreId = getCookieStoreIdForContainer(identity.userContextId);
+  let hiddenTabUrls = [];
+
+  if (cookieStoreId in identitiesState) {
+    hiddenTabUrls = identitiesState[cookieStoreId].hiddenTabUrls;
+  }
   const result = {
     name: ContextualIdentityService.getUserContextLabel(identity.userContextId),
     icon: identity.icon,
     color: identity.color,
-    cookieStoreId: getCookieStoreIdForContainer(identity.userContextId)
+    cookieStoreId: cookieStoreId,
+    hiddenTabUrls: hiddenTabUrls
   };
 
   return result;
@@ -60,7 +70,12 @@ function queryContainers(details) {
       return;
     }
 
-    identities.push(convert(identity));
+    const convertedIdentity = convert(identity);
+
+    identities.push(convertedIdentity);
+    if (!(convertedIdentity.cookieStoreId in identitiesState)) {
+      identitiesState[convertedIdentity.cookieStoreId] = {hiddenTabUrls: []};
+    }
   });
 
   return Promise.resolve(identities);
@@ -145,10 +160,11 @@ function handleWebExtensionMessage(message, sender, sendReply) {
         sendReply(contextualIdentities.query(message.arguments));
         break;
       case 'hide':
-        sendReply(contextualIdentities.hide(message.arguments));
+        identitiesState[message.cookieStoreId].hiddenTabUrls = message.tabUrlsToSave;
         break;
       case 'show':
-        sendReply(contextualIdentities.show(message.arguments));
+        sendReply(identitiesState[message.cookieStoreId].hiddenTabUrls);
+        identitiesState[message.cookieStoreId].hiddenTabUrls = [];
         break;
       case 'get':
         sendReply(contextualIdentities.get(message.arguments));
@@ -161,6 +177,9 @@ function handleWebExtensionMessage(message, sender, sendReply) {
         break;
       case 'remove':
         sendReply(contextualIdentities.remove(message.arguments));
+        break;
+      case 'getIdentitiesState':
+        sendReply(identitiesState);
         break;
       case 'open-containers-preferences':
         tabs.open('about:preferences#containers');

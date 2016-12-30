@@ -1,39 +1,54 @@
 /* global browser, window, document */
-const identitiesState = {
-};
+const CONTAINER_HIDE_SRC = '/img/container-hide.svg';
+const CONTAINER_UNHIDE_SRC = '/img/container-unhide.svg';
 
 function hideContainerTabs(containerId) {
   const tabIdsToRemove = [];
+  const tabUrlsToSave = [];
   const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
 
   browser.tabs.query({cookieStoreId: containerId}).then(tabs=> {
     tabs.forEach(tab=> {
       tabIdsToRemove.push(tab.id);
-      identitiesState[containerId].hiddenTabUrls.push(tab.url);
+      tabUrlsToSave.push(tab.url);
     });
-    browser.tabs.remove(tabIdsToRemove);
-    hideorshowIcon.src = '/img/container-unhide.svg';
+    browser.runtime.sendMessage({
+      method: 'hide',
+      cookieStoreId: containerId,
+      tabUrlsToSave: tabUrlsToSave
+    }).then(()=> {
+      browser.tabs.remove(tabIdsToRemove);
+      hideorshowIcon.src = CONTAINER_UNHIDE_SRC;
+    });
   });
 }
 
 function showContainerTabs(containerId) {
   const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
 
-  identitiesState[containerId].hiddenTabUrls.forEach(url=> {
-    // Have to use SDK to open tabs in case they are about:* pages
-    browser.tabs.create({
-      url: url,
-      cookieStoreId: containerId
+  browser.runtime.sendMessage({
+    method: 'show',
+    cookieStoreId: containerId
+  }).then(hiddenTabUrls=> {
+    hiddenTabUrls.forEach(url=> {
+      browser.tabs.create({
+        url: url,
+        cookieStoreId: containerId
+      });
     });
   });
-  identitiesState[containerId].hiddenTabUrls = [];
-  hideorshowIcon.src = '/img/container-hide.svg';
+  hideorshowIcon.src = CONTAINER_HIDE_SRC;
 }
 
 browser.runtime.sendMessage({method: 'query'}).then(identities=> {
   const identitiesListElement = document.querySelector('.identities-list');
 
   identities.forEach(identity=> {
+    let hideOrShowIconSrc = CONTAINER_HIDE_SRC;
+
+    if (identity.hiddenTabUrls.length) {
+      hideOrShowIconSrc = CONTAINER_UNHIDE_SRC;
+    }
     const identityRow = `
     <tr data-identity-cookie-store-id="${identity.cookieStoreId}" >
       <td><div class="userContext-icon"
@@ -46,17 +61,13 @@ browser.runtime.sendMessage({method: 'query'}).then(identities=> {
           data-identity-cookie-store-id="${identity.cookieStoreId}"
           id="${identity.cookieStoreId}-hideorshow-icon"
           class="hideorshow-icon"
-          src="/img/container-hide.svg"
+          src="${hideOrShowIconSrc}"
         />
       </td>
       <td>&gt;</td>
     </tr>`;
 
     identitiesListElement.innerHTML += identityRow;
-
-    if (!(identity in identitiesState)) {
-      identitiesState[identity.cookieStoreId] = {hiddenTabUrls: []};
-    }
   });
 
   const rows = identitiesListElement.querySelectorAll('tr');
@@ -66,11 +77,13 @@ browser.runtime.sendMessage({method: 'query'}).then(identities=> {
       if (e.target.matches('.hideorshow-icon')) {
         const containerId = e.target.dataset.identityCookieStoreId;
 
-        if (identitiesState[containerId].hiddenTabUrls.length) {
-          showContainerTabs(containerId);
-        } else {
-          hideContainerTabs(containerId);
-        }
+        browser.runtime.sendMessage({method: 'getIdentitiesState'}).then(identitiesState=> {
+          if (identitiesState[containerId].hiddenTabUrls.length) {
+            showContainerTabs(containerId);
+          } else {
+            hideContainerTabs(containerId);
+          }
+        });
       }
     });
   });
