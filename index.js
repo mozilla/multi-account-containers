@@ -2,7 +2,6 @@
 const {ContextualIdentityService} = require('resource://gre/modules/ContextualIdentityService.jsm');
 
 const tabs = require('sdk/tabs');
-const windows = require('sdk/windows');
 const webExtension = require('sdk/webextension');
 
 const CONTAINER_STORE = 'firefox-container-';
@@ -20,49 +19,6 @@ function convert(identity) {
   };
 
   return result;
-}
-
-function query(queryInfo) {
-
-  function matches(window, tab) {
-    if (queryInfo.cookieStoreId !== null &&
-        tab.cookieStoreId !== queryInfo.cookieStoreId) {
-      return false;
-    }
-
-    return true;
-  }
-
-  const result = [];
-
-  for (const window of windows.browserWindows) {
-    for (const tab of tabs) {
-      if (matches(window, tab)) {
-        result.push(tab);
-      }
-    }
-  }
-
-  return Promise.resolve(result);
-}
-
-function hideContainerTabs(cookieStoreId) {
-  query({cookieStoreId}).then(containerTabs=> {
-    containerTabs.forEach(tab=> {
-      gBrowser.hideTab(tab);
-    });
-  })
-  .catch(e=> {
-    throw e;
-  });
-}
-
-function showContainterTabs(cookieStoreId) {
-  query({cookieStoreId}).then(containerTabs=> {
-    containerTabs.forEach(tab=> {
-      gBrowser.showTab(tab);
-    });
-  });
 }
 
 function isContainerCookieStoreId(storeId) {
@@ -96,7 +52,6 @@ function getContainer(cookieStoreId) {
 }
 
 function queryContainers(details) {
-  console.log('queryContainers, details: ', details);
   const identities = [];
 
   ContextualIdentityService.getIdentities().forEach(identity=> {
@@ -112,7 +67,6 @@ function queryContainers(details) {
 }
 
 function createContainer(details) {
-  console.log('createContainer, details: ', details);
   const identity = ContextualIdentityService.create(details.name,
                                                   details.icon,
                                                   details.color);
@@ -121,7 +75,6 @@ function createContainer(details) {
 }
 
 function updateContainer(cookieStoreId, details) {
-  console.log(`updateContainer, cookieStoreId: ${cookieStoreId}, details: ${details}`);
   const containerId = getContainerForCookieStoreId(cookieStoreId);
 
   if (!containerId) {
@@ -156,7 +109,6 @@ function updateContainer(cookieStoreId, details) {
 }
 
 function removeContainer(cookieStoreId) {
-  console.log(`removeContainer, cookieStoreId: ${cookieStoreId}`);
   const containerId = getContainerForCookieStoreId(cookieStoreId);
 
   if (!containerId) {
@@ -180,8 +132,6 @@ function removeContainer(cookieStoreId) {
 }
 
 const contextualIdentities = {
-  hide: hideContainerTabs,
-  show: showContainterTabs,
   get: getContainer,
   query: queryContainers,
   create: createContainer,

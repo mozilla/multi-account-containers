@@ -1,23 +1,36 @@
 /* global browser, window, document */
-const identityState = {
+const identitiesState = {
 };
 
-function hideContainer(containerId) {
+function hideContainerTabs(containerId) {
+  const tabIdsToRemove = [];
   const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
 
-  hideorshowIcon.src = '/img/container-unhide.svg';
-  browser.runtime.sendMessage({method: 'hide', arguments: containerId});
+  browser.tabs.query({cookieStoreId: containerId}).then(tabs=> {
+    tabs.forEach(tab=> {
+      tabIdsToRemove.push(tab.id);
+      identitiesState[containerId].hiddenTabUrls.push(tab.url);
+    });
+    browser.tabs.remove(tabIdsToRemove);
+    hideorshowIcon.src = '/img/container-unhide.svg';
+  });
 }
 
-function showContainer(containerId) {
+function showContainerTabs(containerId) {
   const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
 
+  identitiesState[containerId].hiddenTabUrls.forEach(url=> {
+    // Have to use SDK to open tabs in case they are about:* pages
+    browser.tabs.create({
+      url: url,
+      cookieStoreId: containerId
+    });
+  });
+  identitiesState[containerId].hiddenTabUrls = [];
   hideorshowIcon.src = '/img/container-hide.svg';
-  browser.runtime.sendMessage({method: 'show', arguments: containerId});
 }
 
 browser.runtime.sendMessage({method: 'query'}).then(identities=> {
-  console.log('query identities: ', identities);
   const identitiesListElement = document.querySelector('.identities-list');
 
   identities.forEach(identity=> {
@@ -41,6 +54,9 @@ browser.runtime.sendMessage({method: 'query'}).then(identities=> {
 
     identitiesListElement.innerHTML += identityRow;
 
+    if (!(identity in identitiesState)) {
+      identitiesState[identity.cookieStoreId] = {hiddenTabUrls: []};
+    }
   });
 
   const rows = identitiesListElement.querySelectorAll('tr');
@@ -50,15 +66,10 @@ browser.runtime.sendMessage({method: 'query'}).then(identities=> {
       if (e.target.matches('.hideorshow-icon')) {
         const containerId = e.target.dataset.identityCookieStoreId;
 
-        if (!(containerId in identityState)) {
-          identityState[containerId] = true;
-        }
-        if (identityState[containerId]) {
-          hideContainer(containerId);
-          identityState[containerId] = false;
+        if (identitiesState[containerId].hiddenTabUrls.length) {
+          showContainerTabs(containerId);
         } else {
-          showContainer(containerId);
-          identityState[containerId] = true;
+          hideContainerTabs(containerId);
         }
       }
     });
