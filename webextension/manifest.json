@@ -21,8 +21,6 @@
 
   "permissions": [
     "cookies",
-    "experiments.contextualidentities",
-    "contextualidentities",
     "tabs",
     "cookies"
   ],

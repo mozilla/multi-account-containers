@@ -1,25 +1,54 @@
 /* global browser, window, document */
-const identityState = {
-};
+const CONTAINER_HIDE_SRC = '/img/container-hide.svg';
+const CONTAINER_UNHIDE_SRC = '/img/container-unhide.svg';
 
-function hideContainer(containerId) {
+function hideContainerTabs(containerId) {
+  const tabIdsToRemove = [];
+  const tabUrlsToSave = [];
   const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
 
-  hideorshowIcon.src = '/img/container-unhide.svg';
-  browser.contextualIdentities.hide(containerId);
+  browser.tabs.query({cookieStoreId: containerId}).then(tabs=> {
+    tabs.forEach(tab=> {
+      tabIdsToRemove.push(tab.id);
+      tabUrlsToSave.push(tab.url);
+    });
+    browser.runtime.sendMessage({
+      method: 'hide',
+      cookieStoreId: containerId,
+      tabUrlsToSave: tabUrlsToSave
+    }).then(()=> {
+      browser.tabs.remove(tabIdsToRemove);
+      hideorshowIcon.src = CONTAINER_UNHIDE_SRC;
+    });
+  });
 }
 
-function showContainer(containerId) {
+function showContainerTabs(containerId) {
   const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
 
-  hideorshowIcon.src = '/img/container-hide.svg';
-  browser.contextualIdentities.show(containerId);
+  browser.runtime.sendMessage({
+    method: 'show',
+    cookieStoreId: containerId
+  }).then(hiddenTabUrls=> {
+    hiddenTabUrls.forEach(url=> {
+      browser.tabs.create({
+        url: url,
+        cookieStoreId: containerId
+      });
+    });
+  });
+  hideorshowIcon.src = CONTAINER_HIDE_SRC;
 }
 
-browser.contextualIdentities.query({}).then(identities=> {
+browser.runtime.sendMessage({method: 'query'}).then(identities=> {
   const identitiesListElement = document.querySelector('.identities-list');
 
   identities.forEach(identity=> {
+    let hideOrShowIconSrc = CONTAINER_HIDE_SRC;
+
+    if (identity.hiddenTabUrls.length) {
+      hideOrShowIconSrc = CONTAINER_UNHIDE_SRC;
+    }
     const identityRow = `
     <tr data-identity-cookie-store-id="${identity.cookieStoreId}" >
       <td><div class="userContext-icon"
@@ -32,14 +61,13 @@ browser.contextualIdentities.query({}).then(identities=> {
           data-identity-cookie-store-id="${identity.cookieStoreId}"
           id="${identity.cookieStoreId}-hideorshow-icon"
           class="hideorshow-icon"
-          src="/img/container-hide.svg"
+          src="${hideOrShowIconSrc}"
         />
       </td>
       <td>&gt;</td>
     </tr>`;
 
     identitiesListElement.innerHTML += identityRow;
-
   });
 
   const rows = identitiesListElement.querySelectorAll('tr');
@@ -49,16 +77,13 @@ browser.contextualIdentities.query({}).then(identities=> {
       if (e.target.matches('.hideorshow-icon')) {
         const containerId = e.target.dataset.identityCookieStoreId;
 
-        if (!(containerId in identityState)) {
-          identityState[containerId] = true;
-        }
-        if (identityState[containerId]) {
-          hideContainer(containerId);
-          identityState[containerId] = false;
-        } else {
-          showContainer(containerId);
-          identityState[containerId] = true;
-        }
+        browser.runtime.sendMessage({method: 'getIdentitiesState'}).then(identitiesState=> {
+          if (identitiesState[containerId].hiddenTabUrls.length) {
+            showContainerTabs(containerId);
+          } else {
+            hideContainerTabs(containerId);
+          }
+        });
       }
     });
   });
@@ -81,7 +106,7 @@ function moveTabs(sortedTabsArray) {
 }
 
 document.querySelector('#sort-containers-link').addEventListener('click', ()=> {
-  browser.contextualIdentities.query({}).then(identities=> {
+  browser.runtime.sendMessage({method: 'query'}).then(identities=> {
     identities.unshift({cookieStoreId: 'firefox-default'});
 
     browser.tabs.query({}).then(tabsArray=> {
