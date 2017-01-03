@@ -51,16 +51,21 @@ browser.runtime.sendMessage({method: 'query'}).then(identities=> {
     }
     const identityRow = `
     <tr data-identity-cookie-store-id="${identity.cookieStoreId}" >
-      <td><div class="userContext-icon"
-        data-identity-icon="${identity.icon}"
-        data-identity-color="${identity.color}"
-      ></div></td>
+      <td>
+        <div class="userContext-icon"
+          data-identity-icon="${identity.icon}"
+          data-identity-color="${identity.color}">
+        </div>
+      </td>
       <td>${identity.name}</td>
+      <td class="newtab">
+        <img src="/img/container-add.svg" class="icon newtab-icon" />
+      </td>
       <td class="hideorshow" >
         <img
           data-identity-cookie-store-id="${identity.cookieStoreId}"
           id="${identity.cookieStoreId}-hideorshow-icon"
-          class="hideorshow-icon"
+          class="icon hideorshow-icon"
           src="${hideOrShowIconSrc}"
         />
       </td>
@@ -74,9 +79,9 @@ browser.runtime.sendMessage({method: 'query'}).then(identities=> {
 
   rows.forEach(row=> {
     row.addEventListener('click', e=> {
-      if (e.target.matches('.hideorshow-icon')) {
-        const containerId = e.target.dataset.identityCookieStoreId;
+      const containerId = e.target.parentElement.parentElement.dataset.identityCookieStoreId;
 
+      if (e.target.matches('.hideorshow-icon')) {
         browser.runtime.sendMessage({method: 'getIdentitiesState'}).then(identitiesState=> {
           if (identitiesState[containerId].hiddenTabUrls.length) {
             showContainerTabs(containerId);
@@ -84,6 +89,9 @@ browser.runtime.sendMessage({method: 'query'}).then(identities=> {
             hideContainerTabs(containerId);
           }
         });
+      } else if (e.target.matches('.newtab-icon')) {
+        browser.tabs.create({cookieStoreId: containerId});
+        window.close();
       }
     });
   });

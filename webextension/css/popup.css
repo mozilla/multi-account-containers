@@ -17,7 +17,7 @@ table {
   padding: 0;
 }
 
-.header-icon {
+.icon {
   max-width: 16px;
   height: 16px;
   margin: 4px;
@@ -37,12 +37,6 @@ table.unstriped tbody tr {
   fill: var(--identity-icon-color);
   width: 32px;
   height: 32px;
-}
-
-.hideorshow-icon {
-  max-width: 16px;
-  height: 16px;
-  margin: 4px;
 }
 
 .edit-identities {
