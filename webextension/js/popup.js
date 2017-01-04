@@ -129,7 +129,7 @@ browser.runtime.sendMessage({method: 'query'}).then(identities=> {
 });
 
 document.querySelector('#edit-containers-link').addEventListener('click', ()=> {
-  browser.runtime.sendMessage('open-containers-preferences').then(()=> {
+  browser.runtime.sendMessage({method: 'open-containers-preferences'}).then(()=> {
     window.close();
   });
 });
