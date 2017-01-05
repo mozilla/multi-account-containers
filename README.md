@@ -1,7 +1,6 @@
 # Containers: Test Pilot Experiment
-## AKA ??
 
-[![Available on Test Pilot](https://img.shields.io/badge/available_on-Test_Pilot-0996F8.svg)](https://testpilot.firefox.com/)
+Soon to be [![Available on Test Pilot](https://img.shields.io/badge/available_on-Test_Pilot-0996F8.svg)](https://testpilot.firefox.com/)
 
 [Embedded Web Extension](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Embedded_WebExtensions) to experiment with [Containers](https://blog.mozilla.org/tanvi/2016/06/16/contextual-identities-on-the-web/) in [Firefox Test Pilot](https://testpilot.firefox.com/) to learn:
 
@@ -14,7 +13,8 @@ details](https://docs.google.com/document/d/1WQdHTVXROk7dYkSFluc6_hS44tqZjIrG9I-
 
 ## Requirements
 
-* Firefox 50+
+* node 7+ (for jpm)
+* Firefox 52+ (For now; aiming at Firefox 51+)
 
 
 ## Run it
@@ -36,7 +36,7 @@ Add-on development is better with [a particular  environment](https://developer.
 
 ### Run with jpm
 
-1. Clone this repo locally
+1. `git clone git@github.com:mozilla/testpilot-containers.git`
 2. `cd testpilot-containers`
 3. `npm install`
 4. `./node_modules/.bin/jpm run -p /Path/To/Firefox/Profiles/{junk}.addon_dev -b FirefoxDeveloperEdition`
