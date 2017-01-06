@@ -21,63 +21,32 @@ prefs.forEach((pref) => {
   prefService.set(pref[0], pref[1]);
 });
 
-const CONTAINER_STORE = 'firefox-container-';
-
 const identitiesState = {
 };
 
-function getCookieStoreIdForContainer(containerId) {
-  if (containerId == 0) {
-    return 'firefox-default';
-  }
-
-  return CONTAINER_STORE + containerId;
-}
-
 function convert(identity) {
-  const cookieStoreId = getCookieStoreIdForContainer(identity.userContextId);
   let hiddenTabUrls = [];
 
-  if (cookieStoreId in identitiesState) {
-    hiddenTabUrls = identitiesState[cookieStoreId].hiddenTabUrls;
+  if (identity.userContextId in identitiesState) {
+    hiddenTabUrls = identitiesState[identity.userContextId].hiddenTabUrls;
   }
   const result = {
     name: ContextualIdentityService.getUserContextLabel(identity.userContextId),
     icon: identity.icon,
     color: identity.color,
-    cookieStoreId: cookieStoreId,
+    userContextId: identity.userContextId,
     hiddenTabUrls: hiddenTabUrls
   };
 
   return result;
 }
 
-function isContainerCookieStoreId(storeId) {
-  return storeId !== null && storeId.startsWith(CONTAINER_STORE);
-}
-
-function getContainerForCookieStoreId(storeId) {
-  if (!isContainerCookieStoreId(storeId)) {
-    return null;
-  }
-
-  const containerId = storeId.substring(CONTAINER_STORE.length);
-
-  if (ContextualIdentityService.getIdentityFromId(containerId)) {
-    return parseInt(containerId, 10);
-  }
-
-  return null;
-}
-
-function getContainer(cookieStoreId) {
-  const containerId = getContainerForCookieStoreId(cookieStoreId);
-
-  if (!containerId) {
+function getContainer(userContextId) {
+  if (!userContextId) {
     return Promise.resolve(null);
   }
 
-  const identity = ContextualIdentityService.getIdentityFromId(containerId);
+  const identity = ContextualIdentityService.getIdentityFromId(userContextId);
 
   return Promise.resolve(convert(identity));
 }
@@ -94,8 +63,8 @@ function queryContainers(details) {
     const convertedIdentity = convert(identity);
 
     identities.push(convertedIdentity);
-    if (!(convertedIdentity.cookieStoreId in identitiesState)) {
-      identitiesState[convertedIdentity.cookieStoreId] = {hiddenTabUrls: []};
+    if (!(convertedIdentity.userContextId in identitiesState)) {
+      identitiesState[convertedIdentity.userContextId] = {hiddenTabUrls: []};
     }
   });
 
@@ -110,14 +79,12 @@ function createContainer(details) {
   return Promise.resolve(convert(identity));
 }
 
-function updateContainer(cookieStoreId, details) {
-  const containerId = getContainerForCookieStoreId(cookieStoreId);
-
-  if (!containerId) {
+function updateContainer(userContextId, details) {
+  if (!userContextId) {
     return Promise.resolve(null);
   }
 
-  const identity = ContextualIdentityService.getIdentityFromId(containerId);
+  const identity = ContextualIdentityService.getIdentityFromId(userContextId);
 
   if (!identity) {
     return Promise.resolve(null);
@@ -144,14 +111,12 @@ function updateContainer(cookieStoreId, details) {
   return Promise.resolve(convert(identity));
 }
 
-function removeContainer(cookieStoreId) {
-  const containerId = getContainerForCookieStoreId(cookieStoreId);
-
-  if (!containerId) {
+function removeContainer(userContextId) {
+  if (!userContextId) {
     return Promise.resolve(null);
   }
 
-  const identity = ContextualIdentityService.getIdentityFromId(containerId);
+  const identity = ContextualIdentityService.getIdentityFromId(userContextId);
 
   if (!identity) {
     return Promise.resolve(null);
@@ -184,8 +149,8 @@ function openTab(args) {
   }
 
   let userContextId = 0;
-  if ('cookieStoreId' in args) {
-    userContextId = getContainerForCookieStoreId(args.cookieStoreId);
+  if ('userContextId' in args) {
+    userContextId = args.userContextId;
   }
 
   let tab = browserWin.gBrowser.addTab(args.url || null,
@@ -200,17 +165,16 @@ function queryTabs(args) {
 
     for (let tab of tabs) {
       let xulTab = viewFor(tab);
-      let userContextId = xulTab.getAttribute('usercontextid') || 0;
-      let cookieStoreId = getCookieStoreIdForContainer(userContextId);
+      let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
 
-      if ("cookieStoreId" in args && args.cookieStoreId != cookieStoreId) {
+      if ("userContextId" in args && args.userContextId != userContextId) {
         continue;
       }
 
       tabList.push({
         id: tab.id,
         url: tab.url,
-        cookieStoreId: cookieStoreId,
+        userContextId: userContextId,
       });
     }
 
@@ -237,15 +201,15 @@ function handleWebExtensionMessage(message, sender, sendReply) {
         sendReply(queryTabs(message));
         break;
       case 'hideTab':
-        identitiesState[message.cookieStoreId].hiddenTabUrls = message.tabUrlsToSave;
+        identitiesState[message.userContextId].hiddenTabUrls = message.tabUrlsToSave;
         break;
       case 'showTab':
-        sendReply(identitiesState[message.cookieStoreId].hiddenTabUrls);
-        identitiesState[message.cookieStoreId].hiddenTabUrls = [];
+        sendReply(identitiesState[message.userContextId].hiddenTabUrls);
+        identitiesState[message.userContextId].hiddenTabUrls = [];
         break;
       case 'removeTabs':
         sendReply(removeTabs(message.tabIds));
-        identitiesState[message.cookieStoreId].hiddenTabUrls = [];
+        identitiesState[message.userContextId].hiddenTabUrls = [];
         break;
       case 'getTab':
         sendReply(contextualIdentities.get(message.arguments));
