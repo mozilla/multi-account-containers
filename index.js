@@ -41,16 +41,6 @@ function convert(identity) {
   return result;
 }
 
-function getContainer(userContextId) {
-  if (!userContextId) {
-    return Promise.resolve(null);
-  }
-
-  const identity = ContextualIdentityService.getIdentityFromId(userContextId);
-
-  return Promise.resolve(convert(identity));
-}
-
 function queryContainers(details) {
   const identities = [];
 
@@ -69,46 +59,6 @@ function queryContainers(details) {
   });
 
   return Promise.resolve(identities);
-}
-
-function createContainer(details) {
-  const identity = ContextualIdentityService.create(details.name,
-                                                  details.icon,
-                                                  details.color);
-
-  return Promise.resolve(convert(identity));
-}
-
-function updateContainer(userContextId, details) {
-  if (!userContextId) {
-    return Promise.resolve(null);
-  }
-
-  const identity = ContextualIdentityService.getIdentityFromId(userContextId);
-
-  if (!identity) {
-    return Promise.resolve(null);
-  }
-
-  if (details.name !== null) {
-    identity.name = details.name;
-  }
-
-  if (details.color !== null) {
-    identity.color = details.color;
-  }
-
-  if (details.icon !== null) {
-    identity.icon = details.icon;
-  }
-
-  if (!ContextualIdentityService.update(identity.userContextId,
-                                        identity.name, identity.icon,
-                                        identity.color)) {
-    return Promise.resolve(null);
-  }
-
-  return Promise.resolve(convert(identity));
 }
 
 function removeContainer(userContextId) {
@@ -131,14 +81,6 @@ function removeContainer(userContextId) {
 
   return Promise.resolve(convertedIdentity);
 }
-
-const contextualIdentities = {
-  get: getContainer,
-  query: queryContainers,
-  create: createContainer,
-  update: updateContainer,
-  remove: removeContainer
-};
 
 function openTab(args) {
   let browserWin = Services.wm.getMostRecentWindow('navigator:browser');
@@ -195,33 +137,21 @@ function removeTabs(ids) {
 function handleWebExtensionMessage(message, sender, sendReply) {
   switch (message.method) {
       case 'queryIdentities':
-        sendReply(contextualIdentities.query(message.arguments));
+        sendReply(queryContainers(message.arguments));
         break;
       case 'queryTabs':
         sendReply(queryTabs(message));
         break;
-      case 'hideTab':
+      case 'hideTabs':
         identitiesState[message.userContextId].hiddenTabUrls = message.tabUrlsToSave;
         break;
-      case 'showTab':
+      case 'showTabs':
         sendReply(identitiesState[message.userContextId].hiddenTabUrls);
         identitiesState[message.userContextId].hiddenTabUrls = [];
         break;
       case 'removeTabs':
         sendReply(removeTabs(message.tabIds));
         identitiesState[message.userContextId].hiddenTabUrls = [];
-        break;
-      case 'getTab':
-        sendReply(contextualIdentities.get(message.arguments));
-        break;
-      case 'createTab':
-        sendReply(contextualIdentities.create(message.arguments));
-        break;
-      case 'updateTab':
-        sendReply(contextualIdentities.update(message.arguments));
-        break;
-      case 'removeTab':
-        sendReply(contextualIdentities.remove(message.arguments));
         break;
       case 'getIdentitiesState':
         sendReply(identitiesState);
