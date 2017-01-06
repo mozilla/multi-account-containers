@@ -59,10 +59,14 @@ browser.runtime.sendMessage({method: 'query'}).then(identities=> {
       </td>
       <td>${identity.name}</td>
       <td class="newtab">
-        <img src="/img/container-add.svg" class="icon newtab-icon" />
+        <img
+          title="Open a new ${identity.name} container tab"
+          src="/img/container-add.svg"
+          class="icon newtab-icon" />
       </td>
       <td class="hideorshow" >
         <img
+          title="Hide or show ${identity.name} container tabs"
           data-identity-cookie-store-id="${identity.cookieStoreId}"
           id="${identity.cookieStoreId}-hideorshow-icon"
           class="icon hideorshow-icon"
