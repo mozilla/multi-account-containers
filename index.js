@@ -191,32 +191,32 @@ function openTab(args) {
 
 function handleWebExtensionMessage(message, sender, sendReply) {
   switch (message.method) {
-      case 'query':
+      case 'queryIdentities':
         sendReply(contextualIdentities.query(message.arguments));
         break;
-      case 'hide':
+      case 'hideTab':
         identitiesState[message.cookieStoreId].hiddenTabUrls = message.tabUrlsToSave;
         break;
-      case 'show':
+      case 'showTab':
         sendReply(identitiesState[message.cookieStoreId].hiddenTabUrls);
         identitiesState[message.cookieStoreId].hiddenTabUrls = [];
         break;
-      case 'get':
+      case 'getTab':
         sendReply(contextualIdentities.get(message.arguments));
         break;
-      case 'create':
+      case 'createTab':
         sendReply(contextualIdentities.create(message.arguments));
         break;
-      case 'update':
+      case 'updateTab':
         sendReply(contextualIdentities.update(message.arguments));
         break;
-      case 'remove':
+      case 'removeTab':
         sendReply(contextualIdentities.remove(message.arguments));
         break;
       case 'getIdentitiesState':
         sendReply(identitiesState);
         break;
-      case 'open-containers-preferences':
+      case 'openContainersPreferences':
         tabs.open('about:preferences#containers');
         sendReply({content: 'opened'});
         break;
