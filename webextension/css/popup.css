@@ -8,6 +8,10 @@ table {
   margin-bottom: 0;
 }
 
+.onboarding * {
+  text-align: center;
+}
+
 .popup-bumper {
   width: 100%;
   padding: .5em;
