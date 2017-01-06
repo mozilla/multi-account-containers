@@ -2,14 +2,14 @@
 const CONTAINER_HIDE_SRC = '/img/container-hide.svg';
 const CONTAINER_UNHIDE_SRC = '/img/container-unhide.svg';
 
-function hideContainerTabs(containerId) {
+function hideContainerTabs(userContextId) {
   const tabIdsToRemove = [];
   const tabUrlsToSave = [];
-  const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
+  const hideorshowIcon = document.querySelector(`#uci-${userContextId}-hideorshow-icon`);
 
   browser.runtime.sendMessage({
     method: 'queryTabs',
-    cookieStoreId: containerId
+    userContextId: userContextId
   }).then(tabs=> {
     tabs.forEach(tab=> {
       tabIdsToRemove.push(tab.id);
@@ -17,7 +17,7 @@ function hideContainerTabs(containerId) {
     });
     browser.runtime.sendMessage({
       method: 'hideTab',
-      cookieStoreId: containerId,
+      userContextId: userContextId,
       tabUrlsToSave: tabUrlsToSave
     }).then(()=> {
       browser.runtime.sendMessage({
@@ -29,17 +29,17 @@ function hideContainerTabs(containerId) {
   });
 }
 
-function showContainerTabs(containerId) {
-  const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
+function showContainerTabs(userContextId) {
+  const hideorshowIcon = document.querySelector(`#uci-${userContextId}-hideorshow-icon`);
 
   browser.runtime.sendMessage({
     method: 'showTab',
-    cookieStoreId: containerId
+    userContextId: userContextId
   }).then(hiddenTabUrls=> {
     hiddenTabUrls.forEach(url=> {
       browser.runtime.sendMessage({
         method: 'openTab',
-        cookieStoreId: containerId,
+        userContextId: userContextId,
         url: url
       });
     });
@@ -84,7 +84,7 @@ browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
       hideOrShowIconSrc = CONTAINER_UNHIDE_SRC;
     }
     const identityRow = `
-    <tr data-identity-cookie-store-id="${identity.cookieStoreId}" >
+    <tr data-identity-cookie-store-id="${identity.userContextId}" >
       <td>
         <div class="userContext-icon"
           data-identity-icon="${identity.icon}"
@@ -101,8 +101,8 @@ browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
       <td class="hideorshow" >
         <img
           title="Hide or show ${identity.name} container tabs"
-          data-identity-cookie-store-id="${identity.cookieStoreId}"
-          id="${identity.cookieStoreId}-hideorshow-icon"
+          data-identity-cookie-store-id="${identity.userContextId}"
+          id="uci-${identity.userContextId}-hideorshow-icon"
           class="icon hideorshow-icon"
           src="${hideOrShowIconSrc}"
         />
@@ -117,18 +117,18 @@ browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
 
   rows.forEach(row=> {
     row.addEventListener('click', e=> {
-      const containerId = e.target.parentElement.parentElement.dataset.identityCookieStoreId;
+      const userContextId = e.target.parentElement.parentElement.dataset.identityCookieStoreId;
 
       if (e.target.matches('.hideorshow-icon')) {
         browser.runtime.sendMessage({method: 'getIdentitiesState'}).then(identitiesState=> {
-          if (identitiesState[containerId].hiddenTabUrls.length) {
-            showContainerTabs(containerId);
+          if (identitiesState[userContextId].hiddenTabUrls.length) {
+            showContainerTabs(userContextId);
           } else {
-            hideContainerTabs(containerId);
+            hideContainerTabs(userContextId);
           }
         });
       } else if (e.target.matches('.newtab-icon')) {
-        browser.runtime.sendMessage({method: 'openTab', cookieStoreId: containerId});
+        browser.runtime.sendMessage({method: 'openTab', userContextId: userContextId});
         window.close();
       }
     });
@@ -152,14 +152,14 @@ function moveTabs(sortedTabsArray) {
 
 document.querySelector('#sort-containers-link').addEventListener('click', ()=> {
   browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
-    identities.unshift({cookieStoreId: 'firefox-default'});
+    identities.unshift({userContextId: 0});
 
     browser.runtime.sendMessage({method: 'queryTabs'}).then(tabsArray=> {
       const sortedTabsArray = [];
 
       identities.forEach(identity=> {
         tabsArray.forEach(tab=> {
-          if (tab.cookieStoreId === identity.cookieStoreId) {
+          if (tab.userContextId === identity.userContextId) {
             sortedTabsArray.push(tab.id);
           }
         });
