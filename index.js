@@ -1,5 +1,8 @@
 /* global require */
 const {ContextualIdentityService} = require('resource://gre/modules/ContextualIdentityService.jsm');
+const { Cc, Ci, Cu, Cr } = require('chrome');
+
+Cu.import("resource://gre/modules/Services.jsm");
 
 const tabs = require('sdk/tabs');
 const webExtension = require('sdk/webextension');
@@ -167,6 +170,25 @@ const contextualIdentities = {
   remove: removeContainer
 };
 
+function openTab(args) {
+  let browserWin = Services.wm.getMostRecentWindow('navigator:browser');
+
+  // This should not really happen.
+  if (!browserWin || !browserWin.gBrowser) {
+    return Promise.resolve(false);
+  }
+
+  let userContextId = 0;
+  if ('cookieStoreId' in args) {
+    userContextId = getContainerForCookieStoreId(args.cookieStoreId);
+  }
+
+  let tab = browserWin.gBrowser.addTab(args.url || null,
+                                       { userContextId: userContextId })
+  browserWin.gBrowser.selectedTab = tab;
+  return Promise.resolve(true);
+}
+
 function handleWebExtensionMessage(message, sender, sendReply) {
   switch (message.method) {
       case 'query':
@@ -197,6 +219,9 @@ function handleWebExtensionMessage(message, sender, sendReply) {
       case 'open-containers-preferences':
         tabs.open('about:preferences#containers');
         sendReply({content: 'opened'});
+        break;
+      case 'openTab':
+        sendReply(openTab(message));
         break;
   }
 }

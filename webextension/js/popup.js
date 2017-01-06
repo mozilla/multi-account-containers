@@ -31,9 +31,10 @@ function showContainerTabs(containerId) {
     cookieStoreId: containerId
   }).then(hiddenTabUrls=> {
     hiddenTabUrls.forEach(url=> {
-      browser.tabs.create({
-        url: url,
-        cookieStoreId: containerId
+      browser.runtime.sendMessage({
+        method: 'openTab',
+        cookieStoreId: containerId,
+        url: url
       });
     });
   });
@@ -94,7 +95,7 @@ browser.runtime.sendMessage({method: 'query'}).then(identities=> {
           }
         });
       } else if (e.target.matches('.newtab-icon')) {
-        browser.tabs.create({cookieStoreId: containerId});
+        browser.runtime.sendMessage({method: 'openTab', cookieStoreId: containerId});
         window.close();
       }
     });
