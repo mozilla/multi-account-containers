@@ -13,7 +13,7 @@ function hideContainerTabs(containerId) {
       tabUrlsToSave.push(tab.url);
     });
     browser.runtime.sendMessage({
-      method: 'hide',
+      method: 'hideTab',
       cookieStoreId: containerId,
       tabUrlsToSave: tabUrlsToSave
     }).then(()=> {
@@ -27,7 +27,7 @@ function showContainerTabs(containerId) {
   const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
 
   browser.runtime.sendMessage({
-    method: 'show',
+    method: 'showTab',
     cookieStoreId: containerId
   }).then(hiddenTabUrls=> {
     hiddenTabUrls.forEach(url=> {
@@ -68,7 +68,7 @@ document.querySelector('#onboarding-done-button').addEventListener('click', ()=>
   document.querySelector('#container-panel').classList.remove('hide');
 });
 
-browser.runtime.sendMessage({method: 'query'}).then(identities=> {
+browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
   const identitiesListElement = document.querySelector('.identities-list');
 
   identities.forEach(identity=> {
@@ -130,7 +130,7 @@ browser.runtime.sendMessage({method: 'query'}).then(identities=> {
 });
 
 document.querySelector('#edit-containers-link').addEventListener('click', ()=> {
-  browser.runtime.sendMessage({method: 'open-containers-preferences'}).then(()=> {
+  browser.runtime.sendMessage('openContainersPreferences').then(()=> {
     window.close();
   });
 });
@@ -145,7 +145,7 @@ function moveTabs(sortedTabsArray) {
 }
 
 document.querySelector('#sort-containers-link').addEventListener('click', ()=> {
-  browser.runtime.sendMessage({method: 'query'}).then(identities=> {
+  browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
     identities.unshift({cookieStoreId: 'firefox-default'});
 
     browser.tabs.query({}).then(tabsArray=> {
