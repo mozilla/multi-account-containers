@@ -16,7 +16,7 @@ function hideContainerTabs(userContextId) {
       tabUrlsToSave.push(tab.url);
     });
     browser.runtime.sendMessage({
-      method: 'hideTab',
+      method: 'hideTabs',
       userContextId: userContextId,
       tabUrlsToSave: tabUrlsToSave
     }).then(()=> {
@@ -33,7 +33,7 @@ function showContainerTabs(userContextId) {
   const hideorshowIcon = document.querySelector(`#uci-${userContextId}-hideorshow-icon`);
 
   browser.runtime.sendMessage({
-    method: 'showTab',
+    method: 'showTabs',
     userContextId: userContextId
   }).then(hiddenTabUrls=> {
     hiddenTabUrls.forEach(url=> {
