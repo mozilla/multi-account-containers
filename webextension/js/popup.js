@@ -7,7 +7,10 @@ function hideContainerTabs(containerId) {
   const tabUrlsToSave = [];
   const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
 
-  browser.tabs.query({cookieStoreId: containerId}).then(tabs=> {
+  browser.runtime.sendMessage({
+    method: 'queryTabs',
+    cookieStoreId: containerId
+  }).then(tabs=> {
     tabs.forEach(tab=> {
       tabIdsToRemove.push(tab.id);
       tabUrlsToSave.push(tab.url);
@@ -17,7 +20,10 @@ function hideContainerTabs(containerId) {
       cookieStoreId: containerId,
       tabUrlsToSave: tabUrlsToSave
     }).then(()=> {
-      browser.tabs.remove(tabIdsToRemove);
+      browser.runtime.sendMessage({
+        method: 'removeTabs',
+        tabIds: tabIdsToRemove
+      });
       hideorshowIcon.src = CONTAINER_UNHIDE_SRC;
     });
   });
@@ -122,7 +128,7 @@ document.querySelector('#sort-containers-link').addEventListener('click', ()=> {
   browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
     identities.unshift({cookieStoreId: 'firefox-default'});
 
-    browser.tabs.query({}).then(tabsArray=> {
+    browser.runtime.sendMessage({method: 'queryTabs'}).then(tabsArray=> {
       const sortedTabsArray = [];
 
       identities.forEach(identity=> {
