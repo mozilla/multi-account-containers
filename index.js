@@ -156,10 +156,6 @@ function handleWebExtensionMessage(message, sender, sendReply) {
       case 'getIdentitiesState':
         sendReply(identitiesState);
         break;
-      case 'openContainersPreferences':
-        tabs.open('about:preferences#containers');
-        sendReply({content: 'opened'});
-        break;
       case 'openTab':
         sendReply(openTab(message));
         break;
