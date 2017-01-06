@@ -110,7 +110,10 @@ browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
 
 
 document.querySelector('#edit-containers-link').addEventListener('click', ()=> {
-  browser.runtime.sendMessage('openContainersPreferences').then(()=> {
+  browser.runtime.sendMessage({
+    method: 'openTab',
+    url: "about:preferences#containers"
+  }).then(()=> {
     window.close();
   });
 });
