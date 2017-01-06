@@ -4,6 +4,19 @@ const {ContextualIdentityService} = require('resource://gre/modules/ContextualId
 const tabs = require('sdk/tabs');
 const webExtension = require('sdk/webextension');
 
+/* Let's start enabling Containers */
+var prefs = [
+  [ "privacy.userContext.enabled", true ],
+  [ "privacy.userContext.ui.enabled", true ],
+  [ "privacy.usercontext.about_newtab_segregation.enabled", true ],
+  [ "privacy.usercontext.longPressBehavior", 1 ]
+];
+
+const prefService = require("sdk/preferences/service");
+prefs.forEach((pref) => {
+  prefService.set(pref[0], pref[1]);
+});
+
 const CONTAINER_STORE = 'firefox-container-';
 
 const identitiesState = {
