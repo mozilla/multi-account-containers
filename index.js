@@ -6,6 +6,7 @@ Cu.import("resource://gre/modules/Services.jsm");
 
 const tabs = require('sdk/tabs');
 const webExtension = require('sdk/webextension');
+const { viewFor } = require("sdk/view/core");
 
 /* Let's start enabling Containers */
 var prefs = [
@@ -26,6 +27,10 @@ const identitiesState = {
 };
 
 function getCookieStoreIdForContainer(containerId) {
+  if (containerId == 0) {
+    return 'firefox-default';
+  }
+
   return CONTAINER_STORE + containerId;
 }
 
@@ -189,16 +194,57 @@ function openTab(args) {
   return Promise.resolve(true);
 }
 
+function queryTabs(args) {
+  return new Promise((resolve, reject) => {
+    let tabList = [];
+
+    for (let tab of tabs) {
+      let xulTab = viewFor(tab);
+      let userContextId = xulTab.getAttribute('usercontextid') || 0;
+      let cookieStoreId = getCookieStoreIdForContainer(userContextId);
+
+      if ("cookieStoreId" in args && args.cookieStoreId != cookieStoreId) {
+        continue;
+      }
+
+      tabList.push({
+        id: tab.id,
+        url: tab.url,
+        cookieStoreId: cookieStoreId,
+      });
+    }
+
+    resolve(tabList);
+  });
+}
+
+function removeTabs(ids) {
+  for (let tab of tabs) {
+    if (ids.indexOf(tab.id) != -1) {
+      tab.close();
+    }
+  }
+
+  return Promise.resolve(null);
+}
+
 function handleWebExtensionMessage(message, sender, sendReply) {
   switch (message.method) {
       case 'queryIdentities':
         sendReply(contextualIdentities.query(message.arguments));
+        break;
+      case 'queryTabs':
+        sendReply(queryTabs(message));
         break;
       case 'hideTab':
         identitiesState[message.cookieStoreId].hiddenTabUrls = message.tabUrlsToSave;
         break;
       case 'showTab':
         sendReply(identitiesState[message.cookieStoreId].hiddenTabUrls);
+        identitiesState[message.cookieStoreId].hiddenTabUrls = [];
+        break;
+      case 'removeTabs':
+        sendReply(removeTabs(message.tabIds));
         identitiesState[message.cookieStoreId].hiddenTabUrls = [];
         break;
       case 'getTab':
