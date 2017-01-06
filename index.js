@@ -8,162 +8,157 @@ const tabs = require('sdk/tabs');
 const webExtension = require('sdk/webextension');
 const { viewFor } = require("sdk/view/core");
 
-/* Let's start enabling Containers */
-var prefs = [
-  [ "privacy.userContext.enabled", true ],
-  [ "privacy.userContext.ui.enabled", true ],
-  [ "privacy.usercontext.about_newtab_segregation.enabled", true ],
-  [ "privacy.usercontext.longPressBehavior", 1 ]
-];
+let ContainerService =
+{
+  _identitiesState: {},
 
-const prefService = require("sdk/preferences/service");
-prefs.forEach((pref) => {
-  prefService.set(pref[0], pref[1]);
-});
+  init() {
+    // Enabling preferences
 
-const identitiesState = {
-};
+    let prefs = [
+      [ "privacy.userContext.enabled", true ],
+      [ "privacy.userContext.ui.enabled", true ],
+      [ "privacy.usercontext.about_newtab_segregation.enabled", true ],
+      [ "privacy.usercontext.longPressBehavior", 1 ]
+    ];
 
-function convert(identity) {
-  let hiddenTabUrls = [];
+    const prefService = require("sdk/preferences/service");
+    prefs.forEach((pref) => {
+      prefService.set(pref[0], pref[1]);
+    });
 
-  if (identity.userContextId in identitiesState) {
-    hiddenTabUrls = identitiesState[identity.userContextId].hiddenTabUrls;
-  }
-  const result = {
-    name: ContextualIdentityService.getUserContextLabel(identity.userContextId),
-    icon: identity.icon,
-    color: identity.color,
-    userContextId: identity.userContextId,
-    hiddenTabUrls: hiddenTabUrls
-  };
+    // Message routing
 
-  return result;
-}
+    // only these methods are allowed. We have a 1:1 mapping between messages
+    // and methods. These methods must return a promise.
+    let methods = [
+      'queryTabs',
+      'hideTabs',
+      'showTabs',
+      'removeTabs',
+      'openTab',
+      'queryIdentities',
+      'getIdentitiesState',
+    ];
 
-function queryContainers(details) {
-  const identities = [];
+    webExtension.startup().then(api => {
+      api.browser.runtime.onMessage.addListener((message, sender, sendReply) => {
+        if ("method" in message && methods.indexOf(message.method) != -1) {
+          sendReply(this[message.method](message));
+        }
+      });
+    });
+  },
 
-  ContextualIdentityService.getIdentities().forEach(identity=> {
-    if (details && details.name &&
-        ContextualIdentityService.getUserContextLabel(identity.userContextId) !== details.name) {
-      return;
+  // utility methods
+
+  _convert(identity) {
+    let hiddenTabUrls = [];
+
+    if (identity.userContextId in this._identitiesState) {
+      hiddenTabUrls = this._identitiesState[identity.userContextId].hiddenTabUrls;
     }
 
-    const convertedIdentity = convert(identity);
+    return {
+      name: ContextualIdentityService.getUserContextLabel(identity.userContextId),
+      icon: identity.icon,
+      color: identity.color,
+      userContextId: identity.userContextId,
+      hiddenTabUrls: hiddenTabUrls
+    };
+  },
 
-    identities.push(convertedIdentity);
-    if (!(convertedIdentity.userContextId in identitiesState)) {
-      identitiesState[convertedIdentity.userContextId] = {hiddenTabUrls: []};
-    }
-  });
+  // Tabs management
 
-  return Promise.resolve(identities);
-}
+  queryTabs(args) {
+    return new Promise((resolve, reject) => {
+      let tabList = [];
 
-function removeContainer(userContextId) {
-  if (!userContextId) {
-    return Promise.resolve(null);
-  }
+      for (let tab of tabs) {
+        let xulTab = viewFor(tab);
+        let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
 
-  const identity = ContextualIdentityService.getIdentityFromId(userContextId);
+        if ("userContextId" in args && args.userContextId != userContextId) {
+          continue;
+        }
 
-  if (!identity) {
-    return Promise.resolve(null);
-  }
-
-  // We have to create the identity object before removing it.
-  const convertedIdentity = convert(identity);
-
-  if (!ContextualIdentityService.remove(identity.userContextId)) {
-    return Promise.resolve(null);
-  }
-
-  return Promise.resolve(convertedIdentity);
-}
-
-function openTab(args) {
-  let browserWin = Services.wm.getMostRecentWindow('navigator:browser');
-
-  // This should not really happen.
-  if (!browserWin || !browserWin.gBrowser) {
-    return Promise.resolve(false);
-  }
-
-  let userContextId = 0;
-  if ('userContextId' in args) {
-    userContextId = args.userContextId;
-  }
-
-  let tab = browserWin.gBrowser.addTab(args.url || null,
-                                       { userContextId: userContextId })
-  browserWin.gBrowser.selectedTab = tab;
-  return Promise.resolve(true);
-}
-
-function queryTabs(args) {
-  return new Promise((resolve, reject) => {
-    let tabList = [];
-
-    for (let tab of tabs) {
-      let xulTab = viewFor(tab);
-      let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
-
-      if ("userContextId" in args && args.userContextId != userContextId) {
-        continue;
+        tabList.push({
+          id: tab.id,
+          url: tab.url,
+          userContextId: userContextId,
+        });
       }
 
-      tabList.push({
-        id: tab.id,
-        url: tab.url,
-        userContextId: userContextId,
+      resolve(tabList);
+    });
+  },
+
+  hideTabs(args) {
+    this._identitiesState[args.userContextId].hiddenTabUrls = args.tabUrlsToSave;
+    return Promise.resolve(null);
+  },
+
+  showTabs(args) {
+    return new Promise((resolve, reject) => {
+      let hiddenTabUrls = this._identitiesState[args.userContextId].hiddenTabUrls;
+      this._identitiesState[args.userContextId].hiddenTabUrls = [];
+      resolve(hiddenTabUrls);
+    });
+  },
+
+  removeTabs(args) {
+    return new Promise((resolve, reject) => {
+      for (let tab of tabs) {
+        if (args.tabIds.indexOf(tab.id) != -1) {
+          tab.close();
+        }
+      }
+      resolve(null);
+    });
+  },
+
+  openTab(args) {
+    return new Promise((resolve, reject) => {
+      let browserWin = Services.wm.getMostRecentWindow('navigator:browser');
+
+      // This should not really happen.
+      if (!browserWin || !browserWin.gBrowser) {
+        return Promise.resolve(false);
+      }
+
+      let userContextId = 0;
+      if ('userContextId' in args) {
+        userContextId = args.userContextId;
+      }
+
+      let tab = browserWin.gBrowser.addTab(args.url || null,
+                                           { userContextId: userContextId })
+      browserWin.gBrowser.selectedTab = tab;
+      resolve(true);
+    });
+  },
+
+  // Identities management
+
+  queryIdentities(args) {
+    return new Promise((resolve, reject) => {
+      let identities = [];
+
+      ContextualIdentityService.getIdentities().forEach(identity => {
+        let convertedIdentity = this._convert(identity);
+        identities.push(convertedIdentity);
+        if (!(convertedIdentity.userContextId in this._identitiesState)) {
+          this._identitiesState[convertedIdentity.userContextId] = {hiddenTabUrls: []};
+        }
       });
-    }
 
-    resolve(tabList);
-  });
-}
+      resolve(identities);
+    });
+  },
 
-function removeTabs(ids) {
-  for (let tab of tabs) {
-    if (ids.indexOf(tab.id) != -1) {
-      tab.close();
-    }
-  }
+  getIdentitiesState(args) {
+    return Promise.resolve(this._identitiesState);
+  },
+};
 
-  return Promise.resolve(null);
-}
-
-function handleWebExtensionMessage(message, sender, sendReply) {
-  switch (message.method) {
-      case 'queryIdentities':
-        sendReply(queryContainers(message.arguments));
-        break;
-      case 'queryTabs':
-        sendReply(queryTabs(message));
-        break;
-      case 'hideTabs':
-        identitiesState[message.userContextId].hiddenTabUrls = message.tabUrlsToSave;
-        break;
-      case 'showTabs':
-        sendReply(identitiesState[message.userContextId].hiddenTabUrls);
-        identitiesState[message.userContextId].hiddenTabUrls = [];
-        break;
-      case 'removeTabs':
-        sendReply(removeTabs(message.tabIds));
-        identitiesState[message.userContextId].hiddenTabUrls = [];
-        break;
-      case 'getIdentitiesState':
-        sendReply(identitiesState);
-        break;
-      case 'openTab':
-        sendReply(openTab(message));
-        break;
-  }
-}
-
-webExtension.startup().then(api=> {
-  const {browser} = api;
-
-  browser.runtime.onMessage.addListener(handleWebExtensionMessage);
-});
+ContainerService.init();

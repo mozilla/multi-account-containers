@@ -20,10 +20,11 @@ function hideContainerTabs(userContextId) {
       userContextId: userContextId,
       tabUrlsToSave: tabUrlsToSave
     }).then(()=> {
-      browser.runtime.sendMessage({
+      return browser.runtime.sendMessage({
         method: 'removeTabs',
         tabIds: tabIdsToRemove
       });
+    }).then(() => {
       hideorshowIcon.src = CONTAINER_UNHIDE_SRC;
     });
   });
@@ -43,8 +44,9 @@ function showContainerTabs(userContextId) {
         url: url
       });
     });
+  }).then(() => {
+    hideorshowIcon.src = CONTAINER_HIDE_SRC;
   });
-  hideorshowIcon.src = CONTAINER_HIDE_SRC;
 }
 
 if (localStorage.getItem('onboarded2')) {
@@ -128,8 +130,12 @@ browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
           }
         });
       } else if (e.target.matches('.newtab-icon')) {
-        browser.runtime.sendMessage({method: 'openTab', userContextId: userContextId});
-        window.close();
+        browser.runtime.sendMessage({
+          method: 'openTab',
+          userContextId: userContextId})
+        .then(() => {
+          window.close();
+        });
       }
     });
   });
@@ -154,7 +160,9 @@ function moveTabs(sortedTabsArray) {
 }
 
 document.querySelector('#sort-containers-link').addEventListener('click', ()=> {
-  browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
+  browser.runtime.sendMessage({
+    method: 'queryIdentities'
+  }).then(identities=> {
     identities.unshift({userContextId: 0});
 
     browser.runtime.sendMessage({method: 'queryTabs'}).then(tabsArray=> {
