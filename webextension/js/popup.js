@@ -150,33 +150,6 @@ document.querySelector('#edit-containers-link').addEventListener('click', ()=> {
   });
 });
 
-function moveTabs(sortedTabsArray) {
-  let positionIndex = 0;
-
-  sortedTabsArray.forEach(tabID=> {
-    browser.tabs.move(tabID, {index: positionIndex});
-    positionIndex++;
-  });
-}
-
 document.querySelector('#sort-containers-link').addEventListener('click', ()=> {
-  browser.runtime.sendMessage({
-    method: 'queryIdentities'
-  }).then(identities=> {
-    identities.unshift({userContextId: 0});
-
-    browser.runtime.sendMessage({method: 'queryTabs'}).then(tabsArray=> {
-      const sortedTabsArray = [];
-
-      identities.forEach(identity=> {
-        tabsArray.forEach(tab=> {
-          if (tab.userContextId === identity.userContextId) {
-            sortedTabsArray.push(tab.id);
-          }
-        });
-      });
-
-      moveTabs(sortedTabsArray);
-    });
-  });
+  browser.runtime.sendMessage({ method: 'sortTabs' });
 });

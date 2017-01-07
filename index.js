@@ -2,11 +2,11 @@
 const {ContextualIdentityService} = require('resource://gre/modules/ContextualIdentityService.jsm');
 const { Cc, Ci, Cu, Cr } = require('chrome');
 
-Cu.import("resource://gre/modules/Services.jsm");
-
 const tabs = require('sdk/tabs');
 const webExtension = require('sdk/webextension');
 const { viewFor } = require("sdk/view/core");
+var windowUtils = require('sdk/window/utils');
+var tabsUtils = require('sdk/tabs/utils');
 
 let ContainerService =
 {
@@ -36,6 +36,7 @@ let ContainerService =
       'hideTabs',
       'showTabs',
       'removeTabs',
+      'sortTabs',
       'openTab',
       'queryIdentities',
       'getIdentitiesState',
@@ -117,9 +118,43 @@ let ContainerService =
     });
   },
 
+  sortTabs(args) {
+    return new Promise((resolve, reject) => {
+      let windows = windowUtils.windows('navigator:browser', {includePrivate:false});
+      for (let window of windows) {
+        let tabs = tabsUtils.getTabs(window);
+
+        // Let's collect UCIs for each tab of this window.
+        let map = new Map;
+        for (let tab of tabs) {
+          let xulTab = viewFor(tab);
+          let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
+          if (!map.has(userContextId)) {
+            map.set(userContextId, []);
+          }
+          map.get(userContextId).push(xulTab);
+        }
+
+        // Let's sort the map.
+        let sortMap = new Map([...map.entries()].sort((a, b) => a[0] > b[0]));
+
+        let pos = 0;
+
+        // Let's move tabs.
+        for (let [userContextId, tabs] of sortMap) {
+          for (let tab of tabs) {
+            window.gBrowser.moveTabTo(tab, pos++);
+          }
+        }
+      }
+
+      resolve(null);
+    });
+  },
+
   openTab(args) {
     return new Promise((resolve, reject) => {
-      let browserWin = Services.wm.getMostRecentWindow('navigator:browser');
+      let browserWin = windowUtils.getMostRecentBrowserWindow();
 
       // This should not really happen.
       if (!browserWin || !browserWin.gBrowser) {
