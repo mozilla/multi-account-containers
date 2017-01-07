@@ -151,5 +151,9 @@ document.querySelector('#edit-containers-link').addEventListener('click', ()=> {
 });
 
 document.querySelector('#sort-containers-link').addEventListener('click', ()=> {
-  browser.runtime.sendMessage({ method: 'sortTabs' });
+  browser.runtime.sendMessage({
+    method: 'sortTabs'
+  }).then(()=> {
+    window.close();
+  });
 });
