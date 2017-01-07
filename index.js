@@ -124,21 +124,26 @@ let ContainerService =
       for (let window of windows) {
         let tabs = tabsUtils.getTabs(window);
 
-        // Let's collect UCIs for each tab of this window.
+        let pos = 0;
+
+        // Let's collect UCIs/tabs for this window.
         let map = new Map;
         for (let tab of tabs) {
-          let xulTab = viewFor(tab);
-          let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
+          if (tabsUtils.isPinned(tab)) {
+            // pinned tabs must be consider as taken positions.
+            ++pos;
+            continue;
+          }
+
+          let userContextId = parseInt(tab.getAttribute('usercontextid') || 0, 10);
           if (!map.has(userContextId)) {
             map.set(userContextId, []);
           }
-          map.get(userContextId).push(xulTab);
+          map.get(userContextId).push(tab);
         }
 
         // Let's sort the map.
         let sortMap = new Map([...map.entries()].sort((a, b) => a[0] > b[0]));
-
-        let pos = 0;
 
         // Let's move tabs.
         for (let [userContextId, tabs] of sortMap) {
