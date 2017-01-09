@@ -98,21 +98,21 @@ table.unstriped tbody tr {
 }
 
 [data-identity-icon="fingerprint"] {
-  --identity-icon: url("chrome://browser/content/usercontext.svg#fingerprint");
+  --identity-icon: url("/img/usercontext.svg#fingerprint");
 }
 
 [data-identity-icon="briefcase"] {
-  --identity-icon: url("chrome://browser/content/usercontext.svg#briefcase");
+  --identity-icon: url("/img/usercontext.svg#briefcase");
 }
 
 [data-identity-icon="dollar"] {
-  --identity-icon: url("chrome://browser/content/usercontext.svg#dollar");
+  --identity-icon: url("/img/usercontext.svg#dollar");
 }
 
 [data-identity-icon="cart"] {
-  --identity-icon: url("chrome://browser/content/usercontext.svg#cart");
+  --identity-icon: url("/img/usercontext.svg#cart");
 }
 
 [data-identity-icon="circle"] {
-  --identity-icon: url("chrome://browser/content/usercontext.svg#circle");
+  --identity-icon: url("/img/usercontext.svg#circle");
 }

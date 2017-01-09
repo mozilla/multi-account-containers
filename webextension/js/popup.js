@@ -26,6 +26,45 @@ function showOrHideContainerTabs(userContextId, hasHiddenTabs) {
   });
 }
 
+// In FF 50-51, the icon is the full path, in 52 and following releases, we
+// have IDs to be used with a svg file. In this function we map URLs to svg IDs.
+function getIconAndColorForIdentity(identity) {
+  let image, color;
+
+  if (identity.icon == "fingerprint" ||
+      identity.icon == "chrome://browser/skin/usercontext/personal.svg") {
+    image = "fingerprint";
+  } else if (identity.icon == "briefcase" ||
+           identity.icon == "chrome://browser/skin/usercontext/work.svg") {
+    image = "briefcase";
+  } else if (identity.icon == "dollar" ||
+           identity.icon == "chrome://browser/skin/usercontext/banking.svg") {
+    image = "dollar";
+  } else if (identity.icon == "cart" ||
+           identity.icon == "chrome://browser/skin/usercontext/shopping.svg") {
+    image = "cart";
+  } else {
+    image = "circle";
+  }
+
+  if (identity.color == "#00a7e0") {
+    color = "blue";
+  } else if (identity.color == "#f89c24") {
+    color = "orange";
+  } else if (identity.color == "#7dc14c") {
+    color = "green";
+  } else if (identity.color == "#ee5195") {
+    color = "pink";
+  } else if (["blue", "turquoise", "green", "yellow", "orange", "red",
+              "pink", "purple"].indexOf(identity.color) != -1) {
+    color = identity.color;
+  } else {
+    color = "";
+  }
+
+  return { image, color };
+}
+
 if (localStorage.getItem('onboarded2')) {
   for (const element of document.querySelectorAll('.onboarding')) {
     element.classList.add('hide');
@@ -62,12 +101,15 @@ browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
     if (identity.hasHiddenTabs) {
       hideOrShowIconSrc = CONTAINER_UNHIDE_SRC;
     }
+
+    let {image, color} = getIconAndColorForIdentity(identity);
+
     const identityRow = `
     <tr data-identity-cookie-store-id="${identity.userContextId}" >
       <td>
         <div class="userContext-icon"
-          data-identity-icon="${identity.icon}"
-          data-identity-color="${identity.color}">
+          data-identity-icon="${image}"
+          data-identity-color="${color}">
         </div>
       </td>
       <td>${identity.name}</td>
