@@ -32,15 +32,20 @@ let ContainerService =
     // only these methods are allowed. We have a 1:1 mapping between messages
     // and methods. These methods must return a promise.
     let methods = [
-      'queryTabs',
       'hideTabs',
       'showTabs',
-      'removeTabs',
       'sortTabs',
       'openTab',
       'queryIdentities',
-      'getIdentitiesState',
+      'getIdentity',
     ];
+
+    // Map of identities.
+    ContextualIdentityService.getIdentities().forEach(identity => {
+      this._identitiesState[identity.userContextId] = {hiddenTabUrls: []};
+    });
+
+    // WebExtension startup
 
     webExtension.startup().then(api => {
       api.browser.runtime.onMessage.addListener((message, sender, sendReply) => {
@@ -54,27 +59,19 @@ let ContainerService =
   // utility methods
 
   _convert(identity) {
-    let hiddenTabUrls = [];
-
-    if (identity.userContextId in this._identitiesState) {
-      hiddenTabUrls = this._identitiesState[identity.userContextId].hiddenTabUrls;
-    }
-
     return {
       name: ContextualIdentityService.getUserContextLabel(identity.userContextId),
       icon: identity.icon,
       color: identity.color,
       userContextId: identity.userContextId,
-      hiddenTabUrls: hiddenTabUrls
+      hasHiddenTabs: !!this._identitiesState[identity.userContextId].hiddenTabUrls.length,
     };
   },
 
   // Tabs management
 
-  queryTabs(args) {
+  hideTabs(args) {
     return new Promise((resolve, reject) => {
-      let tabList = [];
-
       for (let tab of tabs) {
         let xulTab = viewFor(tab);
         let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
@@ -83,39 +80,24 @@ let ContainerService =
           continue;
         }
 
-        tabList.push({
-          id: tab.id,
-          url: tab.url,
-          userContextId: userContextId,
-        });
+        this._identitiesState[args.userContextId].hiddenTabUrls.push(tab.url);
+        tab.close();
       }
 
-      resolve(tabList);
+      resolve(null);
     });
-  },
-
-  hideTabs(args) {
-    this._identitiesState[args.userContextId].hiddenTabUrls = args.tabUrlsToSave;
-    return Promise.resolve(null);
   },
 
   showTabs(args) {
-    return new Promise((resolve, reject) => {
-      let hiddenTabUrls = this._identitiesState[args.userContextId].hiddenTabUrls;
-      this._identitiesState[args.userContextId].hiddenTabUrls = [];
-      resolve(hiddenTabUrls);
-    });
-  },
+    let promises = [];
 
-  removeTabs(args) {
-    return new Promise((resolve, reject) => {
-      for (let tab of tabs) {
-        if (args.tabIds.indexOf(tab.id) != -1) {
-          tab.close();
-        }
-      }
-      resolve(null);
-    });
+    for (let url of this._identitiesState[args.userContextId].hiddenTabUrls) {
+      promises.push(this.openTab({ userContextId: args.userContextId, url }));
+    }
+
+    this._identitiesState[args.userContextId].hiddenTabUrls = [];
+
+    return Promise.all(promises);
   },
 
   sortTabs(args) {
@@ -187,17 +169,15 @@ let ContainerService =
       ContextualIdentityService.getIdentities().forEach(identity => {
         let convertedIdentity = this._convert(identity);
         identities.push(convertedIdentity);
-        if (!(convertedIdentity.userContextId in this._identitiesState)) {
-          this._identitiesState[convertedIdentity.userContextId] = {hiddenTabUrls: []};
-        }
       });
 
       resolve(identities);
     });
   },
 
-  getIdentitiesState(args) {
-    return Promise.resolve(this._identitiesState);
+  getIdentity(args) {
+    let identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
+    return Promise.resolve(identity ? this._convert(identity) : null);
   },
 };
 

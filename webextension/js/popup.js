@@ -2,51 +2,15 @@
 const CONTAINER_HIDE_SRC = '/img/container-hide.svg';
 const CONTAINER_UNHIDE_SRC = '/img/container-unhide.svg';
 
-function hideContainerTabs(userContextId) {
-  const tabIdsToRemove = [];
-  const tabUrlsToSave = [];
-  const hideorshowIcon = document.querySelector(`#uci-${userContextId}-hideorshow-icon`);
-
-  browser.runtime.sendMessage({
-    method: 'queryTabs',
-    userContextId: userContextId
-  }).then(tabs=> {
-    tabs.forEach(tab=> {
-      tabIdsToRemove.push(tab.id);
-      tabUrlsToSave.push(tab.url);
-    });
-    browser.runtime.sendMessage({
-      method: 'hideTabs',
-      userContextId: userContextId,
-      tabUrlsToSave: tabUrlsToSave
-    }).then(()=> {
-      return browser.runtime.sendMessage({
-        method: 'removeTabs',
-        tabIds: tabIdsToRemove
-      });
-    }).then(() => {
-      hideorshowIcon.src = CONTAINER_UNHIDE_SRC;
-    });
-  });
-}
-
-function showContainerTabs(userContextId) {
+function showOrHideContainerTabs(userContextId, hasHiddenTabs) {
   return new Promise((resolve, reject) => {
     const hideorshowIcon = document.querySelector(`#uci-${userContextId}-hideorshow-icon`);
 
     browser.runtime.sendMessage({
-      method: 'showTabs',
+      method: hasHiddenTabs ? 'showTabs' : 'hideTabs',
       userContextId: userContextId
-    }).then(hiddenTabUrls=> {
-      hiddenTabUrls.forEach(url=> {
-        browser.runtime.sendMessage({
-          method: 'openTab',
-          userContextId: userContextId,
-          url: url
-        });
-      });
     }).then(() => {
-      hideorshowIcon.src = CONTAINER_HIDE_SRC;
+      hideorshowIcon.src = hasHiddenTabs ? CONTAINER_HIDE_SRC : CONTAINER_UNHIDE_SRC;
     }).then(resolve);
   });
 }
@@ -84,7 +48,7 @@ browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
   identities.forEach(identity=> {
     let hideOrShowIconSrc = CONTAINER_HIDE_SRC;
 
-    if (identity.hiddenTabUrls.length) {
+    if (identity.hasHiddenTabs) {
       hideOrShowIconSrc = CONTAINER_UNHIDE_SRC;
     }
     const identityRow = `
@@ -124,15 +88,14 @@ browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
       const userContextId = e.target.parentElement.parentElement.dataset.identityCookieStoreId;
 
       if (e.target.matches('.hideorshow-icon')) {
-        browser.runtime.sendMessage({method: 'getIdentitiesState'}).then(identitiesState=> {
-          if (identitiesState[userContextId].hiddenTabUrls.length) {
-            showContainerTabs(userContextId);
-          } else {
-            hideContainerTabs(userContextId);
-          }
+        browser.runtime.sendMessage({
+          method: 'getIdentity',
+          userContextId
+        }).then(identity=> {
+          showOrHideContainerTabs(userContextId, identity.hasHiddenTabs);
         });
       } else if (e.target.matches('.newtab-icon')) {
-        showContainerTabs(userContextId).then(() => {
+        showOrHideContainerTabs(userContextId, true).then(() => {
           browser.runtime.sendMessage({
             method: 'openTab',
             userContextId: userContextId})
