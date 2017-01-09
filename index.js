@@ -1,12 +1,16 @@
-/* global require */
-const {ContextualIdentityService} = require('resource://gre/modules/ContextualIdentityService.jsm');
-const { Cc, Ci, Cu, Cr } = require('chrome');
+const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 
+/* global require */
+
+const { Cc, Ci, Cu, Cr } = require('chrome');
+const {ContextualIdentityService} = require('resource://gre/modules/ContextualIdentityService.jsm');
+const self = require('sdk/self');
 const tabs = require('sdk/tabs');
-const webExtension = require('sdk/webextension');
+const tabsUtils = require('sdk/tabs/utils');
 const { viewFor } = require("sdk/view/core");
-var windowUtils = require('sdk/window/utils');
-var tabsUtils = require('sdk/tabs/utils');
+const webExtension = require('sdk/webextension');
+const windows = require("sdk/windows");
+const windowUtils = require('sdk/window/utils');
 
 let ContainerService =
 {
@@ -73,6 +77,16 @@ let ContainerService =
       }
     });
 
+    // Modify CSS and other stuff for each window.
+
+    for (let window of windows.browserWindows) {
+      this.configureWindow(viewFor(window));
+    }
+
+    windows.browserWindows.on("open", window => {
+      this.configureWindow(viewFor(window));
+    });
+
     // WebExtension startup
 
     webExtension.startup().then(api => {
@@ -87,10 +101,46 @@ let ContainerService =
   // utility methods
 
   _convert(identity) {
+    // In FF 50-51, the icon is the full path, in 52 and following
+    // releases, we have IDs to be used with a svg file. In this function
+    // we map URLs to svg IDs.
+    let image, color;
+
+    if (identity.icon == "fingerprint" ||
+        identity.icon == "chrome://browser/skin/usercontext/personal.svg") {
+      image = "fingerprint";
+    } else if (identity.icon == "briefcase" ||
+             identity.icon == "chrome://browser/skin/usercontext/work.svg") {
+      image = "briefcase";
+    } else if (identity.icon == "dollar" ||
+             identity.icon == "chrome://browser/skin/usercontext/banking.svg") {
+      image = "dollar";
+    } else if (identity.icon == "cart" ||
+             identity.icon == "chrome://browser/skin/usercontext/shopping.svg") {
+      image = "cart";
+    } else {
+      image = "circle";
+    }
+
+    if (identity.color == "#00a7e0") {
+      color = "blue";
+    } else if (identity.color == "#f89c24") {
+      color = "orange";
+    } else if (identity.color == "#7dc14c") {
+      color = "green";
+    } else if (identity.color == "#ee5195") {
+      color = "pink";
+    } else if (["blue", "turquoise", "green", "yellow", "orange", "red",
+                "pink", "purple"].indexOf(identity.color) != -1) {
+      color = identity.color;
+    } else {
+      color = "";
+    }
+
     return {
       name: ContextualIdentityService.getUserContextLabel(identity.userContextId),
-      icon: identity.icon,
-      color: identity.color,
+      image,
+      color,
       userContextId: identity.userContextId,
       hasHiddenTabs: !!this._identitiesState[identity.userContextId].hiddenTabUrls.length,
       hasOpenTabs: !!this._identitiesState[identity.userContextId].openTabs,
@@ -131,8 +181,10 @@ let ContainerService =
 
   sortTabs(args) {
     return new Promise((resolve, reject) => {
-      let windows = windowUtils.windows('navigator:browser', {includePrivate:false});
-      for (let window of windows) {
+      for (let window of windows.browserWindows) {
+        // From model to XUL window.
+        window = viewFor(window);
+
         let tabs = tabsUtils.getTabs(window);
 
         let pos = 0;
@@ -207,6 +259,42 @@ let ContainerService =
   getIdentity(args) {
     let identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
     return Promise.resolve(identity ? this._convert(identity) : null);
+  },
+
+  // Styling the window
+
+  configureWindow(window) {
+    var tabsElement = window.document.getElementById('tabbrowser-tabs');
+    var button = window.document.getAnonymousElementByAttribute(tabsElement, 'anonid', 'tabs-newtab-button')
+
+    while (button.firstChild) {
+      button.removeChild(button.firstChild);
+    }
+
+    button.setAttribute('type', 'menu');
+    let popup = window.document.createElementNS(XUL_NS, 'menupopup');
+
+    popup.setAttribute('anonid', 'newtab-popup');
+    popup.className = 'new-tab-popup';
+    popup.setAttribute('position', 'after_end');
+
+    ContextualIdentityService.getIdentities().forEach(identity => {
+      identity = this._convert(identity);
+
+      var menuItem = window.document.createElementNS(XUL_NS, 'menuitem');
+      menuItem.setAttribute('class', 'menuitem-iconic');
+      menuItem.setAttribute('label', identity.name);
+      menuItem.setAttribute('image', self.data.url('usercontext.svg') + '#' + identity.image);
+
+      menuItem.addEventListener('command', (event) => {
+        this.openTab({userContextId: identity.userContextId});
+        event.stopPropagation();
+      });
+
+      popup.appendChild(menuItem);
+    });
+
+    button.appendChild(popup);
   },
 };
 
