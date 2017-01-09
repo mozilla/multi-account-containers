@@ -31,21 +31,23 @@ function hideContainerTabs(userContextId) {
 }
 
 function showContainerTabs(userContextId) {
-  const hideorshowIcon = document.querySelector(`#uci-${userContextId}-hideorshow-icon`);
+  return new Promise((resolve, reject) => {
+    const hideorshowIcon = document.querySelector(`#uci-${userContextId}-hideorshow-icon`);
 
-  browser.runtime.sendMessage({
-    method: 'showTabs',
-    userContextId: userContextId
-  }).then(hiddenTabUrls=> {
-    hiddenTabUrls.forEach(url=> {
-      browser.runtime.sendMessage({
-        method: 'openTab',
-        userContextId: userContextId,
-        url: url
+    browser.runtime.sendMessage({
+      method: 'showTabs',
+      userContextId: userContextId
+    }).then(hiddenTabUrls=> {
+      hiddenTabUrls.forEach(url=> {
+        browser.runtime.sendMessage({
+          method: 'openTab',
+          userContextId: userContextId,
+          url: url
+        });
       });
-    });
-  }).then(() => {
-    hideorshowIcon.src = CONTAINER_HIDE_SRC;
+    }).then(() => {
+      hideorshowIcon.src = CONTAINER_HIDE_SRC;
+    }).then(resolve);
   });
 }
 
@@ -130,11 +132,13 @@ browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
           }
         });
       } else if (e.target.matches('.newtab-icon')) {
-        browser.runtime.sendMessage({
-          method: 'openTab',
-          userContextId: userContextId})
-        .then(() => {
-          window.close();
+        showContainerTabs(userContextId).then(() => {
+          browser.runtime.sendMessage({
+            method: 'openTab',
+            userContextId: userContextId})
+          .then(() => {
+            window.close();
+          });
         });
       }
     });
