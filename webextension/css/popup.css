@@ -8,6 +8,10 @@ table {
   margin-bottom: 0;
 }
 
+.onboarding {
+  margin-top: 16px;
+}
+
 .onboarding * {
   text-align: center;
 }
