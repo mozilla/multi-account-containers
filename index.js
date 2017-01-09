@@ -42,7 +42,35 @@ let ContainerService =
 
     // Map of identities.
     ContextualIdentityService.getIdentities().forEach(identity => {
-      this._identitiesState[identity.userContextId] = {hiddenTabUrls: []};
+      this._identitiesState[identity.userContextId] = {
+        hiddenTabUrls: [],
+        openTabs: 0,
+      };
+    });
+
+    // It can happen that this jsm is loaded after the opening a container tab.
+    for (let tab of tabs) {
+      let xulTab = viewFor(tab);
+      let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
+      if (userContextId) {
+        ++this._identitiesState[userContextId].openTabs;
+      }
+    }
+
+    tabs.on("open", tab => {
+      let xulTab = viewFor(tab);
+      let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
+      if (userContextId) {
+        ++this._identitiesState[userContextId].openTabs;
+      }
+    });
+
+    tabs.on("close", tab => {
+      let xulTab = viewFor(tab);
+      let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
+      if (userContextId && this._identitiesState[userContextId].openTabs) {
+        --this._identitiesState[userContextId].openTabs;
+      }
     });
 
     // WebExtension startup
@@ -65,6 +93,7 @@ let ContainerService =
       color: identity.color,
       userContextId: identity.userContextId,
       hasHiddenTabs: !!this._identitiesState[identity.userContextId].hiddenTabUrls.length,
+      hasOpenTabs: !!this._identitiesState[identity.userContextId].openTabs,
     };
   },
 

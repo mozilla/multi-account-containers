@@ -10,6 +10,17 @@ function showOrHideContainerTabs(userContextId, hasHiddenTabs) {
       method: hasHiddenTabs ? 'showTabs' : 'hideTabs',
       userContextId: userContextId
     }).then(() => {
+      return browser.runtime.sendMessage({
+        method: 'getIdentity',
+        userContextId: userContextId
+      });
+    }).then((identity) => {
+      if (!identity.hasHiddenTabs && !identity.hasOpenTabs) {
+        hideorshowIcon.style.display = "none";
+      } else {
+        hideorshowIcon.style.display = "";
+      }
+
       hideorshowIcon.src = hasHiddenTabs ? CONTAINER_HIDE_SRC : CONTAINER_UNHIDE_SRC;
     }).then(resolve);
   });
@@ -79,6 +90,12 @@ browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
     </tr>`;
 
     identitiesListElement.innerHTML += identityRow;
+
+    // No tabs, no icon.
+    if (!identity.hasHiddenTabs && !identity.hasOpenTabs) {
+      const hideorshowIcon = document.querySelector(`#uci-${identity.userContextId}-hideorshow-icon`);
+      hideorshowIcon.style.display = "none";
+    }
   });
 
   const rows = identitiesListElement.querySelectorAll('tr');
