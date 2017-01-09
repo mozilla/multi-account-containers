@@ -2,42 +2,67 @@
 const CONTAINER_HIDE_SRC = '/img/container-hide.svg';
 const CONTAINER_UNHIDE_SRC = '/img/container-unhide.svg';
 
-function hideContainerTabs(containerId) {
-  const tabIdsToRemove = [];
-  const tabUrlsToSave = [];
-  const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
+function showOrHideContainerTabs(userContextId, hasHiddenTabs) {
+  return new Promise((resolve, reject) => {
+    const hideorshowIcon = document.querySelector(`#uci-${userContextId}-hideorshow-icon`);
 
-  browser.tabs.query({cookieStoreId: containerId}).then(tabs=> {
-    tabs.forEach(tab=> {
-      tabIdsToRemove.push(tab.id);
-      tabUrlsToSave.push(tab.url);
-    });
     browser.runtime.sendMessage({
-      method: 'hide',
-      cookieStoreId: containerId,
-      tabUrlsToSave: tabUrlsToSave
-    }).then(()=> {
-      browser.tabs.remove(tabIdsToRemove);
-      hideorshowIcon.src = CONTAINER_UNHIDE_SRC;
-    });
+      method: hasHiddenTabs ? 'showTabs' : 'hideTabs',
+      userContextId: userContextId
+    }).then(() => {
+      return browser.runtime.sendMessage({
+        method: 'getIdentity',
+        userContextId: userContextId
+      });
+    }).then((identity) => {
+      if (!identity.hasHiddenTabs && !identity.hasOpenTabs) {
+        hideorshowIcon.style.display = "none";
+      } else {
+        hideorshowIcon.style.display = "";
+      }
+
+      hideorshowIcon.src = hasHiddenTabs ? CONTAINER_HIDE_SRC : CONTAINER_UNHIDE_SRC;
+    }).then(resolve);
   });
 }
 
-function showContainerTabs(containerId) {
-  const hideorshowIcon = document.querySelector(`#${containerId}-hideorshow-icon`);
+// In FF 50-51, the icon is the full path, in 52 and following releases, we
+// have IDs to be used with a svg file. In this function we map URLs to svg IDs.
+function getIconAndColorForIdentity(identity) {
+  let image, color;
 
-  browser.runtime.sendMessage({
-    method: 'show',
-    cookieStoreId: containerId
-  }).then(hiddenTabUrls=> {
-    hiddenTabUrls.forEach(url=> {
-      browser.tabs.create({
-        url: url,
-        cookieStoreId: containerId
-      });
-    });
-  });
-  hideorshowIcon.src = CONTAINER_HIDE_SRC;
+  if (identity.icon == "fingerprint" ||
+      identity.icon == "chrome://browser/skin/usercontext/personal.svg") {
+    image = "fingerprint";
+  } else if (identity.icon == "briefcase" ||
+           identity.icon == "chrome://browser/skin/usercontext/work.svg") {
+    image = "briefcase";
+  } else if (identity.icon == "dollar" ||
+           identity.icon == "chrome://browser/skin/usercontext/banking.svg") {
+    image = "dollar";
+  } else if (identity.icon == "cart" ||
+           identity.icon == "chrome://browser/skin/usercontext/shopping.svg") {
+    image = "cart";
+  } else {
+    image = "circle";
+  }
+
+  if (identity.color == "#00a7e0") {
+    color = "blue";
+  } else if (identity.color == "#f89c24") {
+    color = "orange";
+  } else if (identity.color == "#7dc14c") {
+    color = "green";
+  } else if (identity.color == "#ee5195") {
+    color = "pink";
+  } else if (["blue", "turquoise", "green", "yellow", "orange", "red",
+              "pink", "purple"].indexOf(identity.color) != -1) {
+    color = identity.color;
+  } else {
+    color = "";
+  }
+
+  return { image, color };
 }
 
 if (localStorage.getItem('onboarded2')) {
@@ -67,21 +92,24 @@ document.querySelector('#onboarding-done-button').addEventListener('click', ()=>
   document.querySelector('#container-panel').classList.remove('hide');
 });
 
-browser.runtime.sendMessage({method: 'query'}).then(identities=> {
+browser.runtime.sendMessage({method: 'queryIdentities'}).then(identities=> {
   const identitiesListElement = document.querySelector('.identities-list');
 
   identities.forEach(identity=> {
     let hideOrShowIconSrc = CONTAINER_HIDE_SRC;
 
-    if (identity.hiddenTabUrls.length) {
+    if (identity.hasHiddenTabs) {
       hideOrShowIconSrc = CONTAINER_UNHIDE_SRC;
     }
+
+    let {image, color} = getIconAndColorForIdentity(identity);
+
     const identityRow = `
-    <tr data-identity-cookie-store-id="${identity.cookieStoreId}" >
+    <tr data-identity-cookie-store-id="${identity.userContextId}" >
       <td>
         <div class="userContext-icon"
-          data-identity-icon="${identity.icon}"
-          data-identity-color="${identity.color}">
+          data-identity-icon="${image}"
+          data-identity-color="${color}">
         </div>
       </td>
       <td>${identity.name}</td>
@@ -94,8 +122,8 @@ browser.runtime.sendMessage({method: 'query'}).then(identities=> {
       <td class="hideorshow" >
         <img
           title="Hide or show ${identity.name} container tabs"
-          data-identity-cookie-store-id="${identity.cookieStoreId}"
-          id="${identity.cookieStoreId}-hideorshow-icon"
+          data-identity-cookie-store-id="${identity.userContextId}"
+          id="uci-${identity.userContextId}-hideorshow-icon"
           class="icon hideorshow-icon"
           src="${hideOrShowIconSrc}"
         />
@@ -104,61 +132,54 @@ browser.runtime.sendMessage({method: 'query'}).then(identities=> {
     </tr>`;
 
     identitiesListElement.innerHTML += identityRow;
+
+    // No tabs, no icon.
+    if (!identity.hasHiddenTabs && !identity.hasOpenTabs) {
+      const hideorshowIcon = document.querySelector(`#uci-${identity.userContextId}-hideorshow-icon`);
+      hideorshowIcon.style.display = "none";
+    }
   });
 
   const rows = identitiesListElement.querySelectorAll('tr');
 
   rows.forEach(row=> {
     row.addEventListener('click', e=> {
-      const containerId = e.target.parentElement.parentElement.dataset.identityCookieStoreId;
+      const userContextId = e.target.parentElement.parentElement.dataset.identityCookieStoreId;
 
       if (e.target.matches('.hideorshow-icon')) {
-        browser.runtime.sendMessage({method: 'getIdentitiesState'}).then(identitiesState=> {
-          if (identitiesState[containerId].hiddenTabUrls.length) {
-            showContainerTabs(containerId);
-          } else {
-            hideContainerTabs(containerId);
-          }
+        browser.runtime.sendMessage({
+          method: 'getIdentity',
+          userContextId
+        }).then(identity=> {
+          showOrHideContainerTabs(userContextId, identity.hasHiddenTabs);
         });
       } else if (e.target.matches('.newtab-icon')) {
-        browser.tabs.create({cookieStoreId: containerId});
-        window.close();
+        showOrHideContainerTabs(userContextId, true).then(() => {
+          browser.runtime.sendMessage({
+            method: 'openTab',
+            userContextId: userContextId})
+          .then(() => {
+            window.close();
+          });
+        });
       }
     });
   });
 });
 
 document.querySelector('#edit-containers-link').addEventListener('click', ()=> {
-  browser.runtime.sendMessage({method: 'open-containers-preferences'}).then(()=> {
+  browser.runtime.sendMessage({
+    method: 'openTab',
+    url: "about:preferences#containers"
+  }).then(()=> {
     window.close();
   });
 });
 
-function moveTabs(sortedTabsArray) {
-  let positionIndex = 0;
-
-  sortedTabsArray.forEach(tabID=> {
-    browser.tabs.move(tabID, {index: positionIndex});
-    positionIndex++;
-  });
-}
-
 document.querySelector('#sort-containers-link').addEventListener('click', ()=> {
-  browser.runtime.sendMessage({method: 'query'}).then(identities=> {
-    identities.unshift({cookieStoreId: 'firefox-default'});
-
-    browser.tabs.query({}).then(tabsArray=> {
-      const sortedTabsArray = [];
-
-      identities.forEach(identity=> {
-        tabsArray.forEach(tab=> {
-          if (tab.cookieStoreId === identity.cookieStoreId) {
-            sortedTabsArray.push(tab.id);
-          }
-        });
-      });
-
-      moveTabs(sortedTabsArray);
-    });
+  browser.runtime.sendMessage({
+    method: 'sortTabs'
+  }).then(()=> {
+    window.close();
   });
 });

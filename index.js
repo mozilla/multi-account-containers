@@ -1,208 +1,213 @@
 /* global require */
 const {ContextualIdentityService} = require('resource://gre/modules/ContextualIdentityService.jsm');
+const { Cc, Ci, Cu, Cr } = require('chrome');
 
 const tabs = require('sdk/tabs');
 const webExtension = require('sdk/webextension');
+const { viewFor } = require("sdk/view/core");
+var windowUtils = require('sdk/window/utils');
+var tabsUtils = require('sdk/tabs/utils');
 
-/* Let's start enabling Containers */
-var prefs = [
-  [ "privacy.userContext.enabled", true ],
-  [ "privacy.userContext.ui.enabled", true ],
-  [ "privacy.usercontext.about_newtab_segregation.enabled", true ],
-  [ "privacy.usercontext.longPressBehavior", 1 ]
-];
+let ContainerService =
+{
+  _identitiesState: {},
 
-const prefService = require("sdk/preferences/service");
-prefs.forEach((pref) => {
-  prefService.set(pref[0], pref[1]);
-});
+  init() {
+    // Enabling preferences
 
-const CONTAINER_STORE = 'firefox-container-';
+    let prefs = [
+      [ "privacy.userContext.enabled", true ],
+      [ "privacy.userContext.ui.enabled", true ],
+      [ "privacy.usercontext.about_newtab_segregation.enabled", true ],
+      [ "privacy.usercontext.longPressBehavior", 1 ]
+    ];
 
-const identitiesState = {
-};
+    const prefService = require("sdk/preferences/service");
+    prefs.forEach((pref) => {
+      prefService.set(pref[0], pref[1]);
+    });
 
-function getCookieStoreIdForContainer(containerId) {
-  return CONTAINER_STORE + containerId;
-}
+    // Message routing
 
-function convert(identity) {
-  const cookieStoreId = getCookieStoreIdForContainer(identity.userContextId);
-  let hiddenTabUrls = [];
+    // only these methods are allowed. We have a 1:1 mapping between messages
+    // and methods. These methods must return a promise.
+    let methods = [
+      'hideTabs',
+      'showTabs',
+      'sortTabs',
+      'openTab',
+      'queryIdentities',
+      'getIdentity',
+    ];
 
-  if (cookieStoreId in identitiesState) {
-    hiddenTabUrls = identitiesState[cookieStoreId].hiddenTabUrls;
-  }
-  const result = {
-    name: ContextualIdentityService.getUserContextLabel(identity.userContextId),
-    icon: identity.icon,
-    color: identity.color,
-    cookieStoreId: cookieStoreId,
-    hiddenTabUrls: hiddenTabUrls
-  };
+    // Map of identities.
+    ContextualIdentityService.getIdentities().forEach(identity => {
+      this._identitiesState[identity.userContextId] = {
+        hiddenTabUrls: [],
+        openTabs: 0,
+      };
+    });
 
-  return result;
-}
-
-function isContainerCookieStoreId(storeId) {
-  return storeId !== null && storeId.startsWith(CONTAINER_STORE);
-}
-
-function getContainerForCookieStoreId(storeId) {
-  if (!isContainerCookieStoreId(storeId)) {
-    return null;
-  }
-
-  const containerId = storeId.substring(CONTAINER_STORE.length);
-
-  if (ContextualIdentityService.getIdentityFromId(containerId)) {
-    return parseInt(containerId, 10);
-  }
-
-  return null;
-}
-
-function getContainer(cookieStoreId) {
-  const containerId = getContainerForCookieStoreId(cookieStoreId);
-
-  if (!containerId) {
-    return Promise.resolve(null);
-  }
-
-  const identity = ContextualIdentityService.getIdentityFromId(containerId);
-
-  return Promise.resolve(convert(identity));
-}
-
-function queryContainers(details) {
-  const identities = [];
-
-  ContextualIdentityService.getIdentities().forEach(identity=> {
-    if (details && details.name &&
-        ContextualIdentityService.getUserContextLabel(identity.userContextId) !== details.name) {
-      return;
+    // It can happen that this jsm is loaded after the opening a container tab.
+    for (let tab of tabs) {
+      let xulTab = viewFor(tab);
+      let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
+      if (userContextId) {
+        ++this._identitiesState[userContextId].openTabs;
+      }
     }
 
-    const convertedIdentity = convert(identity);
+    tabs.on("open", tab => {
+      let xulTab = viewFor(tab);
+      let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
+      if (userContextId) {
+        ++this._identitiesState[userContextId].openTabs;
+      }
+    });
 
-    identities.push(convertedIdentity);
-    if (!(convertedIdentity.cookieStoreId in identitiesState)) {
-      identitiesState[convertedIdentity.cookieStoreId] = {hiddenTabUrls: []};
+    tabs.on("close", tab => {
+      let xulTab = viewFor(tab);
+      let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
+      if (userContextId && this._identitiesState[userContextId].openTabs) {
+        --this._identitiesState[userContextId].openTabs;
+      }
+    });
+
+    // WebExtension startup
+
+    webExtension.startup().then(api => {
+      api.browser.runtime.onMessage.addListener((message, sender, sendReply) => {
+        if ("method" in message && methods.indexOf(message.method) != -1) {
+          sendReply(this[message.method](message));
+        }
+      });
+    });
+  },
+
+  // utility methods
+
+  _convert(identity) {
+    return {
+      name: ContextualIdentityService.getUserContextLabel(identity.userContextId),
+      icon: identity.icon,
+      color: identity.color,
+      userContextId: identity.userContextId,
+      hasHiddenTabs: !!this._identitiesState[identity.userContextId].hiddenTabUrls.length,
+      hasOpenTabs: !!this._identitiesState[identity.userContextId].openTabs,
+    };
+  },
+
+  // Tabs management
+
+  hideTabs(args) {
+    return new Promise((resolve, reject) => {
+      for (let tab of tabs) {
+        let xulTab = viewFor(tab);
+        let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
+
+        if ("userContextId" in args && args.userContextId != userContextId) {
+          continue;
+        }
+
+        this._identitiesState[args.userContextId].hiddenTabUrls.push(tab.url);
+        tab.close();
+      }
+
+      resolve(null);
+    });
+  },
+
+  showTabs(args) {
+    let promises = [];
+
+    for (let url of this._identitiesState[args.userContextId].hiddenTabUrls) {
+      promises.push(this.openTab({ userContextId: args.userContextId, url }));
     }
-  });
 
-  return Promise.resolve(identities);
-}
+    this._identitiesState[args.userContextId].hiddenTabUrls = [];
 
-function createContainer(details) {
-  const identity = ContextualIdentityService.create(details.name,
-                                                  details.icon,
-                                                  details.color);
+    return Promise.all(promises);
+  },
 
-  return Promise.resolve(convert(identity));
-}
+  sortTabs(args) {
+    return new Promise((resolve, reject) => {
+      let windows = windowUtils.windows('navigator:browser', {includePrivate:false});
+      for (let window of windows) {
+        let tabs = tabsUtils.getTabs(window);
 
-function updateContainer(cookieStoreId, details) {
-  const containerId = getContainerForCookieStoreId(cookieStoreId);
+        let pos = 0;
 
-  if (!containerId) {
-    return Promise.resolve(null);
-  }
+        // Let's collect UCIs/tabs for this window.
+        let map = new Map;
+        for (let tab of tabs) {
+          if (tabsUtils.isPinned(tab)) {
+            // pinned tabs must be consider as taken positions.
+            ++pos;
+            continue;
+          }
 
-  const identity = ContextualIdentityService.getIdentityFromId(containerId);
+          let userContextId = parseInt(tab.getAttribute('usercontextid') || 0, 10);
+          if (!map.has(userContextId)) {
+            map.set(userContextId, []);
+          }
+          map.get(userContextId).push(tab);
+        }
 
-  if (!identity) {
-    return Promise.resolve(null);
-  }
+        // Let's sort the map.
+        let sortMap = new Map([...map.entries()].sort((a, b) => a[0] > b[0]));
 
-  if (details.name !== null) {
-    identity.name = details.name;
-  }
+        // Let's move tabs.
+        for (let [userContextId, tabs] of sortMap) {
+          for (let tab of tabs) {
+            window.gBrowser.moveTabTo(tab, pos++);
+          }
+        }
+      }
 
-  if (details.color !== null) {
-    identity.color = details.color;
-  }
+      resolve(null);
+    });
+  },
 
-  if (details.icon !== null) {
-    identity.icon = details.icon;
-  }
+  openTab(args) {
+    return new Promise((resolve, reject) => {
+      let browserWin = windowUtils.getMostRecentBrowserWindow();
 
-  if (!ContextualIdentityService.update(identity.userContextId,
-                                        identity.name, identity.icon,
-                                        identity.color)) {
-    return Promise.resolve(null);
-  }
+      // This should not really happen.
+      if (!browserWin || !browserWin.gBrowser) {
+        return Promise.resolve(false);
+      }
 
-  return Promise.resolve(convert(identity));
-}
+      let userContextId = 0;
+      if ('userContextId' in args) {
+        userContextId = args.userContextId;
+      }
 
-function removeContainer(cookieStoreId) {
-  const containerId = getContainerForCookieStoreId(cookieStoreId);
+      let tab = browserWin.gBrowser.addTab(args.url || null,
+                                           { userContextId: userContextId })
+      browserWin.gBrowser.selectedTab = tab;
+      resolve(true);
+    });
+  },
 
-  if (!containerId) {
-    return Promise.resolve(null);
-  }
+  // Identities management
 
-  const identity = ContextualIdentityService.getIdentityFromId(containerId);
+  queryIdentities(args) {
+    return new Promise((resolve, reject) => {
+      let identities = [];
 
-  if (!identity) {
-    return Promise.resolve(null);
-  }
+      ContextualIdentityService.getIdentities().forEach(identity => {
+        let convertedIdentity = this._convert(identity);
+        identities.push(convertedIdentity);
+      });
 
-  // We have to create the identity object before removing it.
-  const convertedIdentity = convert(identity);
+      resolve(identities);
+    });
+  },
 
-  if (!ContextualIdentityService.remove(identity.userContextId)) {
-    return Promise.resolve(null);
-  }
-
-  return Promise.resolve(convertedIdentity);
-}
-
-const contextualIdentities = {
-  get: getContainer,
-  query: queryContainers,
-  create: createContainer,
-  update: updateContainer,
-  remove: removeContainer
+  getIdentity(args) {
+    let identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
+    return Promise.resolve(identity ? this._convert(identity) : null);
+  },
 };
 
-function handleWebExtensionMessage(message, sender, sendReply) {
-  switch (message.method) {
-      case 'query':
-        sendReply(contextualIdentities.query(message.arguments));
-        break;
-      case 'hide':
-        identitiesState[message.cookieStoreId].hiddenTabUrls = message.tabUrlsToSave;
-        break;
-      case 'show':
-        sendReply(identitiesState[message.cookieStoreId].hiddenTabUrls);
-        identitiesState[message.cookieStoreId].hiddenTabUrls = [];
-        break;
-      case 'get':
-        sendReply(contextualIdentities.get(message.arguments));
-        break;
-      case 'create':
-        sendReply(contextualIdentities.create(message.arguments));
-        break;
-      case 'update':
-        sendReply(contextualIdentities.update(message.arguments));
-        break;
-      case 'remove':
-        sendReply(contextualIdentities.remove(message.arguments));
-        break;
-      case 'getIdentitiesState':
-        sendReply(identitiesState);
-        break;
-      case 'open-containers-preferences':
-        tabs.open('about:preferences#containers');
-        sendReply({content: 'opened'});
-        break;
-  }
-}
-
-webExtension.startup().then(api=> {
-  const {browser} = api;
-
-  browser.runtime.onMessage.addListener(handleWebExtensionMessage);
-});
+ContainerService.init();

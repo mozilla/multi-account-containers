@@ -14,7 +14,7 @@ details](https://docs.google.com/document/d/1WQdHTVXROk7dYkSFluc6_hS44tqZjIrG9I-
 ## Requirements
 
 * node 7+ (for jpm)
-* Firefox 52+ (For now; aiming at Firefox 51+)
+* Firefox 51+
 
 
 ## Run it
@@ -53,7 +53,7 @@ The only way to run the experiment is using an [unbranded version build](https:/
 1. `git clone git@github.com:mozilla/testpilot-containers.git`
 2. `cd testpilot-containers`
 3. `npm install`
-4. `./node_modules/.bin/jpm run -p /Path/To/Firefox/Profiles/{junk}.addon_dev -b FirefoxDeveloperEdition` (where FirefoxDeveloperEdition might be: ~/<reponame>/obj-x86_64-pc-linux-gnu/dist/bin/firefox)
+4. `./node_modules/.bin/jpm run -p /Path/To/Firefox/Profiles/{junk}.addon_dev -b FirefoxBeta` (where FirefoxBeta might be: ~/<reponame>/obj-x86_64-pc-linux-gnu/dist/bin/firefox or ~/<downloadedFirefoxBeta>/firefox)
 
 Check out the [Browser Toolbox](https://developer.mozilla.org/en-US/docs/Tools/Browser_Toolbox) for more information about debugging add-on code.
 
