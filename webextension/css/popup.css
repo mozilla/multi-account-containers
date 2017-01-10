@@ -1,23 +1,37 @@
 body {
   background: #FAFAFA;
-  min-width: 200px;
-  max-width: 400px;
+  min-inline-size: 200px;
+  max-inline-size: 400px;
 }
 
 table {
-  margin-bottom: 0;
+  margin-block-end: 0;
 }
 
 .onboarding {
-  margin-top: 16px;
+  margin: 16px;
+  min-block-size: 480px;
+
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+}
+
+.onboarding h3 {
+  margin-block-start: 16px;
 }
 
 .onboarding * {
   text-align: center;
 }
 
+/* Make button placement to be consistent on tour */
+.onboarding .spacing {
+  margin-block-start: auto;
+}
+
 .popup-bumper {
-  width: 100%;
+  inline-size: 100%;
   padding: .5em;
 }
 
@@ -26,8 +40,8 @@ table {
 }
 
 .icon {
-  max-width: 16px;
-  height: 16px;
+  max-inline-size: 16px;
+  block-size: 16px;
   margin: 4px;
 }
 
@@ -44,8 +58,8 @@ table.unstriped tbody tr {
   background-size: contain;
   filter: url('/img/filters.svg#fill');
   fill: var(--identity-icon-color);
-  width: 32px;
-  height: 32px;
+  inline-size: 32px;
+  block-size: 32px;
 }
 
 .edit-identities {
