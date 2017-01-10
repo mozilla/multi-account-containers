@@ -1,9 +1,7 @@
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 
-/* global require */
-
 const { attachTo } = require("sdk/content/mod");
-const {ContextualIdentityService} = require("resource://gre/modules/ContextualIdentityService.jsm");
+const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
 const self = require("sdk/self");
 const { Style } = require("sdk/stylesheet/style");
 const tabs = require("sdk/tabs");
@@ -41,14 +39,14 @@ let ContainerService = {
       "sortTabs",
       "openTab",
       "queryIdentities",
-      "getIdentity",
+      "getIdentity"
     ];
 
     // Map of identities.
     ContextualIdentityService.getIdentities().forEach(identity => {
       this._identitiesState[identity.userContextId] = {
         hiddenTabUrls: [],
-        openTabs: 0,
+        openTabs: 0
       };
     });
 
@@ -91,7 +89,7 @@ let ContainerService = {
 
     webExtension.startup().then(api => {
       api.browser.runtime.onMessage.addListener((message, sender, sendReply) => {
-        if ("method" in message && methods.indexOf(message.method) != -1) {
+        if ("method" in message && methods.indexOf(message.method) !== -1) {
           sendReply(this[message.method](message));
         }
       });
@@ -106,31 +104,31 @@ let ContainerService = {
     // we map URLs to svg IDs.
     let image, color;
 
-    if (identity.icon == "fingerprint" ||
-        identity.icon == "chrome://browser/skin/usercontext/personal.svg") {
+    if (identity.icon === "fingerprint" ||
+        identity.icon === "chrome://browser/skin/usercontext/personal.svg") {
       image = "fingerprint";
-    } else if (identity.icon == "briefcase" ||
-             identity.icon == "chrome://browser/skin/usercontext/work.svg") {
+    } else if (identity.icon === "briefcase" ||
+             identity.icon === "chrome://browser/skin/usercontext/work.svg") {
       image = "briefcase";
-    } else if (identity.icon == "dollar" ||
-             identity.icon == "chrome://browser/skin/usercontext/banking.svg") {
+    } else if (identity.icon === "dollar" ||
+             identity.icon === "chrome://browser/skin/usercontext/banking.svg") {
       image = "dollar";
-    } else if (identity.icon == "cart" ||
-             identity.icon == "chrome://browser/skin/usercontext/shopping.svg") {
+    } else if (identity.icon === "cart" ||
+             identity.icon === "chrome://browser/skin/usercontext/shopping.svg") {
       image = "cart";
     } else {
       image = "circle";
     }
 
-    if (identity.color == "#00a7e0") {
+    if (identity.color === "#00a7e0") {
       color = "blue";
-    } else if (identity.color == "#f89c24") {
+    } else if (identity.color === "#f89c24") {
       color = "orange";
-    } else if (identity.color == "#7dc14c") {
+    } else if (identity.color === "#7dc14c") {
       color = "green";
-    } else if (identity.color == "#ee5195") {
+    } else if (identity.color === "#ee5195") {
       color = "pink";
-    } else if (["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"].indexOf(identity.color) != -1) {
+    } else if (["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"].indexOf(identity.color) !== -1) {
       color = identity.color;
     } else {
       color = "";
@@ -142,7 +140,7 @@ let ContainerService = {
       color,
       userContextId: identity.userContextId,
       hasHiddenTabs: !!this._identitiesState[identity.userContextId].hiddenTabUrls.length,
-      hasOpenTabs: !!this._identitiesState[identity.userContextId].openTabs,
+      hasOpenTabs: !!this._identitiesState[identity.userContextId].openTabs
     };
   },
 
@@ -154,7 +152,7 @@ let ContainerService = {
         let xulTab = viewFor(tab);
         let userContextId = parseInt(xulTab.getAttribute("usercontextid") || 0, 10);
 
-        if ("userContextId" in args && args.userContextId != userContextId) {
+        if ("userContextId" in args && args.userContextId !== userContextId) {
           continue;
         }
 
@@ -296,7 +294,7 @@ let ContainerService = {
     let style = Style({ uri: self.data.url("chrome.css") });
 
     attachTo(style, viewFor(window));
-  },
+  }
 };
 
 ContainerService.init();

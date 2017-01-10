@@ -111,7 +111,7 @@ browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
         showOrHideContainerTabs(identity.userContextId, true).then(() => {
           browser.runtime.sendMessage({
             method: "openTab",
-            userContextId: identity.userContextId,
+            userContextId: identity.userContextId
           }).then(() => {
             window.close();
           });
