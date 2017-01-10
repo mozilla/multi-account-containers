@@ -127,7 +127,7 @@ browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
   document.querySelector(".identities-list").appendChild(fragment);
 });
 
-document.querySelector("#edit-containers-link").addEventListener("click", () => {
+function showEditContainersPanel() {
   browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
     let fragment = document.createDocumentFragment();
 
@@ -159,12 +159,11 @@ document.querySelector("#edit-containers-link").addEventListener("click", () => 
             class="icon delete-container-icon"
             src="/img/container-delete.svg"
           />
-        </td>
-        <td>&gt;</td>`;
+        </td>`;
 
       tr.addEventListener("click", e => {
         if (e.target.matches(".edit-container-icon")) {
-          console.log(`clicked to edit ${identity.userContextId} container`);
+          showPanel("#edit-container-panel");
         } else if (e.target.matches(".delete-container-icon")) {
           console.log(`clicked to delete ${identity.userContextId} container`);
         }
@@ -175,10 +174,26 @@ document.querySelector("#edit-containers-link").addEventListener("click", () => 
     document.querySelector("#edit-identities-list").appendChild(fragment);
   });
   showPanel("#edit-containers-panel");
+}
+
+document.querySelector("#add-container-link").addEventListener("click", () => {
+  showPanel("#edit-container-panel");
+});
+
+document.querySelector("#edit-containers-link").addEventListener("click", () => {
+  showEditContainersPanel();
 });
 
 document.querySelector("#exit-edit-mode-link").addEventListener("click", () => {
   showPanel("#container-panel");
+});
+
+document.querySelector("#edit-container-panel-back-arrow").addEventListener("click", () => {
+  showEditContainersPanel();
+});
+
+document.querySelector("#edit-container-cancel-link").addEventListener("click", () => {
+  showEditContainersPanel();
 });
 
 document.querySelector("#sort-containers-link").addEventListener("click", () => {
