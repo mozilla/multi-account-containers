@@ -1,0 +1,116 @@
+/* containers experiment */
+.tabbrowser-tab[usercontextid] {
+  background-image: linear-gradient(to right, var(--identity-tab-color) 0%, var(--identity-tab-color) 100%) !important;
+  background-size: var(--identity-stroke-background-size) !important;
+  background-repeat: no-repeat !important;
+  background-position: 0 29px !important;
+  --identity-stroke-background-size: auto 2px;
+}
+
+/* set defaults for ids as currently we don't set identity color */
+[usercontextid="1"],
+[data-identity-color="blue"] {
+  --identity-tab-color: #37adff;
+  --identity-icon-color: #37adff;
+}
+
+[data-identity-color="turquoise"] {
+  --identity-tab-color: #00c79a;
+  --identity-icon-color: #00c79a;
+}
+
+[usercontextid="3"],
+[data-identity-color="green"] {
+  --identity-tab-color: #51cd00;
+  --identity-icon-color:  #51cd00;
+}
+
+[data-identity-color="yellow"] {
+  --identity-tab-color: #ffcb00;
+  --identity-icon-color: #ffcb00;
+}
+
+[usercontextid="2"],
+[data-identity-color="orange"] {
+  --identity-tab-color: #ff9f00;
+  --identity-icon-color: #ff9f00;
+}
+
+[data-identity-color="red"] {
+  --identity-tab-color: #ff613d;
+  --identity-icon-color: #ff613d;
+}
+
+[usercontextid="4"],
+[data-identity-color="pink"] {
+  --identity-tab-color: #ff4bda;
+  --identity-icon-color: #ff4bda;
+}
+
+[data-identity-color="purple"] {
+  --identity-tab-color: #af51f5;
+  --identity-icon-color: #af51f5;
+}
+
+.tabbrowser-tab[usercontextid] .tab-background-start:not([selected="true"]) {
+  background-image: linear-gradient(to left, var(--identity-tab-color) 0%, var(--identity-tab-color) 50%, transparent 50%, transparent 100%);
+  background-position: 0 28px;
+  background-size: var(--identity-stroke-background-size);
+  background-repeat: no-repeat;
+}
+
+.tabbrowser-tab[usercontextid][afterhovered=true] .tab-background-start:not([selected="true"]) {
+  background-image: linear-gradient(to left, var(--identity-tab-color) 0%, var(--identity-tab-color) 22%, transparent 30%, transparent 100%);
+}
+
+.tabbrowser-tab[usercontextid]:hover .tab-background-start:not([selected="true"]) {
+  background-image: linear-gradient(to left, var(--identity-tab-color) 0%, var(--identity-tab-color) 70%, transparent 80%, transparent 100%);
+}
+
+.tabbrowser-tab[usercontextid] .tab-background-start[selected="true"]::before {
+  background-image: linear-gradient(to left, var(--identity-tab-color) 0%, var(--identity-tab-color) 30%, transparent 100%),
+                    url(chrome://browser/skin/tabbrowser/tab-selected-start.svg) !important;
+  background-size: var(--identity-stroke-background-size), 100% 100% !important;
+  background-position: 0px 28px, 0;
+  background-repeat: no-repeat;
+}
+
+.tabbrowser-tab[usercontextid] .tab-background-end:not([selected="true"]) {
+  background-image: linear-gradient(to right, var(--identity-tab-color) 0%, var(--identity-tab-color) 50%, transparent 50%, transparent 100%);
+  background-position: 0 28px;
+  background-size: var(--identity-stroke-background-size);
+  background-repeat: no-repeat;
+}
+
+.tabbrowser-tab[usercontextid][beforehovered=true] .tab-background-end:not([selected="true"]) {
+  background-image: linear-gradient(to right, var(--identity-tab-color) 0%, var(--identity-tab-color) 22%, transparent 30%, transparent 100%);
+}
+
+.tabbrowser-tab[usercontextid]:hover .tab-background-end:not([selected="true"]) {
+  background-image: linear-gradient(to right, var(--identity-tab-color) 0%, var(--identity-tab-color) 70%, transparent 80%, transparent 100%);
+}
+
+.tabbrowser-tab[usercontextid] .tab-background-end[selected="true"]::before {
+  background-image: linear-gradient(to right, var(--identity-tab-color) 0%, var(--identity-tab-color) 30%, transparent 100%),
+                    url(chrome://browser/skin/tabbrowser/tab-selected-end.svg) !important;
+  background-size: var(--identity-stroke-background-size), 100% 100% !important;
+  background-position: 0 28px, 0;
+  background-repeat: no-repeat;
+}
+
+.tabbrowser-tab[usercontextid] .tab-background-middle {
+  background-position: 0 28px, 0;
+  background-repeat: repeat-x;
+  background-size: var(--identity-stroke-background-size), auto;
+  background-image: linear-gradient(to right, var(--identity-tab-color) 0%, var(--identity-tab-color) 100%), none;
+}
+
+.tabbrowser-tab[usercontextid] .tab-background-middle[selected="true"] {
+  background-image: url(chrome://browser/skin/tabbrowser/tab-active-middle.png),
+                    linear-gradient(to right, var(--identity-tab-color) 0%, var(--identity-tab-color) 100%),
+                    none;
+  background-position: 0, 0 28px, 0;
+  background-size: var(--tab-stroke-background-size), var(--identity-stroke-background-size), auto;
+  background-repeat: repeat-x;
+}
+/* end containers experiment */

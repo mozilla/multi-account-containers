@@ -11,6 +11,8 @@ const { viewFor } = require("sdk/view/core");
 const webExtension = require('sdk/webextension');
 const windows = require("sdk/windows");
 const windowUtils = require('sdk/window/utils');
+const { attachTo } = require("sdk/content/mod");
+const { Style } = require("sdk/stylesheet/style");
 
 let ContainerService =
 {
@@ -295,6 +297,9 @@ let ContainerService =
     });
 
     button.appendChild(popup);
+    let style = Style({ uri: self.data.url("chrome.css") });
+
+    attachTo(style, viewFor(window));
   },
 };
 
