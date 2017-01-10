@@ -2,10 +2,19 @@ body {
   background: #FAFAFA;
   min-inline-size: 200px;
   max-inline-size: 400px;
+  inline-size: 264px;
 }
 
 table {
   margin-block-end: 0;
+}
+
+.panel {
+  height: 100%;
+}
+
+.panel-row {
+  height: 100%;
 }
 
 .onboarding {
@@ -35,14 +44,26 @@ table {
   padding: .5em;
 }
 
-.header-column {
-  padding: 0;
+.panel-header {
+  height: 54px;
+  display: flex;
+  align-items: center;
+}
+
+.panel-header-text {
+  font-weight: lighter;
+  font-size: 16px;
+  margin-bottom: 0;
+  color: #4a4a4a;
+}
+
+.panel-header-button {
+  justify-content: center;
 }
 
 .icon {
   max-inline-size: 16px;
   block-size: 16px;
-  margin: 4px;
 }
 
 .container-panel > table.unstriped tbody tr {
@@ -71,9 +92,19 @@ table {
   background: #DCDBDC;
 }
 
+.panel-footer {
+  align-items: center;
+  background: #efefef;
+  color: #000000;
+  display: flex;
+  font-size: 13px;
+  height: 54px;
+  width: 100%;
+}
+
 .edit-containers-text {
   text-align: center;
-  padding: .5em;
+  border-right: solid 1px #d8d8d8;
 }
 
 .edit-containers-text a {
@@ -142,4 +173,14 @@ table {
 
 .container-info-has-tabs {
   cursor: pointer;
+}
+
+.edit-panel-footer {
+  background: #248aeb;
+  color: #ffffff;
+  justify-content: center;
+}
+
+.edit-panel-footer a {
+  color: #ffffff;
 }

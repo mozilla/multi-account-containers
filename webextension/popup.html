@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="/css/popup.css">
 </head>
 <body>
+
   <div class="panel onboarding onboarding-panel-1" id="onboarding-panel-1">
     <img alt="Container Tabs Overview" src="/img/onboarding-1.png" />
     <h3>A better way to manage all the things you do online</h3>
@@ -13,33 +14,54 @@
     <p class="spacing" ><a href="#">Learn more</a></p>
     <a href="#" id="onboarding-next-button" class="button expanded">Next</a>
   </div>
+
+
   <div class="panel onboarding onboarding-panel-2" id="onboarding-panel-2">
     <img alt="How Containers Work" src="/img/onboarding-2.png" />
     <h3>Put containers to work for you.</h3>
     <p>Features like color-coding and separate container tabs help you find things easily, focus your attention, and minimize distractions.</p>
     <a href="#" id="onboarding-done-button" class="button expanded spacing">Done</a>
   </div>
+
+
   <div class="panel container-panel" id="container-panel">
-    <div class="row popup-bumper">
-      <div class="small-2 columns header-column">
-        <img alt="Containers icon" class="icon" src="/img/container-site-d-24.png">
+    <div class="row panel-header">
+      <div class="small-10 columns">
+        <h3 class="panel-header-text">Containers</h3>
       </div>
-      <div class="small-8 columns">
-        <h4>Containers</h4>
-      </div>
-      <div class="small-2 columns header-column">
+      <div class="small-2 columns panel-header-button">
         <a id="sort-containers-link"><img alt="Sort Containers" title="Sort Containers" class="icon" src="/img/container-sort.svg"></a>
       </div>
     </div>
     <table class="unstriped hover">
       <tbody class="identities-list"></tbody>
     </table>
-    <div class="row popup-bumper edit-identities">
-      <div class="small-12 columns edit-containers-text">
-        <a id="edit-containers-link" href="about:preferences#containers">Edit Containers</a>
+    <div class="row panel-footer edit-identities">
+      <div class="small-10 columns edit-containers-text">
+        <a id="edit-containers-link">Edit Containers</a>
+      </div>
+      <div class="small-2 columns add-container">
+        &plus;
       </div>
     </div>
   </div>
+
+
+  <div class="panel edit-panel hide" id="edit-panel">
+    <div class="row panel-header">
+      <div class="small-12 columns">
+        <h3 class="panel-header-text">Edit Containers</h3>
+      </div>
+    </div>
+    <table class="unstriped hover">
+      <tbody class="edit-identities-list"></tbody>
+    </table>
+    <div class="row panel-footer edit-panel-footer">
+      <a id="exit-edit-mode-link">&lt; Exit Edit Mode</a>
+    </div>
+  </div>
+
+
   <div class="hide panel container-info-panel" id="container-info-panel">
     <div class="row popup-bumper">
       <div class="small-1 columns" id="close-container-info-panel">&lt;</div>
@@ -63,6 +85,8 @@
       </div>
     </div>
   </div>
+
+
   <script src="js/popup.js"></script>
 </body>
 </html>

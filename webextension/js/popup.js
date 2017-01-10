@@ -130,12 +130,13 @@ browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
 });
 
 document.querySelector("#edit-containers-link").addEventListener("click", () => {
-  browser.runtime.sendMessage({
-    method: "openTab",
-    url: "about:preferences#containers"
-  }).then(() => {
-    window.close();
-  });
+  document.querySelector("#container-panel").classList.add("hide");
+  document.querySelector("#edit-panel").classList.remove("hide");
+});
+
+document.querySelector("#exit-edit-mode-link").addEventListener("click", () => {
+  document.querySelector("#container-panel").classList.remove("hide");
+  document.querySelector("#edit-panel").classList.add("hide");
 });
 
 document.querySelector("#sort-containers-link").addEventListener("click", () => {
