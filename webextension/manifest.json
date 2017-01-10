@@ -21,8 +21,7 @@
 
   "permissions": [
     "cookies",
-    "tabs",
-    "cookies"
+    "tabs"
   ],
 
   "browser_action": {

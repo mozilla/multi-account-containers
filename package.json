@@ -7,9 +7,9 @@
   "bugs": {
     "url": "https://github.com/mozilla/testpilot-containers/issues"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
+    "addons-linter": "^0.15.14",
     "eslint": "^3.12.2",
     "jpm": "^1.2.2"
   },
