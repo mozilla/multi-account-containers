@@ -2,17 +2,17 @@ const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 
 /* global require */
 
+const { attachTo } = require("sdk/content/mod");
 const { Cc, Ci, Cu, Cr } = require('chrome');
 const {ContextualIdentityService} = require('resource://gre/modules/ContextualIdentityService.jsm');
 const self = require('sdk/self');
+const { Style } = require("sdk/stylesheet/style");
 const tabs = require('sdk/tabs');
 const tabsUtils = require('sdk/tabs/utils');
 const { viewFor } = require("sdk/view/core");
 const webExtension = require('sdk/webextension');
 const windows = require("sdk/windows");
 const windowUtils = require('sdk/window/utils');
-const { attachTo } = require("sdk/content/mod");
-const { Style } = require("sdk/stylesheet/style");
 
 let ContainerService =
 {
