@@ -2,6 +2,13 @@
 const CONTAINER_HIDE_SRC = "/img/container-hide.svg";
 const CONTAINER_UNHIDE_SRC = "/img/container-unhide.svg";
 
+function showPanel(panelSelector) {
+  for (let panelElement of document.querySelectorAll(".panel")) {
+    panelElement.classList.add("hide");
+  }
+  document.querySelector(panelSelector).classList.remove("hide");
+}
+
 function showContainerTabsPanel(identity) {
   // Populating the panel: name and icon
   document.getElementById("container-info-name").innerText = identity.name;
@@ -64,30 +71,21 @@ function showContainerTabsPanel(identity) {
 }
 
 if (localStorage.getItem("onboarded2")) {
-  for (let element of document.querySelectorAll(".onboarding")) {
-    element.classList.add("hide");
-  }
-  document.querySelector("#container-panel").classList.remove("hide");
+  showPanel("#container-panel");
 } else if (localStorage.getItem("onboarded1")) {
-  document.querySelector(".onboarding-panel-1").classList.add("hide");
-  document.querySelector("#container-panel").classList.add("hide");
+  showPanel(".onboarding-panel-2");
 } else {
-  document.querySelector(".onboarding-panel-2").classList.add("hide");
-  document.querySelector("#container-panel").classList.add("hide");
+  showPanel(".onboarding-panel-1");
 }
 
 document.querySelector("#onboarding-next-button").addEventListener("click", () => {
   localStorage.setItem("onboarded1", true);
-  document.querySelector(".onboarding-panel-2").classList.remove("hide");
-  document.querySelector(".onboarding-panel-1").classList.add("hide");
-  document.querySelector("#container-panel").classList.add("hide");
+  showPanel(".onboarding-panel-2");
 });
 
 document.querySelector("#onboarding-done-button").addEventListener("click", () => {
   localStorage.setItem("onboarded2", true);
-  document.querySelector(".onboarding-panel-1").classList.add("hide");
-  document.querySelector(".onboarding-panel-2").classList.add("hide");
-  document.querySelector("#container-panel").classList.remove("hide");
+  showPanel("#container-panel");
 });
 
 browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
@@ -130,13 +128,11 @@ browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
 });
 
 document.querySelector("#edit-containers-link").addEventListener("click", () => {
-  document.querySelector("#container-panel").classList.add("hide");
-  document.querySelector("#edit-panel").classList.remove("hide");
+  showPanel("#edit-panel");
 });
 
 document.querySelector("#exit-edit-mode-link").addEventListener("click", () => {
-  document.querySelector("#container-panel").classList.remove("hide");
-  document.querySelector("#edit-panel").classList.add("hide");
+  showPanel("#container-panel");
 });
 
 document.querySelector("#sort-containers-link").addEventListener("click", () => {
