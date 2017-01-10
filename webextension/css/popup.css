@@ -14,11 +14,11 @@ table {
 }
 
 .panel {
-  height: 100%;
+  block-size: 100%;
 }
 
 .panel-row {
-  height: 100%;
+  block-size: 100%;
 }
 
 .panel-back-arrow {
@@ -56,7 +56,7 @@ table {
 }
 
 .panel-header {
-  height: 54px;
+  block-size: 54px;
   display: flex;
   align-items: center;
 }
@@ -109,8 +109,8 @@ table {
   color: #000000;
   display: flex;
   font-size: 13px;
-  height: 54px;
-  width: 100%;
+  block-size: 54px;
+  inline-size: 100%;
 }
 
 .footer-columns {
