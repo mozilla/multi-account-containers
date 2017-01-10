@@ -2,6 +2,7 @@ const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 
 const { attachTo } = require("sdk/content/mod");
 const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
+const { getFavicon } = require("sdk/places/favicon");
 const self = require("sdk/self");
 const { Style } = require("sdk/stylesheet/style");
 const tabs = require("sdk/tabs");
@@ -37,7 +38,10 @@ let ContainerService = {
       "hideTabs",
       "showTabs",
       "sortTabs",
+      "getTabs",
+      "showTab",
       "openTab",
+      "moveTabsToWindow",
       "queryIdentities",
       "getIdentity"
     ];
@@ -51,25 +55,22 @@ let ContainerService = {
     });
 
     // It can happen that this jsm is loaded after the opening a container tab.
-    for (let tab of tabs) {
-      let xulTab = viewFor(tab);
-      let userContextId = parseInt(xulTab.getAttribute("usercontextid") || 0, 10);
+    for (const tab of tabs) {
+      const userContextId = this._getUserContextIdFromTab(tab);
       if (userContextId) {
         ++this._identitiesState[userContextId].openTabs;
       }
     }
 
     tabs.on("open", tab => {
-      let xulTab = viewFor(tab);
-      let userContextId = parseInt(xulTab.getAttribute("usercontextid") || 0, 10);
+      const userContextId = this._getUserContextIdFromTab(tab);
       if (userContextId) {
         ++this._identitiesState[userContextId].openTabs;
       }
     });
 
     tabs.on("close", tab => {
-      let xulTab = viewFor(tab);
-      let userContextId = parseInt(xulTab.getAttribute("usercontextid") || 0, 10);
+      const userContextId = this._getUserContextIdFromTab(tab);
       if (userContextId && this._identitiesState[userContextId].openTabs) {
         --this._identitiesState[userContextId].openTabs;
       }
@@ -144,14 +145,28 @@ let ContainerService = {
     };
   },
 
+  _getUserContextIdFromTab(tab) {
+    return parseInt(viewFor(tab).getAttribute("usercontextid") || 0, 10);
+  },
+
+  _getTabList(userContextId) {
+    let list = [];
+    for (const tab of tabs) {
+      if (userContextId === this._getUserContextIdFromTab(tab)) {
+        let object = { title: tab.title, url: tab.url, id: tab.id };
+        list.push(object);
+      }
+    }
+
+    return list;
+  },
+
   // Tabs management
 
   hideTabs(args) {
     return new Promise(resolve => {
-      for (let tab of tabs) {
-        let xulTab = viewFor(tab);
-        let userContextId = parseInt(xulTab.getAttribute("usercontextid") || 0, 10);
-
+      for (const tab of tabs) {
+        const userContextId = this._getUserContextIdFromTab(tab);
         if ("userContextId" in args && args.userContextId !== userContextId) {
           continue;
         }
@@ -177,52 +192,142 @@ let ContainerService = {
   },
 
   sortTabs() {
-    function sortTabsInternal(window, pinnedTabs) {
-      // From model to XUL window.
-      const xulWindow = viewFor(window);
-
-      const tabs = tabsUtils.getTabs(xulWindow);
-      let pos = 0;
-
-      // Let's collect UCIs/tabs for this window.
-      let map = new Map;
-      for (const tab of tabs) {
-        if (pinnedTabs && !tabsUtils.isPinned(tab)) {
-          // We don't have, or we already handled all the pinned tabs.
-          break;
-        }
-
-        if (!pinnedTabs && tabsUtils.isPinned(tab)) {
-          // pinned tabs must be consider as taken positions.
-          ++pos;
-          continue;
-        }
-
-        let userContextId = parseInt(tab.getAttribute("usercontextid") || 0, 10);
-        if (!map.has(userContextId)) {
-          map.set(userContextId, []);
-        }
-        map.get(userContextId).push(tab);
-      }
-
-      // Let's sort the map.
-      const sortMap = new Map([...map.entries()].sort((a, b) => a[0] > b[0]));
-
-      // Let's move tabs.
-      sortMap.forEach(tabs => {
-        for (const tab of tabs) {
-          xulWindow.gBrowser.moveTabTo(tab, pos++);
-        }
-      });
-    }
-
     return new Promise(resolve => {
       for (let window of windows.browserWindows) {
         // First the pinned tabs, then the normal ones.
-        sortTabsInternal(window, true);
-        sortTabsInternal(window, false);
+        this._sortTabsInternal(window, true);
+        this._sortTabsInternal(window, false);
       }
       resolve(null);
+    });
+  },
+
+  _sortTabsInternal(window, pinnedTabs) {
+    // From model to XUL window.
+    const xulWindow = viewFor(window);
+
+    const tabs = tabsUtils.getTabs(xulWindow);
+    let pos = 0;
+
+    // Let's collect UCIs/tabs for this window.
+    let map = new Map;
+    for (const tab of tabs) {
+      if (pinnedTabs && !tabsUtils.isPinned(tab)) {
+        // We don't have, or we already handled all the pinned tabs.
+        break;
+      }
+
+      if (!pinnedTabs && tabsUtils.isPinned(tab)) {
+        // pinned tabs must be consider as taken positions.
+        ++pos;
+        continue;
+      }
+
+      const userContextId = this._getUserContextIdFromTab(tab);
+      if (!map.has(userContextId)) {
+        map.set(userContextId, []);
+      }
+      map.get(userContextId).push(tab);
+    }
+
+    // Let's sort the map.
+    const sortMap = new Map([...map.entries()].sort((a, b) => a[0] > b[0]));
+
+    // Let's move tabs.
+    sortMap.forEach(tabs => {
+      for (const tab of tabs) {
+        xulWindow.gBrowser.moveTabTo(tab, pos++);
+      }
+    });
+  },
+
+  getTabs(args) {
+    return new Promise((resolve, reject) => {
+      if (!("userContextId" in args)) {
+        reject("getTabs must be called with userContextId argument.");
+        return;
+      }
+
+      const list = this._getTabList(args.userContextId);
+      let promises = [];
+
+      for (let object of list) {
+        promises.push(getFavicon(object.url).then(url => {
+          object.favicon = url;
+        }, () => {
+          object.favicon = "";
+        }));
+      }
+
+      Promise.all(promises).then(() => {
+        resolve(list);
+      });
+    });
+  },
+
+  showTab(args) {
+    return new Promise((resolve, reject) => {
+      if (!("tabId" in args)) {
+        reject("showTab must be called with tabId argument.");
+        return;
+      }
+
+      for (const tab of tabs) {
+        if (tab.id === args.tabId) {
+          tab.window.activate();
+          tab.activate();
+          break;
+        }
+      }
+
+      resolve(null);
+    });
+  },
+
+  moveTabsToWindow(args) {
+    return new Promise((resolve, reject) => {
+      if (!("userContextId" in args)) {
+        reject("moveTabsToWindow must be called with userContextId argument.");
+        return;
+      }
+
+      // Let"s create a list of the tabs.
+      const list = this._getTabList(args.userContextId);
+
+      // Nothing to do
+      if (list.length === 0) {
+        resolve(null);
+        return;
+      }
+
+      windows.browserWindows.open({
+        url: "about:blank",
+        onOpen: window => {
+          const newBrowserWindow = viewFor(window);
+
+          // Let's move the tab to the new window.
+          for (const tab of list) {
+            const newTab = newBrowserWindow.gBrowser.addTab("about:blank");
+            newBrowserWindow.gBrowser.swapBrowsersAndCloseOther(newTab, tab);
+            // swapBrowsersAndCloseOther is an internal method of gBrowser
+            // an it's not supported by addon SDK. This means that we
+            // don't receive an 'open' event, but only the 'close' one.
+            // We have to force a +1 in our tab counter.
+            ++this._identitiesState[args.userContextId].openTabs;
+          }
+
+          // Let's close all the normal tab in the new window. In theory it
+          // should be only the first tab, but maybe there are addons doing
+          // crazy stuff.
+          for (const tab of window.tabs) {
+            const userContextId = this._getUserContextIdFromTab(tab);
+            if (args.userContextId !== userContextId) {
+              newBrowserWindow.gBrowser.removeTab(viewFor(tab));
+            }
+          }
+          resolve(null);
+        },
+      });
     });
   },
 
