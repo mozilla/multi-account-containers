@@ -1,30 +1,33 @@
 {
-  "title": "Containers Experiment",
-
   "name": "testpilot-containers",
-
-  "version": "0.0.1",
-
+  "title": "Containers Experiment",
   "description": "Containers works by isolating cookie jars using separate origin-attributes defined visually by colored ‘Container Tabs’. This add-on is a modified version of the containers feature for Firefox Test Pilot.",
-
-  "main": "index.js",
-
+  "version": "0.0.1",
   "author": "Luke Crouch & Jonathan Kingston",
-
+  "bugs": {
+    "url": "https://github.com/mozilla/testpilot-containers/issues"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "eslint": "^3.12.2",
+    "jpm": "^1.2.2"
+  },
   "engines": {
     "firefox": ">=50.0"
   },
-
-  "license": "MPL2",
-
+  "hasEmbeddedWebExtension": true,
+  "homepage": "https://github.com/mozilla/testpilot-containers#readme",
   "keywords": [
     "jetpack"
   ],
-  
-  "hasEmbeddedWebExtension": true,
-
-  "devDependencies": {
-    "jpm": "^1.2.2",
-    "eslint": "^3.12.2"
+  "license": "MPL-2.0",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mozilla/testpilot-containers.git"
+  },
+  "scripts": {
+    "lint": "eslint ."
   }
 }
