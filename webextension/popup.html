@@ -41,22 +41,24 @@
         <a id="edit-containers-link">Edit Containers</a>
       </div>
       <div class="small-2 columns add-container">
-        &plus;
+        <a id="add-container-link">
+          <img alt="Create new container icon" title="Create new container" src="/img/container-add.svg" class="icon" />
+        </a>
       </div>
     </div>
   </div>
 
 
-  <div class="panel edit-panel hide" id="edit-panel">
+  <div class="panel edit-containers-panel hide" id="edit-containers-panel">
     <div class="row panel-header">
       <div class="small-12 columns">
         <h3 class="panel-header-text">Edit Containers</h3>
       </div>
     </div>
     <table class="unstriped hover">
-      <tbody class="edit-identities-list"></tbody>
+      <tbody id="edit-identities-list"></tbody>
     </table>
-    <div class="row panel-footer edit-panel-footer">
+    <div class="row panel-footer edit-containers-panel-footer">
       <a id="exit-edit-mode-link">&lt; Exit Edit Mode</a>
     </div>
   </div>

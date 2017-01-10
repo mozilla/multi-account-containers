@@ -175,12 +175,12 @@ table {
   cursor: pointer;
 }
 
-.edit-panel-footer {
+.edit-containers-panel-footer {
   background: #248aeb;
   color: #ffffff;
   justify-content: center;
 }
 
-.edit-panel-footer a {
+.edit-containers-panel-footer a {
   color: #ffffff;
 }

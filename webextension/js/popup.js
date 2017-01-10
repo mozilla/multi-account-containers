@@ -128,7 +128,53 @@ browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
 });
 
 document.querySelector("#edit-containers-link").addEventListener("click", () => {
-  showPanel("#edit-panel");
+  browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
+    let fragment = document.createDocumentFragment();
+
+    identities.forEach(identity => {
+      let tr = document.createElement("tr");
+      fragment.appendChild(tr);
+      tr.setAttribute("data-identity-cookie-store-id", identity.userContextId);
+      tr.innerHTML = `
+        <td>
+          <div class="userContext-icon"
+            data-identity-icon="${identity.image}"
+            data-identity-color="${identity.color}">
+          </div>
+        </td>
+        <td>${identity.name}</td>
+        <td class="edit-container">
+          <img
+            title="Edit ${identity.name} container"
+            data-identity-cookie-store-id="${identity.userContextId}"
+            id="edit-${identity.userContextId}-container-icon"
+            src="/img/container-edit.svg"
+            class="icon edit-container-icon" />
+        </td>
+        <td class="remove-container" >
+          <img
+            title="Remove ${identity.name} container"
+            data-identity-cookie-store-id="${identity.userContextId}"
+            id="delete-${identity.userContextId}-container-icon"
+            class="icon delete-container-icon"
+            src="/img/container-delete.svg"
+          />
+        </td>
+        <td>&gt;</td>`;
+
+      tr.addEventListener("click", e => {
+        if (e.target.matches(".edit-container-icon")) {
+          console.log(`clicked to edit ${identity.userContextId} container`);
+        } else if (e.target.matches(".delete-container-icon")) {
+          console.log(`clicked to delete ${identity.userContextId} container`);
+        }
+      });
+    });
+
+    document.querySelector("#edit-identities-list").innerHTML = "";
+    document.querySelector("#edit-identities-list").appendChild(fragment);
+  });
+  showPanel("#edit-containers-panel");
 });
 
 document.querySelector("#exit-edit-mode-link").addEventListener("click", () => {
