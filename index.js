@@ -3,19 +3,17 @@ const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 /* global require */
 
 const { attachTo } = require("sdk/content/mod");
-const { Cc, Ci, Cu, Cr } = require('chrome');
-const {ContextualIdentityService} = require('resource://gre/modules/ContextualIdentityService.jsm');
-const self = require('sdk/self');
+const {ContextualIdentityService} = require("resource://gre/modules/ContextualIdentityService.jsm");
+const self = require("sdk/self");
 const { Style } = require("sdk/stylesheet/style");
-const tabs = require('sdk/tabs');
-const tabsUtils = require('sdk/tabs/utils');
+const tabs = require("sdk/tabs");
+const tabsUtils = require("sdk/tabs/utils");
 const { viewFor } = require("sdk/view/core");
-const webExtension = require('sdk/webextension');
+const webExtension = require("sdk/webextension");
 const windows = require("sdk/windows");
-const windowUtils = require('sdk/window/utils');
+const windowUtils = require("sdk/window/utils");
 
-let ContainerService =
-{
+let ContainerService = {
   _identitiesState: {},
 
   init() {
@@ -38,12 +36,12 @@ let ContainerService =
     // only these methods are allowed. We have a 1:1 mapping between messages
     // and methods. These methods must return a promise.
     let methods = [
-      'hideTabs',
-      'showTabs',
-      'sortTabs',
-      'openTab',
-      'queryIdentities',
-      'getIdentity',
+      "hideTabs",
+      "showTabs",
+      "sortTabs",
+      "openTab",
+      "queryIdentities",
+      "getIdentity",
     ];
 
     // Map of identities.
@@ -57,7 +55,7 @@ let ContainerService =
     // It can happen that this jsm is loaded after the opening a container tab.
     for (let tab of tabs) {
       let xulTab = viewFor(tab);
-      let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
+      let userContextId = parseInt(xulTab.getAttribute("usercontextid") || 0, 10);
       if (userContextId) {
         ++this._identitiesState[userContextId].openTabs;
       }
@@ -65,7 +63,7 @@ let ContainerService =
 
     tabs.on("open", tab => {
       let xulTab = viewFor(tab);
-      let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
+      let userContextId = parseInt(xulTab.getAttribute("usercontextid") || 0, 10);
       if (userContextId) {
         ++this._identitiesState[userContextId].openTabs;
       }
@@ -73,7 +71,7 @@ let ContainerService =
 
     tabs.on("close", tab => {
       let xulTab = viewFor(tab);
-      let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
+      let userContextId = parseInt(xulTab.getAttribute("usercontextid") || 0, 10);
       if (userContextId && this._identitiesState[userContextId].openTabs) {
         --this._identitiesState[userContextId].openTabs;
       }
@@ -132,8 +130,7 @@ let ContainerService =
       color = "green";
     } else if (identity.color == "#ee5195") {
       color = "pink";
-    } else if (["blue", "turquoise", "green", "yellow", "orange", "red",
-                "pink", "purple"].indexOf(identity.color) != -1) {
+    } else if (["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"].indexOf(identity.color) != -1) {
       color = identity.color;
     } else {
       color = "";
@@ -152,10 +149,10 @@ let ContainerService =
   // Tabs management
 
   hideTabs(args) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       for (let tab of tabs) {
         let xulTab = viewFor(tab);
-        let userContextId = parseInt(xulTab.getAttribute('usercontextid') || 0, 10);
+        let userContextId = parseInt(xulTab.getAttribute("usercontextid") || 0, 10);
 
         if ("userContextId" in args && args.userContextId != userContextId) {
           continue;
@@ -181,8 +178,8 @@ let ContainerService =
     return Promise.all(promises);
   },
 
-  sortTabs(args) {
-    return new Promise((resolve, reject) => {
+  sortTabs() {
+    return new Promise(resolve => {
       for (let window of windows.browserWindows) {
         // From model to XUL window.
         window = viewFor(window);
@@ -191,7 +188,7 @@ let ContainerService =
 
         let pos = 0;
 
-        // Let's collect UCIs/tabs for this window.
+        // Let"s collect UCIs/tabs for this window.
         let map = new Map;
         for (let tab of tabs) {
           if (tabsUtils.isPinned(tab)) {
@@ -200,22 +197,22 @@ let ContainerService =
             continue;
           }
 
-          let userContextId = parseInt(tab.getAttribute('usercontextid') || 0, 10);
+          let userContextId = parseInt(tab.getAttribute("usercontextid") || 0, 10);
           if (!map.has(userContextId)) {
             map.set(userContextId, []);
           }
           map.get(userContextId).push(tab);
         }
 
-        // Let's sort the map.
+        // Let"s sort the map.
         let sortMap = new Map([...map.entries()].sort((a, b) => a[0] > b[0]));
 
-        // Let's move tabs.
-        for (let [userContextId, tabs] of sortMap) {
+        // Let"s move tabs.
+        sortMap.forEach(tabs => {
           for (let tab of tabs) {
             window.gBrowser.moveTabTo(tab, pos++);
           }
-        }
+        });
       }
 
       resolve(null);
@@ -223,7 +220,7 @@ let ContainerService =
   },
 
   openTab(args) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       let browserWin = windowUtils.getMostRecentBrowserWindow();
 
       // This should not really happen.
@@ -232,12 +229,11 @@ let ContainerService =
       }
 
       let userContextId = 0;
-      if ('userContextId' in args) {
+      if ("userContextId" in args) {
         userContextId = args.userContextId;
       }
 
-      let tab = browserWin.gBrowser.addTab(args.url || null,
-                                           { userContextId: userContextId })
+      let tab = browserWin.gBrowser.addTab(args.url || null, { userContextId });
       browserWin.gBrowser.selectedTab = tab;
       resolve(true);
     });
@@ -245,8 +241,8 @@ let ContainerService =
 
   // Identities management
 
-  queryIdentities(args) {
-    return new Promise((resolve, reject) => {
+  queryIdentities() {
+    return new Promise(resolve => {
       let identities = [];
 
       ContextualIdentityService.getIdentities().forEach(identity => {
@@ -266,29 +262,29 @@ let ContainerService =
   // Styling the window
 
   configureWindow(window) {
-    var tabsElement = window.document.getElementById('tabbrowser-tabs');
-    var button = window.document.getAnonymousElementByAttribute(tabsElement, 'anonid', 'tabs-newtab-button')
+    var tabsElement = window.document.getElementById("tabbrowser-tabs");
+    var button = window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
 
     while (button.firstChild) {
       button.removeChild(button.firstChild);
     }
 
-    button.setAttribute('type', 'menu');
-    let popup = window.document.createElementNS(XUL_NS, 'menupopup');
+    button.setAttribute("type", "menu");
+    let popup = window.document.createElementNS(XUL_NS, "menupopup");
 
-    popup.setAttribute('anonid', 'newtab-popup');
-    popup.className = 'new-tab-popup';
-    popup.setAttribute('position', 'after_end');
+    popup.setAttribute("anonid", "newtab-popup");
+    popup.className = "new-tab-popup";
+    popup.setAttribute("position", "after_end");
 
     ContextualIdentityService.getIdentities().forEach(identity => {
       identity = this._convert(identity);
 
-      var menuItem = window.document.createElementNS(XUL_NS, 'menuitem');
-      menuItem.setAttribute('class', 'menuitem-iconic');
-      menuItem.setAttribute('label', identity.name);
-      menuItem.setAttribute('image', self.data.url('usercontext.svg') + '#' + identity.image);
+      var menuItem = window.document.createElementNS(XUL_NS, "menuitem");
+      menuItem.setAttribute("class", "menuitem-iconic");
+      menuItem.setAttribute("label", identity.name);
+      menuItem.setAttribute("image", self.data.url("usercontext.svg") + "#" + identity.image);
 
-      menuItem.addEventListener('command', (event) => {
+      menuItem.addEventListener("command", (event) => {
         this.openTab({userContextId: identity.userContextId});
         event.stopPropagation();
       });
