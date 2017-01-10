@@ -11,7 +11,8 @@
   "devDependencies": {
     "addons-linter": "^0.15.14",
     "eslint": "^3.12.2",
-    "jpm": "^1.2.2"
+    "jpm": "^1.2.2",
+    "npm-run-all": "^4.0.0"
   },
   "engines": {
     "firefox": ">=50.0"
@@ -28,6 +29,8 @@
     "url": "git+https://github.com/mozilla/testpilot-containers.git"
   },
   "scripts": {
-    "lint": "eslint ."
+    "lint": "npm-run-all lint:*",
+    "lint:js": "eslint .",
+    "lint:addon": "addons-linter webextension --self-hosted"
   }
 }
