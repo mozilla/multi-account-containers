@@ -45,7 +45,7 @@ table {
   margin: 4px;
 }
 
-table.unstriped tbody tr {
+.container-panel > table.unstriped tbody tr {
   border-bottom: 1px solid #f1f1f1;
   background-color: #fefefe;
   cursor: pointer;
@@ -60,6 +60,11 @@ table.unstriped tbody tr {
   fill: var(--identity-icon-color);
   inline-size: 32px;
   block-size: 32px;
+}
+
+.userContext-icon:hover {
+  background-image: url('/img/container-add.svg');
+  fill: 'gray';
 }
 
 .edit-identities {
@@ -133,4 +138,8 @@ table.unstriped tbody tr {
 
 [data-identity-icon="circle"] {
   --identity-icon: url("/img/usercontext.svg#circle");
+}
+
+.container-info-has-tabs {
+  cursor: pointer;
 }
