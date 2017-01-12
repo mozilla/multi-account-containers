@@ -23,6 +23,9 @@ function showContainerTabsPanel(identity) {
     trHasTabs.setAttribute("data-user-context-id", identity.userContextId);
   }
 
+  let hideOrShowRow = document.querySelector("#container-info-hideorshow");
+  hideOrShowRow.setAttribute("data-user-context-id", identity.userContextId);
+
   const hideShowIcon = document.getElementById("container-info-hideorshow-icon");
   hideShowIcon.src = identity.hasHiddenTabs ? CONTAINER_UNHIDE_SRC : CONTAINER_HIDE_SRC;
 
@@ -39,12 +42,14 @@ function showContainerTabsPanel(identity) {
     method: "getTabs",
     userContextId: identity.userContextId,
   }).then(tabs => {
+    console.log('browser.runtime.sendMessage getTabs, tabs: ', tabs);
     // For each one, let's create a new line.
     let fragment = document.createDocumentFragment();
     for (const tab of tabs) {
       let tr = document.createElement("tr");
       fragment.appendChild(tr);
       tr.classList.add("container-info-tab");
+      tr.classList.add("clickable");
       tr.innerHTML = `
         <td><img class="icon" src="${tab.favicon}" /></td>
         <td>${tab.title}</td>`;
@@ -89,12 +94,15 @@ document.querySelector("#onboarding-done-button").addEventListener("click", () =
 });
 
 browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
+  console.log('queryIdentities');
   let fragment = document.createDocumentFragment();
 
   identities.forEach(identity => {
+    console.log('identities.forEach');
     let tr = document.createElement("tr");
     fragment.appendChild(tr);
-    tr.className = "container-panel-row";
+    tr.classList.add("container-panel-row");
+    tr.classList.add("clickable");
     tr.setAttribute("data-identity-cookie-store-id", identity.userContextId);
     tr.innerHTML = `
       <td>
@@ -136,6 +144,7 @@ function showEditContainersPanel() {
       let tr = document.createElement("tr");
       fragment.appendChild(tr);
       tr.setAttribute("data-identity-cookie-store-id", identity.userContextId);
+      tr.classList.add("clickable");
       tr.innerHTML = `
         <td>
           <div class="userContext-icon"

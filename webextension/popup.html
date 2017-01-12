@@ -7,7 +7,7 @@
 </head>
 <body>
 
-  <div class="panel onboarding onboarding-panel-1" id="onboarding-panel-1">
+  <div class="panel onboarding onboarding-panel-1 hide" id="onboarding-panel-1">
     <img alt="Container Tabs Overview" src="/img/onboarding-1.png" />
     <h3>A better way to manage all the things you do online</h3>
     <p>Use containers to organize tasks, manage accounts, and keep your focus where you want it.</p>
@@ -16,7 +16,7 @@
   </div>
 
 
-  <div class="panel onboarding onboarding-panel-2" id="onboarding-panel-2">
+  <div class="panel onboarding onboarding-panel-2 hide" id="onboarding-panel-2">
     <img alt="How Containers Work" src="/img/onboarding-2.png" />
     <h3>Put containers to work for you.</h3>
     <p>Features like color-coding and separate container tabs help you find things easily, focus your attention, and minimize distractions.</p>
@@ -51,31 +51,19 @@
 
   <div class="hide panel container-info-panel" id="container-info-panel">
     <div class="row">
-      <div class="small-2 columns panel-back-arrow" id="close-container-info-panel">&laquo;</div>
+      <div class="small-2 columns panel-back-arrow clickable" id="close-container-info-panel">&laquo;</div>
       <div class="small-10 columns">
         <div class="row container-info-panel-header">
-          <div class="small-2 columns">
-            <span class="userContext-icon" id="container-info-icon" data-identity-icon="" data-identity-color=""></span>
-          </div>
-          <div class="small-10 columns">
-            <h3 id="container-info-name" class="panel-header-text"></h3>
-          </div>
+          <span class="userContext-icon" id="container-info-icon" data-identity-icon="" data-identity-color=""></span>
+          <h3 id="container-info-name" class="panel-header-text"></h3>
         </div>
-        <div class="row container-info-panel-hide" id="container-info-hideorshow">
-          <img id="container-info-hideorshow-icon" alt="Hide Container icon" src="/img/container-hide.svg" class="icon"/><span id="container-info-hideorshow-label">Hide this container</span><br/>
+        <div class="row container-info-panel-hide clickable" id="container-info-hideorshow" data-user-context-id="">
+          <img id="container-info-hideorshow-icon" alt="Hide Container icon" src="/img/container-hide.svg" class="icon container-info-panel-hideorshow-icon"/><span id="container-info-hideorshow-label">Hide this container</span><br/>
         </div>
-        <div class="row container-info-panel-movetabs" id="container-info-movetabs">
+        <div class="row container-info-panel-movetabs clickable" id="container-info-movetabs">
           Move tabs to a new window
         </div>
         <table class="unstriped" id="container-info-table">
-        <!--
-          <tr class="container-info-has-tabs" id="container-info-hideorshow">
-            <td id=""></td>
-          </tr>
-          <tr class="container-info-has-tabs" id="container-info-movetabs">
-            <td colspan="2">Open all tabs in new window</td>
-          </tr>
-        __>
         </table>
       </div>
     </div>
