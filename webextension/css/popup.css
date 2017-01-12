@@ -1,5 +1,4 @@
 body {
-  background: #FAFAFA;
   min-inline-size: 200px;
   max-inline-size: 400px;
   inline-size: 264px;
@@ -90,12 +89,15 @@ table {
   background-size: contain;
   filter: url('/img/filters.svg#fill');
   fill: var(--identity-icon-color);
-  inline-size: 32px;
-  block-size: 32px;
+  inline-size: 20px;
+  block-size: 20px;
+  padding-left: 20px;
+  padding-right: 10px;
 }
 
-.userContext-icon:hover {
-  background-image: url('/img/container-add.svg');
+.container-panel-row:hover .userContext-icon {
+  background-image: url('/img/container-newtab.svg');
+  filter: url('/img/filters.svg#fill');
   fill: 'gray';
 }
 
@@ -194,6 +196,23 @@ table {
 
 [data-identity-icon="circle"] {
   --identity-icon: url("/img/usercontext.svg#circle");
+}
+
+.container-info-panel-header {
+  block-size: 33px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #ebebeb;
+  margin-bottom: 10px;
+}
+
+.container-info-panel-hide {
+  margin-bottom: 8px;
+}
+
+.container-info-panel-movetabs {
+  border-bottom: 1px solid #ebebeb;
+  margin-bottom: 10px;
 }
 
 .container-info-has-tabs {

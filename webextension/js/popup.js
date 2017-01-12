@@ -94,6 +94,7 @@ browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
   identities.forEach(identity => {
     let tr = document.createElement("tr");
     fragment.appendChild(tr);
+    tr.className = "container-panel-row";
     tr.setAttribute("data-identity-cookie-store-id", identity.userContextId);
     tr.innerHTML = `
       <td>

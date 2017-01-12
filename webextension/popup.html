@@ -33,7 +33,7 @@
         <a id="sort-containers-link"><img alt="Sort Containers" title="Sort Containers" class="icon" src="/img/container-sort.svg"></a>
       </div>
     </div>
-    <table class="unstriped hover">
+    <table class="unstriped">
       <tbody class="identities-list"></tbody>
     </table>
     <div class="row panel-footer edit-identities">
@@ -49,13 +49,46 @@
   </div>
 
 
+  <div class="hide panel container-info-panel" id="container-info-panel">
+    <div class="row">
+      <div class="small-2 columns panel-back-arrow" id="close-container-info-panel">&laquo;</div>
+      <div class="small-10 columns">
+        <div class="row container-info-panel-header">
+          <div class="small-2 columns">
+            <span class="userContext-icon" id="container-info-icon" data-identity-icon="" data-identity-color=""></span>
+          </div>
+          <div class="small-10 columns">
+            <h3 id="container-info-name" class="panel-header-text"></h3>
+          </div>
+        </div>
+        <div class="row container-info-panel-hide" id="container-info-hideorshow">
+          <img id="container-info-hideorshow-icon" alt="Hide Container icon" src="/img/container-hide.svg" class="icon"/><span id="container-info-hideorshow-label">Hide this container</span><br/>
+        </div>
+        <div class="row container-info-panel-movetabs" id="container-info-movetabs">
+          Move tabs to a new window
+        </div>
+        <table class="unstriped" id="container-info-table">
+        <!--
+          <tr class="container-info-has-tabs" id="container-info-hideorshow">
+            <td id=""></td>
+          </tr>
+          <tr class="container-info-has-tabs" id="container-info-movetabs">
+            <td colspan="2">Open all tabs in new window</td>
+          </tr>
+        __>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
   <div class="panel edit-containers-panel hide" id="edit-containers-panel">
     <div class="row panel-header">
       <div class="small-12 columns">
         <h3 class="panel-header-text">Edit Containers</h3>
       </div>
     </div>
-    <table class="unstriped hover">
+    <table class="unstriped">
       <tbody id="edit-identities-list"></tbody>
     </table>
     <div class="row panel-footer edit-containers-panel-footer">
@@ -63,30 +96,6 @@
     </div>
   </div>
 
-
-  <div class="hide panel container-info-panel" id="container-info-panel">
-    <div class="row popup-bumper">
-      <div class="small-1 columns" id="close-container-info-panel">&lt;</div>
-      <div class="small-11 columns">
-        <table id="container-info-table">
-        <tr>
-          <td>
-            <div class="userContext-icon" id="container-info-icon"
-                 data-identity-icon="" data-identity-color=""></div></td>
-          <td id="container-info-name"></td>
-        </tr>
-        <tr class="container-info-has-tabs" id="container-info-hideorshow">
-          <td>
-            <img class="icon" id="container-info-hideorshow-icon" src="" />
-          </td>
-          <td id="container-info-hideorshow-label"></td>
-        </tr>
-        <tr class="container-info-has-tabs" id="container-info-movetabs">
-          <td colspan="2">Open all tabs in new window</td>
-        </tr>
-      </div>
-    </div>
-  </div>
 
   <div class="panel edit-container-panel hide" id="edit-container-panel">
     <div class="row">
