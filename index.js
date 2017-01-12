@@ -43,7 +43,10 @@ let ContainerService = {
       "openTab",
       "moveTabsToWindow",
       "queryIdentities",
-      "getIdentity"
+      "getIdentity",
+      "createIdentity",
+      "removeIdentity",
+      "updateIdentity",
     ];
 
     // Map of identities.
@@ -383,6 +386,48 @@ let ContainerService = {
 
     let identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
     return Promise.resolve(identity ? this._convert(identity) : null);
+  },
+
+  createIdentity(args) {
+    for (const arg of [ "name", "color", "icon"]) {
+      if (!(arg in args)) {
+        Promise.reject("createIdentity must be called with " + arg + " argument.");
+        return;
+      }
+    }
+
+    // FIXME: icon and color conversion based on FF version.
+    const identity = ContextualIdentityService.create(args.name, args.icon, args.color);
+    return Promise.resolve(this._convert(identity));
+  },
+
+  updateIdentity(args) {
+    if (!("userContextId" in args)) {
+      Promise.reject("updateIdentity must be called with userContextId argument.");
+      return;
+    }
+
+    let identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
+    for (const arg of [ "name", "color", "icon"]) {
+      if ((arg in args)) {
+        identity[arg] = args[arg];
+      }
+    }
+
+    // FIXME: icon and color conversion based on FF version.
+    // FIXME: color/name update propagation
+    return Promise.resolve(ContextualIdentityService.update(args.userContextId,
+                                                            identity.name,
+                                                            identity.icon,
+                                                            identity.color));
+  },
+
+  removeIdentity(args) {
+    if (!("userContextId" in args)) {
+      Promise.reject("removeIdentity must be called with userContextId argument.");
+      return;
+    }
+    return Promise.resolve(ContextualIdentityService.remove(args.userContextId));
   },
 
   // Styling the window
