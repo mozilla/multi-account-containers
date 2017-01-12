@@ -164,10 +164,14 @@ let ContainerService = {
   // Tabs management
 
   hideTabs(args) {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
+      if (!("userContextId" in args)) {
+        reject("hideTabs must be called with userContextId argument.");
+        return;
+      }
+
       for (const tab of tabs) {
-        const userContextId = this._getUserContextIdFromTab(tab);
-        if ("userContextId" in args && args.userContextId !== userContextId) {
+        if (args.userContextId !== this._getUserContextIdFromTab(tab)) {
           continue;
         }
 
@@ -180,6 +184,11 @@ let ContainerService = {
   },
 
   showTabs(args) {
+    if (!("userContextId" in args)) {
+      Promise.reject("showTabs must be called with userContextId argument.");
+      return;
+    }
+
     let promises = [];
 
     for (let url of this._identitiesState[args.userContextId].hiddenTabUrls) {
@@ -367,6 +376,11 @@ let ContainerService = {
   },
 
   getIdentity(args) {
+    if (!("userContextId" in args)) {
+      Promise.reject("getIdentity must be called with userContextId argument.");
+      return;
+    }
+
     let identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
     return Promise.resolve(identity ? this._convert(identity) : null);
   },
