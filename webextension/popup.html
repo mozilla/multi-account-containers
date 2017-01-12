@@ -80,7 +80,14 @@
       <tbody id="edit-identities-list"></tbody>
     </table>
     <div class="row panel-footer edit-containers-panel-footer">
-      <a id="exit-edit-mode-link">&lt; Exit Edit Mode</a>
+      <div class="small-10 columns edit-containers-exit-text">
+        <a id="exit-edit-mode-link">&lt; Exit Edit Mode</a>
+      </div>
+      <div class="small-2 columns add-container">
+        <a id="add-container-link">
+          <img alt="Create new container icon" title="Create new container" src="/img/container-add.svg" class="icon" />
+        </a>
+      </div>
     </div>
   </div>
 
@@ -94,11 +101,20 @@
         <form>
           <p>
             <label>Name</label>
-            <input type="text" />
+            <input type="text" name="container-name" id="edit-container-panel-name-input"/>
           </p>
           <p>
             <label>Choose a color</label>
-            <input type="text" />
+            <div id="edit-container-panel-choose-color">
+              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="blue"></span>
+              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="turquoise"></span>
+              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="green"></span>
+              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="yellow"></span>
+              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="orange"></span>
+              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="red"></span>
+              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="pink"></span>
+              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="purple"></span>
+            </div>
           </p>
           <p>
             <label>Choose an icon</label>
@@ -107,7 +123,7 @@
         </form>
         <div class="row">
           <div class="small-6 columns footer-columns">
-            <a class="button expanded footer-button cancel-button" id="edit-container-cancel-link">Cancel</a>
+            <a class="button secondary expanded footer-button cancel-button" id="edit-container-cancel-link">Cancel</a>
           </div>
           <div class="small-6 columns footer-columns">
             <a class="button expanded footer-button">OK</a>
@@ -116,6 +132,31 @@
       </div>
     </div>
   </div>
+
+  <div class="hide panel delete-container-panel" id="delete-container-panel">
+    <div class="row">
+      <div class="small-2 columns panel-back-arrow clickable" id="close-delete-container-panel">&laquo;</div>
+      <div class="small-10 columns">
+        <div class="row container-info-panel-header">
+          <span class="userContext-icon" id="delete-container-icon" data-identity-icon="" data-identity-color=""></span>
+          <h3 id="delete-container-name" class="panel-header-text"></h3>
+        </div>
+        <div class="row delete-container-confirm">
+          <h4>Remove This Container</h4>
+          <p>If you remove this container now, <span id="delete-container-tab-count"></span> container tabs will be closed. Are you sure you want to remove this Container?</p>
+        </div>
+        <div class="row">
+          <div class="small-6 columns footer-columns">
+            <a class="button expanded secondary footer-button cancel-button" id="delete-container-cancel-link">Cancel</a>
+          </div>
+          <div class="small-6 columns footer-columns">
+            <a class="button expanded footer-button">OK</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 
   <script src="js/popup.js"></script>
 </body>

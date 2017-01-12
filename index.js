@@ -12,6 +12,8 @@ const webExtension = require("sdk/webextension");
 const windows = require("sdk/windows");
 const windowUtils = require("sdk/window/utils");
 
+const IDENTITY_COLORS = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"];
+
 let ContainerService = {
   _identitiesState: {},
 
@@ -132,7 +134,7 @@ let ContainerService = {
       color = "green";
     } else if (identity.color === "#ee5195") {
       color = "pink";
-    } else if (["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"].indexOf(identity.color) !== -1) {
+    } else if (IDENTITY_COLORS.indexOf(identity.color) !== -1) {
       color = identity.color;
     } else {
       color = "";

@@ -173,9 +173,9 @@ function showEditContainersPanel() {
 
       tr.addEventListener("click", e => {
         if (e.target.matches(".edit-container-icon")) {
-          showPanel("#edit-container-panel");
+          showEditContainerPanel(identity);
         } else if (e.target.matches(".delete-container-icon")) {
-          console.log(`clicked to delete ${identity.userContextId} container`);
+          showDeleteContainerPanel(identity);
         }
       });
     });
@@ -184,6 +184,22 @@ function showEditContainersPanel() {
     document.querySelector("#edit-identities-list").appendChild(fragment);
   });
   showPanel("#edit-containers-panel");
+}
+
+function showEditContainerPanel(identity) {
+  document.querySelector("#edit-container-panel-name-input").value = identity.name; 
+  showPanel("#edit-container-panel");
+}
+
+function showDeleteContainerPanel(identity) {
+  // Populating the panel: name and icon
+  document.getElementById("delete-container-name").innerText = identity.name;
+
+  let icon = document.getElementById("delete-container-icon");
+  icon.setAttribute("data-identity-icon", identity.image);
+  icon.setAttribute("data-identity-color", identity.color);
+
+  showPanel("#delete-container-panel");
 }
 
 document.querySelector("#add-container-link").addEventListener("click", () => {
@@ -203,6 +219,14 @@ document.querySelector("#edit-container-panel-back-arrow").addEventListener("cli
 });
 
 document.querySelector("#edit-container-cancel-link").addEventListener("click", () => {
+  showEditContainersPanel();
+});
+
+document.querySelector("#delete-container-panel-back-arrow").addEventListener("click", () => {
+  showEditContainersPanel();
+});
+
+document.querySelector("#delete-container-cancel-link").addEventListener("click", () => {
   showEditContainersPanel();
 });
 

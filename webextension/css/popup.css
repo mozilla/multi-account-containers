@@ -76,7 +76,7 @@ table {
   block-size: 16px;
 }
 
-.container-panel > table.unstriped tbody tr {
+table.unstriped tbody tr {
   border-bottom: 1px solid #f1f1f1;
   background-color: #fefefe;
   cursor: pointer;
@@ -226,12 +226,20 @@ table {
   cursor: pointer;
 }
 
-.edit-containers-panel-footer {
+.edit-containers-panel-footer a {
+  color: #ffffff;
+}
+
+.edit-containers-exit-text {
+  display: flex;
+  align-items: center;
   background: #248aeb;
+  block-size: 100%;
   color: #ffffff;
   justify-content: center;
 }
 
-.edit-containers-panel-footer a {
-  color: #ffffff;
+.choose-color-icon {
+  padding-inline-start: 17px;
+  padding-inline-end: 7px;
 }
