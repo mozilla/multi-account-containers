@@ -330,7 +330,6 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
     Logic.identities().forEach(identity => {
       let tr = document.createElement("tr");
       fragment.appendChild(tr);
-      tr.classList.add("clickable");
       tr.innerHTML = `
         <td>
           <div class="userContext-icon"
@@ -343,12 +342,12 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
           <img
             title="Edit ${identity.name} container"
             src="/img/container-edit.svg"
-            class="icon edit-container-icon" />
+            class="icon edit-container-icon clickable" />
         </td>
         <td class="remove-container" >
           <img
             title="Remove ${identity.name} container"
-            class="icon delete-container-icon"
+            class="icon delete-container-icon clickable"
             src="/img/container-delete.svg"
           />
         </td>`;
