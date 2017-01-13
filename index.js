@@ -436,37 +436,97 @@ let ContainerService = {
     var tabsElement = window.document.getElementById("tabbrowser-tabs");
     var button = window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
 
-    while (button.firstChild) {
-      button.removeChild(button.firstChild);
+    function getTabOverlay() {
+      button.parentElement.querySelector('new-tab-overlay');
+    }
+    while (getTabOverlay()) {
+      button.parentElement.removeChild(getTabOverlay());
     }
 
-    button.setAttribute("type", "menu");
-    let popup = window.document.createElementNS(XUL_NS, "menupopup");
+    let panelElement = window.document.createElementNS(XUL_NS, "panel");
+    panelElement.className = "new-tab-overlay";
+    //panelElement.setAttribute("side", "top");
+    button.after(panelElement);
+    panelElement.hidden = true;
 
-    popup.setAttribute("anonid", "newtab-popup");
-    popup.className = "new-tab-popup";
-    popup.setAttribute("position", "after_end");
+    function repositionPopup() {
+      //let panelElementSize = panelElement.getBoxQuads()[0];
+      let size = button.getBoxQuads()[0];
+      let innerWindow = tabsElement.getBoxQuads()[0]
+      let panelElementWidth = 200;//panelElementSize.p2.x - panelElementSize.p1.x;
+      // 1/4th of the way past the left hand side of the new tab button
+      // This seems to line up nicely with the left of the +
+      let offset = ((size.p3.x - size.p4.x) / 4);
+      let left = size.p4.x + offset;
+      if (left + panelElementWidth > innerWindow.p2.x) {
+        left -= panelElementWidth - offset;
+      }
+      panelElement.style.left = left + 'px';
+      panelElement.style.top = size.p4.y + 'px';
+    }
+    repositionPopup();
 
     ContextualIdentityService.getIdentities().forEach(identity => {
       identity = this._convert(identity);
 
-      var menuItem = window.document.createElementNS(XUL_NS, "menuitem");
-      menuItem.setAttribute("class", "menuitem-iconic");
-      menuItem.setAttribute("label", identity.name);
-      menuItem.setAttribute("image", self.data.url("usercontext.svg") + "#" + identity.image);
-
-      menuItem.addEventListener("command", (event) => {
+      let menuItemElement = window.document.createElementNS(XUL_NS, "menuitem");
+      panelElement.appendChild(menuItemElement);
+      menuItemElement.className = "menuitem-iconic";
+      menuItemElement.setAttribute("label", identity.name);
+      menuItemElement.setAttribute("data-usercontextid", identity.userContextId);
+      menuItemElement.setAttribute("data-identity-icon", identity.image);
+      menuItemElement.setAttribute("data-identity-color", identity.color);
+      menuItemElement.addEventListener("command", (event) => {
+        this.openTab({userContextId: identity.userContextId});
+        event.stopPropagation();
+      });
+      //Command isn't working probably because I'm in a panel
+      menuItemElement.addEventListener("click", (event) => {
+        panelElement.hidden = true;
         this.openTab({userContextId: identity.userContextId});
         event.stopPropagation();
       });
 
-      popup.appendChild(menuItem);
+      panelElement.appendChild(menuItemElement);
     });
 
-    button.appendChild(popup);
-    let style = Style({ uri: self.data.url("chrome.css") });
+    button.addEventListener('click', (e) => {
+      panelElement.hidden = false;
+    });
+    button.addEventListener('mouseover', (e) => {
+console.log('got mouseover', e);
+      repositionPopup();
+      panelElement.hidden = false;
+    });
+/*
+    button.addEventListener('mouseout', (e) => {
+      let currentTarget = e.relatedTarget;
+      //el.closest(panelElement) doesn't seem to work on xul els
+      while (currentTarget) {
+        if (currentTarget == panelElement) {
+          return;
+        }
+        currentTarget = currentTarget.parentElement;
+      }
+      panelElement.hidden = true;
+      //if (e.relatedTarget !== panelElement) {
+      //  panelElement.hidden = true;
+      //}
+    });
+*/
+    panelElement.addEventListener('mouseout', (e) => {
+console.log('got mouseout', e);
+      if (e.target !== panelElement) {
+        panelElement.hidden = true;
+        return;
+      }
+      repositionPopup();
+    });
 
+    let style = Style({ uri: self.data.url("chrome.css") });
     attachTo(style, viewFor(window));
+    let style2 = Style({ uri: self.data.url("usercontext.css") });
+    attachTo(style2, viewFor(window));
   }
 };
 
