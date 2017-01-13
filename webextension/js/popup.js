@@ -3,11 +3,21 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /* global browser, window, document, localStorage */
+
 const CONTAINER_HIDE_SRC = "/img/container-hide.svg";
 const CONTAINER_UNHIDE_SRC = "/img/container-unhide.svg";
 
 // Let's set it to false before releasing!!!
-const DEBUG = true;
+const DEBUG = false;
+
+// List of panels
+const P_ONBOARDING_1     = "onboarding1";
+const P_ONBOARDING_2     = "onboarding2";
+const P_CONTAINERS_LIST  = "containersList";
+const P_CONTAINERS_EDIT  = "containersEdit";
+const P_CONTAINER_INFO   = "containerInfo";
+const P_CONTAINER_EDIT   = "containerEdit";
+const P_CONTAINER_DELETE = "containerDelete";
 
 function log(...args) {
   if (DEBUG) {
@@ -15,145 +25,290 @@ function log(...args) {
   }
 }
 
-function showPanel(panelSelector) {
-  for (let panelElement of document.querySelectorAll(".panel")) {
-    panelElement.classList.add("hide");
-  }
-  document.querySelector(panelSelector).classList.remove("hide");
-}
+// This object controls all the panels, identities and many other things.
+let Logic = {
+  _identities: [],
+  _currentIdentity: null,
+  _panels: {},
 
-function showContainerTabsPanel(identity) {
-  // Populating the panel: name and icon
-  document.getElementById("container-info-name").innerText = identity.name;
+  init() {
+    // Retrieve the list of identities.
+    browser.runtime.sendMessage({
+      method: "queryIdentities"
+    })
 
-  let icon = document.getElementById("container-info-icon");
-  icon.setAttribute("data-identity-icon", identity.image);
-  icon.setAttribute("data-identity-color", identity.color);
+    .then(identities => {
+      this._identities = identities;
+    })
 
-  // Show or not the has-tabs section.
-  for (let trHasTabs of document.getElementsByClassName("container-info-has-tabs")) {
-    trHasTabs.hidden = !identity.hasHiddenTabs && !identity.hasOpenTabs;
-    trHasTabs.setAttribute("data-user-context-id", identity.userContextId);
-  }
-
-  let hideOrShowRow = document.querySelector("#container-info-hideorshow");
-  hideOrShowRow.setAttribute("data-user-context-id", identity.userContextId);
-
-  const hideShowIcon = document.getElementById("container-info-hideorshow-icon");
-  hideShowIcon.src = identity.hasHiddenTabs ? CONTAINER_UNHIDE_SRC : CONTAINER_HIDE_SRC;
-
-  const hideShowLabel = document.getElementById("container-info-hideorshow-label");
-  hideShowLabel.innerText = identity.hasHiddenTabs ? "Show these container tabs" : "Hide these container tabs";
-
-  // Let"s remove all the previous tabs.
-  for (let trTab of document.getElementsByClassName("container-info-tab")) {
-    trTab.remove();
-  }
-
-  // Let"s retrieve the list of tabs.
-  browser.runtime.sendMessage({
-    method: "getTabs",
-    userContextId: identity.userContextId,
-  }).then(tabs => {
-    log('browser.runtime.sendMessage getTabs, tabs: ', tabs);
-    // For each one, let's create a new line.
-    let fragment = document.createDocumentFragment();
-    for (let tab of tabs) {
-      let tr = document.createElement("tr");
-      fragment.appendChild(tr);
-      tr.classList.add("container-info-tab");
-      tr.classList.add("clickable");
-      tr.innerHTML = `
-        <td><img class="icon" src="${tab.favicon}" /></td>
-        <td>${tab.title}</td>`;
-      // On click, we activate this tab.
-      tr.addEventListener("click", () => {
-        browser.runtime.sendMessage({
-          method: "showTab",
-          tabId: tab.id,
-        }).then(() => {
-          window.close();
-        });
-      });
-    }
-
-    document.getElementById("container-info-table").appendChild(fragment);
-  })
-
-  // Finally we are ready to show the panel.
-  .then(() => {
-    // FIXME: the animation...
-    document.getElementById("container-panel").classList.add("hide");
-    document.getElementById("container-info-panel").classList.remove("hide");
-  });
-}
-
-if (localStorage.getItem("onboarded2")) {
-  showPanel("#container-panel");
-} else if (localStorage.getItem("onboarded1")) {
-  showPanel(".onboarding-panel-2");
-} else {
-  showPanel(".onboarding-panel-1");
-}
-
-document.querySelector("#onboarding-next-button").addEventListener("click", () => {
-  localStorage.setItem("onboarded1", true);
-  showPanel(".onboarding-panel-2");
-});
-
-document.querySelector("#onboarding-done-button").addEventListener("click", () => {
-  localStorage.setItem("onboarded2", true);
-  showPanel("#container-panel");
-});
-
-browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
-  log('queryIdentities');
-  let fragment = document.createDocumentFragment();
-
-  identities.forEach(identity => {
-    log('identities.forEach');
-    let tr = document.createElement("tr");
-    fragment.appendChild(tr);
-    tr.classList.add("container-panel-row");
-    tr.classList.add("clickable");
-    tr.setAttribute("data-identity-cookie-store-id", identity.userContextId);
-    tr.innerHTML = `
-      <td>
-        <div class="userContext-icon open-newtab"
-          data-identity-icon="${identity.image}"
-          data-identity-color="${identity.color}">
-        </div>
-      </td>
-      <td class="open-newtab">${identity.name}</td>
-      <td class="info">&gt;</td>`;
-
-    tr.addEventListener("click", e => {
-      if (e.target.matches(".open-newtab")) {
-        browser.runtime.sendMessage({
-          method: "showTabs",
-          userContextId: identity.userContextId
-        }).then(() => {
-          return browser.runtime.sendMessage({
-            method: "openTab",
-            userContextId: identity.userContextId,
-          });
-        }).then(() => {
-          window.close();
-        });
-      } else if (e.target.matches(".info")) {
-        showContainerTabsPanel(identity);
+    // Routing to the correct panel.
+    .then(() => {
+      if (localStorage.getItem("onboarded2")) {
+        this.showPanel(P_CONTAINERS_LIST);
+      } else if (localStorage.getItem("onboarded1")) {
+        this.showPanel(P_ONBOARDING_2);
+      } else {
+        this.showPanel(P_ONBOARDING_1);
       }
     });
-  });
+  },
 
-  document.querySelector(".identities-list").appendChild(fragment);
+  showPanel(panel, currentIdentity = null) {
+    // Invalid panel... ?!?
+    if (!(panel in this._panels)) {
+      throw("Something really bad happened. Unknown panel: " + panel + "\n");
+    }
+
+    this._currentIdentity = currentIdentity;
+
+    // Initialize the panel before showing it.
+    this._panels[panel].prepare().then(() => {
+      for (let panelElement of document.querySelectorAll(".panel")) {
+        panelElement.classList.add("hide");
+      }
+      document.querySelector(this._panels[panel].panelSelector).classList.remove("hide");
+    });
+  },
+
+  registerPanel(panelName, panelObject) {
+    this._panels[panelName] = panelObject;
+    panelObject.initialize();
+  },
+
+  identities() {
+    return this._identities;
+  },
+
+  currentIdentity() {
+    if (!this._currentIdentity) {
+      throw("CurrentIdentity must be set before calling Logic.currentIdentity.");
+    }
+    return this._currentIdentity;
+  },
+};
+
+// P_ONBOARDING_1: First page for Onboarding.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_ONBOARDING_1, {
+  panelSelector: ".onboarding-panel-1",
+
+  // This method is called when the object is registered.
+  initialize() {
+    // Let's move to the next panel.
+    document.querySelector("#onboarding-next-button").addEventListener("click", () => {
+      localStorage.setItem("onboarded1", true);
+      Logic.showPanel(P_ONBOARDING_2);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    return Promise.resolve(null);
+  },
 });
 
-function showEditContainersPanel() {
-  browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
+// P_ONBOARDING_2: Second page for Onboarding.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_ONBOARDING_2, {
+  panelSelector: ".onboarding-panel-2",
+
+  // This method is called when the object is registered.
+  initialize() {
+    // Let's move to the containers list panel.
+    document.querySelector("#onboarding-done-button").addEventListener("click", () => {
+      localStorage.setItem("onboarded2", true);
+      Logic.showPanel(P_CONTAINERS_LIST);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    return Promise.resolve(null);
+  },
+});
+
+// P_CONTAINERS_LIST: The list of containers. The main page.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_CONTAINERS_LIST, {
+  panelSelector: "#container-panel",
+
+  // This method is called when the object is registered.
+  initialize() {
+    document.querySelector(".add-container-link").addEventListener("click", () => {
+      Logic.showPanel(P_CONTAINER_EDIT, {});
+    });
+
+    document.querySelector("#edit-containers-link").addEventListener("click", () => {
+      Logic.showPanel(P_CONTAINERS_EDIT);
+    });
+
+    document.querySelector("#sort-containers-link").addEventListener("click", () => {
+      browser.runtime.sendMessage({
+        method: "sortTabs"
+      }).then(() => {
+        window.close();
+      });
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
     let fragment = document.createDocumentFragment();
 
-    identities.forEach(identity => {
+    Logic.identities().forEach(identity => {
+      log('identities.forEach');
+      let tr = document.createElement("tr");
+      fragment.appendChild(tr);
+      tr.classList.add("container-panel-row");
+      tr.classList.add("clickable");
+      tr.setAttribute("data-identity-cookie-store-id", identity.userContextId);
+      tr.innerHTML = `
+        <td>
+          <div class="userContext-icon open-newtab"
+            data-identity-icon="${identity.image}"
+            data-identity-color="${identity.color}">
+          </div>
+        </td>
+        <td class="open-newtab">${identity.name}</td>
+        <td class="info">&gt;</td>`;
+
+      tr.addEventListener("click", e => {
+        if (e.target.matches(".open-newtab")) {
+          browser.runtime.sendMessage({
+            method: "showTabs",
+            userContextId: identity.userContextId
+          }).then(() => {
+            return browser.runtime.sendMessage({
+              method: "openTab",
+              userContextId: identity.userContextId,
+            });
+          }).then(() => {
+            window.close();
+          });
+        } else if (e.target.matches(".info")) {
+          Logic.showPanel(P_CONTAINER_INFO, identity);
+        }
+      });
+    });
+
+    document.querySelector(".identities-list").innerHTML = "";
+    document.querySelector(".identities-list").appendChild(fragment);
+
+    return Promise.resolve();
+  },
+});
+
+// P_CONTAINER_INFO: More info about a container.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_CONTAINER_INFO, {
+  panelSelector: "#container-info-panel",
+
+  // This method is called when the object is registered.
+  initialize() {
+    document.querySelector("#close-container-info-panel").addEventListener("click", () => {
+      Logic.showPanel(P_CONTAINERS_LIST);
+    });
+
+    document.querySelector("#container-info-hideorshow").addEventListener("click", e => {
+      let identity = Logic.currentIdentity();
+      browser.runtime.sendMessage({
+        method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
+        userContextId: identity.userContextId
+      }).then(() => {
+        window.close();
+      });
+    });
+
+    document.querySelector("#container-info-movetabs").addEventListener("click", e => {
+      return browser.runtime.sendMessage({
+        method: "moveTabsToWindow",
+        userContextId: Logic.currentIdentity().userContextId,
+      }).then(() => {
+        window.close();
+      });
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    let identity = Logic.currentIdentity();
+
+    // Populating the panel: name and icon
+    document.getElementById("container-info-name").innerText = identity.name;
+
+    let icon = document.getElementById("container-info-icon");
+    icon.setAttribute("data-identity-icon", identity.image);
+    icon.setAttribute("data-identity-color", identity.color);
+
+    // Show or not the has-tabs section.
+    for (let trHasTabs of document.getElementsByClassName("container-info-has-tabs")) {
+      trHasTabs.hidden = !identity.hasHiddenTabs && !identity.hasOpenTabs;
+    }
+
+    const hideShowIcon = document.getElementById("container-info-hideorshow-icon");
+    hideShowIcon.src = identity.hasHiddenTabs ? CONTAINER_UNHIDE_SRC : CONTAINER_HIDE_SRC;
+
+    const hideShowLabel = document.getElementById("container-info-hideorshow-label");
+    hideShowLabel.innerText = identity.hasHiddenTabs ? "Show these container tabs" : "Hide these container tabs";
+
+    // Let's remove all the previous tabs.
+    for (let trTab of document.getElementsByClassName("container-info-tab")) {
+      trTab.remove();
+    }
+
+    // Let's retrieve the list of tabs.
+    return browser.runtime.sendMessage({
+      method: "getTabs",
+      userContextId: identity.userContextId,
+    }).then(tabs => {
+      log('browser.runtime.sendMessage getTabs, tabs: ', tabs);
+      // For each one, let's create a new line.
+      let fragment = document.createDocumentFragment();
+      for (let tab of tabs) {
+        let tr = document.createElement("tr");
+        fragment.appendChild(tr);
+        tr.classList.add("container-info-tab");
+        tr.classList.add("clickable");
+        tr.innerHTML = `
+          <td><img class="icon" src="${tab.favicon}" /></td>
+          <td>${tab.title}</td>`;
+        // On click, we activate this tab.
+        tr.addEventListener("click", () => {
+          browser.runtime.sendMessage({
+            method: "showTab",
+            tabId: tab.id,
+          }).then(() => {
+            window.close();
+          });
+        });
+      }
+
+      document.getElementById("container-info-table").appendChild(fragment);
+    });
+  },
+});
+
+// P_CONTAINERS_EDIT: Makes the list editable.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_CONTAINERS_EDIT, {
+  panelSelector: "#edit-containers-panel",
+
+  // This method is called when the object is registered.
+  initialize() {
+    document.querySelector("#exit-edit-mode-link").addEventListener("click", () => {
+      Logic.showPanel(P_CONTAINERS_LIST);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    let fragment = document.createDocumentFragment();
+    Logic.identities().forEach(identity => {
       let tr = document.createElement("tr");
       fragment.appendChild(tr);
       tr.setAttribute("data-identity-cookie-store-id", identity.userContextId);
@@ -186,92 +341,71 @@ function showEditContainersPanel() {
 
       tr.addEventListener("click", e => {
         if (e.target.matches(".edit-container-icon")) {
-          showEditContainerPanel(identity);
+          Logic.showPanel(P_CONTAINER_EDIT, identity);
         } else if (e.target.matches(".delete-container-icon")) {
-          showDeleteContainerPanel(identity);
+          Logic.showPanel(P_CONTAINER_DELETE, identity);
         }
       });
     });
 
     document.querySelector("#edit-identities-list").innerHTML = "";
     document.querySelector("#edit-identities-list").appendChild(fragment);
-  });
-  showPanel("#edit-containers-panel");
-}
 
-function showEditContainerPanel(identity) {
-  document.querySelector("#edit-container-panel-name-input").value = identity.name; 
-  showPanel("#edit-container-panel");
-}
-
-function showDeleteContainerPanel(identity) {
-  // Populating the panel: name and icon
-  document.getElementById("delete-container-name").innerText = identity.name;
-
-  let icon = document.getElementById("delete-container-icon");
-  icon.setAttribute("data-identity-icon", identity.image);
-  icon.setAttribute("data-identity-color", identity.color);
-
-  showPanel("#delete-container-panel");
-}
-
-document.querySelector(".add-container-link").addEventListener("click", () => {
-  showPanel("#edit-container-panel");
+    return Promise.resolve(null);
+  },
 });
 
-document.querySelector("#edit-containers-link").addEventListener("click", () => {
-  showEditContainersPanel();
-});
+// P_CONTAINER_EDIT: Editor for a container.
+// ----------------------------------------------------------------------------
 
-document.querySelector("#exit-edit-mode-link").addEventListener("click", () => {
-  showPanel("#container-panel");
-});
+Logic.registerPanel(P_CONTAINER_EDIT, {
+  panelSelector: "#edit-container-panel",
 
-document.querySelector("#edit-container-panel-back-arrow").addEventListener("click", () => {
-  showEditContainersPanel();
-});
-
-document.querySelector("#edit-container-cancel-link").addEventListener("click", () => {
-  showEditContainersPanel();
-});
-
-document.querySelector("#delete-container-cancel-link").addEventListener("click", () => {
-  showEditContainersPanel();
-});
-
-document.querySelector("#sort-containers-link").addEventListener("click", () => {
-  browser.runtime.sendMessage({
-    method: "sortTabs"
-  }).then(() => {
-    window.close();
-  });
-});
-
-document.querySelector("#close-container-info-panel").addEventListener("click", () => {
-  document.getElementById("container-info-panel").classList.add("hide");
-  document.getElementById("container-panel").classList.remove("hide");
-});
-
-document.querySelector("#container-info-hideorshow").addEventListener("click", e => {
-  let userContextId = e.target.parentElement.getAttribute("data-user-context-id");
-  browser.runtime.sendMessage({
-    method: "getIdentity",
-    userContextId,
-  }).then(identity => {
-    return browser.runtime.sendMessage({
-      method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
-      userContextId: identity.userContextId
+  // This method is called when the object is registered.
+  initialize() {
+    document.querySelector("#edit-container-panel-back-arrow").addEventListener("click", () => {
+      Logic.showPanel(P_CONTAINERS_EDIT);
     });
-  }).then(() => {
-    window.close();
-  });
+
+    document.querySelector("#edit-container-cancel-link").addEventListener("click", () => {
+      Logic.showPanel(P_CONTAINERS_EDIT);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    let identity = Logic.currentIdentity();
+    document.querySelector("#edit-container-panel-name-input").value = identity.name;
+    return Promise.resolve(null);
+  },
 });
 
-document.querySelector("#container-info-movetabs").addEventListener("click", e => {
-  return browser.runtime.sendMessage({
-    method: "moveTabsToWindow",
-    userContextId: e.target.parentElement.getAttribute("data-user-context-id"),
-  }).then(() => {
-    window.close();
-  });
+// P_CONTAINER_DELETE: Delete a container.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_CONTAINER_DELETE, {
+  panelSelector: "#delete-container-panel",
+
+  // This method is called when the object is registered.
+  initialize() {
+    document.querySelector("#delete-container-cancel-link").addEventListener("click", () => {
+      Logic.showPanel(P_CONTAINERS_EDIT);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    let identity = Logic.currentIdentity();
+
+    // Populating the panel: name and icon
+    document.getElementById("delete-container-name").innerText = identity.name;
+
+    let icon = document.getElementById("delete-container-icon");
+    icon.setAttribute("data-identity-icon", identity.image);
+    icon.setAttribute("data-identity-color", identity.color);
+
+    return Promise.resolve(null);
+  },
 });
+
+Logic.init();
