@@ -2,6 +2,13 @@
 const CONTAINER_HIDE_SRC = "/img/container-hide.svg";
 const CONTAINER_UNHIDE_SRC = "/img/container-unhide.svg";
 
+function showPanel(panelSelector) {
+  for (let panelElement of document.querySelectorAll(".panel")) {
+    panelElement.classList.add("hide");
+  }
+  document.querySelector(panelSelector).classList.remove("hide");
+}
+
 function showContainerTabsPanel(identity) {
   // Populating the panel: name and icon
   document.getElementById("container-info-name").innerText = identity.name;
@@ -15,6 +22,9 @@ function showContainerTabsPanel(identity) {
     trHasTabs.hidden = !identity.hasHiddenTabs && !identity.hasOpenTabs;
     trHasTabs.setAttribute("data-user-context-id", identity.userContextId);
   }
+
+  let hideOrShowRow = document.querySelector("#container-info-hideorshow");
+  hideOrShowRow.setAttribute("data-user-context-id", identity.userContextId);
 
   const hideShowIcon = document.getElementById("container-info-hideorshow-icon");
   hideShowIcon.src = identity.hasHiddenTabs ? CONTAINER_UNHIDE_SRC : CONTAINER_HIDE_SRC;
@@ -32,12 +42,14 @@ function showContainerTabsPanel(identity) {
     method: "getTabs",
     userContextId: identity.userContextId,
   }).then(tabs => {
+    console.log('browser.runtime.sendMessage getTabs, tabs: ', tabs);
     // For each one, let's create a new line.
     let fragment = document.createDocumentFragment();
     for (const tab of tabs) {
       let tr = document.createElement("tr");
       fragment.appendChild(tr);
       tr.classList.add("container-info-tab");
+      tr.classList.add("clickable");
       tr.innerHTML = `
         <td><img class="icon" src="${tab.favicon}" /></td>
         <td>${tab.title}</td>`;
@@ -64,38 +76,33 @@ function showContainerTabsPanel(identity) {
 }
 
 if (localStorage.getItem("onboarded2")) {
-  for (let element of document.querySelectorAll(".onboarding")) {
-    element.classList.add("hide");
-  }
-  document.querySelector("#container-panel").classList.remove("hide");
+  showPanel("#container-panel");
 } else if (localStorage.getItem("onboarded1")) {
-  document.querySelector(".onboarding-panel-1").classList.add("hide");
-  document.querySelector("#container-panel").classList.add("hide");
+  showPanel(".onboarding-panel-2");
 } else {
-  document.querySelector(".onboarding-panel-2").classList.add("hide");
-  document.querySelector("#container-panel").classList.add("hide");
+  showPanel(".onboarding-panel-1");
 }
 
 document.querySelector("#onboarding-next-button").addEventListener("click", () => {
   localStorage.setItem("onboarded1", true);
-  document.querySelector(".onboarding-panel-2").classList.remove("hide");
-  document.querySelector(".onboarding-panel-1").classList.add("hide");
-  document.querySelector("#container-panel").classList.add("hide");
+  showPanel(".onboarding-panel-2");
 });
 
 document.querySelector("#onboarding-done-button").addEventListener("click", () => {
   localStorage.setItem("onboarded2", true);
-  document.querySelector(".onboarding-panel-1").classList.add("hide");
-  document.querySelector(".onboarding-panel-2").classList.add("hide");
-  document.querySelector("#container-panel").classList.remove("hide");
+  showPanel("#container-panel");
 });
 
 browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
+  console.log('queryIdentities');
   let fragment = document.createDocumentFragment();
 
   identities.forEach(identity => {
+    console.log('identities.forEach');
     let tr = document.createElement("tr");
     fragment.appendChild(tr);
+    tr.classList.add("container-panel-row");
+    tr.classList.add("clickable");
     tr.setAttribute("data-identity-cookie-store-id", identity.userContextId);
     tr.innerHTML = `
       <td>
@@ -129,13 +136,98 @@ browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
   document.querySelector(".identities-list").appendChild(fragment);
 });
 
-document.querySelector("#edit-containers-link").addEventListener("click", () => {
-  browser.runtime.sendMessage({
-    method: "openTab",
-    url: "about:preferences#containers"
-  }).then(() => {
-    window.close();
+function showEditContainersPanel() {
+  browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
+    let fragment = document.createDocumentFragment();
+
+    identities.forEach(identity => {
+      let tr = document.createElement("tr");
+      fragment.appendChild(tr);
+      tr.setAttribute("data-identity-cookie-store-id", identity.userContextId);
+      tr.classList.add("clickable");
+      tr.innerHTML = `
+        <td>
+          <div class="userContext-icon"
+            data-identity-icon="${identity.image}"
+            data-identity-color="${identity.color}">
+          </div>
+        </td>
+        <td>${identity.name}</td>
+        <td class="edit-container">
+          <img
+            title="Edit ${identity.name} container"
+            data-identity-cookie-store-id="${identity.userContextId}"
+            id="edit-${identity.userContextId}-container-icon"
+            src="/img/container-edit.svg"
+            class="icon edit-container-icon" />
+        </td>
+        <td class="remove-container" >
+          <img
+            title="Remove ${identity.name} container"
+            data-identity-cookie-store-id="${identity.userContextId}"
+            id="delete-${identity.userContextId}-container-icon"
+            class="icon delete-container-icon"
+            src="/img/container-delete.svg"
+          />
+        </td>`;
+
+      tr.addEventListener("click", e => {
+        if (e.target.matches(".edit-container-icon")) {
+          showEditContainerPanel(identity);
+        } else if (e.target.matches(".delete-container-icon")) {
+          showDeleteContainerPanel(identity);
+        }
+      });
+    });
+
+    document.querySelector("#edit-identities-list").innerHTML = "";
+    document.querySelector("#edit-identities-list").appendChild(fragment);
   });
+  showPanel("#edit-containers-panel");
+}
+
+function showEditContainerPanel(identity) {
+  document.querySelector("#edit-container-panel-name-input").value = identity.name; 
+  showPanel("#edit-container-panel");
+}
+
+function showDeleteContainerPanel(identity) {
+  // Populating the panel: name and icon
+  document.getElementById("delete-container-name").innerText = identity.name;
+
+  let icon = document.getElementById("delete-container-icon");
+  icon.setAttribute("data-identity-icon", identity.image);
+  icon.setAttribute("data-identity-color", identity.color);
+
+  showPanel("#delete-container-panel");
+}
+
+document.querySelector("#add-container-link").addEventListener("click", () => {
+  showPanel("#edit-container-panel");
+});
+
+document.querySelector("#edit-containers-link").addEventListener("click", () => {
+  showEditContainersPanel();
+});
+
+document.querySelector("#exit-edit-mode-link").addEventListener("click", () => {
+  showPanel("#container-panel");
+});
+
+document.querySelector("#edit-container-panel-back-arrow").addEventListener("click", () => {
+  showEditContainersPanel();
+});
+
+document.querySelector("#edit-container-cancel-link").addEventListener("click", () => {
+  showEditContainersPanel();
+});
+
+document.querySelector("#delete-container-panel-back-arrow").addEventListener("click", () => {
+  showEditContainersPanel();
+});
+
+document.querySelector("#delete-container-cancel-link").addEventListener("click", () => {
+  showEditContainersPanel();
 });
 
 document.querySelector("#sort-containers-link").addEventListener("click", () => {
