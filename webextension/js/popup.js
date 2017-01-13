@@ -6,6 +6,15 @@
 const CONTAINER_HIDE_SRC = "/img/container-hide.svg";
 const CONTAINER_UNHIDE_SRC = "/img/container-unhide.svg";
 
+// Let's set it to false before releasing!!!
+const DEBUG = true;
+
+function log(...args) {
+  if (DEBUG) {
+    console.log.call(console, ...args);
+  }
+}
+
 function showPanel(panelSelector) {
   for (let panelElement of document.querySelectorAll(".panel")) {
     panelElement.classList.add("hide");
@@ -46,7 +55,7 @@ function showContainerTabsPanel(identity) {
     method: "getTabs",
     userContextId: identity.userContextId,
   }).then(tabs => {
-    console.log('browser.runtime.sendMessage getTabs, tabs: ', tabs);
+    log('browser.runtime.sendMessage getTabs, tabs: ', tabs);
     // For each one, let's create a new line.
     let fragment = document.createDocumentFragment();
     for (const tab of tabs) {
@@ -98,11 +107,11 @@ document.querySelector("#onboarding-done-button").addEventListener("click", () =
 });
 
 browser.runtime.sendMessage({method: "queryIdentities"}).then(identities => {
-  console.log('queryIdentities');
+  log('queryIdentities');
   let fragment = document.createDocumentFragment();
 
   identities.forEach(identity => {
-    console.log('identities.forEach');
+    log('identities.forEach');
     let tr = document.createElement("tr");
     fragment.appendChild(tr);
     tr.classList.add("container-panel-row");
