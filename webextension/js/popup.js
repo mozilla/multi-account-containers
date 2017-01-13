@@ -29,6 +29,8 @@ function log(...args) {
 let Logic = {
   _identities: [],
   _currentIdentity: null,
+  _currentPanel: null,
+  _previousPanel: null,
   _panels: {},
 
   init() {
@@ -62,6 +64,9 @@ let Logic = {
       throw("Something really bad happened. Unknown panel: " + panel + "\n");
     }
 
+    this._previousPanel = this._currentPanel;
+    this._currentPanel = panel;
+
     this._currentIdentity = currentIdentity;
 
     // Initialize the panel before showing it.
@@ -71,6 +76,14 @@ let Logic = {
       }
       document.querySelector(this._panels[panel].panelSelector).classList.remove("hide");
     });
+  },
+
+  showPreviousPanel() {
+    if (!this._previousPanel) {
+      throw "Current panel not set!";
+    }
+
+    this.showPanel(this._previousPanel, this._currentIdentity);
   },
 
   registerPanel(panelName, panelObject) {
@@ -140,7 +153,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
   // This method is called when the object is registered.
   initialize() {
-    document.querySelector(".add-container-link").addEventListener("click", () => {
+    document.querySelector("#container-add-link").addEventListener("click", () => {
       Logic.showPanel(P_CONTAINER_EDIT, {});
     });
 
@@ -167,7 +180,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       fragment.appendChild(tr);
       tr.classList.add("container-panel-row");
       tr.classList.add("clickable");
-      tr.setAttribute("data-identity-cookie-store-id", identity.userContextId);
       tr.innerHTML = `
         <td>
           <div class="userContext-icon open-newtab"
@@ -213,7 +225,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
   // This method is called when the object is registered.
   initialize() {
     document.querySelector("#close-container-info-panel").addEventListener("click", () => {
-      Logic.showPanel(P_CONTAINERS_LIST);
+      Logic.showPreviousPanel();
     });
 
     document.querySelector("#container-info-hideorshow").addEventListener("click", e => {
@@ -303,6 +315,10 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
 
   // This method is called when the object is registered.
   initialize() {
+    document.querySelector("#edit-containers-add-link").addEventListener("click", () => {
+      Logic.showPanel(P_CONTAINER_EDIT, {});
+    });
+
     document.querySelector("#exit-edit-mode-link").addEventListener("click", () => {
       Logic.showPanel(P_CONTAINERS_LIST);
     });
@@ -314,7 +330,6 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
     Logic.identities().forEach(identity => {
       let tr = document.createElement("tr");
       fragment.appendChild(tr);
-      tr.setAttribute("data-identity-cookie-store-id", identity.userContextId);
       tr.classList.add("clickable");
       tr.innerHTML = `
         <td>
@@ -327,16 +342,12 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
         <td class="edit-container">
           <img
             title="Edit ${identity.name} container"
-            data-identity-cookie-store-id="${identity.userContextId}"
-            id="edit-${identity.userContextId}-container-icon"
             src="/img/container-edit.svg"
             class="icon edit-container-icon" />
         </td>
         <td class="remove-container" >
           <img
             title="Remove ${identity.name} container"
-            data-identity-cookie-store-id="${identity.userContextId}"
-            id="delete-${identity.userContextId}-container-icon"
             class="icon delete-container-icon"
             src="/img/container-delete.svg"
           />
@@ -367,18 +378,38 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   // This method is called when the object is registered.
   initialize() {
     document.querySelector("#edit-container-panel-back-arrow").addEventListener("click", () => {
-      Logic.showPanel(P_CONTAINERS_EDIT);
+      Logic.showPreviousPanel();
     });
 
     document.querySelector("#edit-container-cancel-link").addEventListener("click", () => {
-      Logic.showPanel(P_CONTAINERS_EDIT);
+      Logic.showPreviousPanel();
+    });
+
+    document.querySelector("#edit-container-ok-link").addEventListener("click", () => {
+      // FIXME: if the name is empty?
+
+      let identity = Logic.currentIdentity();
+      browser.runtime.sendMessage({
+        method: identity.userContextId ? "updateIdentity" : "createIdentity",
+        userContextId: identity.userContextId || 0,
+        name: document.getElementById("edit-container-panel-name-input").value,
+        icon: identity.image || "fingerprint",
+        color: identity.color || "green",
+      }).then(() => {
+        return Logic.refreshIdentities();
+      }).then(() => {
+        Logic.showPreviousPanel();
+      });
     });
   },
 
   // This method is called when the panel is shown.
   prepare() {
     let identity = Logic.currentIdentity();
-    document.querySelector("#edit-container-panel-name-input").value = identity.name;
+    document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
+
+    // FIXME: color and icon must be set. But we need the UI first.
+
     return Promise.resolve(null);
   },
 });
@@ -392,7 +423,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
   // This method is called when the object is registered.
   initialize() {
     document.querySelector("#delete-container-cancel-link").addEventListener("click", () => {
-      Logic.showPanel(P_CONTAINERS_EDIT);
+      Logic.showPreviousPanel();
     });
 
     document.querySelector("#delete-container-ok-link").addEventListener("click", () => {
@@ -402,7 +433,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
       }).then(() => {
         return Logic.refreshIdentities();
       }).then(() => {
-        Logic.showPanel(P_CONTAINERS_EDIT);
+        Logic.showPreviousPanel();
       });
     });
   },

@@ -404,6 +404,12 @@ let ContainerService = {
 
     // FIXME: icon and color conversion based on FF version.
     const identity = ContextualIdentityService.create(args.name, args.icon, args.color);
+
+    this._identitiesState[identity.userContextId] = {
+      hiddenTabUrls: [],
+      openTabs: 0
+    };
+
     return Promise.resolve(this._convert(identity));
   },
 
