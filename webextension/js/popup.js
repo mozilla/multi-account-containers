@@ -46,7 +46,7 @@ function showContainerTabsPanel(identity) {
   hideShowLabel.innerText = identity.hasHiddenTabs ? "Show these container tabs" : "Hide these container tabs";
 
   // Let"s remove all the previous tabs.
-  for (const trTab of document.getElementsByClassName("container-info-tab")) {
+  for (let trTab of document.getElementsByClassName("container-info-tab")) {
     trTab.remove();
   }
 
@@ -58,7 +58,7 @@ function showContainerTabsPanel(identity) {
     log('browser.runtime.sendMessage getTabs, tabs: ', tabs);
     // For each one, let's create a new line.
     let fragment = document.createDocumentFragment();
-    for (const tab of tabs) {
+    for (let tab of tabs) {
       let tr = document.createElement("tr");
       fragment.appendChild(tr);
       tr.classList.add("container-info-tab");

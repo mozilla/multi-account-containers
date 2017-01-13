@@ -64,7 +64,7 @@ let ContainerService = {
     });
 
     // It can happen that this jsm is loaded after the opening a container tab.
-    for (const tab of tabs) {
+    for (let tab of tabs) {
       const userContextId = this._getUserContextIdFromTab(tab);
       if (userContextId) {
         ++this._identitiesState[userContextId].openTabs;
@@ -160,7 +160,7 @@ let ContainerService = {
 
   _getTabList(userContextId) {
     let list = [];
-    for (const tab of tabs) {
+    for (let tab of tabs) {
       if (userContextId === this._getUserContextIdFromTab(tab)) {
         let object = { title: tab.title, url: tab.url, id: tab.id };
         list.push(object);
@@ -179,7 +179,7 @@ let ContainerService = {
         return;
       }
 
-      for (const tab of tabs) {
+      for (let tab of tabs) {
         if (args.userContextId !== this._getUserContextIdFromTab(tab)) {
           continue;
         }
@@ -229,7 +229,7 @@ let ContainerService = {
 
     // Let's collect UCIs/tabs for this window.
     let map = new Map;
-    for (const tab of tabs) {
+    for (let tab of tabs) {
       if (pinnedTabs && !tabsUtils.isPinned(tab)) {
         // We don't have, or we already handled all the pinned tabs.
         break;
@@ -253,7 +253,7 @@ let ContainerService = {
 
     // Let's move tabs.
     sortMap.forEach(tabs => {
-      for (const tab of tabs) {
+      for (let tab of tabs) {
         xulWindow.gBrowser.moveTabTo(tab, pos++);
       }
     });
@@ -290,7 +290,7 @@ let ContainerService = {
         return;
       }
 
-      for (const tab of tabs) {
+      for (let tab of tabs) {
         if (tab.id === args.tabId) {
           tab.window.activate();
           tab.activate();
@@ -324,7 +324,7 @@ let ContainerService = {
           const newBrowserWindow = viewFor(window);
 
           // Let's move the tab to the new window.
-          for (const tab of list) {
+          for (let tab of list) {
             const newTab = newBrowserWindow.gBrowser.addTab("about:blank");
             newBrowserWindow.gBrowser.swapBrowsersAndCloseOther(newTab, tab);
             // swapBrowsersAndCloseOther is an internal method of gBrowser
@@ -337,7 +337,7 @@ let ContainerService = {
           // Let's close all the normal tab in the new window. In theory it
           // should be only the first tab, but maybe there are addons doing
           // crazy stuff.
-          for (const tab of window.tabs) {
+          for (let tab of window.tabs) {
             const userContextId = this._getUserContextIdFromTab(tab);
             if (args.userContextId !== userContextId) {
               newBrowserWindow.gBrowser.removeTab(viewFor(tab));
@@ -395,7 +395,7 @@ let ContainerService = {
   },
 
   createIdentity(args) {
-    for (const arg of [ "name", "color", "icon"]) {
+    for (let arg of [ "name", "color", "icon"]) {
       if (!(arg in args)) {
         Promise.reject("createIdentity must be called with " + arg + " argument.");
         return;
@@ -414,7 +414,7 @@ let ContainerService = {
     }
 
     let identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
-    for (const arg of [ "name", "color", "icon"]) {
+    for (let arg of [ "name", "color", "icon"]) {
       if ((arg in args)) {
         identity[arg] = args[arg];
       }
