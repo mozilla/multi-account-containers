@@ -215,7 +215,7 @@ function showDeleteContainerPanel(identity) {
   showPanel("#delete-container-panel");
 }
 
-document.querySelector("#add-container-link").addEventListener("click", () => {
+document.querySelector(".add-container-link").addEventListener("click", () => {
   showPanel("#edit-container-panel");
 });
 
@@ -235,10 +235,6 @@ document.querySelector("#edit-container-cancel-link").addEventListener("click", 
   showEditContainersPanel();
 });
 
-document.querySelector("#delete-container-panel-back-arrow").addEventListener("click", () => {
-  showEditContainersPanel();
-});
-
 document.querySelector("#delete-container-cancel-link").addEventListener("click", () => {
   showEditContainersPanel();
 });
@@ -252,7 +248,6 @@ document.querySelector("#sort-containers-link").addEventListener("click", () => 
 });
 
 document.querySelector("#close-container-info-panel").addEventListener("click", () => {
-  // TODO: animation
   document.getElementById("container-info-panel").classList.add("hide");
   document.getElementById("container-panel").classList.remove("hide");
 });
