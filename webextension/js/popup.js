@@ -33,13 +33,7 @@ let Logic = {
 
   init() {
     // Retrieve the list of identities.
-    browser.runtime.sendMessage({
-      method: "queryIdentities"
-    })
-
-    .then(identities => {
-      this._identities = identities;
-    })
+    this.refreshIdentities()
 
     // Routing to the correct panel.
     .then(() => {
@@ -50,6 +44,15 @@ let Logic = {
       } else {
         this.showPanel(P_ONBOARDING_1);
       }
+    });
+  },
+
+  refreshIdentities() {
+    return browser.runtime.sendMessage({
+      method: "queryIdentities"
+    })
+    .then(identities => {
+      this._identities = identities;
     });
   },
 
@@ -390,6 +393,17 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
   initialize() {
     document.querySelector("#delete-container-cancel-link").addEventListener("click", () => {
       Logic.showPanel(P_CONTAINERS_EDIT);
+    });
+
+    document.querySelector("#delete-container-ok-link").addEventListener("click", () => {
+      browser.runtime.sendMessage({
+        method: "removeIdentity",
+        userContextId: Logic.currentIdentity().userContextId,
+      }).then(() => {
+        return Logic.refreshIdentities();
+      }).then(() => {
+        Logic.showPanel(P_CONTAINERS_EDIT);
+      });
     });
   },
 
