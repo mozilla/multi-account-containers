@@ -8,7 +8,7 @@ const CONTAINER_HIDE_SRC = "/img/container-hide.svg";
 const CONTAINER_UNHIDE_SRC = "/img/container-unhide.svg";
 
 // Let's set it to false before releasing!!!
-const DEBUG = false;
+const DEBUG = true;
 
 // List of panels
 const P_ONBOARDING_1     = "onboarding1";
@@ -61,7 +61,7 @@ let Logic = {
   showPanel(panel, currentIdentity = null) {
     // Invalid panel... ?!?
     if (!(panel in this._panels)) {
-      throw("Something really bad happened. Unknown panel: " + panel + "\n");
+      throw new Error("Something really bad happened. Unknown panel: " + panel);
     }
 
     this._previousPanel = this._currentPanel;
@@ -80,7 +80,7 @@ let Logic = {
 
   showPreviousPanel() {
     if (!this._previousPanel) {
-      throw "Current panel not set!";
+      throw new Error("Current panel not set!");
     }
 
     this.showPanel(this._previousPanel, this._currentIdentity);
@@ -97,7 +97,7 @@ let Logic = {
 
   currentIdentity() {
     if (!this._currentIdentity) {
-      throw("CurrentIdentity must be set before calling Logic.currentIdentity.");
+      throw new Error("CurrentIdentity must be set before calling Logic.currentIdentity.");
     }
     return this._currentIdentity;
   },
@@ -178,8 +178,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       log('identities.forEach');
       let tr = document.createElement("tr");
       fragment.appendChild(tr);
-      tr.classList.add("container-panel-row");
-      tr.classList.add("clickable");
+      tr.classList.add("container-panel-row", "clickable");
       tr.innerHTML = `
         <td>
           <div class="userContext-icon open-newtab"
@@ -209,8 +208,10 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       });
     });
 
-    document.querySelector(".identities-list").innerHTML = "";
-    document.querySelector(".identities-list").appendChild(fragment);
+    let list = document.querySelector(".identities-list");
+
+    list.innerHTML = "";
+    list.appendChild(fragment);
 
     return Promise.resolve();
   },
@@ -286,8 +287,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       for (let tab of tabs) {
         let tr = document.createElement("tr");
         fragment.appendChild(tr);
-        tr.classList.add("container-info-tab");
-        tr.classList.add("clickable");
+        tr.classList.add("container-info-tab", "clickable");
         tr.innerHTML = `
           <td><img class="icon" src="${tab.favicon}" /></td>
           <td>${tab.title}</td>`;
@@ -361,8 +361,10 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       });
     });
 
-    document.querySelector("#edit-identities-list").innerHTML = "";
-    document.querySelector("#edit-identities-list").appendChild(fragment);
+    let list = document.querySelector("#edit-identities-list");
+
+    list.innerHTML = "";
+    list.appendChild(fragment);
 
     return Promise.resolve(null);
   },
