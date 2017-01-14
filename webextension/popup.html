@@ -41,7 +41,7 @@
         <a id="edit-containers-link">Edit Containers</a>
       </div>
       <div class="small-2 columns add-container">
-        <a id="add-container-link">
+        <a class="add-container-link" id="container-add-link">
           <img alt="Create new container icon" title="Create new container" src="/img/container-add.svg" class="icon" />
         </a>
       </div>
@@ -57,10 +57,10 @@
           <span class="userContext-icon" id="container-info-icon" data-identity-icon="" data-identity-color=""></span>
           <h3 id="container-info-name" class="panel-header-text"></h3>
         </div>
-        <div class="row container-info-panel-hide clickable" id="container-info-hideorshow" data-user-context-id="">
+        <div class="row container-info-panel-hide container-info-has-tabs clickable" id="container-info-hideorshow" data-user-context-id="">
           <img id="container-info-hideorshow-icon" alt="Hide Container icon" src="/img/container-hide.svg" class="icon container-info-panel-hideorshow-icon"/><span id="container-info-hideorshow-label">Hide this container</span><br/>
         </div>
-        <div class="row container-info-panel-movetabs clickable" id="container-info-movetabs">
+        <div class="row container-info-panel-movetabs container-info-has-tabs clickable" id="container-info-movetabs">
           Move tabs to a new window
         </div>
         <table class="unstriped" id="container-info-table">
@@ -84,7 +84,7 @@
         <a id="exit-edit-mode-link">&lt; Exit Edit Mode</a>
       </div>
       <div class="small-2 columns add-container">
-        <a id="add-container-link">
+        <a class="add-container-link" id="edit-containers-add-link">
           <img alt="Create new container icon" title="Create new container" src="/img/container-add.svg" class="icon" />
         </a>
       </div>
@@ -126,7 +126,7 @@
             <a class="button secondary expanded footer-button cancel-button" id="edit-container-cancel-link">Cancel</a>
           </div>
           <div class="small-6 columns footer-columns">
-            <a class="button expanded footer-button">OK</a>
+            <a class="button expanded footer-button" id="edit-container-ok-link">OK</a>
           </div>
         </div>
       </div>
@@ -135,8 +135,7 @@
 
   <div class="hide panel delete-container-panel" id="delete-container-panel">
     <div class="row">
-      <div class="small-2 columns panel-back-arrow clickable" id="close-delete-container-panel">&laquo;</div>
-      <div class="small-10 columns">
+      <div class="small-12 columns">
         <div class="row container-info-panel-header">
           <span class="userContext-icon" id="delete-container-icon" data-identity-icon="" data-identity-color=""></span>
           <h3 id="delete-container-name" class="panel-header-text"></h3>
@@ -150,7 +149,7 @@
             <a class="button expanded secondary footer-button cancel-button" id="delete-container-cancel-link">Cancel</a>
           </div>
           <div class="small-6 columns footer-columns">
-            <a class="button expanded footer-button">OK</a>
+            <a class="button expanded footer-button" id="delete-container-ok-link">OK</a>
           </div>
         </div>
       </div>

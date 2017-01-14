@@ -79,7 +79,6 @@ table {
 table.unstriped tbody tr {
   border-bottom: 1px solid #f1f1f1;
   background-color: #fefefe;
-  cursor: pointer;
 }
 
 .userContext-icon {
