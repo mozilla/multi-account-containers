@@ -101,6 +101,28 @@ let Logic = {
     }
     return this._currentIdentity;
   },
+
+  generateIdentityName() {
+    const defaultName = 'Container';
+    let ids = [];
+
+    // This loop populates the 'ids' array with all the already-used ids.
+    this._identities.forEach(identity => {
+      if (identity.name.startsWith(defaultName)) {
+        let id = parseInt(identity.name.substr(defaultName.length))
+        if (id) {
+          ids.push(id);
+        }
+      }
+    });
+
+    // Here we find the first valid id.
+    for (let id = 1;; ++id) {
+      if (ids.indexOf(id) == -1) {
+        return defaultName + (id < 10 ? '0' : '') + id;
+      }
+    }
+  },
 };
 
 // P_ONBOARDING_1: First page for Onboarding.
@@ -154,7 +176,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
   // This method is called when the object is registered.
   initialize() {
     document.querySelector("#container-add-link").addEventListener("click", () => {
-      Logic.showPanel(P_CONTAINER_EDIT, {});
+      Logic.showPanel(P_CONTAINER_EDIT, { name: Logic.generateIdentityName() });
     });
 
     document.querySelector("#edit-containers-link").addEventListener("click", () => {
@@ -316,7 +338,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
   // This method is called when the object is registered.
   initialize() {
     document.querySelector("#edit-containers-add-link").addEventListener("click", () => {
-      Logic.showPanel(P_CONTAINER_EDIT, {});
+      Logic.showPanel(P_CONTAINER_EDIT, { name: Logic.generateIdentityName() });
     });
 
     document.querySelector("#exit-edit-mode-link").addEventListener("click", () => {
@@ -387,13 +409,11 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     });
 
     document.querySelector("#edit-container-ok-link").addEventListener("click", () => {
-      // FIXME: if the name is empty?
-
       let identity = Logic.currentIdentity();
       browser.runtime.sendMessage({
         method: identity.userContextId ? "updateIdentity" : "createIdentity",
         userContextId: identity.userContextId || 0,
-        name: document.getElementById("edit-container-panel-name-input").value,
+        name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
         icon: identity.image || "fingerprint",
         color: identity.color || "green",
       }).then(() => {
