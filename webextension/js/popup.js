@@ -409,13 +409,11 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     });
 
     document.querySelector("#edit-container-ok-link").addEventListener("click", () => {
-      // FIXME: if the name is empty?
-
       let identity = Logic.currentIdentity();
       browser.runtime.sendMessage({
         method: identity.userContextId ? "updateIdentity" : "createIdentity",
         userContextId: identity.userContextId || 0,
-        name: document.getElementById("edit-container-panel-name-input").value,
+        name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
         icon: identity.image || "fingerprint",
         color: identity.color || "green",
       }).then(() => {
