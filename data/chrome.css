@@ -114,3 +114,48 @@
   background-repeat: repeat-x;
 }
 /* end containers experiment */
+
+.tabs-newtab-button .toolbarbutton-icon[type="menu"] {
+  margin-inline-end: 0;
+}
+
+.tabs-newtab-button .toolbarbutton-menu-dropmarker {
+  display: none;
+}
+
+.new-tab-overlay {
+  visibility: visible;
+  block-size: 200px;
+  inline-size: auto;
+  display: block;
+  background: transparent;
+  position: absolute;
+  -moz-appearance: none;
+  offset-block-start: 29px;
+}
+.new-tab-overlay[hidden=true] {
+  display: none;
+}
+
+.new-tab-overlay menuitem {
+  background: white;
+  margin-block-end: 12px;
+  border-radius: 20px;
+  -moz-appearance: none;
+  color: #4b4b4b;
+  padding: 6px;
+  font-size: 1.2rem;
+  box-shadow: 3px 7px 7px #0006;
+  --icon-size: 26px;
+  /* Limited width to 8chars roughly */
+  inline-size: calc(calc(8*0.68em) + var(--icon-size) + 3px);
+}
+
+.new-tab-overlay .menuitem-iconic[data-usercontextid] > .menu-iconic-left > .menu-iconic-icon {
+  block-height: var(--icon-size);
+  block-width: var(--icon-size);
+}
+
+.menuitem-iconic[data-usercontextid] > .menu-iconic-left {
+  visibility: visible;
+}
