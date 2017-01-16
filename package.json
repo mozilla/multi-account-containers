@@ -31,6 +31,7 @@
   "scripts": {
     "lint": "npm-run-all lint:*",
     "lint:js": "eslint .",
-    "lint:addon": "addons-linter webextension --self-hosted"
+    "lint:addon": "addons-linter webextension --self-hosted",
+    "once": "jpm run -b Aurora"
   }
 }
