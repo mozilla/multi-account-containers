@@ -2,12 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-/* global browser, window, document, localStorage */
-
 const CONTAINER_HIDE_SRC = "/img/container-hide.svg";
 const CONTAINER_UNHIDE_SRC = "/img/container-unhide.svg";
 
-// Let's set it to false before releasing!!!
+// TODO: Let's set it to false before releasing!!!
 const DEBUG = true;
 
 // List of panels
@@ -21,7 +19,7 @@ const P_CONTAINER_DELETE = "containerDelete";
 
 function log(...args) {
   if (DEBUG) {
-    console.log.call(console, ...args);
+    console.log.call(console, ...args); // eslint-disable-line no-console
   }
 }
 
@@ -103,13 +101,13 @@ let Logic = {
   },
 
   generateIdentityName() {
-    const defaultName = 'Container';
+    const defaultName = "Container";
     let ids = [];
 
     // This loop populates the 'ids' array with all the already-used ids.
     this._identities.forEach(identity => {
       if (identity.name.startsWith(defaultName)) {
-        let id = parseInt(identity.name.substr(defaultName.length))
+        let id = parseInt(identity.name.substr(defaultName.length), 10);
         if (id) {
           ids.push(id);
         }
@@ -118,8 +116,8 @@ let Logic = {
 
     // Here we find the first valid id.
     for (let id = 1;; ++id) {
-      if (ids.indexOf(id) == -1) {
-        return defaultName + (id < 10 ? '0' : '') + id;
+      if (ids.indexOf(id) === -1) {
+        return defaultName + (id < 10 ? "0" : "") + id;
       }
     }
   },
@@ -197,7 +195,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     let fragment = document.createDocumentFragment();
 
     Logic.identities().forEach(identity => {
-      log('identities.forEach');
+      log("identities.forEach");
       let tr = document.createElement("tr");
       fragment.appendChild(tr);
       tr.classList.add("container-panel-row", "clickable");
@@ -251,7 +249,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       Logic.showPreviousPanel();
     });
 
-    document.querySelector("#container-info-hideorshow").addEventListener("click", e => {
+    document.querySelector("#container-info-hideorshow").addEventListener("click", () => {
       let identity = Logic.currentIdentity();
       browser.runtime.sendMessage({
         method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
@@ -261,7 +259,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       });
     });
 
-    document.querySelector("#container-info-movetabs").addEventListener("click", e => {
+    document.querySelector("#container-info-movetabs").addEventListener("click", () => {
       return browser.runtime.sendMessage({
         method: "moveTabsToWindow",
         userContextId: Logic.currentIdentity().userContextId,
@@ -303,7 +301,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       method: "getTabs",
       userContextId: identity.userContextId,
     }).then(tabs => {
-      log('browser.runtime.sendMessage getTabs, tabs: ', tabs);
+      log("browser.runtime.sendMessage getTabs, tabs: ", tabs);
       // For each one, let's create a new line.
       let fragment = document.createDocumentFragment();
       for (let tab of tabs) {
