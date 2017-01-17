@@ -11,6 +11,7 @@
   "devDependencies": {
     "addons-linter": "^0.15.14",
     "eslint": "^3.12.2",
+    "eslint-plugin-promise": "^3.4.0",
     "jpm": "^1.2.2",
     "npm-run-all": "^4.0.0"
   },
