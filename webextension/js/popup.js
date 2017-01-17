@@ -24,7 +24,7 @@ function log(...args) {
 }
 
 // This object controls all the panels, identities and many other things.
-let Logic = {
+const Logic = {
   _identities: [],
   _currentIdentity: null,
   _currentPanel: null,
@@ -69,7 +69,7 @@ let Logic = {
 
     // Initialize the panel before showing it.
     this._panels[panel].prepare().then(() => {
-      for (let panelElement of document.querySelectorAll(".panel")) {
+      for (let panelElement of document.querySelectorAll(".panel")) { // eslint-disable-line prefer-const
         panelElement.classList.add("hide");
       }
       document.querySelector(this._panels[panel].panelSelector).classList.remove("hide");
@@ -102,12 +102,12 @@ let Logic = {
 
   generateIdentityName() {
     const defaultName = "Container";
-    let ids = [];
+    const ids = [];
 
     // This loop populates the 'ids' array with all the already-used ids.
     this._identities.forEach(identity => {
       if (identity.name.startsWith(defaultName)) {
-        let id = parseInt(identity.name.substr(defaultName.length), 10);
+        const id = parseInt(identity.name.substr(defaultName.length), 10);
         if (id) {
           ids.push(id);
         }
@@ -192,11 +192,11 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
   // This method is called when the panel is shown.
   prepare() {
-    let fragment = document.createDocumentFragment();
+    const fragment = document.createDocumentFragment();
 
     Logic.identities().forEach(identity => {
       log("identities.forEach");
-      let tr = document.createElement("tr");
+      const tr = document.createElement("tr");
       fragment.appendChild(tr);
       tr.classList.add("container-panel-row", "clickable");
       tr.innerHTML = `
@@ -228,7 +228,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       });
     });
 
-    let list = document.querySelector(".identities-list");
+    const list = document.querySelector(".identities-list");
 
     list.innerHTML = "";
     list.appendChild(fragment);
@@ -250,7 +250,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     });
 
     document.querySelector("#container-info-hideorshow").addEventListener("click", () => {
-      let identity = Logic.currentIdentity();
+      const identity = Logic.currentIdentity();
       browser.runtime.sendMessage({
         method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
         userContextId: identity.userContextId
@@ -271,17 +271,17 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
   // This method is called when the panel is shown.
   prepare() {
-    let identity = Logic.currentIdentity();
+    const identity = Logic.currentIdentity();
 
     // Populating the panel: name and icon
     document.getElementById("container-info-name").innerText = identity.name;
 
-    let icon = document.getElementById("container-info-icon");
+    const icon = document.getElementById("container-info-icon");
     icon.setAttribute("data-identity-icon", identity.image);
     icon.setAttribute("data-identity-color", identity.color);
 
     // Show or not the has-tabs section.
-    for (let trHasTabs of document.getElementsByClassName("container-info-has-tabs")) {
+    for (let trHasTabs of document.getElementsByClassName("container-info-has-tabs")) { // eslint-disable-line prefer-const
       trHasTabs.hidden = !identity.hasHiddenTabs && !identity.hasOpenTabs;
     }
 
@@ -292,7 +292,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     hideShowLabel.innerText = identity.hasHiddenTabs ? "Show these container tabs" : "Hide these container tabs";
 
     // Let's remove all the previous tabs.
-    for (let trTab of document.getElementsByClassName("container-info-tab")) {
+    for (let trTab of document.getElementsByClassName("container-info-tab")) { // eslint-disable-line prefer-const
       trTab.remove();
     }
 
@@ -303,9 +303,9 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     }).then(tabs => {
       log("browser.runtime.sendMessage getTabs, tabs: ", tabs);
       // For each one, let's create a new line.
-      let fragment = document.createDocumentFragment();
-      for (let tab of tabs) {
-        let tr = document.createElement("tr");
+      const fragment = document.createDocumentFragment();
+      for (let tab of tabs) { // eslint-disable-line prefer-const
+        const tr = document.createElement("tr");
         fragment.appendChild(tr);
         tr.classList.add("container-info-tab", "clickable");
         tr.innerHTML = `
@@ -346,9 +346,9 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
 
   // This method is called when the panel is shown.
   prepare() {
-    let fragment = document.createDocumentFragment();
+    const fragment = document.createDocumentFragment();
     Logic.identities().forEach(identity => {
-      let tr = document.createElement("tr");
+      const tr = document.createElement("tr");
       fragment.appendChild(tr);
       tr.innerHTML = `
         <td>
@@ -381,7 +381,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       });
     });
 
-    let list = document.querySelector("#edit-identities-list");
+    const list = document.querySelector("#edit-identities-list");
 
     list.innerHTML = "";
     list.appendChild(fragment);
@@ -407,7 +407,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     });
 
     document.querySelector("#edit-container-ok-link").addEventListener("click", () => {
-      let identity = Logic.currentIdentity();
+      const identity = Logic.currentIdentity();
       browser.runtime.sendMessage({
         method: identity.userContextId ? "updateIdentity" : "createIdentity",
         userContextId: identity.userContextId || 0,
@@ -424,7 +424,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
   // This method is called when the panel is shown.
   prepare() {
-    let identity = Logic.currentIdentity();
+    const identity = Logic.currentIdentity();
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
 
     // FIXME: color and icon must be set. But we need the UI first.
@@ -459,12 +459,12 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
 
   // This method is called when the panel is shown.
   prepare() {
-    let identity = Logic.currentIdentity();
+    const identity = Logic.currentIdentity();
 
     // Populating the panel: name and icon
     document.getElementById("delete-container-name").innerText = identity.name;
 
-    let icon = document.getElementById("delete-container-icon");
+    const icon = document.getElementById("delete-container-icon");
     icon.setAttribute("data-identity-icon", identity.image);
     icon.setAttribute("data-identity-color", identity.color);
 

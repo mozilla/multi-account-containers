@@ -14,6 +14,8 @@ module.exports = {
     "indent": ["error", 2],
     "linebreak-style": ["error", "unix"],
     "no-throw-literal": "error",
+    "no-var": "error",
+    "prefer-const": "error",
     "quotes": ["error", "double"],
     "radix": "error",
     "semi": ["error", "always"]
