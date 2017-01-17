@@ -18,13 +18,13 @@ const windowUtils = require("sdk/window/utils");
 
 const IDENTITY_COLORS = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"];
 
-let ContainerService = {
+const ContainerService = {
   _identitiesState: {},
 
   init() {
     // Enabling preferences
 
-    let prefs = [
+    const prefs = [
       [ "privacy.userContext.enabled", true ],
       [ "privacy.userContext.ui.enabled", true ],
       [ "privacy.usercontext.about_newtab_segregation.enabled", true ],
@@ -40,7 +40,7 @@ let ContainerService = {
 
     // only these methods are allowed. We have a 1:1 mapping between messages
     // and methods. These methods must return a promise.
-    let methods = [
+    const methods = [
       "hideTabs",
       "showTabs",
       "sortTabs",
@@ -64,7 +64,7 @@ let ContainerService = {
     });
 
     // It can happen that this jsm is loaded after the opening a container tab.
-    for (let tab of tabs) {
+    for (let tab of tabs) { // eslint-disable-line prefer-const
       const userContextId = this._getUserContextIdFromTab(tab);
       if (userContextId) {
         ++this._identitiesState[userContextId].openTabs;
@@ -87,7 +87,7 @@ let ContainerService = {
 
     // Modify CSS and other stuff for each window.
 
-    for (let window of windows.browserWindows) {
+    for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
       this.configureWindow(viewFor(window));
     }
 
@@ -159,10 +159,10 @@ let ContainerService = {
   },
 
   _getTabList(userContextId) {
-    let list = [];
-    for (let tab of tabs) {
+    const list = [];
+    for (let tab of tabs) { // eslint-disable-line prefer-const
       if (userContextId === this._getUserContextIdFromTab(tab)) {
-        let object = { title: tab.title, url: tab.url, id: tab.id };
+        const object = { title: tab.title, url: tab.url, id: tab.id };
         list.push(object);
       }
     }
@@ -179,7 +179,7 @@ let ContainerService = {
         return;
       }
 
-      for (let tab of tabs) {
+      for (let tab of tabs) { // eslint-disable-line prefer-const
         if (args.userContextId !== this._getUserContextIdFromTab(tab)) {
           continue;
         }
@@ -198,9 +198,9 @@ let ContainerService = {
       return;
     }
 
-    let promises = [];
+    const promises = [];
 
-    for (let url of this._identitiesState[args.userContextId].hiddenTabUrls) {
+    for (let url of this._identitiesState[args.userContextId].hiddenTabUrls) { // eslint-disable-line prefer-const
       promises.push(this.openTab({ userContextId: args.userContextId, url }));
     }
 
@@ -211,7 +211,7 @@ let ContainerService = {
 
   sortTabs() {
     return new Promise(resolve => {
-      for (let window of windows.browserWindows) {
+      for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
         // First the pinned tabs, then the normal ones.
         this._sortTabsInternal(window, true);
         this._sortTabsInternal(window, false);
@@ -228,8 +228,8 @@ let ContainerService = {
     let pos = 0;
 
     // Let's collect UCIs/tabs for this window.
-    let map = new Map;
-    for (let tab of tabs) {
+    const map = new Map;
+    for (let tab of tabs) { // eslint-disable-line prefer-const
       if (pinnedTabs && !tabsUtils.isPinned(tab)) {
         // We don't have, or we already handled all the pinned tabs.
         break;
@@ -253,7 +253,7 @@ let ContainerService = {
 
     // Let's move tabs.
     sortMap.forEach(tabs => {
-      for (let tab of tabs) {
+      for (let tab of tabs) { // eslint-disable-line prefer-const
         xulWindow.gBrowser.moveTabTo(tab, pos++);
       }
     });
@@ -267,9 +267,9 @@ let ContainerService = {
       }
 
       const list = this._getTabList(args.userContextId);
-      let promises = [];
+      const promises = [];
 
-      for (let object of list) {
+      for (let object of list) { // eslint-disable-line prefer-const
         promises.push(getFavicon(object.url).then(url => {
           object.favicon = url;
         }, () => {
@@ -290,7 +290,7 @@ let ContainerService = {
         return;
       }
 
-      for (let tab of tabs) {
+      for (let tab of tabs) { // eslint-disable-line prefer-const
         if (tab.id === args.tabId) {
           tab.window.activate();
           tab.activate();
@@ -309,7 +309,7 @@ let ContainerService = {
         return;
       }
 
-      // Let"s create a list of the tabs.
+      // Let's create a list of the tabs.
       const list = this._getTabList(args.userContextId);
 
       // Nothing to do
@@ -324,7 +324,7 @@ let ContainerService = {
           const newBrowserWindow = viewFor(window);
 
           // Let's move the tab to the new window.
-          for (let tab of list) {
+          for (let tab of list) { // eslint-disable-line prefer-const
             const newTab = newBrowserWindow.gBrowser.addTab("about:blank");
             newBrowserWindow.gBrowser.swapBrowsersAndCloseOther(newTab, tab);
             // swapBrowsersAndCloseOther is an internal method of gBrowser
@@ -337,7 +337,7 @@ let ContainerService = {
           // Let's close all the normal tab in the new window. In theory it
           // should be only the first tab, but maybe there are addons doing
           // crazy stuff.
-          for (let tab of window.tabs) {
+          for (let tab of window.tabs) { // eslint-disable-line prefer-const
             const userContextId = this._getUserContextIdFromTab(tab);
             if (args.userContextId !== userContextId) {
               newBrowserWindow.gBrowser.removeTab(viewFor(tab));
@@ -351,7 +351,7 @@ let ContainerService = {
 
   openTab(args) {
     return new Promise(resolve => {
-      let browserWin = windowUtils.getMostRecentBrowserWindow();
+      const browserWin = windowUtils.getMostRecentBrowserWindow();
 
       // This should not really happen.
       if (!browserWin || !browserWin.gBrowser) {
@@ -363,7 +363,7 @@ let ContainerService = {
         userContextId = args.userContextId;
       }
 
-      let tab = browserWin.gBrowser.addTab(args.url || null, { userContextId });
+      const tab = browserWin.gBrowser.addTab(args.url || null, { userContextId });
       browserWin.gBrowser.selectedTab = tab;
       resolve(true);
     });
@@ -373,10 +373,10 @@ let ContainerService = {
 
   queryIdentities() {
     return new Promise(resolve => {
-      let identities = [];
+      const identities = [];
 
       ContextualIdentityService.getIdentities().forEach(identity => {
-        let convertedIdentity = this._convert(identity);
+        const convertedIdentity = this._convert(identity);
         identities.push(convertedIdentity);
       });
 
@@ -390,12 +390,12 @@ let ContainerService = {
       return;
     }
 
-    let identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
+    const identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
     return Promise.resolve(identity ? this._convert(identity) : null);
   },
 
   createIdentity(args) {
-    for (let arg of [ "name", "color", "icon"]) {
+    for (let arg of [ "name", "color", "icon"]) { // eslint-disable-line prefer-const
       if (!(arg in args)) {
         Promise.reject("createIdentity must be called with " + arg + " argument.");
         return;
@@ -419,8 +419,8 @@ let ContainerService = {
       return;
     }
 
-    let identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
-    for (let arg of [ "name", "color", "icon"]) {
+    const identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
+    for (let arg of [ "name", "color", "icon"]) { // eslint-disable-line prefer-const
       if ((arg in args)) {
         identity[arg] = args[arg];
       }
@@ -445,15 +445,15 @@ let ContainerService = {
   // Styling the window
 
   configureWindow(window) {
-    var tabsElement = window.document.getElementById("tabbrowser-tabs");
-    var button = window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
+    const tabsElement = window.document.getElementById("tabbrowser-tabs");
+    const button = window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
 
     while (button.firstChild) {
       button.removeChild(button.firstChild);
     }
 
     button.setAttribute("type", "menu");
-    let popup = window.document.createElementNS(XUL_NS, "menupopup");
+    const popup = window.document.createElementNS(XUL_NS, "menupopup");
 
     popup.setAttribute("anonid", "newtab-popup");
     popup.className = "new-tab-popup";
@@ -462,7 +462,7 @@ let ContainerService = {
     ContextualIdentityService.getIdentities().forEach(identity => {
       identity = this._convert(identity);
 
-      var menuItem = window.document.createElementNS(XUL_NS, "menuitem");
+      const menuItem = window.document.createElementNS(XUL_NS, "menuitem");
       menuItem.setAttribute("class", "menuitem-iconic");
       menuItem.setAttribute("label", identity.name);
       menuItem.setAttribute("image", self.data.url("usercontext.svg") + "#" + identity.image);
@@ -476,7 +476,7 @@ let ContainerService = {
     });
 
     button.appendChild(popup);
-    let style = Style({ uri: self.data.url("chrome.css") });
+    const style = Style({ uri: self.data.url("chrome.css") });
 
     attachTo(style, viewFor(window));
   }
