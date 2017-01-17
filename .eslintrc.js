@@ -28,6 +28,8 @@ module.exports = {
     "linebreak-style": ["error", "unix"],
     "no-throw-literal": "error",
     "no-warning-comments": "warn",
+    "no-var": "error",
+    "prefer-const": "error",
     "quotes": ["error", "double"],
     "radix": "error",
     "semi": ["error", "always"]
