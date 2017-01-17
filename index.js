@@ -103,6 +103,8 @@ const ContainerService = {
           sendReply(this[message.method](message));
         }
       });
+    }).catch(() => {
+      throw new Error("WebExtension startup failed. Unable to continue.");
     });
   },
 
@@ -194,8 +196,7 @@ const ContainerService = {
 
   showTabs(args) {
     if (!("userContextId" in args)) {
-      Promise.reject("showTabs must be called with userContextId argument.");
-      return;
+      return Promise.reject("showTabs must be called with userContextId argument.");
     }
 
     const promises = [];
@@ -279,6 +280,8 @@ const ContainerService = {
 
       Promise.all(promises).then(() => {
         resolve(list);
+      }).catch((e) => {
+        reject(e);
       });
     });
   },
@@ -386,8 +389,7 @@ const ContainerService = {
 
   getIdentity(args) {
     if (!("userContextId" in args)) {
-      Promise.reject("getIdentity must be called with userContextId argument.");
-      return;
+      return Promise.reject("getIdentity must be called with userContextId argument.");
     }
 
     const identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
@@ -397,8 +399,7 @@ const ContainerService = {
   createIdentity(args) {
     for (let arg of [ "name", "color", "icon"]) { // eslint-disable-line prefer-const
       if (!(arg in args)) {
-        Promise.reject("createIdentity must be called with " + arg + " argument.");
-        return;
+        return Promise.reject("createIdentity must be called with " + arg + " argument.");
       }
     }
 
@@ -415,8 +416,7 @@ const ContainerService = {
 
   updateIdentity(args) {
     if (!("userContextId" in args)) {
-      Promise.reject("updateIdentity must be called with userContextId argument.");
-      return;
+      return Promise.reject("updateIdentity must be called with userContextId argument.");
     }
 
     const identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
@@ -436,8 +436,7 @@ const ContainerService = {
 
   removeIdentity(args) {
     if (!("userContextId" in args)) {
-      Promise.reject("removeIdentity must be called with userContextId argument.");
-      return;
+      return Promise.reject("removeIdentity must be called with userContextId argument.");
     }
     return Promise.resolve(ContextualIdentityService.remove(args.userContextId));
   },

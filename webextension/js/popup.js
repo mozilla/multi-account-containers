@@ -44,6 +44,10 @@ const Logic = {
       } else {
         this.showPanel(P_ONBOARDING_1);
       }
+    })
+
+    .catch(() => {
+      throw new Error("Failed to retrieve the identities. We cannot continue.");
     });
   },
 
@@ -73,6 +77,9 @@ const Logic = {
         panelElement.classList.add("hide");
       }
       document.querySelector(this._panels[panel].panelSelector).classList.remove("hide");
+    })
+    .catch(() => {
+      throw new Error("Failed to show panel " + panel);
     });
   },
 
@@ -186,6 +193,8 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         method: "sortTabs"
       }).then(() => {
         window.close();
+      }).catch(() => {
+        window.close();
       });
     });
   },
@@ -221,6 +230,8 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             });
           }).then(() => {
             window.close();
+          }).catch(() => {
+            window.close();
           });
         } else if (e.target.matches(".info")) {
           Logic.showPanel(P_CONTAINER_INFO, identity);
@@ -255,6 +266,8 @@ Logic.registerPanel(P_CONTAINER_INFO, {
         method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
         userContextId: identity.userContextId
       }).then(() => {
+        window.close();
+      }).catch(() => {
         window.close();
       });
     });
@@ -317,6 +330,8 @@ Logic.registerPanel(P_CONTAINER_INFO, {
             method: "showTab",
             tabId: tab.id,
           }).then(() => {
+            window.close();
+          }).catch(() => {
             window.close();
           });
         });
@@ -418,6 +433,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         return Logic.refreshIdentities();
       }).then(() => {
         Logic.showPreviousPanel();
+      }).catch(() => {
+        Logic.showPanel(P_CONTAINERS_LIST);
       });
     });
   },
@@ -453,6 +470,8 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
         return Logic.refreshIdentities();
       }).then(() => {
         Logic.showPreviousPanel();
+      }).catch(() => {
+        Logic.showPanel(P_CONTAINERS_LIST);
       });
     });
   },
