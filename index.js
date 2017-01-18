@@ -164,15 +164,12 @@ const ContainerService = {
     return { title: tab.title, url: tab.url, id: tab.id, active: true };
   },
 
-  _getTabList(userContextId) {
-    const list = [];
+  _containerTabIterator(userContextId, cb) {
     for (let tab of tabs) { // eslint-disable-line prefer-const
       if (userContextId === this._getUserContextIdFromTab(tab)) {
-        list.push(this._createTabObject(tab));
+        cb(tab);
       }
     }
-
-    return list;
   },
 
   // Tabs management
@@ -184,11 +181,7 @@ const ContainerService = {
         return;
       }
 
-      for (let tab of tabs) { // eslint-disable-line prefer-const
-        if (args.userContextId !== this._getUserContextIdFromTab(tab)) {
-          continue;
-        }
-
+      this._containerTabIterator(args.userContextId, tab => {
         const object = this._createTabObject(tab);
 
         // This tab is going to be closed. Let's mark this tabObject as
@@ -203,7 +196,7 @@ const ContainerService = {
 
         this._identitiesState[args.userContextId].hiddenTabUrls.push(object);
         tab.close();
-      }
+      });
 
       resolve(null);
     });
@@ -282,7 +275,11 @@ const ContainerService = {
         return;
       }
 
-      const list = this._getTabList(args.userContextId);
+      const list = [];
+      this._containerTabIterator(args.userContextId, tab => {
+        list.push(this._createTabObject(tab));
+      });
+
       const promises = [];
 
       for (let object of list) { // eslint-disable-line prefer-const
@@ -328,7 +325,10 @@ const ContainerService = {
       }
 
       // Let's create a list of the tabs.
-      const list = this._getTabList(args.userContextId);
+      const list = [];
+      this._containerTabIterator(args.userContextId, tab => {
+        list.push(tab);
+      });
 
       // Nothing to do
       if (list.length === 0) {
@@ -344,7 +344,7 @@ const ContainerService = {
           // Let's move the tab to the new window.
           for (let tab of list) { // eslint-disable-line prefer-const
             const newTab = newBrowserWindow.gBrowser.addTab("about:blank");
-            newBrowserWindow.gBrowser.swapBrowsersAndCloseOther(newTab, tab);
+            newBrowserWindow.gBrowser.swapBrowsersAndCloseOther(newTab, viewFor(tab));
             // swapBrowsersAndCloseOther is an internal method of gBrowser
             // an it's not supported by addon SDK. This means that we
             // don't receive an 'open' event, but only the 'close' one.
@@ -454,11 +454,9 @@ const ContainerService = {
       return Promise.reject("removeIdentity must be called with userContextId argument.");
     }
 
-    for (let tab of tabs) { // eslint-disable-line prefer-const
-      if (args.userContextId === this._getUserContextIdFromTab(tab)) {
-        tab.close();
-      }
-    }
+    this._containerTabIterator(args.userContextId, tab => {
+      tab.close();
+    });
 
     return Promise.resolve(ContextualIdentityService.remove(args.userContextId));
   },
