@@ -320,21 +320,25 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       for (let tab of tabs) { // eslint-disable-line prefer-const
         const tr = document.createElement("tr");
         fragment.appendChild(tr);
-        tr.classList.add("container-info-tab", "clickable");
+        tr.classList.add("container-info-tab");
         tr.innerHTML = `
           <td><img class="icon" src="${tab.favicon}" /></td>
           <td>${tab.title}</td>`;
-        // On click, we activate this tab.
-        tr.addEventListener("click", () => {
-          browser.runtime.sendMessage({
-            method: "showTab",
-            tabId: tab.id,
-          }).then(() => {
-            window.close();
-          }).catch(() => {
-            window.close();
+
+        // On click, we activate this tab. But only if this tab is active.
+        if (tab.active) {
+          tr.classList.add("clickable");
+          tr.addEventListener("click", () => {
+            browser.runtime.sendMessage({
+              method: "showTab",
+              tabId: tab.id,
+            }).then(() => {
+              window.close();
+            }).catch(() => {
+              window.close();
+            });
           });
-        });
+        }
       }
 
       document.getElementById("container-info-table").appendChild(fragment);

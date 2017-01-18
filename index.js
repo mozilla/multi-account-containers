@@ -160,12 +160,15 @@ const ContainerService = {
     return parseInt(viewFor(tab).getAttribute("usercontextid") || 0, 10);
   },
 
+  _createTabObject(tab) {
+    return { title: tab.title, url: tab.url, id: tab.id, active: true };
+  },
+
   _getTabList(userContextId) {
     const list = [];
     for (let tab of tabs) { // eslint-disable-line prefer-const
       if (userContextId === this._getUserContextIdFromTab(tab)) {
-        const object = { title: tab.title, url: tab.url, id: tab.id };
-        list.push(object);
+        list.push(this._createTabObject(tab));
       }
     }
 
@@ -186,7 +189,19 @@ const ContainerService = {
           continue;
         }
 
-        this._identitiesState[args.userContextId].hiddenTabUrls.push(tab.url);
+        const object = this._createTabObject(tab);
+
+        // This tab is going to be closed. Let's mark this tabObject as
+        // non-active.
+        object.active = false;
+
+        getFavicon(object.url).then(url => {
+          object.favicon = url;
+        }, () => {
+          object.favicon = "";
+        });
+
+        this._identitiesState[args.userContextId].hiddenTabUrls.push(object);
         tab.close();
       }
 
@@ -201,8 +216,9 @@ const ContainerService = {
 
     const promises = [];
 
-    for (let url of this._identitiesState[args.userContextId].hiddenTabUrls) { // eslint-disable-line prefer-const
-      promises.push(this.openTab({ userContextId: args.userContextId, url }));
+    for (let object of this._identitiesState[args.userContextId].hiddenTabUrls) { // eslint-disable-line prefer-const
+      promises.push(this.openTab({ userContextId: args.userContextId,
+                                   url: object.url }));
     }
 
     this._identitiesState[args.userContextId].hiddenTabUrls = [];
@@ -279,7 +295,7 @@ const ContainerService = {
       }
 
       Promise.all(promises).then(() => {
-        resolve(list);
+        resolve(list.concat(this._identitiesState[args.userContextId].hiddenTabUrls));
       }).catch((e) => {
         reject(e);
       });
