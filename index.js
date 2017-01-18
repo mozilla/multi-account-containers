@@ -454,6 +454,13 @@ const ContainerService = {
     if (!("userContextId" in args)) {
       return Promise.reject("removeIdentity must be called with userContextId argument.");
     }
+
+    for (let tab of tabs) { // eslint-disable-line prefer-const
+      if (args.userContextId === this._getUserContextIdFromTab(tab)) {
+        tab.close();
+      }
+    }
+
     return Promise.resolve(ContextualIdentityService.remove(args.userContextId));
   },
 
