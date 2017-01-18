@@ -295,7 +295,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
     // Show or not the has-tabs section.
     for (let trHasTabs of document.getElementsByClassName("container-info-has-tabs")) { // eslint-disable-line prefer-const
-      trHasTabs.hidden = !identity.hasHiddenTabs && !identity.hasOpenTabs;
+      trHasTabs.style.display = !identity.hasHiddenTabs && !identity.hasOpenTabs ? "none" : "";
     }
 
     const hideShowIcon = document.getElementById("container-info-hideorshow-icon");
