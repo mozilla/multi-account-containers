@@ -197,7 +197,7 @@ const ContainerService = {
 
         getFavicon(object.url).then(url => {
           object.favicon = url;
-        }, () => {
+        }).catch(() => {
           object.favicon = "";
         });
 
@@ -217,8 +217,7 @@ const ContainerService = {
     const promises = [];
 
     for (let object of this._identitiesState[args.userContextId].hiddenTabUrls) { // eslint-disable-line prefer-const
-      promises.push(this.openTab({ userContextId: args.userContextId,
-                                   url: object.url }));
+      promises.push(this.openTab({ userContextId: args.userContextId, url: object.url }));
     }
 
     this._identitiesState[args.userContextId].hiddenTabUrls = [];
@@ -289,7 +288,7 @@ const ContainerService = {
       for (let object of list) { // eslint-disable-line prefer-const
         promises.push(getFavicon(object.url).then(url => {
           object.favicon = url;
-        }, () => {
+        }).catch(() => {
           object.favicon = "";
         }));
       }
