@@ -160,16 +160,16 @@ const ContainerService = {
     return parseInt(viewFor(tab).getAttribute("usercontextid") || 0, 10);
   },
 
-  _getTabList(userContextId) {
-    const list = [];
+  _createTabObject(tab) {
+    return { title: tab.title, url: tab.url, id: tab.id, active: true };
+  },
+
+  _containerTabIterator(userContextId, cb) {
     for (let tab of tabs) { // eslint-disable-line prefer-const
       if (userContextId === this._getUserContextIdFromTab(tab)) {
-        const object = { title: tab.title, url: tab.url, id: tab.id };
-        list.push(object);
+        cb(tab);
       }
     }
-
-    return list;
   },
 
   // Tabs management
@@ -181,14 +181,22 @@ const ContainerService = {
         return;
       }
 
-      for (let tab of tabs) { // eslint-disable-line prefer-const
-        if (args.userContextId !== this._getUserContextIdFromTab(tab)) {
-          continue;
-        }
+      this._containerTabIterator(args.userContextId, tab => {
+        const object = this._createTabObject(tab);
 
-        this._identitiesState[args.userContextId].hiddenTabUrls.push(tab.url);
+        // This tab is going to be closed. Let's mark this tabObject as
+        // non-active.
+        object.active = false;
+
+        getFavicon(object.url).then(url => {
+          object.favicon = url;
+        }).catch(() => {
+          object.favicon = "";
+        });
+
+        this._identitiesState[args.userContextId].hiddenTabUrls.push(object);
         tab.close();
-      }
+      });
 
       resolve(null);
     });
@@ -201,8 +209,8 @@ const ContainerService = {
 
     const promises = [];
 
-    for (let url of this._identitiesState[args.userContextId].hiddenTabUrls) { // eslint-disable-line prefer-const
-      promises.push(this.openTab({ userContextId: args.userContextId, url }));
+    for (let object of this._identitiesState[args.userContextId].hiddenTabUrls) { // eslint-disable-line prefer-const
+      promises.push(this.openTab({ userContextId: args.userContextId, url: object.url }));
     }
 
     this._identitiesState[args.userContextId].hiddenTabUrls = [];
@@ -267,19 +275,23 @@ const ContainerService = {
         return;
       }
 
-      const list = this._getTabList(args.userContextId);
+      const list = [];
+      this._containerTabIterator(args.userContextId, tab => {
+        list.push(this._createTabObject(tab));
+      });
+
       const promises = [];
 
       for (let object of list) { // eslint-disable-line prefer-const
         promises.push(getFavicon(object.url).then(url => {
           object.favicon = url;
-        }, () => {
+        }).catch(() => {
           object.favicon = "";
         }));
       }
 
       Promise.all(promises).then(() => {
-        resolve(list);
+        resolve(list.concat(this._identitiesState[args.userContextId].hiddenTabUrls));
       }).catch((e) => {
         reject(e);
       });
@@ -313,7 +325,10 @@ const ContainerService = {
       }
 
       // Let's create a list of the tabs.
-      const list = this._getTabList(args.userContextId);
+      const list = [];
+      this._containerTabIterator(args.userContextId, tab => {
+        list.push(tab);
+      });
 
       // Nothing to do
       if (list.length === 0) {
@@ -329,7 +344,7 @@ const ContainerService = {
           // Let's move the tab to the new window.
           for (let tab of list) { // eslint-disable-line prefer-const
             const newTab = newBrowserWindow.gBrowser.addTab("about:blank");
-            newBrowserWindow.gBrowser.swapBrowsersAndCloseOther(newTab, tab);
+            newBrowserWindow.gBrowser.swapBrowsersAndCloseOther(newTab, viewFor(tab));
             // swapBrowsersAndCloseOther is an internal method of gBrowser
             // an it's not supported by addon SDK. This means that we
             // don't receive an 'open' event, but only the 'close' one.
@@ -438,6 +453,11 @@ const ContainerService = {
     if (!("userContextId" in args)) {
       return Promise.reject("removeIdentity must be called with userContextId argument.");
     }
+
+    this._containerTabIterator(args.userContextId, tab => {
+      tab.close();
+    });
+
     return Promise.resolve(ContextualIdentityService.remove(args.userContextId));
   },
 
