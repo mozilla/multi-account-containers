@@ -242,3 +242,8 @@ table.unstriped tbody tr {
   padding-inline-start: 17px;
   padding-inline-end: 7px;
 }
+
+.scrollable {
+  overflow: auto;
+  max-height: 480px;
+}
