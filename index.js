@@ -4,6 +4,9 @@
 
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 
+const HIDE_MENU_TIMEOUT = 1000;
+const IDENTITY_COLORS = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"];
+
 const { attachTo } = require("sdk/content/mod");
 const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
 const { getFavicon } = require("sdk/places/favicon");
@@ -16,10 +19,12 @@ const webExtension = require("sdk/webextension");
 const windows = require("sdk/windows");
 const windowUtils = require("sdk/window/utils");
 
-const IDENTITY_COLORS = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"];
+// ----------------------------------------------------------------------------
+// ContainerService
 
 const ContainerService = {
   _identitiesState: {},
+  _windowMap: {},
 
   init() {
     // Enabling preferences
@@ -76,6 +81,7 @@ const ContainerService = {
       if (userContextId) {
         ++this._identitiesState[userContextId].openTabs;
       }
+      this._hideAllPanels();
     });
 
     tabs.on("close", tab => {
@@ -83,6 +89,11 @@ const ContainerService = {
       if (userContextId && this._identitiesState[userContextId].openTabs) {
         --this._identitiesState[userContextId].openTabs;
       }
+      this._hideAllPanels();
+    });
+
+    tabs.on("activate", () => {
+      this._hideAllPanels();
     });
 
     // Modify CSS and other stuff for each window.
@@ -93,6 +104,10 @@ const ContainerService = {
 
     windows.browserWindows.on("open", window => {
       this.configureWindow(viewFor(window));
+    });
+
+    windows.browserWindows.on("close", window => {
+      this.closeWindow(viewFor(window));
     });
 
     // WebExtension startup
@@ -464,41 +479,166 @@ const ContainerService = {
   // Styling the window
 
   configureWindow(window) {
-    const tabsElement = window.document.getElementById("tabbrowser-tabs");
-    const button = window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
-
-    while (button.firstChild) {
-      button.removeChild(button.firstChild);
+    const id = windowUtils.getInnerId(window);
+    if (!(id in this._windowMap)) {
+      this._windowMap[id] = new ContainerWindow(window);
     }
 
-    button.setAttribute("type", "menu");
-    const popup = window.document.createElementNS(XUL_NS, "menupopup");
+    this._windowMap[id].configure();
+  },
 
-    popup.setAttribute("anonid", "newtab-popup");
-    popup.className = "new-tab-popup";
-    popup.setAttribute("position", "after_end");
+  closeWindow(window) {
+    const id = windowUtils.getInnerId(window);
+    delete this._windowMap[id];
+  },
 
-    ContextualIdentityService.getIdentities().forEach(identity => {
-      identity = this._convert(identity);
-
-      const menuItem = window.document.createElementNS(XUL_NS, "menuitem");
-      menuItem.setAttribute("class", "menuitem-iconic");
-      menuItem.setAttribute("label", identity.name);
-      menuItem.setAttribute("image", self.data.url("usercontext.svg") + "#" + identity.image);
-
-      menuItem.addEventListener("command", (event) => {
-        this.openTab({userContextId: identity.userContextId});
-        event.stopPropagation();
-      });
-
-      popup.appendChild(menuItem);
-    });
-
-    button.appendChild(popup);
-    const style = Style({ uri: self.data.url("chrome.css") });
-
-    attachTo(style, viewFor(window));
-  }
+  _hideAllPanels() {
+    for (let id in this._windowMap) { // eslint-disable-line prefer-const
+      this._windowMap[id].hidePanel();
+    }
+  },
 };
 
+// ----------------------------------------------------------------------------
+// ContainerWindow
+
+// This object is used to configure a single window.
+function ContainerWindow(window) {
+  this._init(window);
+}
+
+ContainerWindow.prototype = {
+  _window: null,
+  _panelElement: null,
+  _timeoutId: 0,
+
+  _init(window) {
+    this._window = window;
+    const style = Style({ uri: self.data.url("usercontext.css") });
+    attachTo(style, this._window);
+  },
+
+  configure() {
+    const tabsElement = this._window.document.getElementById("tabbrowser-tabs");
+
+    const button = this._window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
+
+    // Let's remove the tooltip because it can go over our panel.
+    button.setAttribute("tooltip", "");
+
+    // Let's remove all the previous panels.
+    if (this._panelElement) {
+      this._panelElement.remove();
+    }
+
+    this._panelElement = this._window.document.createElementNS(XUL_NS, "panel");
+    this._panelElement.setAttribute("id", "new-tab-overlay");
+    button.after(this._panelElement);
+    this._panelElement.hidden = true;
+
+    this._repositionPopup();
+
+    ContainerService.queryIdentities().then(identities => {
+      identities.forEach(identity => {
+        const menuItemElement = this._window.document.createElementNS(XUL_NS, "menuitem");
+        this._panelElement.appendChild(menuItemElement);
+        menuItemElement.className = "menuitem-iconic";
+        menuItemElement.setAttribute("label", identity.name);
+        menuItemElement.setAttribute("data-usercontextid", identity.userContextId);
+        menuItemElement.setAttribute("data-identity-icon", identity.image);
+        menuItemElement.setAttribute("data-identity-color", identity.color);
+
+        menuItemElement.addEventListener("command", e => {
+          ContainerService.openTab({userContextId: identity.userContextId});
+          e.stopPropagation();
+        });
+
+        //Command isn't working probably because I'm in a panel
+        menuItemElement.addEventListener("click", e => {
+          ContainerService.openTab({userContextId: identity.userContextId});
+          e.stopPropagation();
+        });
+
+        menuItemElement.addEventListener("mouseover", () => {
+          this._cleanTimeout();
+        });
+
+        menuItemElement.addEventListener("mouseout", () => {
+          this._createTimeout();
+        });
+
+        this._panelElement.appendChild(menuItemElement);
+      });
+    }).catch(() => {
+      this.hidePanel();
+    });
+
+    button.addEventListener("click", () => {
+      this._panelElement.hidden = false;
+    });
+
+    button.addEventListener("mouseover", () => {
+      this._repositionPopup();
+      this._panelElement.hidden = false;
+    });
+
+    button.addEventListener("mouseout", () => {
+      this._createTimeout();
+    });
+
+    this._panelElement.addEventListener("mouseout", (e) => {
+      if (e.target !== this._panelElement) {
+        this._createTimeout();
+        return;
+      }
+      this._repositionPopup();
+    });
+  },
+
+  // This function puts the popup in the correct place.
+  _repositionPopup() {
+    const tabsElement = this._window.document.getElementById("tabbrowser-tabs");
+    const button = this._window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
+
+    const size = button.getBoxQuads()[0];
+    const innerWindow = tabsElement.getBoxQuads()[0];
+    const panelElementWidth = 200;
+
+    // 1/4th of the way past the left hand side of the new tab button
+    // This seems to line up nicely with the left of the +
+    const offset = ((size.p3.x - size.p4.x) / 4);
+    let left = size.p4.x + offset;
+    if (left + panelElementWidth > innerWindow.p2.x) {
+      left -= panelElementWidth - offset;
+    }
+    this._panelElement.style.left = left + "px";
+    this._panelElement.style.top = size.p4.y + "px";
+  },
+
+  // This timer is used to hide the panel auto-magically if it's not used in
+  // the following X seconds. This is need to avoid the leaking of the panel
+  // when the mouse goes out of of the 'plus' button.
+  _createTimeout() {
+    this._cleanTimeout();
+    this._timeoutId = this._window.setTimeout(() => {
+      this.hidePanel();
+      this._timeoutId = 0;
+    }, HIDE_MENU_TIMEOUT);
+  },
+
+  _cleanTimeout() {
+    if (this._timeoutId) {
+      this._window.clearTimeout(this._timeoutId);
+      this._timeoutId = 0;
+    }
+  },
+
+  hidePanel() {
+    this._cleanTimeout();
+    this._panelElement.hidden = true;
+  },
+};
+
+// ----------------------------------------------------------------------------
+// Let's start :)
 ContainerService.init();
