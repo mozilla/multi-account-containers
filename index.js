@@ -98,9 +98,7 @@ const ContainerService = {
 
     // Modify CSS and other stuff for each window.
 
-    for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
-      this.configureWindow(viewFor(window));
-    }
+    this.configureWindows();
 
     windows.browserWindows.on("open", window => {
       this.configureWindow(viewFor(window));
@@ -441,6 +439,8 @@ const ContainerService = {
       openTabs: 0
     };
 
+    this._refreshNeeded();
+
     return Promise.resolve(this._convert(identity));
   },
 
@@ -457,11 +457,14 @@ const ContainerService = {
     }
 
     // FIXME: icon and color conversion based on FF version.
-    // FIXME: color/name update propagation
-    return Promise.resolve(ContextualIdentityService.update(args.userContextId,
-                                                            identity.name,
-                                                            identity.icon,
-                                                            identity.color));
+
+    const updated = ContextualIdentityService.update(args.userContextId,
+                                                     identity.name,
+                                                     identity.icon,
+                                                     identity.color);
+
+    this._refreshNeeded();
+    return Promise.resolve(updated);
   },
 
   removeIdentity(args) {
@@ -473,10 +476,19 @@ const ContainerService = {
       tab.close();
     });
 
-    return Promise.resolve(ContextualIdentityService.remove(args.userContextId));
+    const removed = ContextualIdentityService.remove(args.userContextId);
+
+    this._refreshNeeded();
+    return Promise.resolve(removed);
   },
 
   // Styling the window
+
+  configureWindows() {
+    for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
+      this.configureWindow(viewFor(window));
+    }
+  },
 
   configureWindow(window) {
     const id = windowUtils.getInnerId(window);
@@ -490,6 +502,11 @@ const ContainerService = {
   closeWindow(window) {
     const id = windowUtils.getInnerId(window);
     delete this._windowMap[id];
+  },
+
+  _refreshNeeded() {
+    // FIXME: color/name propagation
+    this.configureWindows();
   },
 
   _hideAllPanels() {
