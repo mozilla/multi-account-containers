@@ -5,7 +5,25 @@
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 
 const HIDE_MENU_TIMEOUT = 1000;
-const IDENTITY_COLORS = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"];
+
+const IDENTITY_COLORS = [
+ { name: "blue", color: "#00a7e0" },
+ { name: "turquoise", color: "#01bdad" },
+ { name: "green", color: "#7dc14c" },
+ { name: "yellow", color: "#ffcb00" },
+ { name: "orange", color: "#f89c24" },
+ { name: "red", color: "#d92215" },
+ { name: "pink", color: "#ee5195" },
+ { name: "purple", color: "#7a2f7a" },
+];
+
+const IDENTITY_ICONS = [
+  { name: "fingerprint", image: "chrome://browser/skin/usercontext/personal.svg" },
+  { name: "briefcase", image: "chrome://browser/skin/usercontext/work.svg" },
+  { name: "dollar", image: "chrome://browser/skin/usercontext/banking.svg" },
+  { name: "cart", image: "chrome://browser/skin/usercontext/shopping.svg" },
+  { name: "cirlce", image: "" }, // this doesn't exist in m-b
+];
 
 const { attachTo } = require("sdk/content/mod");
 const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
@@ -124,50 +142,60 @@ const ContainerService = {
   // utility methods
 
   _convert(identity) {
-    // In FF 50-51, the icon is the full path, in 52 and following
-    // releases, we have IDs to be used with a svg file. In this function
-    // we map URLs to svg IDs.
-    let image, color;
-
-    if (identity.icon === "fingerprint" ||
-        identity.icon === "chrome://browser/skin/usercontext/personal.svg") {
-      image = "fingerprint";
-    } else if (identity.icon === "briefcase" ||
-             identity.icon === "chrome://browser/skin/usercontext/work.svg") {
-      image = "briefcase";
-    } else if (identity.icon === "dollar" ||
-             identity.icon === "chrome://browser/skin/usercontext/banking.svg") {
-      image = "dollar";
-    } else if (identity.icon === "cart" ||
-             identity.icon === "chrome://browser/skin/usercontext/shopping.svg") {
-      image = "cart";
-    } else {
-      image = "circle";
-    }
-
-    if (identity.color === "#00a7e0") {
-      color = "blue";
-    } else if (identity.color === "#f89c24") {
-      color = "orange";
-    } else if (identity.color === "#7dc14c") {
-      color = "green";
-    } else if (identity.color === "#ee5195") {
-      color = "pink";
-    } else if (IDENTITY_COLORS.indexOf(identity.color) !== -1) {
-      color = identity.color;
-    } else {
-      color = "";
-    }
-
+    // Let's convert the known colors to their color names.
     return {
       name: ContextualIdentityService.getUserContextLabel(identity.userContextId),
-      image,
-      color,
+      image: this._fromIconToName(identity.icon),
+      color: this._fromColorToName(identity.color),
       userContextId: identity.userContextId,
       hasHiddenTabs: !!this._identitiesState[identity.userContextId].hiddenTabUrls.length,
       hasOpenTabs: !!this._identitiesState[identity.userContextId].openTabs
     };
   },
+
+  // In FF 50-51, the icon is the full path, in 52 and following
+  // releases, we have IDs to be used with a svg file. In this function
+  // we map URLs to svg IDs.
+
+  // Helper methods for converting colors to names and names to colors.
+
+  _fromNameToColor(name) {
+    return this._fromNameOrColor(name, "color");
+  },
+
+  _fromColorToName(color) {
+    return this._fromNameOrColor(color, "name");
+  },
+
+  _fromNameOrColor(what, attribute) {
+    for (let color of IDENTITY_COLORS) { // eslint-disable-line prefer-const
+      if (what === color.color || what === color.name) {
+        return color[attribute];
+      }
+    }
+    return "";
+  },
+
+  // Helper methods for converting icons to names and names to icons.
+
+  _fromNameToIcon(name) {
+    return this._fromNameOrIcon(name, "image", "");
+  },
+
+  _fromIconToName(icon) {
+    return this._fromNameOrIcon(icon, "name", "circle");
+  },
+
+  _fromNameOrIcon(what, attribute, defaultValue) {
+    for (let icon of IDENTITY_ICONS) { // eslint-disable-line prefer-const
+      if (what === icon.image || what === icon.name) {
+        return icon[attribute];
+      }
+    }
+    return defaultValue;
+  },
+
+  // Tab Helpers
 
   _getUserContextIdFromTab(tab) {
     return parseInt(viewFor(tab).getAttribute("usercontextid") || 0, 10);
@@ -431,8 +459,10 @@ const ContainerService = {
       }
     }
 
-    // FIXME: icon and color conversion based on FF version.
-    const identity = ContextualIdentityService.create(args.name, args.icon, args.color);
+    const color = this._fromNameToColor(args.color);
+    const icon = this._fromNameToIcon(args.icon);
+
+    const identity = ContextualIdentityService.create(args.name, icon, color);
 
     this._identitiesState[identity.userContextId] = {
       hiddenTabUrls: [],
@@ -456,12 +486,12 @@ const ContainerService = {
       }
     }
 
-    // FIXME: icon and color conversion based on FF version.
+    const color = this._fromNameToColor(identity.color);
+    const icon = this._fromNameToIcon(identity.icon);
 
     const updated = ContextualIdentityService.update(args.userContextId,
                                                      identity.name,
-                                                     identity.icon,
-                                                     identity.color);
+                                                     icon, color);
 
     this._refreshNeeded();
     return Promise.resolve(updated);
