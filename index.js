@@ -28,6 +28,7 @@ const IDENTITY_ICONS = [
 const { attachTo } = require("sdk/content/mod");
 const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
 const { getFavicon } = require("sdk/places/favicon");
+const { modelFor } = require("sdk/model/core");
 const self = require("sdk/self");
 const { Style } = require("sdk/stylesheet/style");
 const tabs = require("sdk/tabs");
@@ -110,16 +111,17 @@ const ContainerService = {
       this._hideAllPanels();
     });
 
-    tabs.on("activate", () => {
+    tabs.on("activate", tab => {
       this._hideAllPanels();
+      this._restyleTab(tab).catch(() => {});
     });
 
     // Modify CSS and other stuff for each window.
 
-    this.configureWindows();
+    this.configureWindows().catch(() => {});
 
     windows.browserWindows.on("open", window => {
-      this.configureWindow(viewFor(window));
+      this.configureWindow(viewFor(window)).catch(() => {});
     });
 
     windows.browserWindows.on("close", window => {
@@ -469,9 +471,11 @@ const ContainerService = {
       openTabs: 0
     };
 
-    this._refreshNeeded();
-
-    return Promise.resolve(this._convert(identity));
+    this._refreshNeeded().then(() => {
+      return this._convert(identity);
+    }).catch(() => {
+      return this._convert(identity);
+    });
   },
 
   updateIdentity(args) {
@@ -493,8 +497,11 @@ const ContainerService = {
                                                      identity.name,
                                                      icon, color);
 
-    this._refreshNeeded();
-    return Promise.resolve(updated);
+    this._refreshNeeded().then(() => {
+      return updated;
+    }).catch(() => {
+      return updated;
+    });
   },
 
   removeIdentity(args) {
@@ -508,16 +515,21 @@ const ContainerService = {
 
     const removed = ContextualIdentityService.remove(args.userContextId);
 
-    this._refreshNeeded();
-    return Promise.resolve(removed);
+    this._refreshNeeded().then(() => {
+      return removed;
+    }).catch(() => {
+      return removed;
+    });
   },
 
   // Styling the window
 
   configureWindows() {
+    const promises = [];
     for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
-      this.configureWindow(viewFor(window));
+      promises.push(this.configureWindow(viewFor(window)));
     }
+    return Promise.all(promises);
   },
 
   configureWindow(window) {
@@ -526,7 +538,7 @@ const ContainerService = {
       this._windowMap[id] = new ContainerWindow(window);
     }
 
-    this._windowMap[id].configure();
+    return this._windowMap[id].configure();
   },
 
   closeWindow(window) {
@@ -535,14 +547,37 @@ const ContainerService = {
   },
 
   _refreshNeeded() {
-    // FIXME: color/name propagation
-    this.configureWindows();
+    return this.configureWindows();
   },
 
   _hideAllPanels() {
     for (let id in this._windowMap) { // eslint-disable-line prefer-const
       this._windowMap[id].hidePanel();
     }
+  },
+
+  _restyleTab(tab) {
+    if (!tab) {
+      return Promise.resolve(null);
+    }
+
+    const userContextId = ContainerService._getUserContextIdFromTab(tab);
+    return ContainerService.getIdentity({userContextId}).then(identity => {
+      if (!identity) {
+        return;
+      }
+
+      const hbox = viewFor(tab.window).document.getElementById("userContext-icons");
+      hbox.setAttribute("data-identity-color", identity.color);
+
+      const label = viewFor(tab.window).document.getElementById("userContext-label");
+      label.setAttribute("value", identity.name);
+      label.style.color = ContainerService._fromNameToColor(identity.color);
+
+      const indicator = viewFor(tab.window).document.getElementById("userContext-indicator");
+      indicator.setAttribute("data-identity-icon", identity.image);
+      indicator.style.listStyleImage = "";
+    });
   },
 };
 
@@ -566,6 +601,13 @@ ContainerWindow.prototype = {
   },
 
   configure() {
+    return Promise.all([
+      this._configurePlusButtonMenu(),
+      this._configureActiveTab(),
+    ]);
+  },
+
+  _configurePlusButtonMenu() {
     const tabsElement = this._window.document.getElementById("tabbrowser-tabs");
 
     const button = this._window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
@@ -585,7 +627,28 @@ ContainerWindow.prototype = {
 
     this._repositionPopup();
 
-    ContainerService.queryIdentities().then(identities => {
+    button.addEventListener("click", () => {
+      this._panelElement.hidden = false;
+    });
+
+    button.addEventListener("mouseover", () => {
+      this._repositionPopup();
+      this._panelElement.hidden = false;
+    });
+
+    button.addEventListener("mouseout", () => {
+      this._createTimeout();
+    });
+
+    this._panelElement.addEventListener("mouseout", (e) => {
+      if (e.target !== this._panelElement) {
+        this._createTimeout();
+        return;
+      }
+      this._repositionPopup();
+    });
+
+    return ContainerService.queryIdentities().then(identities => {
       identities.forEach(identity => {
         const menuItemElement = this._window.document.createElementNS(XUL_NS, "menuitem");
         this._panelElement.appendChild(menuItemElement);
@@ -619,27 +682,11 @@ ContainerWindow.prototype = {
     }).catch(() => {
       this.hidePanel();
     });
+  },
 
-    button.addEventListener("click", () => {
-      this._panelElement.hidden = false;
-    });
-
-    button.addEventListener("mouseover", () => {
-      this._repositionPopup();
-      this._panelElement.hidden = false;
-    });
-
-    button.addEventListener("mouseout", () => {
-      this._createTimeout();
-    });
-
-    this._panelElement.addEventListener("mouseout", (e) => {
-      if (e.target !== this._panelElement) {
-        this._createTimeout();
-        return;
-      }
-      this._repositionPopup();
-    });
+  _configureActiveTab() {
+    const tab = modelFor(this._window).tabs.activeTab;
+    return ContainerService._restyleTab(tab);
   },
 
   // This function puts the popup in the correct place.

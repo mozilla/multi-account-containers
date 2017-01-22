@@ -420,8 +420,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         method: identity.userContextId ? "updateIdentity" : "createIdentity",
         userContextId: identity.userContextId || 0,
         name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
-        icon: identity.image || "fingerprint",
-        color: identity.color || "green",
+        icon: this._randomIcon(),
+        color: this._randomColor(),
       }).then(() => {
         return Logic.refreshIdentities();
       }).then(() => {
@@ -440,6 +440,18 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     // FIXME: color and icon must be set. But we need the UI first.
 
     return Promise.resolve(null);
+  },
+
+  // These 2 methods are for debugging only. We should remove them when we
+  // finish the UI.
+  _randomIcon() {
+    const images = ["fingerprint", "briefcase", "dollar", "cart", "cirlce"];
+    return images[Math.floor(Math.random() * images.length)];
+  },
+
+  _randomColor() {
+    const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple" ];
+    return colors[Math.floor(Math.random() * colors.length)];
   },
 });
 
