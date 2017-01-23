@@ -113,7 +113,7 @@ const ContainerService = {
 
     tabs.on("activate", tab => {
       this._hideAllPanels();
-      this._restyleTab(tab).catch(() => {});
+      this._restyleActiveTab(tab).catch(() => {});
     });
 
     // Modify CSS and other stuff for each window.
@@ -556,7 +556,7 @@ const ContainerService = {
     }
   },
 
-  _restyleTab(tab) {
+  _restyleActiveTab(tab) {
     if (!tab) {
       return Promise.resolve(null);
     }
@@ -604,6 +604,9 @@ ContainerWindow.prototype = {
     return Promise.all([
       this._configurePlusButtonMenu(),
       this._configureActiveTab(),
+      this._configureFileMenu(),
+      // TODO: this should change the decoration of the tab.
+      // TODO: this should change the context menu.
     ]);
   },
 
@@ -686,7 +689,61 @@ ContainerWindow.prototype = {
 
   _configureActiveTab() {
     const tab = modelFor(this._window).tabs.activeTab;
-    return ContainerService._restyleTab(tab);
+    return ContainerService._restyleActiveTab(tab);
+  },
+
+  _configureFileMenu() {
+    const menu = this._window.document.getElementById("menu_newUserContext");
+    // containerAddonMagic attribute is a custom attribute we set in order to
+    // know if this menu has been already converted.
+    if (!menu || menu.hasAttribute("containerAddonMagic")) {
+      return Promise.reject(null);
+    }
+
+    // We don't want to recreate the menu each time.
+    menu.setAttribute("containerAddonMagic", "42");
+
+    while (menu.firstChild) {
+      menu.firstChild.remove();
+    }
+
+    const menupopup = this._window.document.createElementNS(XUL_NS, "menupopup");
+    menu.appendChild(menupopup);
+
+    menupopup.addEventListener("popupshowing", e => {
+      return this._createFileMenu(e);
+    });
+
+    return Promise.resolve(null);
+  },
+
+  _createFileMenu(event) {
+    while (event.target.hasChildNodes()) {
+      event.target.removeChild(event.target.firstChild);
+    }
+
+    ContainerService.queryIdentities().then(identities => {
+      const fragment = this._window.document.createDocumentFragment();
+
+      identities.forEach(identity => {
+        const menuitem = this._window.document.createElementNS(XUL_NS, "menuitem");
+        menuitem.setAttribute("label", identity.name);
+        menuitem.classList.add("menuitem-iconic");
+        menuitem.setAttribute("data-usercontextid", identity.userContextId);
+        menuitem.setAttribute("data-identity-color", identity.color);
+        menuitem.setAttribute("data-identity-icon", identity.image);
+
+        fragment.appendChild(menuitem);
+
+        menuitem.addEventListener("click", () => {
+          ContainerService.openTab({userContextId: identity.userContextId});
+        });
+      });
+
+      event.target.appendChild(fragment);
+    }).catch(() => {});
+
+    return true;
   },
 
   // This function puts the popup in the correct place.
