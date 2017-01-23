@@ -693,22 +693,29 @@ ContainerWindow.prototype = {
   },
 
   _configureFileMenu() {
-    return this._configureMenu("menu_newUserContext", e => {
+    return this._configureMenu("menu_newUserContext", null, e => {
       const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
       ContainerService.openTab({ userContextId });
     });
   },
 
   _configureContextMenu() {
-    return this._configureMenu("context-openlinkinusercontext-menu", e => {
-      // This is a super internal method. Hopefully it will be stable in the
-      // next FF releases.
-      this._window.gContextMenu.openLinkInTab(e);
-    });
+    return this._configureMenu("context-openlinkinusercontext-menu",
+      () => {
+        // This userContextId is what we want to exclude.
+        const tab = modelFor(this._window).tabs.activeTab;
+        return ContainerService._getUserContextIdFromTab(tab);
+      },
+      e => {
+        // This is a super internal method. Hopefully it will be stable in the
+        // next FF releases.
+        this._window.gContextMenu.openLinkInTab(e);
+      }
+    );
   },
 
   // Generic menu configuration.
-  _configureMenu(menuId, cb) {
+  _configureMenu(menuId, excludedContainerCb, clickCb) {
     const menu = this._window.document.getElementById(menuId);
     // containerAddonMagic attribute is a custom attribute we set in order to
     // know if this menu has been already converted.
@@ -726,15 +733,15 @@ ContainerWindow.prototype = {
     const menupopup = this._window.document.createElementNS(XUL_NS, "menupopup");
     menu.appendChild(menupopup);
 
-    menupopup.addEventListener("command", cb);
+    menupopup.addEventListener("command", clickCb);
     menupopup.addEventListener("popupshowing", e => {
-      return this._createMenu(e);
+      return this._createMenu(e, excludedContainerCb);
     });
 
     return Promise.resolve(null);
   },
 
-  _createMenu(event) {
+  _createMenu(event, excludedContainerCb) {
     while (event.target.hasChildNodes()) {
       event.target.removeChild(event.target.firstChild);
     }
@@ -742,7 +749,26 @@ ContainerWindow.prototype = {
     ContainerService.queryIdentities().then(identities => {
       const fragment = this._window.document.createDocumentFragment();
 
+      const excludedUserContextId = excludedContainerCb ? excludedContainerCb() : 0;
+      if (excludedUserContextId) {
+        const bundle = this._window.document.getElementById("bundle_browser");
+
+        const menuitem = this._window.document.createElementNS(XUL_NS, "menuitem");
+        menuitem.setAttribute("data-usercontextid", "0");
+        menuitem.setAttribute("label", bundle.getString("userContextNone.label"));
+        menuitem.setAttribute("accesskey", bundle.getString("userContextNone.accesskey"));
+
+        fragment.appendChild(menuitem);
+
+        const menuseparator = this._window.document.createElementNS(XUL_NS, "menuseparator");
+        fragment.appendChild(menuseparator);
+      }
+
       identities.forEach(identity => {
+        if (identity.userContextId === excludedUserContextId) {
+          return;
+        }
+
         const menuitem = this._window.document.createElementNS(XUL_NS, "menuitem");
         menuitem.setAttribute("label", identity.name);
         menuitem.classList.add("menuitem-iconic");
