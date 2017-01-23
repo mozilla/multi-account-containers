@@ -5,9 +5,6 @@
 const CONTAINER_HIDE_SRC = "/img/container-hide.svg";
 const CONTAINER_UNHIDE_SRC = "/img/container-unhide.svg";
 
-// TODO: Let's set it to false before releasing!!!
-const DEBUG = true;
-
 // List of panels
 const P_ONBOARDING_1     = "onboarding1";
 const P_ONBOARDING_2     = "onboarding2";
@@ -16,12 +13,6 @@ const P_CONTAINERS_EDIT  = "containersEdit";
 const P_CONTAINER_INFO   = "containerInfo";
 const P_CONTAINER_EDIT   = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
-
-function log(...args) {
-  if (DEBUG) {
-    console.log.call(console, ...args); // eslint-disable-line no-console
-  }
-}
 
 // This object controls all the panels, identities and many other things.
 const Logic = {
@@ -204,7 +195,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     const fragment = document.createDocumentFragment();
 
     Logic.identities().forEach(identity => {
-      log("identities.forEach");
       const tr = document.createElement("tr");
       fragment.appendChild(tr);
       tr.classList.add("container-panel-row", "clickable");
@@ -314,7 +304,6 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       method: "getTabs",
       userContextId: identity.userContextId,
     }).then(tabs => {
-      log("browser.runtime.sendMessage getTabs, tabs: ", tabs);
       // For each one, let's create a new line.
       const fragment = document.createDocumentFragment();
       for (let tab of tabs) { // eslint-disable-line prefer-const
@@ -431,8 +420,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         method: identity.userContextId ? "updateIdentity" : "createIdentity",
         userContextId: identity.userContextId || 0,
         name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
-        icon: identity.image || "fingerprint",
-        color: identity.color || "green",
+        icon: this._randomIcon(),
+        color: this._randomColor(),
       }).then(() => {
         return Logic.refreshIdentities();
       }).then(() => {
@@ -451,6 +440,18 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     // FIXME: color and icon must be set. But we need the UI first.
 
     return Promise.resolve(null);
+  },
+
+  // These 2 methods are for debugging only. We should remove them when we
+  // finish the UI.
+  _randomIcon() {
+    const images = ["fingerprint", "briefcase", "dollar", "cart", "cirlce"];
+    return images[Math.floor(Math.random() * images.length)];
+  },
+
+  _randomColor() {
+    const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple" ];
+    return colors[Math.floor(Math.random() * colors.length)];
   },
 });
 

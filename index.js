@@ -4,9 +4,31 @@
 
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 
+const HIDE_MENU_TIMEOUT = 1000;
+
+const IDENTITY_COLORS = [
+ { name: "blue", color: "#00a7e0" },
+ { name: "turquoise", color: "#01bdad" },
+ { name: "green", color: "#7dc14c" },
+ { name: "yellow", color: "#ffcb00" },
+ { name: "orange", color: "#f89c24" },
+ { name: "red", color: "#d92215" },
+ { name: "pink", color: "#ee5195" },
+ { name: "purple", color: "#7a2f7a" },
+];
+
+const IDENTITY_ICONS = [
+  { name: "fingerprint", image: "chrome://browser/skin/usercontext/personal.svg" },
+  { name: "briefcase", image: "chrome://browser/skin/usercontext/work.svg" },
+  { name: "dollar", image: "chrome://browser/skin/usercontext/banking.svg" },
+  { name: "cart", image: "chrome://browser/skin/usercontext/shopping.svg" },
+  { name: "cirlce", image: "" }, // this doesn't exist in m-b
+];
+
 const { attachTo } = require("sdk/content/mod");
 const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
 const { getFavicon } = require("sdk/places/favicon");
+const { modelFor } = require("sdk/model/core");
 const self = require("sdk/self");
 const { Style } = require("sdk/stylesheet/style");
 const tabs = require("sdk/tabs");
@@ -16,10 +38,12 @@ const webExtension = require("sdk/webextension");
 const windows = require("sdk/windows");
 const windowUtils = require("sdk/window/utils");
 
-const IDENTITY_COLORS = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"];
+// ----------------------------------------------------------------------------
+// ContainerService
 
 const ContainerService = {
   _identitiesState: {},
+  _windowMap: {},
 
   init() {
     // Enabling preferences
@@ -76,6 +100,7 @@ const ContainerService = {
       if (userContextId) {
         ++this._identitiesState[userContextId].openTabs;
       }
+      this._hideAllPanels();
     });
 
     tabs.on("close", tab => {
@@ -83,16 +108,24 @@ const ContainerService = {
       if (userContextId && this._identitiesState[userContextId].openTabs) {
         --this._identitiesState[userContextId].openTabs;
       }
+      this._hideAllPanels();
+    });
+
+    tabs.on("activate", tab => {
+      this._hideAllPanels();
+      this._restyleTab(tab).catch(() => {});
     });
 
     // Modify CSS and other stuff for each window.
 
-    for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
-      this.configureWindow(viewFor(window));
-    }
+    this.configureWindows().catch(() => {});
 
     windows.browserWindows.on("open", window => {
-      this.configureWindow(viewFor(window));
+      this.configureWindow(viewFor(window)).catch(() => {});
+    });
+
+    windows.browserWindows.on("close", window => {
+      this.closeWindow(viewFor(window));
     });
 
     // WebExtension startup
@@ -111,50 +144,60 @@ const ContainerService = {
   // utility methods
 
   _convert(identity) {
-    // In FF 50-51, the icon is the full path, in 52 and following
-    // releases, we have IDs to be used with a svg file. In this function
-    // we map URLs to svg IDs.
-    let image, color;
-
-    if (identity.icon === "fingerprint" ||
-        identity.icon === "chrome://browser/skin/usercontext/personal.svg") {
-      image = "fingerprint";
-    } else if (identity.icon === "briefcase" ||
-             identity.icon === "chrome://browser/skin/usercontext/work.svg") {
-      image = "briefcase";
-    } else if (identity.icon === "dollar" ||
-             identity.icon === "chrome://browser/skin/usercontext/banking.svg") {
-      image = "dollar";
-    } else if (identity.icon === "cart" ||
-             identity.icon === "chrome://browser/skin/usercontext/shopping.svg") {
-      image = "cart";
-    } else {
-      image = "circle";
-    }
-
-    if (identity.color === "#00a7e0") {
-      color = "blue";
-    } else if (identity.color === "#f89c24") {
-      color = "orange";
-    } else if (identity.color === "#7dc14c") {
-      color = "green";
-    } else if (identity.color === "#ee5195") {
-      color = "pink";
-    } else if (IDENTITY_COLORS.indexOf(identity.color) !== -1) {
-      color = identity.color;
-    } else {
-      color = "";
-    }
-
+    // Let's convert the known colors to their color names.
     return {
       name: ContextualIdentityService.getUserContextLabel(identity.userContextId),
-      image,
-      color,
+      image: this._fromIconToName(identity.icon),
+      color: this._fromColorToName(identity.color),
       userContextId: identity.userContextId,
       hasHiddenTabs: !!this._identitiesState[identity.userContextId].hiddenTabUrls.length,
       hasOpenTabs: !!this._identitiesState[identity.userContextId].openTabs
     };
   },
+
+  // In FF 50-51, the icon is the full path, in 52 and following
+  // releases, we have IDs to be used with a svg file. In this function
+  // we map URLs to svg IDs.
+
+  // Helper methods for converting colors to names and names to colors.
+
+  _fromNameToColor(name) {
+    return this._fromNameOrColor(name, "color");
+  },
+
+  _fromColorToName(color) {
+    return this._fromNameOrColor(color, "name");
+  },
+
+  _fromNameOrColor(what, attribute) {
+    for (let color of IDENTITY_COLORS) { // eslint-disable-line prefer-const
+      if (what === color.color || what === color.name) {
+        return color[attribute];
+      }
+    }
+    return "";
+  },
+
+  // Helper methods for converting icons to names and names to icons.
+
+  _fromNameToIcon(name) {
+    return this._fromNameOrIcon(name, "image", "");
+  },
+
+  _fromIconToName(icon) {
+    return this._fromNameOrIcon(icon, "name", "circle");
+  },
+
+  _fromNameOrIcon(what, attribute, defaultValue) {
+    for (let icon of IDENTITY_ICONS) { // eslint-disable-line prefer-const
+      if (what === icon.image || what === icon.name) {
+        return icon[attribute];
+      }
+    }
+    return defaultValue;
+  },
+
+  // Tab Helpers
 
   _getUserContextIdFromTab(tab) {
     return parseInt(viewFor(tab).getAttribute("usercontextid") || 0, 10);
@@ -418,15 +461,21 @@ const ContainerService = {
       }
     }
 
-    // FIXME: icon and color conversion based on FF version.
-    const identity = ContextualIdentityService.create(args.name, args.icon, args.color);
+    const color = this._fromNameToColor(args.color);
+    const icon = this._fromNameToIcon(args.icon);
+
+    const identity = ContextualIdentityService.create(args.name, icon, color);
 
     this._identitiesState[identity.userContextId] = {
       hiddenTabUrls: [],
       openTabs: 0
     };
 
-    return Promise.resolve(this._convert(identity));
+    this._refreshNeeded().then(() => {
+      return this._convert(identity);
+    }).catch(() => {
+      return this._convert(identity);
+    });
   },
 
   updateIdentity(args) {
@@ -441,12 +490,18 @@ const ContainerService = {
       }
     }
 
-    // FIXME: icon and color conversion based on FF version.
-    // FIXME: color/name update propagation
-    return Promise.resolve(ContextualIdentityService.update(args.userContextId,
-                                                            identity.name,
-                                                            identity.icon,
-                                                            identity.color));
+    const color = this._fromNameToColor(identity.color);
+    const icon = this._fromNameToIcon(identity.icon);
+
+    const updated = ContextualIdentityService.update(args.userContextId,
+                                                     identity.name,
+                                                     icon, color);
+
+    this._refreshNeeded().then(() => {
+      return updated;
+    }).catch(() => {
+      return updated;
+    });
   },
 
   removeIdentity(args) {
@@ -458,47 +513,226 @@ const ContainerService = {
       tab.close();
     });
 
-    return Promise.resolve(ContextualIdentityService.remove(args.userContextId));
+    const removed = ContextualIdentityService.remove(args.userContextId);
+
+    this._refreshNeeded().then(() => {
+      return removed;
+    }).catch(() => {
+      return removed;
+    });
   },
 
   // Styling the window
 
-  configureWindow(window) {
-    const tabsElement = window.document.getElementById("tabbrowser-tabs");
-    const button = window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
+  configureWindows() {
+    const promises = [];
+    for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
+      promises.push(this.configureWindow(viewFor(window)));
+    }
+    return Promise.all(promises);
+  },
 
-    while (button.firstChild) {
-      button.removeChild(button.firstChild);
+  configureWindow(window) {
+    const id = windowUtils.getInnerId(window);
+    if (!(id in this._windowMap)) {
+      this._windowMap[id] = new ContainerWindow(window);
     }
 
-    button.setAttribute("type", "menu");
-    const popup = window.document.createElementNS(XUL_NS, "menupopup");
+    return this._windowMap[id].configure();
+  },
 
-    popup.setAttribute("anonid", "newtab-popup");
-    popup.className = "new-tab-popup";
-    popup.setAttribute("position", "after_end");
+  closeWindow(window) {
+    const id = windowUtils.getInnerId(window);
+    delete this._windowMap[id];
+  },
 
-    ContextualIdentityService.getIdentities().forEach(identity => {
-      identity = this._convert(identity);
+  _refreshNeeded() {
+    return this.configureWindows();
+  },
 
-      const menuItem = window.document.createElementNS(XUL_NS, "menuitem");
-      menuItem.setAttribute("class", "menuitem-iconic");
-      menuItem.setAttribute("label", identity.name);
-      menuItem.setAttribute("image", self.data.url("usercontext.svg") + "#" + identity.image);
+  _hideAllPanels() {
+    for (let id in this._windowMap) { // eslint-disable-line prefer-const
+      this._windowMap[id].hidePanel();
+    }
+  },
 
-      menuItem.addEventListener("command", (event) => {
-        this.openTab({userContextId: identity.userContextId});
-        event.stopPropagation();
-      });
+  _restyleTab(tab) {
+    if (!tab) {
+      return Promise.resolve(null);
+    }
 
-      popup.appendChild(menuItem);
+    const userContextId = ContainerService._getUserContextIdFromTab(tab);
+    return ContainerService.getIdentity({userContextId}).then(identity => {
+      if (!identity) {
+        return;
+      }
+
+      const hbox = viewFor(tab.window).document.getElementById("userContext-icons");
+      hbox.setAttribute("data-identity-color", identity.color);
+
+      const label = viewFor(tab.window).document.getElementById("userContext-label");
+      label.setAttribute("value", identity.name);
+      label.style.color = ContainerService._fromNameToColor(identity.color);
+
+      const indicator = viewFor(tab.window).document.getElementById("userContext-indicator");
+      indicator.setAttribute("data-identity-icon", identity.image);
+      indicator.style.listStyleImage = "";
     });
-
-    button.appendChild(popup);
-    const style = Style({ uri: self.data.url("chrome.css") });
-
-    attachTo(style, viewFor(window));
-  }
+  },
 };
 
+// ----------------------------------------------------------------------------
+// ContainerWindow
+
+// This object is used to configure a single window.
+function ContainerWindow(window) {
+  this._init(window);
+}
+
+ContainerWindow.prototype = {
+  _window: null,
+  _panelElement: null,
+  _timeoutId: 0,
+
+  _init(window) {
+    this._window = window;
+    const style = Style({ uri: self.data.url("usercontext.css") });
+    attachTo(style, this._window);
+  },
+
+  configure() {
+    return Promise.all([
+      this._configurePlusButtonMenu(),
+      this._configureActiveTab(),
+    ]);
+  },
+
+  _configurePlusButtonMenu() {
+    const tabsElement = this._window.document.getElementById("tabbrowser-tabs");
+
+    const button = this._window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
+
+    // Let's remove the tooltip because it can go over our panel.
+    button.setAttribute("tooltip", "");
+
+    // Let's remove all the previous panels.
+    if (this._panelElement) {
+      this._panelElement.remove();
+    }
+
+    this._panelElement = this._window.document.createElementNS(XUL_NS, "panel");
+    this._panelElement.setAttribute("id", "new-tab-overlay");
+    button.after(this._panelElement);
+    this._panelElement.hidden = true;
+
+    this._repositionPopup();
+
+    button.addEventListener("click", () => {
+      this._panelElement.hidden = false;
+    });
+
+    button.addEventListener("mouseover", () => {
+      this._repositionPopup();
+      this._panelElement.hidden = false;
+    });
+
+    button.addEventListener("mouseout", () => {
+      this._createTimeout();
+    });
+
+    this._panelElement.addEventListener("mouseout", (e) => {
+      if (e.target !== this._panelElement) {
+        this._createTimeout();
+        return;
+      }
+      this._repositionPopup();
+    });
+
+    return ContainerService.queryIdentities().then(identities => {
+      identities.forEach(identity => {
+        const menuItemElement = this._window.document.createElementNS(XUL_NS, "menuitem");
+        this._panelElement.appendChild(menuItemElement);
+        menuItemElement.className = "menuitem-iconic";
+        menuItemElement.setAttribute("label", identity.name);
+        menuItemElement.setAttribute("data-usercontextid", identity.userContextId);
+        menuItemElement.setAttribute("data-identity-icon", identity.image);
+        menuItemElement.setAttribute("data-identity-color", identity.color);
+
+        menuItemElement.addEventListener("command", e => {
+          ContainerService.openTab({userContextId: identity.userContextId});
+          e.stopPropagation();
+        });
+
+        //Command isn't working probably because I'm in a panel
+        menuItemElement.addEventListener("click", e => {
+          ContainerService.openTab({userContextId: identity.userContextId});
+          e.stopPropagation();
+        });
+
+        menuItemElement.addEventListener("mouseover", () => {
+          this._cleanTimeout();
+        });
+
+        menuItemElement.addEventListener("mouseout", () => {
+          this._createTimeout();
+        });
+
+        this._panelElement.appendChild(menuItemElement);
+      });
+    }).catch(() => {
+      this.hidePanel();
+    });
+  },
+
+  _configureActiveTab() {
+    const tab = modelFor(this._window).tabs.activeTab;
+    return ContainerService._restyleTab(tab);
+  },
+
+  // This function puts the popup in the correct place.
+  _repositionPopup() {
+    const tabsElement = this._window.document.getElementById("tabbrowser-tabs");
+    const button = this._window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
+
+    const size = button.getBoxQuads()[0];
+    const innerWindow = tabsElement.getBoxQuads()[0];
+    const panelElementWidth = 200;
+
+    // 1/4th of the way past the left hand side of the new tab button
+    // This seems to line up nicely with the left of the +
+    const offset = ((size.p3.x - size.p4.x) / 4);
+    let left = size.p4.x + offset;
+    if (left + panelElementWidth > innerWindow.p2.x) {
+      left -= panelElementWidth - offset;
+    }
+    this._panelElement.style.left = left + "px";
+    this._panelElement.style.top = size.p4.y + "px";
+  },
+
+  // This timer is used to hide the panel auto-magically if it's not used in
+  // the following X seconds. This is need to avoid the leaking of the panel
+  // when the mouse goes out of of the 'plus' button.
+  _createTimeout() {
+    this._cleanTimeout();
+    this._timeoutId = this._window.setTimeout(() => {
+      this.hidePanel();
+      this._timeoutId = 0;
+    }, HIDE_MENU_TIMEOUT);
+  },
+
+  _cleanTimeout() {
+    if (this._timeoutId) {
+      this._window.clearTimeout(this._timeoutId);
+      this._timeoutId = 0;
+    }
+  },
+
+  hidePanel() {
+    this._cleanTimeout();
+    this._panelElement.hidden = true;
+  },
+};
+
+// ----------------------------------------------------------------------------
+// Let's start :)
 ContainerService.init();
