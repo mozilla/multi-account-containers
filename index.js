@@ -605,8 +605,8 @@ ContainerWindow.prototype = {
       this._configurePlusButtonMenu(),
       this._configureActiveTab(),
       this._configureFileMenu(),
+      this._configureContextMenu(),
       // TODO: this should change the decoration of the tab.
-      // TODO: this should change the context menu.
     ]);
   },
 
@@ -693,7 +693,23 @@ ContainerWindow.prototype = {
   },
 
   _configureFileMenu() {
-    const menu = this._window.document.getElementById("menu_newUserContext");
+    return this._configureMenu("menu_newUserContext", e => {
+      const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
+      ContainerService.openTab({ userContextId });
+    });
+  },
+
+  _configureContextMenu() {
+    return this._configureMenu("context-openlinkinusercontext-menu", e => {
+      // This is a super internal method. Hopefully it will be stable in the
+      // next FF releases.
+      this._window.gContextMenu.openLinkInTab(e);
+    });
+  },
+
+  // Generic menu configuration.
+  _configureMenu(menuId, cb) {
+    const menu = this._window.document.getElementById(menuId);
     // containerAddonMagic attribute is a custom attribute we set in order to
     // know if this menu has been already converted.
     if (!menu || menu.hasAttribute("containerAddonMagic")) {
@@ -710,14 +726,15 @@ ContainerWindow.prototype = {
     const menupopup = this._window.document.createElementNS(XUL_NS, "menupopup");
     menu.appendChild(menupopup);
 
+    menupopup.addEventListener("command", cb);
     menupopup.addEventListener("popupshowing", e => {
-      return this._createFileMenu(e);
+      return this._createMenu(e);
     });
 
     return Promise.resolve(null);
   },
 
-  _createFileMenu(event) {
+  _createMenu(event) {
     while (event.target.hasChildNodes()) {
       event.target.removeChild(event.target.firstChild);
     }
@@ -732,12 +749,7 @@ ContainerWindow.prototype = {
         menuitem.setAttribute("data-usercontextid", identity.userContextId);
         menuitem.setAttribute("data-identity-color", identity.color);
         menuitem.setAttribute("data-identity-icon", identity.image);
-
         fragment.appendChild(menuitem);
-
-        menuitem.addEventListener("click", () => {
-          ContainerService.openTab({userContextId: identity.userContextId});
-        });
       });
 
       event.target.appendChild(fragment);
