@@ -1,4 +1,3 @@
-[usercontextid="1"],
 [data-identity-color="blue"] {
   --identity-tab-color: #37adff;
   --identity-icon-color: #37adff;
@@ -9,7 +8,6 @@
   --identity-icon-color: #00c79a;
 }
 
-[usercontextid="3"],
 [data-identity-color="green"] {
   --identity-tab-color: #51cd00;
   --identity-icon-color:  #51cd00;
@@ -20,7 +18,6 @@
   --identity-icon-color: #ffcb00;
 }
 
-[usercontextid="2"],
 [data-identity-color="orange"] {
   --identity-tab-color: #ff9f00;
   --identity-icon-color: #ff9f00;
@@ -31,7 +28,6 @@
   --identity-icon-color: #ff613d;
 }
 
-[usercontextid="4"],
 [data-identity-color="pink"] {
   --identity-tab-color: #ff4bda;
   --identity-icon-color: #ff4bda;

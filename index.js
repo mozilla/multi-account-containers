@@ -22,7 +22,7 @@ const IDENTITY_ICONS = [
   { name: "briefcase", image: "chrome://browser/skin/usercontext/work.svg" },
   { name: "dollar", image: "chrome://browser/skin/usercontext/banking.svg" },
   { name: "cart", image: "chrome://browser/skin/usercontext/shopping.svg" },
-  { name: "cirlce", image: "" }, // this doesn't exist in m-b
+  { name: "circle", image: "" }, // this doesn't exist in m-b
 ];
 
 const { attachTo } = require("sdk/content/mod");
@@ -101,6 +101,7 @@ const ContainerService = {
         ++this._identitiesState[userContextId].openTabs;
       }
       this._hideAllPanels();
+      this._restyleTab(tab);
     });
 
     tabs.on("close", tab => {
@@ -579,6 +580,19 @@ const ContainerService = {
       indicator.style.listStyleImage = "";
     });
   },
+
+  _restyleTab(tab) {
+    if (!tab) {
+      return Promise.resolve(null);
+    }
+    const userContextId = ContainerService._getUserContextIdFromTab(tab);
+    return ContainerService.getIdentity({userContextId}).then(identity => {
+      if (!identity) {
+        return;
+      }
+      viewFor(tab).setAttribute("data-identity-color", identity.color);
+    });
+  },
 };
 
 // ----------------------------------------------------------------------------
@@ -606,7 +620,7 @@ ContainerWindow.prototype = {
       this._configureActiveTab(),
       this._configureFileMenu(),
       this._configureContextMenu(),
-      // TODO: this should change the decoration of the tab.
+      this._configureTabStyle(),
     ]);
   },
 
@@ -685,6 +699,14 @@ ContainerWindow.prototype = {
     }).catch(() => {
       this.hidePanel();
     });
+  },
+
+  _configureTabStyle() {
+    const promises = [];
+    for (let tab of modelFor(this._window).tabs) { // eslint-disable-line prefer-const
+      promises.push(ContainerService._restyleTab(tab));
+    }
+    return Promise.all(promises);
   },
 
   _configureActiveTab() {
