@@ -101,6 +101,7 @@ const ContainerService = {
         ++this._identitiesState[userContextId].openTabs;
       }
       this._hideAllPanels();
+      this._restyleTab(tab);
     });
 
     tabs.on("close", tab => {
@@ -579,6 +580,21 @@ const ContainerService = {
       indicator.style.listStyleImage = "";
     });
   },
+
+  _restyleTab(tab) {
+    if (!tab) {
+      return Promise.resolve(null);
+    }
+
+    const userContextId = ContainerService._getUserContextIdFromTab(tab);
+    return ContainerService.getIdentity({userContextId}).then(identity => {
+      if (!identity) {
+        return;
+      }
+
+      // TODO: here the magic :)
+    });
+  },
 };
 
 // ----------------------------------------------------------------------------
@@ -604,9 +620,9 @@ ContainerWindow.prototype = {
     return Promise.all([
       this._configurePlusButtonMenu(),
       this._configureActiveTab(),
+      this._configureTabs(),
       this._configureFileMenu(),
       this._configureContextMenu(),
-      // TODO: this should change the decoration of the tab.
     ]);
   },
 
@@ -690,6 +706,14 @@ ContainerWindow.prototype = {
   _configureActiveTab() {
     const tab = modelFor(this._window).tabs.activeTab;
     return ContainerService._restyleActiveTab(tab);
+  },
+
+  _configureTabs() {
+    let promises = [];
+    for (let tab of modelFor(this._window).tabs) { // eslint-disable-line prefer-const
+      promises.push(ContainerService._restyleTab(tab));
+    }
+    return Promise.all(promises);
   },
 
   _configureFileMenu() {
