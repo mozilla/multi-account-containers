@@ -1,7 +1,7 @@
 body {
-  min-inline-size: 200px;
-  max-inline-size: 400px;
   inline-size: 264px;
+  max-inline-size: 400px;
+  min-inline-size: 200px;
 }
 
 table {
@@ -28,12 +28,14 @@ table {
 }
 
 .onboarding {
-  margin: 16px;
-  min-block-size: 480px;
-
+  align-items: center;
   display: flex;
   flex-flow: column;
-  align-items: center;
+  margin-block-end: 16px;
+  margin-block-start: 16px;
+  margin-inline-end: 16px;
+  margin-inline-start: 16px;
+  min-block-size: 480px;
 }
 
 .onboarding h3 {
@@ -51,20 +53,23 @@ table {
 
 .popup-bumper {
   inline-size: 100%;
-  padding: .5em;
+  padding-block-end: 0.5em;
+  padding-block-start: 0.5em;
+  padding-inline-end: 0.5em;
+  padding-inline-start: 0.5em;
 }
 
 .panel-header {
+  align-items: center;
   block-size: 54px;
   display: flex;
-  align-items: center;
 }
 
 .panel-header-text {
-  font-weight: lighter;
-  font-size: 16px;
-  margin-bottom: 0;
   color: #4a4a4a;
+  font-size: 16px;
+  font-weight: lighter;
+  margin-block-end: 0;
 }
 
 .panel-header-button {
@@ -72,56 +77,64 @@ table {
 }
 
 .icon {
-  max-inline-size: 16px;
   block-size: 16px;
+  max-inline-size: 16px;
 }
 
 table.unstriped tbody tr {
-  border-bottom: 1px solid #f1f1f1;
   background-color: #fefefe;
+  border-block-end: 1px solid #f1f1f1;
 }
 
-.userContext-icon {
+/* .userContext-icon is used natively, Bug 1333811 was raised to fix */
+.userContext-icon,
+.usercontext-icon {
   background-image: var(--identity-icon);
   background-position: center center;
   background-repeat: no-repeat;
   background-size: contain;
-  filter: url('/img/filters.svg#fill');
-  fill: var(--identity-icon-color);
-  inline-size: 20px;
   block-size: 20px;
+  fill: var(--identity-icon-color);
+  filter: url('/img/filters.svg#fill');
+  inline-size: 20px;
   padding-left: 20px;
   padding-right: 10px;
 }
 
-.container-panel-row:hover .userContext-icon {
+.container-panel-row:hover .usercontext-icon {
   background-image: url('/img/container-newtab.svg');
-  filter: url('/img/filters.svg#fill');
   fill: 'gray';
+  filter: url('/img/filters.svg#fill');
 }
 
 .edit-identities {
-  background: #DCDBDC;
+  background: #dcdbdc;
 }
 
 .panel-footer {
   align-items: center;
   background: #efefef;
-  color: #000000;
+  block-size: 54px;
+  color: #000;
   display: flex;
   font-size: 13px;
-  block-size: 54px;
   inline-size: 100%;
 }
 
 .footer-columns {
-  margin: 0;
-  padding: 0;
+  margin-block-end: 0;
+  margin-block-start: 0;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 0;
+  padding-inline-start: 0;
 }
 
 .footer-button {
-  margin-bottom: 0;
   border-radius: 0;
+  margin-block-end: 0;
 }
 
 .cancel-button {
@@ -129,12 +142,64 @@ table.unstriped tbody tr {
 }
 
 .edit-containers-text {
-  text-align: center;
   border-inline-end: solid 1px #d8d8d8;
+  text-align: center;
 }
 
 .edit-containers-text a {
   color: #0a0a0a;
+}
+
+.edit-container-panel [type="radio"] {
+  display: inline;
+  margin-inline-start: -17px;
+  text-indent: -999999px;
+}
+
+.edit-container-panel [type="radio"]:first-child {
+  margin-inline-start: 0;
+}
+
+.edit-container-panel label {
+  background: #fff;
+  block-size: 20px;
+  filter: none;
+  inline-size: 20px;
+  margin-block-end: 0;
+  margin-block-start: 0;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
+  offset-inline-start: -18px;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 0;
+  padding-inline-start: 0;
+  position: relative;
+}
+
+.edit-container-panel [type="radio"]:checked + label {
+  outline: 1px solid grey;
+  -moz-outline-radius: 100%;
+}
+
+.edit-container-panel label::before {
+  background: var(--identity-icon);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: calc(100% - 4px);
+  block-size: calc(100% - 2px);
+  border: unset;
+  fill: var(--identity-icon-color);
+  filter: url('/img/filters.svg#fill');
+  inline-size: calc(100% - 2px);
+  margin-block-end: 1px;
+  margin-block-start: 1px;
+  margin-inline-end: 1px;
+  margin-inline-start: 1px;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 0;
+  padding-inline-start: 0;
 }
 
 [data-identity-color="blue"] {
@@ -149,7 +214,7 @@ table.unstriped tbody tr {
 
 [data-identity-color="green"] {
   --identity-tab-color: #57bd35;
-  --identity-icon-color:  #7dc14c;
+  --identity-icon-color: #7dc14c;
 }
 
 [data-identity-color="yellow"] {
@@ -198,17 +263,23 @@ table.unstriped tbody tr {
 }
 
 .container-info-panel-header {
-  block-size: 33px;
-  display: flex;
   align-items: center;
+  block-size: 33px;
   border-block-end: 1px solid #ebebeb;
+  display: flex;
   margin-block-end: 10px;
-  padding: 0 20px;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 20px;
+  padding-inline-start: 20px;
 }
 
 .container-info-panel-hide {
-  margin-bottom: 8px;
-  padding: 0 20px;
+  margin-block-end: 8px;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 20px;
+  padding-inline-start: 20px;
 }
 
 .container-info-panel-hideorshow-icon {
@@ -218,7 +289,10 @@ table.unstriped tbody tr {
 .container-info-panel-movetabs {
   border-block-end: 1px solid #ebebeb;
   margin-block-end: 10px;
-  padding: 0 20px;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 20px;
+  padding-inline-start: 20px;
 }
 
 .clickable {
@@ -226,24 +300,24 @@ table.unstriped tbody tr {
 }
 
 .edit-containers-panel-footer a {
-  color: #ffffff;
+  color: #fff;
 }
 
 .edit-containers-exit-text {
-  display: flex;
   align-items: center;
   background: #248aeb;
   block-size: 100%;
-  color: #ffffff;
+  color: #fff;
+  display: flex;
   justify-content: center;
 }
 
 .choose-color-icon {
-  padding-inline-start: 17px;
   padding-inline-end: 7px;
+  padding-inline-start: 17px;
 }
 
 .scrollable {
+  max-block-size: 480px;
   overflow: auto;
-  max-height: 480px;
 }

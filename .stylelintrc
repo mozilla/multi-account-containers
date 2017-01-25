@@ -1,0 +1,18 @@
+{
+  "extends": "stylelint-config-standard",
+
+  "ignoreFiles": ["webextension/css/*.min.css"],
+
+  "rules": {
+    "declaration-block-no-duplicate-properties": true,
+    "declaration-block-properties-order": "alphabetical",
+    "property-blacklist": [
+      "/height/",
+      "/width/",
+      "/top/",
+      "/bottom/",
+      "padding",
+      "margin"
+    ]
+  }
+}

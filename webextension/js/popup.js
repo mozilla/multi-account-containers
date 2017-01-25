@@ -5,6 +5,9 @@
 const CONTAINER_HIDE_SRC = "/img/container-hide.svg";
 const CONTAINER_UNHIDE_SRC = "/img/container-unhide.svg";
 
+const DEFAULT_COLOR = "blue";
+const DEFAULT_ICON = "circle";
+
 // List of panels
 const P_ONBOARDING_1     = "onboarding1";
 const P_ONBOARDING_2     = "onboarding2";
@@ -303,35 +306,37 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     return browser.runtime.sendMessage({
       method: "getTabs",
       userContextId: identity.userContextId,
-    }).then(tabs => {
-      // For each one, let's create a new line.
-      const fragment = document.createDocumentFragment();
-      for (let tab of tabs) { // eslint-disable-line prefer-const
-        const tr = document.createElement("tr");
-        fragment.appendChild(tr);
-        tr.classList.add("container-info-tab");
-        tr.innerHTML = `
-          <td><img class="icon" src="${tab.favicon}" /></td>
-          <td>${tab.title}</td>`;
+    }).then(this.buildInfoTable);
+  },
 
-        // On click, we activate this tab. But only if this tab is active.
-        if (tab.active) {
-          tr.classList.add("clickable");
-          tr.addEventListener("click", () => {
-            browser.runtime.sendMessage({
-              method: "showTab",
-              tabId: tab.id,
-            }).then(() => {
-              window.close();
-            }).catch(() => {
-              window.close();
-            });
+  buildInfoTable(tabs) {
+    // For each one, let's create a new line.
+    const fragment = document.createDocumentFragment();
+    for (let tab of tabs) { // eslint-disable-line prefer-const
+      const tr = document.createElement("tr");
+      fragment.appendChild(tr);
+      tr.classList.add("container-info-tab");
+      tr.innerHTML = `
+        <td><img class="icon" src="${tab.favicon}" /></td>
+        <td>${tab.title}</td>`;
+
+      // On click, we activate this tab. But only if this tab is active.
+      if (tab.active) {
+        tr.classList.add("clickable");
+        tr.addEventListener("click", () => {
+          browser.runtime.sendMessage({
+            method: "showTab",
+            tabId: tab.id,
+          }).then(() => {
+            window.close();
+          }).catch(() => {
+            window.close();
           });
-        }
+        });
       }
+    }
 
-      document.getElementById("container-info-table").appendChild(fragment);
-    });
+    document.getElementById("container-info-table").appendChild(fragment);
   },
 });
 
@@ -406,6 +411,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
   // This method is called when the object is registered.
   initialize() {
+    this.initializeRadioButtons();
+
     document.querySelector("#edit-container-panel-back-arrow").addEventListener("click", () => {
       Logic.showPreviousPanel();
     });
@@ -416,12 +423,13 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
     document.querySelector("#edit-container-ok-link").addEventListener("click", () => {
       const identity = Logic.currentIdentity();
+      const formValues = new FormData(document.getElementById("edit-container-panel-form"));
       browser.runtime.sendMessage({
         method: identity.userContextId ? "updateIdentity" : "createIdentity",
         userContextId: identity.userContextId || 0,
         name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
-        icon: this._randomIcon(),
-        color: this._randomColor(),
+        icon: formValues.get("container-icon") || DEFAULT_ICON,
+        color: formValues.get("container-color") || DEFAULT_COLOR,
       }).then(() => {
         return Logic.refreshIdentities();
       }).then(() => {
@@ -432,27 +440,46 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     });
   },
 
+  initializeRadioButtons() {
+    const colorRadioTemplate = (containerColor) => {
+      return `<input type="radio" value="${containerColor}" name="container-color" id="edit-container-panel-choose-color-${containerColor}" />
+     <label for="edit-container-panel-choose-color-${containerColor}" class="usercontext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="${containerColor}">`;
+    };
+    const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple" ];
+    const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
+    colors.forEach((containerColor) => {
+      const templateInstance = document.createElement("span");
+      templateInstance.innerHTML = colorRadioTemplate(containerColor);
+      colorRadioFieldset.appendChild(templateInstance);
+    });
+
+    const iconRadioTemplate = (containerIcon) => {
+      return `<input type="radio" value="${containerIcon}" name="container-icon" id="edit-container-panel-choose-icon-${containerIcon}" />
+     <label for="edit-container-panel-choose-icon-${containerIcon}" class="usercontext-icon choose-color-icon" data-identity-color="grey" data-identity-icon="${containerIcon}">`;
+    };
+    const icons = ["fingerprint", "briefcase", "dollar", "cart", "circle"];
+    const iconRadioFieldset = document.getElementById("edit-container-panel-choose-icon");
+    icons.forEach((containerIcon) => {
+      const templateInstance = document.createElement("span");
+      templateInstance.innerHTML = iconRadioTemplate(containerIcon);
+      iconRadioFieldset.appendChild(templateInstance);
+    });
+  },
+
   // This method is called when the panel is shown.
   prepare() {
     const identity = Logic.currentIdentity();
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
-
-    // FIXME: color and icon must be set. But we need the UI first.
+    [...document.querySelectorAll("[name='container-color']")].forEach(colorInput => {
+      colorInput.checked = colorInput.value === identity.color;
+    });
+    [...document.querySelectorAll("[name='container-icon']")].forEach(iconInput => {
+      iconInput.checked = iconInput.value === identity.image;
+    });
 
     return Promise.resolve(null);
   },
 
-  // These 2 methods are for debugging only. We should remove them when we
-  // finish the UI.
-  _randomIcon() {
-    const images = ["fingerprint", "briefcase", "dollar", "cart", "cirlce"];
-    return images[Math.floor(Math.random() * images.length)];
-  },
-
-  _randomColor() {
-    const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple" ];
-    return colors[Math.floor(Math.random() * colors.length)];
-  },
 });
 
 // P_CONTAINER_DELETE: Delete a container.
