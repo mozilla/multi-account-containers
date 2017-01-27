@@ -178,14 +178,36 @@
 
 #new-tab-overlay {
   visibility: visible;
-  block-size: 200px;
-  inline-size: auto;
-  display: block;
   background: transparent;
-  position: absolute;
   -moz-appearance: none;
   offset-block-start: 29px;
+
+  font-style: -moz-use-system-font;
+  --icon-size: 26px;
 }
+
+#new-tab-overlay .panel-arrowcontent {
+  -moz-appearance: none;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  block-size: 200px;
+  display: block;
+  margin-block-end: 0;
+  margin-block-start: 0;
+  padding-block-start: 0;
+}
+
+#new-tab-overlay .panel-arrowcontent,
+#new-tab-overlay menuitem {
+  /* Limited width to 8chars roughly */
+  inline-size: calc(calc(8*1.5ch) + var(--icon-size) + 3px);
+}
+
+#new-tab-overlay .panel-arrowbox {
+  display: none;
+}
+
 #new-tab-overlay[hidden=true] {
   display: none;
 }
@@ -197,11 +219,7 @@
   -moz-appearance: none;
   color: #4b4b4b;
   padding: 6px;
-  font-size: 1.2rem;
   box-shadow: 3px 7px 7px #0006;
-  --icon-size: 26px;
-  /* Limited width to 8chars roughly */
-  inline-size: calc(calc(8*0.68em) + var(--icon-size) + 3px);
 }
 
 #new-tab-overlay .menuitem-iconic[data-usercontextid] > .menu-iconic-left > .menu-iconic-icon {

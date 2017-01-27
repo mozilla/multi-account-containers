@@ -4,7 +4,7 @@
 
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 
-const HIDE_MENU_TIMEOUT = 1000;
+const HIDE_MENU_TIMEOUT = 300;
 
 const IDENTITY_COLORS = [
  { name: "blue", color: "#00a7e0" },
@@ -622,10 +622,13 @@ ContainerWindow.prototype = {
   _configurePlusButtonMenu() {
     const tabsElement = this._window.document.getElementById("tabbrowser-tabs");
 
+    const mainPopupSetElement = this._window.document.getElementById("mainPopupSet");
     const button = this._window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
+    const overflowButton = this._window.document.getElementById("new-tab-button");
 
     // Let's remove the tooltip because it can go over our panel.
     button.setAttribute("tooltip", "");
+    overflowButton.setAttribute("tooltip", "");
 
     // Let's remove all the previous panels.
     if (this._panelElement) {
@@ -634,30 +637,45 @@ ContainerWindow.prototype = {
 
     this._panelElement = this._window.document.createElementNS(XUL_NS, "panel");
     this._panelElement.setAttribute("id", "new-tab-overlay");
-    button.after(this._panelElement);
-    this._panelElement.hidden = true;
+    this._panelElement.setAttribute("position", "bottomcenter topleft");
+    this._panelElement.setAttribute("side", "top");
+    this._panelElement.setAttribute("flip", "side");
+    this._panelElement.setAttribute("type", "arrow");
+    this._panelElement.setAttribute("animate", "open");
+    this._panelElement.setAttribute("consumeoutsideclicks", "never");
+    mainPopupSetElement.appendChild(this._panelElement);
 
-    this._repositionPopup();
+    const showPopup = (buttonElement) => {
+      this._cleanTimeout();
+      this._panelElement.openPopup(buttonElement);
+    };
 
-    button.addEventListener("click", () => {
-      this._panelElement.hidden = false;
+    const mouseoutHandle = (e) => {
+      let el = e.target;
+      do {
+        if (el == this._panelElement ||
+            el == button ||
+            el == overflowButton) {
+          this._createTimeout();
+          return;
+        }
+      } while(el = el.parentElement);
+    };
+
+    [button, overflowButton].forEach((buttonElement) => {
+      buttonElement.addEventListener("mouseover", () => {
+        showPopup(buttonElement);
+      });
+      buttonElement.addEventListener("click", _ => {
+        this.hidePanel();
+      });
+      buttonElement.addEventListener("mouseout", mouseoutHandle);
     });
 
-    button.addEventListener("mouseover", () => {
-      this._repositionPopup();
-      this._panelElement.hidden = false;
-    });
+    this._panelElement.addEventListener("mouseout", mouseoutHandle);
 
-    button.addEventListener("mouseout", () => {
-      this._createTimeout();
-    });
-
-    this._panelElement.addEventListener("mouseout", (e) => {
-      if (e.target !== this._panelElement) {
-        this._createTimeout();
-        return;
-      }
-      this._repositionPopup();
+    this._panelElement.addEventListener("mouseover", () => {
+      this._cleanTimeout();
     });
 
     return ContainerService.queryIdentities().then(identities => {
@@ -670,13 +688,7 @@ ContainerWindow.prototype = {
         menuItemElement.setAttribute("data-identity-icon", identity.image);
         menuItemElement.setAttribute("data-identity-color", identity.color);
 
-        menuItemElement.addEventListener("command", e => {
-          ContainerService.openTab({userContextId: identity.userContextId});
-          e.stopPropagation();
-        });
-
-        //Command isn't working probably because I'm in a panel
-        menuItemElement.addEventListener("click", e => {
+        menuItemElement.addEventListener("command", (e) => {
           ContainerService.openTab({userContextId: identity.userContextId});
           e.stopPropagation();
         });
@@ -685,9 +697,7 @@ ContainerWindow.prototype = {
           this._cleanTimeout();
         });
 
-        menuItemElement.addEventListener("mouseout", () => {
-          this._createTimeout();
-        });
+        menuItemElement.addEventListener("mouseout", mouseoutHandle);
 
         this._panelElement.appendChild(menuItemElement);
       });
@@ -801,26 +811,6 @@ ContainerWindow.prototype = {
     return true;
   },
 
-  // This function puts the popup in the correct place.
-  _repositionPopup() {
-    const tabsElement = this._window.document.getElementById("tabbrowser-tabs");
-    const button = this._window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
-
-    const size = button.getBoxQuads()[0];
-    const innerWindow = tabsElement.getBoxQuads()[0];
-    const panelElementWidth = 200;
-
-    // 1/4th of the way past the left hand side of the new tab button
-    // This seems to line up nicely with the left of the +
-    const offset = ((size.p3.x - size.p4.x) / 4);
-    let left = size.p4.x + offset;
-    if (left + panelElementWidth > innerWindow.p2.x) {
-      left -= panelElementWidth - offset;
-    }
-    this._panelElement.style.left = left + "px";
-    this._panelElement.style.top = size.p4.y + "px";
-  },
-
   // This timer is used to hide the panel auto-magically if it's not used in
   // the following X seconds. This is need to avoid the leaking of the panel
   // when the mouse goes out of of the 'plus' button.
@@ -841,7 +831,7 @@ ContainerWindow.prototype = {
 
   hidePanel() {
     this._cleanTimeout();
-    this._panelElement.hidden = true;
+    this._panelElement.hidePopup();
   },
 };
 
