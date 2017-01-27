@@ -384,16 +384,11 @@ const ContainerService = {
         url: "about:blank",
         onOpen: window => {
           const newBrowserWindow = viewFor(window);
+          let pos = 0;
 
           // Let's move the tab to the new window.
           for (let tab of list) { // eslint-disable-line prefer-const
-            const newTab = newBrowserWindow.gBrowser.addTab("about:blank");
-            newBrowserWindow.gBrowser.swapBrowsersAndCloseOther(newTab, viewFor(tab));
-            // swapBrowsersAndCloseOther is an internal method of gBrowser
-            // an it's not supported by addon SDK. This means that we
-            // don't receive an 'open' event, but only the 'close' one.
-            // We have to force a +1 in our tab counter.
-            ++this._identitiesState[args.userContextId].openTabs;
+            newBrowserWindow.gBrowser.adoptTab(viewFor(tab), pos++, false);
           }
 
           // Let's close all the normal tab in the new window. In theory it
