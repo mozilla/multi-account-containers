@@ -56,10 +56,10 @@
       <div class="small-2 columns panel-back-arrow clickable" id="close-container-info-panel">&laquo;</div>
       <div class="small-10 columns">
         <div class="row container-info-panel-header">
-          <span class="userContext-icon" id="container-info-icon" data-identity-icon="" data-identity-color=""></span>
+          <span class="usercontext-icon" id="container-info-icon"></span>
           <h3 id="container-info-name" class="panel-header-text"></h3>
         </div>
-        <div class="row container-info-panel-hide container-info-has-tabs clickable" id="container-info-hideorshow" data-user-context-id="">
+        <div class="row container-info-panel-hide container-info-has-tabs clickable" id="container-info-hideorshow">
           <img id="container-info-hideorshow-icon" alt="Hide Container icon" src="/img/container-hide.svg" class="icon container-info-panel-hideorshow-icon"/><span id="container-info-hideorshow-label">Hide this container</span><br/>
         </div>
         <div class="row container-info-panel-movetabs container-info-has-tabs clickable" id="container-info-movetabs">
@@ -104,27 +104,20 @@
         &laquo;
       </div>
       <div class="small-10 columns">
-        <form>
+        <form id="edit-container-panel-form">
           <p>
-            <label>Name</label>
+            <label for="edit-container-panel-name-input">Name</label>
             <input type="text" name="container-name" id="edit-container-panel-name-input"/>
           </p>
           <p>
-            <label>Choose a color</label>
-            <div id="edit-container-panel-choose-color">
-              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="blue"></span>
-              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="turquoise"></span>
-              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="green"></span>
-              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="yellow"></span>
-              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="orange"></span>
-              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="red"></span>
-              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="pink"></span>
-              <span class="userContext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="purple"></span>
-            </div>
+            <fieldset id="edit-container-panel-choose-color">
+              <legend>Choose a color</legend>
+            </fieldset>
           </p>
           <p>
-            <label>Choose an icon</label>
-            <input type="text" />
+            <fieldset id="edit-container-panel-choose-icon">
+              <legend>Choose an icon</legend>
+            </fieldset>
           </p>
         </form>
         <div class="row">
@@ -143,7 +136,7 @@
     <div class="row">
       <div class="small-12 columns">
         <div class="row container-info-panel-header">
-          <span class="userContext-icon" id="delete-container-icon" data-identity-icon="" data-identity-color=""></span>
+          <span class="usercontext-icon" id="delete-container-icon"></span>
           <h3 id="delete-container-name" class="panel-header-text"></h3>
         </div>
         <div class="row delete-container-confirm">

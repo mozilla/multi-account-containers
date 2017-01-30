@@ -652,21 +652,22 @@ ContainerWindow.prototype = {
 
     const mouseoutHandle = (e) => {
       let el = e.target;
-      do {
-        if (el == this._panelElement ||
-            el == button ||
-            el == overflowButton) {
+      while(el) {
+        if (el === this._panelElement ||
+            el === button ||
+            el === overflowButton) {
           this._createTimeout();
           return;
         }
-      } while(el = el.parentElement);
+        el = el.parentElement;
+      }
     };
 
     [button, overflowButton].forEach((buttonElement) => {
       buttonElement.addEventListener("mouseover", () => {
         showPopup(buttonElement);
       });
-      buttonElement.addEventListener("click", _ => {
+      buttonElement.addEventListener("click", () => {
         this.hidePanel();
       });
       buttonElement.addEventListener("mouseout", mouseoutHandle);
