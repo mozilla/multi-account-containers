@@ -169,7 +169,7 @@ Logic.registerPanel(P_ONBOARDING_2, {
   },
 });
 
-// P_ONBOARDING_2: Second page for Onboarding.
+// P_ONBOARDING_3: Third page for Onboarding.
 // ----------------------------------------------------------------------------
 
 Logic.registerPanel(P_ONBOARDING_3, {
