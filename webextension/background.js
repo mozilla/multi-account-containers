@@ -13,6 +13,6 @@ browser.tabs.query({}).then(tabs => {
 }).catch(() => {});
 
 function disableAddon(tabId) {
- browser.browserAction.disable(tabId);
- browser.browserAction.setTitle({ tabId, title: "Containers disabled in Private Browsing Mode" });
+  browser.browserAction.disable(tabId);
+  browser.browserAction.setTitle({ tabId, title: "Containers disabled in Private Browsing Mode" });
 }

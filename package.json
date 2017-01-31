@@ -33,6 +33,7 @@
     "url": "git+https://github.com/mozilla/testpilot-containers.git"
   },
   "scripts": {
+    "build": "jpm xpi",
     "lint": "npm-run-all lint:*",
     "lint:addon": "addons-linter webextension --self-hosted",
     "lint:css": "stylelint webextension/css/*.css",
