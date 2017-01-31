@@ -1,0 +1,13 @@
+.git/
+docs/
+test/
+node_modules/
+
+.env
+.eslintrc.js
+.gitignore
+.htmllintrc
+.jpmignore
+.stylelintrc
+.travis.yml
+testpilot-containers.xpi
