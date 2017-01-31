@@ -209,7 +209,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
           </div>
         </td>
         <td class="open-newtab">${identity.name}</td>
-        <td class="info">&gt;</td>`;
+        <td class="show-tabs"><img src="/img/container-arrow.svg" class="show-tabs show-tabs-img" /></td>`;
 
       tr.addEventListener("click", e => {
         if (e.target.matches(".open-newtab")) {
@@ -226,7 +226,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
           }).catch(() => {
             window.close();
           });
-        } else if (e.target.matches(".info")) {
+        } else if (e.target.matches(".show-tabs")) {
           Logic.showPanel(P_CONTAINER_INFO, identity);
         }
       });
@@ -298,7 +298,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     hideShowLabel.innerText = identity.hasHiddenTabs ? "Show these container tabs" : "Hide these container tabs";
 
     // Let's remove all the previous tabs.
-    for (let trTab of document.getElementsByClassName("container-info-tab")) { // eslint-disable-line prefer-const
+    for (let trTab of document.getElementsByClassName("container-info-tab-row")) { // eslint-disable-line prefer-const
       trTab.remove();
     }
 
@@ -315,10 +315,10 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     for (let tab of tabs) { // eslint-disable-line prefer-const
       const tr = document.createElement("tr");
       fragment.appendChild(tr);
-      tr.classList.add("container-info-tab");
+      tr.classList.add("container-info-tab-row");
       tr.innerHTML = `
         <td><img class="icon" src="${tab.favicon}" /></td>
-        <td>${tab.title}</td>`;
+        <td class="container-info-tab-title">${tab.title}</td>`;
 
       // On click, we activate this tab. But only if this tab is active.
       if (tab.active) {

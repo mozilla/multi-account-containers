@@ -53,7 +53,9 @@
 
   <div class="hide panel container-info-panel" id="container-info-panel">
     <div class="row">
-      <div class="small-2 columns panel-back-arrow clickable" id="close-container-info-panel">&laquo;</div>
+      <div class="small-2 columns panel-back-arrow clickable" id="close-container-info-panel">
+        <img src="/img/container-arrow.svg" class="back-arrow-img" />
+      </div>
       <div class="small-10 columns">
         <div class="row container-info-panel-header">
           <span class="usercontext-icon" id="container-info-icon"></span>
@@ -87,7 +89,7 @@
     </div>
     <div class="row panel-footer edit-containers-panel-footer">
       <div class="small-10 columns edit-containers-exit-text">
-        <a id="exit-edit-mode-link">&lt; Exit Edit Mode</a>
+        <a id="exit-edit-mode-link" class="exit-edit-mode-link">Exit Edit Mode</a>
       </div>
       <div class="small-2 columns add-container">
         <a class="add-container-link" id="edit-containers-add-link">
@@ -100,8 +102,8 @@
 
   <div class="panel edit-container-panel hide" id="edit-container-panel">
     <div class="row">
-      <div class="small-2 columns panel-back-arrow" id="edit-container-panel-back-arrow">
-        &laquo;
+      <div class="small-2 columns panel-back-arrow clickable" id="edit-container-panel-back-arrow">
+        <img src="/img/container-arrow.svg" class="back-arrow-img" />
       </div>
       <div class="small-10 columns">
         <form id="edit-container-panel-form">
@@ -140,7 +142,7 @@
           <h3 id="delete-container-name" class="panel-header-text"></h3>
         </div>
         <div class="row delete-container-confirm">
-          <h4>Remove This Container</h4>
+          <h4 class="delete-container-confirm-title">Remove This Container</h4>
           <p>If you remove this container now, <span id="delete-container-tab-count"></span> container tabs will be closed. Are you sure you want to remove this Container?</p>
         </div>
         <div class="row">
