@@ -81,19 +81,8 @@ const ContainerService = {
 
     // Map of identities.
     ContextualIdentityService.getIdentities().forEach(identity => {
-      this._identitiesState[identity.userContextId] = {
-        hiddenTabUrls: [],
-        openTabs: 0
-      };
+      this._remapTabsIfMissing(identity.userContextId);
     });
-
-    // It can happen that this jsm is loaded after the opening a container tab.
-    for (let tab of tabs) { // eslint-disable-line prefer-const
-      const userContextId = this._getUserContextIdFromTab(tab);
-      if (userContextId) {
-        ++this._identitiesState[userContextId].openTabs;
-      }
-    }
 
     tabs.on("open", tab => {
       const userContextId = this._getUserContextIdFromTab(tab);
@@ -216,12 +205,39 @@ const ContainerService = {
     }
   },
 
+  _createIdentityState() {
+    return {
+      hiddenTabUrls: [],
+      openTabs: 0
+    };
+  },
+
+  _remapTabsIfMissing(userContextId) {
+    // We already know this userContextId.
+    if (userContextId in this._identitiesState) {
+      return;
+    }
+
+    this._identitiesState[userContextId] = this._createIdentityState();
+    this._containerTabIterator(userContextId, () => {
+      ++this._identitiesState[userContextId].openTabs;
+    });
+  },
+
   // Tabs management
 
   hideTabs(args) {
     return new Promise((resolve, reject) => {
       if (!("userContextId" in args)) {
         reject("hideTabs must be called with userContextId argument.");
+        return;
+      }
+
+      this._remapTabsIfMissing(args.userContextId);
+
+      // We should check if this userContextId exists.
+      if ((args.userContextId in this._identitiesState)) {
+        resolve(null);
         return;
       }
 
@@ -249,6 +265,14 @@ const ContainerService = {
   showTabs(args) {
     if (!("userContextId" in args)) {
       return Promise.reject("showTabs must be called with userContextId argument.");
+    }
+
+    this._remapTabsIfMissing(args.userContextId);
+
+    // We should check if this userContextId exists.
+    if (!(args.userContextId in this._identitiesState)) {
+      resolve(null);
+      return;
     }
 
     const promises = [];
@@ -316,6 +340,14 @@ const ContainerService = {
     return new Promise((resolve, reject) => {
       if (!("userContextId" in args)) {
         reject("getTabs must be called with userContextId argument.");
+        return;
+      }
+
+      this._remapTabsIfMissing(args.userContextId);
+
+      // We should check if this userContextId exists.
+      if (!(args.userContextId in this._identitiesState)) {
+        resolve([]);
         return;
       }
 
@@ -433,6 +465,7 @@ const ContainerService = {
       const identities = [];
 
       ContextualIdentityService.getIdentities().forEach(identity => {
+        this._remapTabsIfMissing(identity.userContextId);
         const convertedIdentity = this._convert(identity);
         identities.push(convertedIdentity);
       });
@@ -462,10 +495,7 @@ const ContainerService = {
 
     const identity = ContextualIdentityService.create(args.name, icon, color);
 
-    this._identitiesState[identity.userContextId] = {
-      hiddenTabUrls: [],
-      openTabs: 0
-    };
+    this._identitiesState[identity.userContextId] = this._createIdentityState();
 
     this._refreshNeeded().then(() => {
       return this._convert(identity);
