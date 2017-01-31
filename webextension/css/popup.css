@@ -22,6 +22,7 @@ table {
 
 .panel-back-arrow {
   background: #ebebeb;
+  box-shadow: inset -2px 0 2px -2px black;
   display: flex;
   justify-content: center;
   text-align: center;

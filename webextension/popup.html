@@ -54,7 +54,7 @@
   <div class="hide panel container-info-panel" id="container-info-panel">
     <div class="row">
       <div class="small-2 columns panel-back-arrow clickable" id="close-container-info-panel">
-        <img src="/img/container-arrow.svg" class="back-arrow-img" />
+        <img alt="Panel Back Arrow" src="/img/container-arrow.svg" class="back-arrow-img" />
       </div>
       <div class="small-10 columns">
         <div class="row container-info-panel-header">
@@ -103,24 +103,20 @@
   <div class="panel edit-container-panel hide" id="edit-container-panel">
     <div class="row">
       <div class="small-2 columns panel-back-arrow clickable" id="edit-container-panel-back-arrow">
-        <img src="/img/container-arrow.svg" class="back-arrow-img" />
+        <img alt="Panel Back Arrow" src="/img/container-arrow.svg" class="back-arrow-img" />
       </div>
       <div class="small-10 columns">
         <form id="edit-container-panel-form">
-          <p>
-            <label for="edit-container-panel-name-input">Name</label>
+          <fieldset>
+            <legend>Name</legend>
             <input type="text" name="container-name" id="edit-container-panel-name-input"/>
-          </p>
-          <p>
-            <fieldset id="edit-container-panel-choose-color">
-              <legend>Choose a color</legend>
-            </fieldset>
-          </p>
-          <p>
-            <fieldset id="edit-container-panel-choose-icon">
-              <legend>Choose an icon</legend>
-            </fieldset>
-          </p>
+          </fieldset>
+          <fieldset id="edit-container-panel-choose-color">
+            <legend>Choose a color</legend>
+          </fieldset>
+          <fieldset id="edit-container-panel-choose-icon">
+            <legend>Choose an icon</legend>
+          </fieldset>
         </form>
         <div class="row">
           <div class="small-6 columns footer-columns">
