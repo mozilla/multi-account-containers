@@ -29,6 +29,7 @@ const { attachTo } = require("sdk/content/mod");
 const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
 const { getFavicon } = require("sdk/places/favicon");
 const { modelFor } = require("sdk/model/core");
+const prefService = require("sdk/preferences/service");
 const self = require("sdk/self");
 const { Style } = require("sdk/stylesheet/style");
 const tabs = require("sdk/tabs");
@@ -77,6 +78,7 @@ const ContainerService = {
       "createIdentity",
       "removeIdentity",
       "updateIdentity",
+      "getPreference",
     ];
 
     // Map of identities.
@@ -546,6 +548,16 @@ const ContainerService = {
     }).catch(() => {
       return removed;
     });
+  },
+
+  // Preferences
+
+  getPreference(args) {
+    if (!("pref" in args)) {
+      return Promise.reject("getPreference must be called with pref argument.");
+    }
+
+    return Promise.resolve(prefService.get(args.pref));
   },
 
   // Styling the window
