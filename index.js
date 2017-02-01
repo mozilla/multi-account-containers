@@ -226,23 +226,23 @@ const ContainerService = {
     });
   },
 
+  _isKnownContainer(userContextId) {
+    return userContextId in this._identitiesState;
+  },
+
   // Tabs management
 
   hideTabs(args) {
-    return new Promise((resolve, reject) => {
-      if (!("userContextId" in args)) {
-        reject("hideTabs must be called with userContextId argument.");
-        return;
-      }
+    if (!("userContextId" in args)) {
+      return Promise.reject("hideTabs must be called with userContextId argument.");
+    }
 
-      this._remapTabsIfMissing(args.userContextId);
+    this._remapTabsIfMissing(args.userContextId);
+    if (!this._isKnownContainer(args.userContextId)) {
+      return Promise.resolve(null);
+    }
 
-      // We should check if this userContextId exists.
-      if (!(args.userContextId in this._identitiesState)) {
-        resolve(null);
-        return;
-      }
-
+    return new Promise(resolve => {
       this._containerTabIterator(args.userContextId, tab => {
         const object = this._createTabObject(tab);
 
@@ -270,11 +270,8 @@ const ContainerService = {
     }
 
     this._remapTabsIfMissing(args.userContextId);
-
-    // We should check if this userContextId exists.
-    if (!(args.userContextId in this._identitiesState)) {
-      resolve(null);
-      return;
+    if (!this._isKnownContainer(args.userContextId)) {
+      return Promise.resolve(null);
     }
 
     const promises = [];
@@ -339,20 +336,16 @@ const ContainerService = {
   },
 
   getTabs(args) {
+    if (!("userContextId" in args)) {
+      return Promise.reject("getTabs must be called with userContextId argument.");
+    }
+
+    this._remapTabsIfMissing(args.userContextId);
+    if (!this._isKnownContainer(args.userContextId)) {
+      return Promise.resolve([]);
+    }
+
     return new Promise((resolve, reject) => {
-      if (!("userContextId" in args)) {
-        reject("getTabs must be called with userContextId argument.");
-        return;
-      }
-
-      this._remapTabsIfMissing(args.userContextId);
-
-      // We should check if this userContextId exists.
-      if (!(args.userContextId in this._identitiesState)) {
-        resolve([]);
-        return;
-      }
-
       const list = [];
       this._containerTabIterator(args.userContextId, tab => {
         list.push(this._createTabObject(tab));
