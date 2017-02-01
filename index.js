@@ -236,7 +236,7 @@ const ContainerService = {
       this._remapTabsIfMissing(args.userContextId);
 
       // We should check if this userContextId exists.
-      if ((args.userContextId in this._identitiesState)) {
+      if (!(args.userContextId in this._identitiesState)) {
         resolve(null);
         return;
       }
