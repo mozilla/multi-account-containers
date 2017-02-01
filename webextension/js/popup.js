@@ -11,6 +11,7 @@ const DEFAULT_ICON = "circle";
 // List of panels
 const P_ONBOARDING_1     = "onboarding1";
 const P_ONBOARDING_2     = "onboarding2";
+const P_ONBOARDING_3     = "onboarding3";
 const P_CONTAINERS_LIST  = "containersList";
 const P_CONTAINERS_EDIT  = "containersEdit";
 const P_CONTAINER_INFO   = "containerInfo";
@@ -31,8 +32,10 @@ const Logic = {
 
     // Routing to the correct panel.
     .then(() => {
-      if (localStorage.getItem("onboarded2")) {
+      if (localStorage.getItem("onboarded3")) {
         this.showPanel(P_CONTAINERS_LIST);
+      } else if (localStorage.getItem("onboarded2")) {
+        this.showPanel(P_ONBOARDING_3);
       } else if (localStorage.getItem("onboarded1")) {
         this.showPanel(P_ONBOARDING_2);
       } else {
@@ -133,7 +136,7 @@ Logic.registerPanel(P_ONBOARDING_1, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the next panel.
-    document.querySelector("#onboarding-next-button").addEventListener("click", () => {
+    document.querySelector("#onboarding-start-button").addEventListener("click", () => {
       localStorage.setItem("onboarded1", true);
       Logic.showPanel(P_ONBOARDING_2);
     });
@@ -154,8 +157,29 @@ Logic.registerPanel(P_ONBOARDING_2, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    document.querySelector("#onboarding-done-button").addEventListener("click", () => {
+    document.querySelector("#onboarding-next-button").addEventListener("click", () => {
       localStorage.setItem("onboarded2", true);
+      Logic.showPanel(P_ONBOARDING_3);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    return Promise.resolve(null);
+  },
+});
+
+// P_ONBOARDING_3: Third page for Onboarding.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_ONBOARDING_3, {
+  panelSelector: ".onboarding-panel-3",
+
+  // This method is called when the object is registered.
+  initialize() {
+    // Let's move to the containers list panel.
+    document.querySelector("#onboarding-done-button").addEventListener("click", () => {
+      localStorage.setItem("onboarded3", true);
       Logic.showPanel(P_CONTAINERS_LIST);
     });
   },

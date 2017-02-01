@@ -35,20 +35,27 @@ table {
   margin-block-start: 16px;
   margin-inline-end: 16px;
   margin-inline-start: 16px;
-  min-block-size: 480px;
-}
-
-.onboarding h3 {
-  margin-block-start: 16px;
 }
 
 .onboarding * {
   text-align: center;
 }
 
-/* Make button placement to be consistent on tour */
-.onboarding .spacing {
-  margin-block-start: auto;
+.onboarding-img {
+  inline-size: 180px;
+  block-size: 132px;
+}
+
+.onboarding-title {
+  margin-block-start: 20px;
+  margin-block-end: 10px;
+  font-size: 14px;
+  color: #43484E;
+}
+
+.onboarding-subtext {
+  font-size: 10px;
+  color: #4a4a4a;
 }
 
 .popup-bumper {
