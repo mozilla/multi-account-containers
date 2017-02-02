@@ -234,7 +234,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             data-identity-color="${identity.color}">
           </div>
         </td>
-        <td class="open-newtab">${identity.name}</td>
+        <td class="open-newtab container-name">${identity.name}</td>
         <td class="show-tabs"><img src="/img/container-arrow.svg" class="show-tabs ${arrowClass}" /></td>`;
 
       tr.addEventListener("click", e => {
@@ -397,7 +397,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
             data-identity-color="${identity.color}">
           </div>
         </td>
-        <td>${identity.name}</td>
+        <td class="container-name">${identity.name}</td>
         <td class="edit-container">
           <img
             title="Edit ${identity.name} container"
