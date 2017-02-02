@@ -53,7 +53,6 @@ const ContainerService = {
       [ "privacy.userContext.enabled", true ],
       [ "privacy.userContext.ui.enabled", true ],
       [ "privacy.usercontext.about_newtab_segregation.enabled", true ],
-      [ "privacy.usercontext.longPressBehavior", 1 ]
     ];
 
     const prefService = require("sdk/preferences/service");
