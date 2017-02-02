@@ -41,6 +41,7 @@
     "lint:addon": "addons-linter webextension --self-hosted",
     "lint:css": "stylelint webextension/css/*.css",
     "lint:html": "htmllint webextension/*.html",
-    "lint:js": "eslint ."
+    "lint:js": "eslint .",
+    "test": "npm run lint"
   }
 }
