@@ -162,6 +162,13 @@ table.unstriped tbody tr {
   color: #0a0a0a;
 }
 
+.container-name {
+  max-inline-size: 7em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .edit-container-panel [type="radio"] {
   display: inline;
   margin-inline-start: -17px;
