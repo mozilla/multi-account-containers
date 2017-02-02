@@ -47,20 +47,20 @@ table {
 }
 
 .onboarding-img {
-  inline-size: 180px;
   block-size: 132px;
+  inline-size: 180px;
 }
 
 .onboarding-title {
-  margin-block-start: 20px;
-  margin-block-end: 10px;
+  color: #43484e;
   font-size: 14px;
-  color: #43484E;
+  margin-block-end: 10px;
+  margin-block-start: 20px;
 }
 
 .onboarding-subtext {
-  font-size: 10px;
   color: #4a4a4a;
+  font-size: 10px;
 }
 
 .popup-bumper {
