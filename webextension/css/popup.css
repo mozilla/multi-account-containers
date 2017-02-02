@@ -22,9 +22,14 @@ table {
 
 .panel-back-arrow {
   background: #ebebeb;
+  box-shadow: inset -2px 0 2px -2px black;
   display: flex;
   justify-content: center;
   text-align: center;
+}
+
+.back-arrow-img {
+  transform: scaleX(-1);
 }
 
 .onboarding {
@@ -269,6 +274,11 @@ table.unstriped tbody tr {
   --identity-icon: url("/img/usercontext.svg#circle");
 }
 
+.show-tabs-img {
+  block-size: 12px;
+  inline-size: 12px;
+}
+
 .container-info-panel-header {
   align-items: center;
   block-size: 33px;
@@ -302,6 +312,20 @@ table.unstriped tbody tr {
   padding-inline-start: 20px;
 }
 
+.container-info-tab-row {
+  display: block;
+  margin-block-end: 8px;
+}
+
+.container-info-tab-title {
+  font-size: 12px;
+  max-inline-size: 13em;
+  overflow: hidden;
+  padding-inline-start: 7px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .clickable {
   cursor: pointer;
 }
@@ -317,6 +341,32 @@ table.unstriped tbody tr {
   color: #fff;
   display: flex;
   justify-content: center;
+}
+
+.exit-edit-mode-link::before {
+  background: url('/img/container-arrow.svg') no-repeat;
+  block-size: 16px;
+  content: "";
+  display: block;
+  filter: grayscale(100%) brightness(5);
+  float: left;
+  inline-size: 16px;
+  margin-inline-end: 5px;
+  transform: scaleX(-1);
+}
+
+.exit-edit-mode-link {
+  float: left;
+}
+
+.delete-container-confirm {
+  padding-inline-end: 20px;
+  padding-inline-start: 20px;
+}
+
+.delete-container-confirm-title {
+  color: #000;
+  font-size: 16px;
 }
 
 .choose-color-icon {
