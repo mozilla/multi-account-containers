@@ -21,6 +21,9 @@
   "engines": {
     "firefox": ">=50.0"
   },
+  "permissions": {
+    "multiprocess": true
+  },
   "hasEmbeddedWebExtension": true,
   "homepage": "https://github.com/mozilla/testpilot-containers#readme",
   "keywords": [
