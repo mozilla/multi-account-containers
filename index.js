@@ -51,7 +51,7 @@ const ContainerService = {
 
     const prefs = [
       [ "privacy.userContext.enabled", true ],
-      [ "privacy.userContext.ui.enabled", true ],
+      [ "privacy.userContext.ui.enabled", false ],
       [ "privacy.usercontext.about_newtab_segregation.enabled", true ],
     ];
 
