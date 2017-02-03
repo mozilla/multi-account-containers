@@ -322,8 +322,9 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     hideShowLabel.innerText = identity.hasHiddenTabs ? "Show these container tabs" : "Hide these container tabs";
 
     // Let's remove all the previous tabs.
-    for (let trTab of document.getElementsByClassName("container-info-tab-row")) { // eslint-disable-line prefer-const
-      trTab.remove();
+    const table = document.getElementById("container-info-table");
+    while (table.firstChild) {
+      table.firstChild.remove();
     }
 
     // Let's retrieve the list of tabs.
