@@ -274,6 +274,12 @@ table.unstriped tbody tr {
   --identity-icon: url("/img/usercontext.svg#circle");
 }
 
+.no-tabs-img {
+  block-size: 12px;
+  filter: opacity(30%);
+  inline-size: 12px;
+}
+
 .show-tabs-img {
   block-size: 12px;
   inline-size: 12px;
