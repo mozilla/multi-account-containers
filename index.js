@@ -236,6 +236,18 @@ const ContainerService = {
       return Promise.resolve(null);
     }
 
+    return this._recentBrowserWindow().then(browserWin => {
+      browserWin.gBrowser.addTab();
+
+      for (let tab of tabsToClose) { // eslint-disable-line prefer-const
+        tab.close();
+      }
+
+      return Promise.resolve(null);
+    }).catch(() => null);
+  },
+
+  _recentBrowserWindow() {
     const browserWin = windowUtils.getMostRecentBrowserWindow();
 
     // This should not really happen.
@@ -243,13 +255,7 @@ const ContainerService = {
       return Promise.resolve(null);
     }
 
-    browserWin.gBrowser.addTab();
-
-    for (let tab of tabsToClose) { // eslint-disable-line prefer-const
-      tab.close();
-    }
-
-    return Promise.resolve(null);
+    return Promise.resolve(browserWin);
   },
 
   // Tabs management
@@ -456,14 +462,7 @@ const ContainerService = {
   },
 
   openTab(args) {
-    return new Promise(resolve => {
-      const browserWin = windowUtils.getMostRecentBrowserWindow();
-
-      // This should not really happen.
-      if (!browserWin || !browserWin.gBrowser) {
-        return Promise.resolve(false);
-      }
-
+    return this._recentBrowserWindow().then(browserWin => {
       let userContextId = 0;
       if ("userContextId" in args) {
         userContextId = args.userContextId;
@@ -471,8 +470,8 @@ const ContainerService = {
 
       const tab = browserWin.gBrowser.addTab(args.url || null, { userContextId });
       browserWin.gBrowser.selectedTab = tab;
-      resolve(true);
-    });
+      return true;
+    }).catch(() => false);
   },
 
   // Identities management
