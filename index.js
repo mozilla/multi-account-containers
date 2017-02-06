@@ -229,6 +229,29 @@ const ContainerService = {
     return userContextId in this._identitiesState;
   },
 
+  _closeTabs(tabsToClose) {
+    // We create a new tab only if the current operation closes all the
+    // existing ones.
+    if (tabs.length !== tabsToClose.length) {
+      return Promise.resolve(null);
+    }
+
+    const browserWin = windowUtils.getMostRecentBrowserWindow();
+
+    // This should not really happen.
+    if (!browserWin || !browserWin.gBrowser) {
+      return Promise.resolve(null);
+    }
+
+    browserWin.gBrowser.addTab();
+
+    for (let tab of tabsToClose) { // eslint-disable-line prefer-const
+      tab.close();
+    }
+
+    return Promise.resolve(null);
+  },
+
   // Tabs management
 
   hideTabs(args) {
@@ -241,26 +264,26 @@ const ContainerService = {
       return Promise.resolve(null);
     }
 
-    return new Promise(resolve => {
-      this._containerTabIterator(args.userContextId, tab => {
-        const object = this._createTabObject(tab);
+    const tabsToClose = [];
 
-        // This tab is going to be closed. Let's mark this tabObject as
-        // non-active.
-        object.active = false;
+    this._containerTabIterator(args.userContextId, tab => {
+      const object = this._createTabObject(tab);
 
-        getFavicon(object.url).then(url => {
-          object.favicon = url;
-        }).catch(() => {
-          object.favicon = "";
-        });
+      // This tab is going to be closed. Let's mark this tabObject as
+      // non-active.
+      object.active = false;
 
-        this._identitiesState[args.userContextId].hiddenTabUrls.push(object);
-        tab.close();
+      getFavicon(object.url).then(url => {
+        object.favicon = url;
+      }).catch(() => {
+        object.favicon = "";
       });
 
-      resolve(null);
+      this._identitiesState[args.userContextId].hiddenTabUrls.push(object);
+      tabsToClose.push(tab);
     });
+
+    return this._closeTabs(tabsToClose);
   },
 
   showTabs(args) {
@@ -529,16 +552,14 @@ const ContainerService = {
       return Promise.reject("removeIdentity must be called with userContextId argument.");
     }
 
+    const tabsToClose = [];
     this._containerTabIterator(args.userContextId, tab => {
-      tab.close();
+      tabsToClose.push(tab);
     });
 
-    const removed = ContextualIdentityService.remove(args.userContextId);
-
-    this._refreshNeeded().then(() => {
-      return removed;
-    }).catch(() => {
-      return removed;
+    return this._closeTabs(tabsToClose).then(() => {
+      const removed = ContextualIdentityService.remove(args.userContextId);
+      return this._refreshNeeded().then(() => removed );
     });
   },
 
@@ -782,7 +803,7 @@ ContainerWindow.prototype = {
     // containerAddonMagic attribute is a custom attribute we set in order to
     // know if this menu has been already converted.
     if (!menu || menu.hasAttribute("containerAddonMagic")) {
-      return Promise.reject(null);
+      return Promise.resolve(null);
     }
 
     // We don't want to recreate the menu each time.
