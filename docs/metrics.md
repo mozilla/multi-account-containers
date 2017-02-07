@@ -41,9 +41,11 @@ whether they are actively interacting with it.
 * Do users hide container tabs?
   * Click hide
     * \+ Number of tabs when clicked
+    * \+ Number of hidden containers when clicked
     * \+ `hiddenTimestamp`
   * Click show
     * \+ Number of tabs when clicked
+    * \+ Number of shown containers when clicked
     * \+ `shownTimestamp`
 * How many containers do users have hidden at the same time? (when should we measure this? each time a container is hidden?)
 * Do users move container tabs to new windows?
