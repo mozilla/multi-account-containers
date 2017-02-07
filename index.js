@@ -37,6 +37,7 @@ const { viewFor } = require("sdk/view/core");
 const webExtension = require("sdk/webextension");
 const windows = require("sdk/windows");
 const windowUtils = require("sdk/window/utils");
+const shortcuts = require("shortcuts");
 
 // ----------------------------------------------------------------------------
 // ContainerService
@@ -605,6 +606,7 @@ ContainerWindow.prototype = {
 
   _init(window) {
     this._window = window;
+    this._newTabShortcut = new shortcuts.NewTabShortcut(window);
     const style = Style({ uri: self.data.url("usercontext.css") });
     attachTo(style, this._window);
   },
@@ -662,6 +664,8 @@ ContainerWindow.prototype = {
         el = el.parentElement;
       }
     };
+
+    this._window.showPopup = showPopup;
 
     [button, overflowButton].forEach((buttonElement) => {
       buttonElement.addEventListener("mouseover", () => {
