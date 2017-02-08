@@ -236,14 +236,10 @@ const ContainerService = {
       return Promise.resolve(null);
     }
 
-    return this._recentBrowserWindow().then(browserWin => {
-      browserWin.gBrowser.addTab();
-
+    return this.openTab({}).then(() => {
       for (let tab of tabsToClose) { // eslint-disable-line prefer-const
         tab.close();
       }
-
-      return Promise.resolve(null);
     }).catch(() => null);
   },
 
@@ -470,6 +466,7 @@ const ContainerService = {
 
       const tab = browserWin.gBrowser.addTab(args.url || null, { userContextId });
       browserWin.gBrowser.selectedTab = tab;
+      browserWin.focusAndSelectUrlBar();
       return true;
     }).catch(() => false);
   },
