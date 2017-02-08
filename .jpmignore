@@ -11,3 +11,6 @@ node_modules/
 .stylelintrc
 .travis.yml
 testpilot-containers.xpi
+.vimrc
+.DS_Store
+.gdb_history
