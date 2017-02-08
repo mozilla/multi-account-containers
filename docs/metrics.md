@@ -167,8 +167,5 @@ local schema = {
 
 ### Valid data should be enforced on the server side:
 
-* The `breakage` field MUST be either an empty string or one of "layout",
-  "images", "video", "buttons", "other"
-
 All Mozilla data is kept by default for 180 days and in accordance with our
 privacy policies.
