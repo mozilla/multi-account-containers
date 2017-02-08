@@ -16,14 +16,15 @@ whether they are actively interacting with it.
 
 ### Immediate Questions
 
-* Do people use the containers feature?
+* Do people use the containers feature & how do people create new container tabs?
   * Click to create new container tab
+    * \+ `entry-point` value: "tab-bar" or "pop-up"
 * Do people who use the containers feature continue to use it?
   * Retention: opening a second container tab (second tab in the same container, or a tab in a second container?)
 * What containers do people use?
-  * Container name (should we record the names of custom container created by users?)
+  * userContextId
     * \+ Number of tabs in the container (when should we measure this? on every tab open?)
-* Do people edit their containers? (do we care about editing built-in containers vs. user-created containers?)
+* Do people edit their containers?
   * Click on "Edit Containers"
   * Click to edit a single container
     * Click "OK"
@@ -31,34 +32,31 @@ whether they are actively interacting with it.
     * Click "OK"
   * Click to add a container
     * Click "OK"
-* How do people create new container tabs?
-  * Click to create new container tab
-    * \+ `entry-point` value: "tab-bar" or "pop-up"
 * Do people sort the tabs?
   * Click sort
     * \+ Number of tabs when clicked
-  * average number of container types displayed on sort (what does this mean?)
-* Do users hide container tabs?
+  * Average number of container tabs when sort was clicked
+* Do users show and hide container tabs?
   * Click hide
     * \+ Number of tabs when clicked
     * \+ Number of hidden containers when clicked
-    * \+ `hiddenTimestamp`
   * Click show
     * \+ Number of tabs when clicked
     * \+ Number of shown containers when clicked
-    * \+ `shownTimestamp`
-* How many containers do users have hidden at the same time? (when should we measure this? each time a container is hidden?)
 * Do users move container tabs to new windows?
   * Click move
     * \+ Number of tabs when clicked
+  * Average number of container tabs when new window was clicked
+* How many containers do users have hidden at the same time? (when should we measure this? each time a container is hidden?)
 * Do users pin container tabs? (do we have existing Telemetry for pinning?)
 * Do users change URLs in a container tab? (sounds like it could be a flood unless we only record the first URL change?)
-* For how long do users hide container tabs?
 
 ### Follow-up Questions
 
 What are some follow-up questions we anticipate we will ask based on any of the
 above answers/data?
+
+* What is the average lifespan of a container tab? Is that longer or shorter than a regular tab? (if we don't have data on the latter, the former probably isn't worth gathering data on since we will have nothing to compare it to).
 
 ## Data Collection
 
@@ -66,7 +64,7 @@ above answers/data?
 There is currently no server side component to Containers.
 
 ### Client Side
-Containers will use Test Pilot Telemetrywith no batching of data.  Details
+Containers will use Test Pilot Telemetry with no batching of data.  Details
 of when pings are sent are below, along with examples of the `payload` portion
 of a `testpilottest` telemetry ping for each scenario.
 
@@ -74,7 +72,7 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
-    "container": <container-name>,
+    "userContextId": <userContextId>,
     "clicked-container-tab-count": <number-of-tabs-in-the-container>,
     "event": "container-tab-opened",
     "eventSource": ["tab-bar"|"pop-up"]
@@ -93,7 +91,7 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
-    "container": <container-name>,
+    "userContextId": <userContextId>,
     "event": "container-edit-container"
   }
 ```
@@ -102,7 +100,7 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
-    "container": <container-name>,
+    "userContextId": <userContextId>,
     "event": "container-delete-container"
   }
 ```
@@ -111,7 +109,7 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
-    "container": <container-name>,
+    "userContextId": <userContextId>,
     "event": "container-add-container"
   }
 ```
