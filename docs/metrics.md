@@ -157,7 +157,7 @@ of a `testpilottest` telemetry ping for each scenario.
 local schema = {
 --   column name                    field type   length  attributes   field name
     {"clickedContainerTabCount",    "INTEGER",   255,    nil,         "Fields[payload.clickedContainerTabCount]"},
-    {"container",                   "VARCHAR",   255,    nil,         "Fields[payload.container]"},
+    {"userContextId",               "INTEGER",   255,    nil,         "Fields[payload.container]"},
     {"eventSource",                 "VARCHAR",   255,    nil,         "Fields[payload.eventSource]"},
     {"event",                       "VARCHAR",   255,    nil,         "Fields[payload.event]"},
     {"hiddenContainersCount",       "INTEGER",   255,    nil,         "Fields[payload.hiddenContainersCount]"},
