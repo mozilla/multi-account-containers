@@ -12,7 +12,7 @@ What is the overall engagement of the Containers experiment?
 This captures data from the users who have the add-on installed, regardless of
 whether they are actively interacting with it.
 
-![](images/kpi-1.png)
+![](kpi-1.png)
 
 ### Immediate Questions
 
