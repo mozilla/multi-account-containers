@@ -34,6 +34,7 @@ const PREFS = [
 const { attachTo, detachFrom } = require("sdk/content/mod");
 const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
 const { getFavicon } = require("sdk/places/favicon");
+const Metrics = require("./testpilot-metrics");
 const { modelFor } = require("sdk/model/core");
 const prefService = require("sdk/preferences/service");
 const self = require("sdk/self");
@@ -41,10 +42,12 @@ const ss = require("sdk/simple-storage");
 const { Style } = require("sdk/stylesheet/style");
 const tabs = require("sdk/tabs");
 const tabsUtils = require("sdk/tabs/utils");
+const uuid = require("sdk/util/uuid");
 const { viewFor } = require("sdk/view/core");
 const webExtension = require("sdk/webextension");
 const windows = require("sdk/windows");
 const windowUtils = require("sdk/window/utils");
+
 
 // ----------------------------------------------------------------------------
 // ContainerService
@@ -60,12 +63,15 @@ const ContainerService = {
     if (installation) {
       const object = {
         version: 1,
-        prefs: {}
+        prefs: {},
+        metricsUUID: null
       };
 
       PREFS.forEach(pref => {
         object.prefs[pref[0]] = prefService.get(pref[0]);
       });
+
+      object.metricsUUID = uuid.uuid().toString();
 
       ss.storage.savedConfiguration = object;
     }
@@ -75,6 +81,15 @@ const ContainerService = {
     PREFS.forEach((pref) => {
       prefService.set(pref[0], pref[1]);
     });
+
+    if (ss.storage.savedConfiguration.hasOwnProperty("metricsUUID")) {
+      this._metricsUUID = ss.storage.savedConfiguration.metricsUUID;
+    } else {
+      // The add-on was installed before metricsUUID was added, create one
+      this._metricsUUID = uuid.uuid().toString();
+      ss.storage.savedConfiguration["metricsUUID"] = this._metricsUUID;
+    }
+
 
     // Message routing
 
@@ -158,9 +173,54 @@ const ContainerService = {
     }).catch(() => {
       throw new Error("WebExtension startup failed. Unable to continue.");
     });
+
+    this._sendEvent = new Metrics({
+      type: "sdk",
+      id: self.id,
+      version: self.version
+    }).sendEvent;
+
+    this._sendTelemetryPayload = function(params = {}) {
+      let payload = { // eslint-disable-line prefer-const
+        "uuid": this._metricsUUID
+      };
+      Object.assign(payload, params);
+
+      this._sendEvent(payload);
+    };
+
   },
 
   // utility methods
+
+  _totalContainerTabsCount() {
+    let totalContainerTabsCount = 0;
+    for (const userContextId in this._identitiesState) {
+      totalContainerTabsCount += this._identitiesState[userContextId].openTabs;
+    }
+    return totalContainerTabsCount;
+  },
+
+  _totalNonContainerTabsCount() {
+    let totalNonContainerTabsCount = 0;
+    for (const tab of tabs) {
+      if (this._getUserContextIdFromTab(tab) === 0) {
+        ++totalNonContainerTabsCount;
+      }
+    }
+    return totalNonContainerTabsCount;
+  },
+
+  _shownContainersCount() {
+    let shownContainersCount = 0;
+    for (const userContextId in this._identitiesState) {
+      if (this._identitiesState[userContextId].openTabs > 0) {
+        ++shownContainersCount;
+        continue;
+      }
+    }
+    return shownContainersCount;
+  },
 
   _convert(identity) {
     // Let's convert the known colors to their color names.
@@ -350,6 +410,12 @@ const ContainerService = {
   },
 
   sortTabs() {
+    this._sendTelemetryPayload({
+      "event": "sort-tabs",
+      "shownContainersCount": this._shownContainersCount(),
+      "totalContainerTabsCount": this._totalContainerTabsCount(),
+      "totalNonContainerTabsCount": this._totalNonContainerTabsCount()
+    });
     return new Promise(resolve => {
       for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
         // First the pinned tabs, then the normal ones.
