@@ -73,8 +73,8 @@ of a `testpilottest` telemetry ping for each scenario.
 ```js
   {
     "userContextId": <userContextId>,
-    "clicked-container-tab-count": <number-of-tabs-in-the-container>,
-    "event": "container-tab-opened",
+    "clickedContainerTabCount": <number-of-tabs-in-the-container>,
+    "event": "open-tab",
     "eventSource": ["tab-bar"|"pop-up"]
   }
 ```
@@ -83,7 +83,7 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
-    "event": "container-edit-containers"
+    "event": "edit-containers"
   }
 ```
 
@@ -92,7 +92,7 @@ of a `testpilottest` telemetry ping for each scenario.
 ```js
   {
     "userContextId": <userContextId>,
-    "event": "container-edit-container"
+    "event": "edit-container"
   }
 ```
 
@@ -101,7 +101,7 @@ of a `testpilottest` telemetry ping for each scenario.
 ```js
   {
     "userContextId": <userContextId>,
-    "event": "container-delete-container"
+    "event": "delete-container"
   }
 ```
 
@@ -110,7 +110,7 @@ of a `testpilottest` telemetry ping for each scenario.
 ```js
   {
     "userContextId": <userContextId>,
-    "event": "container-add-container"
+    "event": "add-container"
   }
 ```
 
@@ -118,8 +118,8 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
-    "event": "container-sort-tabs",
-    "total-container-tabs-count": <number-of-all-container-tabs>
+    "event": "sort-tabs",
+    "totalContainerTabsCount": <number-of-all-container-tabs>
   }
 ```
 
@@ -127,9 +127,10 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
-    "clicked-container-tab-count": <number-of-tabs-in-the-container>,
-    "event": "container-hide-tabs",
-    "hidden-containers-count": <number-of-containers-with-tabs-hidden>
+    "userContextId": <userContextId>,
+    "clickedContainerTabCount": <number-of-tabs-in-the-container>,
+    "event": "hide-tabs",
+    "hiddenContainersCount": <number-of-containers-with-tabs-hidden>
   }
 ```
 
@@ -137,8 +138,9 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
-    "clicked-container-tab-count": <number-of-tabs-in-the-container>,
-    "event": "container-show-tabs"
+    "userContextId": <userContextId>,
+    "clickedContainerTabCount": <number-of-tabs-in-the-container>,
+    "event": "show-tabs"
   }
 ```
 
@@ -146,8 +148,9 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
-    "clicked-container-tab-count": <number-of-tabs-in-the-container>,
-    "event": "container-move-tabs-to-window"
+    "userContextId": <userContextId>,
+    "clickedContainerTabCount": <number-of-tabs-in-the-container>,
+    "event": "move-tabs-to-window"
   }
 ```
 
@@ -156,8 +159,8 @@ of a `testpilottest` telemetry ping for each scenario.
 ```lua
 local schema = {
 --   column name                    field type   length  attributes   field name
-    {"clickedContainerTabCount",    "INTEGER",   255,    nil,         "Fields[payload.clickedContainerTabCount]"},
     {"userContextId",               "INTEGER",   255,    nil,         "Fields[payload.container]"},
+    {"clickedContainerTabCount",    "INTEGER",   255,    nil,         "Fields[payload.clickedContainerTabCount]"},
     {"eventSource",                 "VARCHAR",   255,    nil,         "Fields[payload.eventSource]"},
     {"event",                       "VARCHAR",   255,    nil,         "Fields[payload.event]"},
     {"hiddenContainersCount",       "INTEGER",   255,    nil,         "Fields[payload.hiddenContainersCount]"},
@@ -166,6 +169,8 @@ local schema = {
 ```
 
 ### Valid data should be enforced on the server side:
+
+* `eventSource` should be one of `tab-bar` or `pop-up`.
 
 All Mozilla data is kept by default for 180 days and in accordance with our
 privacy policies.
