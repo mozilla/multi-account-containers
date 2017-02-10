@@ -72,6 +72,7 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
+    "uuid": <uuid>,
     "userContextId": <userContextId>,
     "clickedContainerTabCount": <number-of-tabs-in-the-container>,
     "event": "open-tab",
@@ -83,6 +84,7 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
+    "uuid": <uuid>,
     "event": "edit-containers"
   }
 ```
@@ -91,6 +93,7 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
+    "uuid": <uuid>,
     "userContextId": <userContextId>,
     "event": "edit-container"
   }
@@ -100,6 +103,7 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
+    "uuid": <uuid>,
     "userContextId": <userContextId>,
     "event": "delete-container"
   }
@@ -109,6 +113,7 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
+    "uuid": <uuid>,
     "userContextId": <userContextId>,
     "event": "add-container"
   }
@@ -118,8 +123,10 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
+    "uuid": <uuid>,
     "event": "sort-tabs",
     "totalContainerTabsCount": <number-of-all-container-tabs>
+    "totalNonContainerTabsCount": <number-of-all-non-container-tabs>
   }
 ```
 
@@ -127,6 +134,7 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
+    "uuid": <uuid>,
     "userContextId": <userContextId>,
     "clickedContainerTabCount": <number-of-tabs-in-the-container>,
     "event": "hide-tabs",
@@ -138,6 +146,7 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
+    "uuid": <uuid>,
     "userContextId": <userContextId>,
     "clickedContainerTabCount": <number-of-tabs-in-the-container>,
     "event": "show-tabs"
@@ -148,6 +157,7 @@ of a `testpilottest` telemetry ping for each scenario.
 
 ```js
   {
+    "uuid": <uuid>,
     "userContextId": <userContextId>,
     "clickedContainerTabCount": <number-of-tabs-in-the-container>,
     "event": "move-tabs-to-window"
@@ -159,12 +169,14 @@ of a `testpilottest` telemetry ping for each scenario.
 ```lua
 local schema = {
 --   column name                    field type   length  attributes   field name
-    {"userContextId",               "INTEGER",   255,    nil,         "Fields[payload.container]"},
+    {"uuid",                        "VARCHAR",   255,    nil,         "Fields[payload.uuid]"},
+    {"userContextId",               "INTEGER",   255,    nil,         "Fields[payload.userContextId]"},
     {"clickedContainerTabCount",    "INTEGER",   255,    nil,         "Fields[payload.clickedContainerTabCount]"},
     {"eventSource",                 "VARCHAR",   255,    nil,         "Fields[payload.eventSource]"},
     {"event",                       "VARCHAR",   255,    nil,         "Fields[payload.event]"},
     {"hiddenContainersCount",       "INTEGER",   255,    nil,         "Fields[payload.hiddenContainersCount]"},
     {"totalContainerTabsCount",     "INTEGER",   255,    nil,         "Fields[payload.totalContainerTabsCount]"},
+    {"totalNonContainerTabsCount",  "INTEGER",   255,    nil,         "Fields[payload.totalNonContainerTabsCount]"}
 }
 ```
 
