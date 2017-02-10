@@ -31,6 +31,7 @@ const { getFavicon } = require("sdk/places/favicon");
 const { modelFor } = require("sdk/model/core");
 const prefService = require("sdk/preferences/service");
 const self = require("sdk/self");
+const ss = require("sdk/simple-storage");
 const { Style } = require("sdk/stylesheet/style");
 const tabs = require("sdk/tabs");
 const tabsUtils = require("sdk/tabs/utils");
@@ -84,6 +85,18 @@ const ContainerService = {
     ContextualIdentityService.getIdentities().forEach(identity => {
       this._remapTabsIfMissing(identity.userContextId);
     });
+
+    // Let's restore the hidden tabs from the previous session.
+    if (prefService.get('browser.startup.page') == 3 &&
+        "identitiesData" in ss.storage) {
+      ContextualIdentityService.getIdentities().forEach(identity => {
+        if (identity.userContextId in ss.storage.identitiesData &&
+            "hiddenTabs" in ss.storage.identitiesData[identity.userContextId]) {
+          this._identitiesState[identity.userContextId].hiddenTabs =
+            ss.storage.identitiesData[identity.userContextId].hiddenTabs;
+        }
+      });
+    }
 
     tabs.on("open", tab => {
       const userContextId = this._getUserContextIdFromTab(tab);
@@ -141,7 +154,7 @@ const ContainerService = {
       image: this._fromIconToName(identity.icon),
       color: this._fromColorToName(identity.color),
       userContextId: identity.userContextId,
-      hasHiddenTabs: !!this._identitiesState[identity.userContextId].hiddenTabUrls.length,
+      hasHiddenTabs: !!this._identitiesState[identity.userContextId].hiddenTabs.length,
       hasOpenTabs: !!this._identitiesState[identity.userContextId].openTabs
     };
   },
@@ -208,7 +221,7 @@ const ContainerService = {
 
   _createIdentityState() {
     return {
-      hiddenTabUrls: [],
+      hiddenTabs: [],
       openTabs: 0
     };
   },
@@ -257,6 +270,11 @@ const ContainerService = {
     return Promise.resolve(browserWin);
   },
 
+  _syncTabs() {
+    // Let's store all what we have.
+    ss.storage.identitiesData = this._identitiesState;
+  },
+
   // Tabs management
 
   hideTabs(args) {
@@ -284,11 +302,13 @@ const ContainerService = {
         object.favicon = "";
       });
 
-      this._identitiesState[args.userContextId].hiddenTabUrls.push(object);
+      this._identitiesState[args.userContextId].hiddenTabs.push(object);
       tabsToClose.push(tab);
     });
 
-    return this._closeTabs(tabsToClose);
+    return this._closeTabs(tabsToClose).then(() => {
+      return this._syncTabs();
+    });
   },
 
   showTabs(args) {
@@ -303,13 +323,15 @@ const ContainerService = {
 
     const promises = [];
 
-    for (let object of this._identitiesState[args.userContextId].hiddenTabUrls) { // eslint-disable-line prefer-const
+    for (let object of this._identitiesState[args.userContextId].hiddenTabs) { // eslint-disable-line prefer-const
       promises.push(this.openTab({ userContextId: args.userContextId, url: object.url }));
     }
 
-    this._identitiesState[args.userContextId].hiddenTabUrls = [];
+    this._identitiesState[args.userContextId].hiddenTabs = [];
 
-    return Promise.all(promises);
+    return Promise.all(promises).then(() => {
+      return this._syncTabs();
+    });
   },
 
   sortTabs() {
@@ -389,7 +411,7 @@ const ContainerService = {
       }
 
       Promise.all(promises).then(() => {
-        resolve(list.concat(this._identitiesState[args.userContextId].hiddenTabUrls));
+        resolve(list.concat(this._identitiesState[args.userContextId].hiddenTabs));
       }).catch((e) => {
         reject(e);
       });
