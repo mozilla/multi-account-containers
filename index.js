@@ -232,11 +232,14 @@ const ContainerService = {
   _closeTabs(tabsToClose) {
     // We create a new tab only if the current operation closes all the
     // existing ones.
+    let promise;
     if (tabs.length !== tabsToClose.length) {
-      return Promise.resolve(null);
+      promise = Promise.resolve(null);
+    } else {
+      promise = this.openTab({});
     }
 
-    return this.openTab({}).then(() => {
+    return promise.then(() => {
       for (let tab of tabsToClose) { // eslint-disable-line prefer-const
         tab.close();
       }
