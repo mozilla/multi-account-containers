@@ -76,7 +76,7 @@ of a `testpilottest` telemetry ping for each scenario.
     "userContextId": <userContextId>,
     "clickedContainerTabCount": <number-of-tabs-in-the-container>,
     "event": "open-tab",
-    "eventSource": ["tab-bar"|"pop-up"]
+    "eventSource": ["tab-bar"|"pop-up"|"file-menu"]
   }
 ```
 
@@ -138,7 +138,9 @@ of a `testpilottest` telemetry ping for each scenario.
     "userContextId": <userContextId>,
     "clickedContainerTabCount": <number-of-tabs-in-the-container>,
     "event": "hide-tabs",
-    "hiddenContainersCount": <number-of-containers-with-tabs-hidden>
+    "hiddenContainersCount": <number-of-containers-with-tabs-hidden>,
+    "shownContainersCount": <number-of-containers-with-tabs-shown>,
+    "totalContainersCount": <number-of-containers-with-tabs-hidden-or-shown>
   }
 ```
 
@@ -149,7 +151,10 @@ of a `testpilottest` telemetry ping for each scenario.
     "uuid": <uuid>,
     "userContextId": <userContextId>,
     "clickedContainerTabCount": <number-of-tabs-in-the-container>,
-    "event": "show-tabs"
+    "event": "show-tabs",
+    "hiddenContainersCount": <number-of-containers-with-tabs-hidden>,
+    "shownContainersCount": <number-of-containers-with-tabs-shown>,
+    "totalContainersCount": <number-of-containers-with-tabs-hidden-or-shown>
   }
 ```
 
@@ -175,6 +180,8 @@ local schema = {
     {"eventSource",                 "VARCHAR",   255,    nil,         "Fields[payload.eventSource]"},
     {"event",                       "VARCHAR",   255,    nil,         "Fields[payload.event]"},
     {"hiddenContainersCount",       "INTEGER",   255,    nil,         "Fields[payload.hiddenContainersCount]"},
+    {"shownContainersCount",        "INTEGER",   255,    nil,         "Fields[payload.shownContainersCount]"},
+    {"totalContainersCount",        "INTEGER",   255,    nil,         "Fields[payload.totalContainersCount]"},
     {"totalContainerTabsCount",     "INTEGER",   255,    nil,         "Fields[payload.totalContainerTabsCount]"},
     {"totalNonContainerTabsCount",  "INTEGER",   255,    nil,         "Fields[payload.totalNonContainerTabsCount]"}
 }
@@ -182,7 +189,7 @@ local schema = {
 
 ### Valid data should be enforced on the server side:
 
-* `eventSource` should be one of `tab-bar` or `pop-up`.
+* `eventSource` should be one of `tab-bar`, `pop-up`, or `file-menu`.
 
 All Mozilla data is kept by default for 180 days and in accordance with our
 privacy policies.
