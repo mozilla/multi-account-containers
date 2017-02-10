@@ -176,8 +176,7 @@ table.unstriped tbody tr {
 
 .edit-container-panel [type="radio"] {
   display: inline;
-  margin-inline-start: -17px;
-  text-indent: -999999px;
+  opacity: 0;
 }
 
 .edit-container-panel [type="radio"]:first-child {
@@ -193,7 +192,8 @@ table.unstriped tbody tr {
   margin-block-start: 0;
   margin-inline-end: 0;
   margin-inline-start: 0;
-  offset-inline-start: -18px;
+  offset-block-start: -5px;
+  offset-inline-start: -22px;
   padding-block-end: 0;
   padding-block-start: 0;
   padding-inline-end: 0;
@@ -224,6 +224,14 @@ table.unstriped tbody tr {
   padding-block-start: 0;
   padding-inline-end: 0;
   padding-inline-start: 0;
+}
+
+.edit-container-panel fieldset {
+  font-size: 12px !important;
+}
+
+.edit-container-panel fieldset span {
+  display: inline-block;
 }
 
 [data-identity-color="blue"] {
