@@ -125,7 +125,8 @@ of a `testpilottest` telemetry ping for each scenario.
   {
     "uuid": <uuid>,
     "event": "sort-tabs",
-    "totalContainerTabsCount": <number-of-all-container-tabs>
+    "shownContainersCount": <number-of-containers-with-tabs-shown>,
+    "totalContainerTabsCount": <number-of-all-container-tabs>,
     "totalNonContainerTabsCount": <number-of-all-non-container-tabs>
   }
 ```
