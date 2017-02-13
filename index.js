@@ -25,7 +25,13 @@ const IDENTITY_ICONS = [
   { name: "circle", image: "" }, // this doesn't exist in m-b
 ];
 
-const { attachTo } = require("sdk/content/mod");
+const PREFS = [
+  [ "privacy.userContext.enabled", true ],
+  [ "privacy.userContext.ui.enabled", false ],
+  [ "privacy.usercontext.about_newtab_segregation.enabled", true ],
+];
+
+const { attachTo, detachFrom } = require("sdk/content/mod");
 const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
 const { getFavicon } = require("sdk/places/favicon");
 const { modelFor } = require("sdk/model/core");
@@ -47,17 +53,26 @@ const ContainerService = {
   _identitiesState: {},
   _windowMap: {},
 
-  init() {
+  init(installation) {
+    // If we are just been installed, we must store some information for the
+    // uninstallation. This object contains also a version number, in case we
+    // need to implement a migration in the future.
+    if (installation) {
+      const object = {
+        version: 1,
+        prefs: {}
+      };
+
+      PREFS.forEach(pref => {
+        object.prefs[pref[0]] = prefService.get(pref[0]);
+      });
+
+      ss.storage.savedConfiguration = object;
+    }
+
     // Enabling preferences
 
-    const prefs = [
-      [ "privacy.userContext.enabled", true ],
-      [ "privacy.userContext.ui.enabled", false ],
-      [ "privacy.usercontext.about_newtab_segregation.enabled", true ],
-    ];
-
-    const prefService = require("sdk/preferences/service");
-    prefs.forEach((pref) => {
+    PREFS.forEach((pref) => {
       prefService.set(pref[0], pref[1]);
     });
 
@@ -87,7 +102,7 @@ const ContainerService = {
     });
 
     // Let's restore the hidden tabs from the previous session.
-    if (prefService.get('browser.startup.page') == 3 &&
+    if (prefService.get("browser.startup.page") === 3 &&
         "identitiesData" in ss.storage) {
       ContextualIdentityService.getIdentities().forEach(identity => {
         if (identity.userContextId in ss.storage.identitiesData &&
@@ -605,17 +620,21 @@ const ContainerService = {
   },
 
   configureWindow(window) {
-    const id = windowUtils.getInnerId(window);
-    if (!(id in this._windowMap)) {
-      this._windowMap[id] = new ContainerWindow(window);
-    }
-
-    return this._windowMap[id].configure();
+    return this._getOrCreateContainerWindow(window).configure();
   },
 
   closeWindow(window) {
     const id = windowUtils.getInnerId(window);
     delete this._windowMap[id];
+  },
+
+  _getOrCreateContainerWindow(window) {
+    const id = windowUtils.getInnerId(window);
+    if (!(id in this._windowMap)) {
+      this._windowMap[id] = new ContainerWindow(window);
+    }
+
+    return this._windowMap[id];
   },
 
   _refreshNeeded() {
@@ -664,6 +683,44 @@ const ContainerService = {
       viewFor(tab).setAttribute("data-identity-color", identity.color);
     });
   },
+
+  // Uninstallation
+  uninstall() {
+    const data = ss.storage.savedConfiguration;
+    if (!data) {
+      throw new DOMError("ERROR - No saved configuration!!");
+    }
+
+    if (data.version !== 1) {
+      throw new DOMError("ERROR - Unknown version!!");
+    }
+
+    PREFS.forEach(pref => {
+      if (pref[0] in data.prefs) {
+        prefService.set(pref[0], data.prefs[pref[0]]);
+      }
+    });
+
+    // Let's delete the configuration.
+    delete ss.storage.savedConfiguration;
+
+    for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
+      this._getOrCreateContainerWindow(viewFor(window)).shutdown();
+    }
+
+    // all the configuration must go away now.
+    this._windowMap = {};
+
+    // Let's close all the container tabs (note: we don't care if containers
+    // are supported but the current FF version).
+    const tabsToClose = [];
+    for (let tab of tabs) { // eslint-disable-line prefer-const
+      if (this._getUserContextIdFromTab(tab)) {
+        tabsToClose.push(tab);
+      }
+    }
+    this._closeTabs(tabsToClose);
+  },
 };
 
 // ----------------------------------------------------------------------------
@@ -676,13 +733,16 @@ function ContainerWindow(window) {
 
 ContainerWindow.prototype = {
   _window: null,
+  _style: null,
   _panelElement: null,
   _timeoutId: 0,
+  _fileMenuElements: [],
+  _contextMenuElements: [],
 
   _init(window) {
     this._window = window;
-    const style = Style({ uri: self.data.url("usercontext.css") });
-    attachTo(style, this._window);
+    this._style = Style({ uri: self.data.url("usercontext.css") });
+    attachTo(this._style, this._window);
   },
 
   configure() {
@@ -800,7 +860,7 @@ ContainerWindow.prototype = {
     return this._configureMenu("menu_newUserContext", null, e => {
       const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
       ContainerService.openTab({ userContextId });
-    });
+    }, "_fileMenuElements");
   },
 
   _configureContextMenu() {
@@ -814,24 +874,29 @@ ContainerWindow.prototype = {
         // This is a super internal method. Hopefully it will be stable in the
         // next FF releases.
         this._window.gContextMenu.openLinkInTab(e);
-      }
+      },
+      "_contextMenuElements"
     );
   },
 
   // Generic menu configuration.
-  _configureMenu(menuId, excludedContainerCb, clickCb) {
+  _configureMenu(menuId, excludedContainerCb, clickCb, arrayName) {
     const menu = this._window.document.getElementById(menuId);
     // containerAddonMagic attribute is a custom attribute we set in order to
     // know if this menu has been already converted.
-    if (!menu || menu.hasAttribute("containerAddonMagic")) {
+    if (!menu) {
       return Promise.resolve(null);
     }
 
     // We don't want to recreate the menu each time.
-    menu.setAttribute("containerAddonMagic", "42");
+    if (this[arrayName].length) {
+      return Promise.resolve(null);
+    }
 
+    // Let's store the previous elements so that we can repopulate it in case
+    // the addon is uninstalled.
     while (menu.firstChild) {
-      menu.firstChild.remove();
+      this[arrayName].push(menu.removeChild(menu.firstChild));
     }
 
     const menupopup = this._window.document.createElementNS(XUL_NS, "menupopup");
@@ -910,8 +975,55 @@ ContainerWindow.prototype = {
     this._cleanTimeout();
     this._panelElement.hidePopup();
   },
+
+  shutdown() {
+    // CSS must be removed.
+    detachFrom(this._style, this._window);
+
+    this._shutdownFileMenu();
+    this._shutdownContextMenu();
+  },
+
+  _shutdownFileMenu() {
+    this._shutdownMenu("menu_newUserContext", "_fileMenuElements");
+  },
+
+  _shutdownContextMenu() {
+    this._shutdownMenu("context-openlinkinusercontext-menu",
+                       "_contextMenuElements");
+  },
+
+  _shutdownMenu(menuId, arrayName) {
+    const menu = this._window.document.getElementById(menuId);
+
+    // Let's remove our elements.
+    while (menu.firstChild) {
+      menu.firstChild.remove();
+    }
+
+    for (let element of this[arrayName]) { // eslint-disable-line prefer-const
+      menu.appendChild(element);
+    }
+  }
 };
 
-// ----------------------------------------------------------------------------
-// Let's start :)
-ContainerService.init();
+// uninstall/install events ---------------------------------------------------
+
+exports.main = function (options) {
+  const installation = options.loadReason === "install" ||
+                       options.loadReason === "downgrade" ||
+                       options.loadReason === "enable" ||
+                       options.loadReason === "upgrade";
+
+  // Let's start :)
+  ContainerService.init(installation);
+};
+
+exports.onUnload = function (reason) {
+  if (reason === "disable" ||
+      reason === "downgrade" ||
+      reason === "uninstall" ||
+      reason === "upgrade") {
+    ContainerService.uninstall();
+  }
+};
