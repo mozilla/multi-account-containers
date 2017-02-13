@@ -93,6 +93,11 @@ table {
   max-inline-size: 16px;
 }
 
+.icon[src=""] {
+  inline-size: 16px;
+  visibility: hidden;
+}
+
 table.unstriped tbody tr {
   background-color: #fefefe;
   border-block-end: 1px solid #f1f1f1;
@@ -328,6 +333,10 @@ table.unstriped tbody tr {
 .container-info-tab-row {
   display: block;
   margin-block-end: 8px;
+}
+
+.container-info-tab-row:not(.clickable) {
+  opacity: 0.3;
 }
 
 .container-info-tab-title {
