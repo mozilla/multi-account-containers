@@ -738,6 +738,10 @@ ContainerWindow.prototype = {
   _timeoutId: 0,
   _fileMenuElements: [],
   _contextMenuElements: [],
+  _plusButtonElements: [],
+  _plusButtonTooltip: "",
+  _overflowPlusButtonElements: [],
+  _overflowPlusButtonTooltip: "",
 
   _init(window) {
     this._window = window;
@@ -760,10 +764,16 @@ ContainerWindow.prototype = {
 
     const mainPopupSetElement = this._window.document.getElementById("mainPopupSet");
     const button = this._window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
+    this._disableElement(button, "_plusButtonElements");
+
     const overflowButton = this._window.document.getElementById("new-tab-button");
+    this._disableElement(overflowButton, "_overflowPlusButtonElements");
 
     // Let's remove the tooltip because it can go over our panel.
+    this._plusButtonTooltip = button.getAttribute("tooltip");
     button.setAttribute("tooltip", "");
+
+    this._overflowPlusButtonTooltip = overflowButton.getAttribute("tooltip");
     overflowButton.setAttribute("tooltip", "");
 
     // Let's remove all the previous panels.
@@ -882,21 +892,8 @@ ContainerWindow.prototype = {
   // Generic menu configuration.
   _configureMenu(menuId, excludedContainerCb, clickCb, arrayName) {
     const menu = this._window.document.getElementById(menuId);
-    // containerAddonMagic attribute is a custom attribute we set in order to
-    // know if this menu has been already converted.
-    if (!menu) {
+    if (!this._disableElement(menu, arrayName)) {
       return Promise.resolve(null);
-    }
-
-    // We don't want to recreate the menu each time.
-    if (this[arrayName].length) {
-      return Promise.resolve(null);
-    }
-
-    // Let's store the previous elements so that we can repopulate it in case
-    // the addon is uninstalled.
-    while (menu.firstChild) {
-      this[arrayName].push(menu.removeChild(menu.firstChild));
     }
 
     const menupopup = this._window.document.createElementNS(XUL_NS, "menupopup");
@@ -980,8 +977,20 @@ ContainerWindow.prototype = {
     // CSS must be removed.
     detachFrom(this._style, this._window);
 
+    this._shutdownPlusButtonMenu();
     this._shutdownFileMenu();
     this._shutdownContextMenu();
+  },
+
+  _shutdownPlusButtonMenu() {
+    const tabsElement = this._window.document.getElementById("tabbrowser-tabs");
+    const button = this._window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
+    this._shutdownElement(button, "_plusButtonElements");
+    button.setAttribute("tooltip", this._plusButtonTooltip);
+
+    const overflowButton = this._window.document.getElementById("new-tab-button");
+    this._shutdownElement(overflowButton, "_overflowPlusButtonElements");
+    overflowButton.setAttribute("tooltip", this._overflowPlusButtonTooltip);
   },
 
   _shutdownFileMenu() {
@@ -995,16 +1004,34 @@ ContainerWindow.prototype = {
 
   _shutdownMenu(menuId, arrayName) {
     const menu = this._window.document.getElementById(menuId);
+    this._shutdownElement(menu, arrayName);
+  },
 
+  _shutdownElement(element, arrayName) {
     // Let's remove our elements.
-    while (menu.firstChild) {
-      menu.firstChild.remove();
+    while (element.firstChild) {
+      element.firstChild.remove();
     }
 
-    for (let element of this[arrayName]) { // eslint-disable-line prefer-const
-      menu.appendChild(element);
+    for (let e of this[arrayName]) { // eslint-disable-line prefer-const
+      element.appendChild(e);
     }
-  }
+  },
+
+  _disableElement(element, arrayName) {
+    // Nothing to disable.
+    if (!element || this[arrayName].length) {
+      return false;
+    }
+
+    // Let's store the previous elements so that we can repopulate it in case
+    // the addon is uninstalled.
+    while (element.firstChild) {
+      this[arrayName].push(element.removeChild(element.firstChild));
+    }
+
+    return true;
+  },
 };
 
 // uninstall/install events ---------------------------------------------------
