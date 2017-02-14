@@ -246,6 +246,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             return browser.runtime.sendMessage({
               method: "openTab",
               userContextId: identity.userContextId,
+              source: "pop-up"
             });
           }).then(() => {
             window.close();
