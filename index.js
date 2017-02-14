@@ -204,16 +204,24 @@ const ContainerService = {
     return totalNonContainerTabsCount;
   },
 
-  _shownContainersCount() {
-    // Returns the number of containers with at least 1 tab open
-    let shownContainersCount = 0;
+  _containersCounts() {
+    let containersCounts = { // eslint-disable-line prefer-const
+      "shown": 0,
+      "hidden": 0,
+      "total": 0
+    };
     for (const userContextId in this._identitiesState) {
       if (this._identitiesState[userContextId].openTabs > 0) {
-        ++shownContainersCount;
+        ++containersCounts.shown;
+        ++containersCounts.total;
+        continue;
+      } else if (this._identitiesState[userContextId].hiddenTabs.length > 0) {
+        ++containersCounts.hidden;
+        ++containersCounts.total;
         continue;
       }
     }
-    return shownContainersCount;
+    return containersCounts;
   },
 
   _convert(identity) {
@@ -367,6 +375,16 @@ const ContainerService = {
       return Promise.resolve(null);
     }
 
+    const containersCounts = this._containersCounts();
+    this.sendTelemetryPayload({
+      "event": "hide-tabs",
+      "userContextId": args.userContextId,
+      "clickedContainerTabCount": this._containerTabCount(args.userContextId),
+      "shownContainersCount": containersCounts.shown,
+      "hiddenContainersCount": containersCounts.hidden,
+      "totalContainersCount": containersCounts.total
+    });
+
     const tabsToClose = [];
 
     this._containerTabIterator(args.userContextId, tab => {
@@ -401,6 +419,16 @@ const ContainerService = {
       return Promise.resolve(null);
     }
 
+    const containersCounts = this._containersCounts();
+    this.sendTelemetryPayload({
+      "event": "show-tabs",
+      "userContextId": args.userContextId,
+      "clickedContainerTabCount": this._containerTabCount(args.userContextId),
+      "shownContainersCount": containersCounts.shown,
+      "hiddenContainersCount": containersCounts.hidden,
+      "totalContainersCount": containersCounts.total
+    });
+
     const promises = [];
 
     for (let object of this._identitiesState[args.userContextId].hiddenTabs) { // eslint-disable-line prefer-const
@@ -415,9 +443,10 @@ const ContainerService = {
   },
 
   sortTabs() {
+    const containersCounts = this._containersCounts();
     this.sendTelemetryPayload({
       "event": "sort-tabs",
-      "shownContainersCount": this._shownContainersCount(),
+      "shownContainersCount": containersCounts.shown,
       "totalContainerTabsCount": this._totalContainerTabsCount(),
       "totalNonContainerTabsCount": this._totalNonContainerTabsCount()
     });
@@ -530,6 +559,12 @@ const ContainerService = {
         return;
       }
 
+      this.sendTelemetryPayload({
+        "event": "move-tabs-to-window",
+        "userContextId": args.userContextId,
+        "clickedContainerTabCount": this._containerTabCount(args.userContextId),
+      });
+
       // Let's create a list of the tabs.
       const list = [];
       this._containerTabIterator(args.userContextId, tab => {
@@ -573,12 +608,15 @@ const ContainerService = {
       const userContextId = ("userContextId" in args) ? args.userContextId : 0;
       const source = ("source" in args) ? args.source : null;
 
-      this.sendTelemetryPayload({
-        "event": "open-tab",
-        "eventSource": source,
-        "userContextId": userContextId,
-        "clickedContainerTabCount": this._containerTabCount(userContextId)
-      });
+      // Only send telemetry for tabs opened by UI - i.e., not via showTabs
+      if (source) {
+        this.sendTelemetryPayload({
+          "event": "open-tab",
+          "eventSource": source,
+          "userContextId": userContextId,
+          "clickedContainerTabCount": this._containerTabCount(userContextId)
+        });
+      }
 
       const tab = browserWin.gBrowser.addTab(args.url || null, { userContextId });
       browserWin.gBrowser.selectedTab = tab;
@@ -613,6 +651,10 @@ const ContainerService = {
   },
 
   createIdentity(args) {
+    this.sendTelemetryPayload({
+      "event": "add-container",
+    });
+
     for (let arg of [ "name", "color", "icon"]) { // eslint-disable-line prefer-const
       if (!(arg in args)) {
         return Promise.reject("createIdentity must be called with " + arg + " argument.");
@@ -637,6 +679,11 @@ const ContainerService = {
     if (!("userContextId" in args)) {
       return Promise.reject("updateIdentity must be called with userContextId argument.");
     }
+
+    this.sendTelemetryPayload({
+      "event": "edit-container",
+      "userContextId": args.userContextId
+    });
 
     const identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
     for (let arg of [ "name", "color", "icon"]) { // eslint-disable-line prefer-const
@@ -663,6 +710,11 @@ const ContainerService = {
     if (!("userContextId" in args)) {
       return Promise.reject("removeIdentity must be called with userContextId argument.");
     }
+
+    this.sendTelemetryPayload({
+      "event": "delete-container",
+      "userContextId": args.userContextId
+    });
 
     const tabsToClose = [];
     this._containerTabIterator(args.userContextId, tab => {
