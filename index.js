@@ -193,6 +193,13 @@ const ContainerService = {
 
   // utility methods
 
+  _containerTabCount(userContextId) {
+    let containerTabsCount = 0;
+    containerTabsCount += this._identitiesState[userContextId].openTabs;
+    containerTabsCount += this._identitiesState[userContextId].hiddenTabs.length;
+    return containerTabsCount;
+  },
+
   _totalContainerTabsCount() {
     let totalContainerTabsCount = 0;
     for (const userContextId in this._identitiesState) {
@@ -570,6 +577,13 @@ const ContainerService = {
         userContextId = args.userContextId;
       }
 
+      this._sendTelemetryPayload({
+        "event": "open-tab",
+        "eventSource": args.source,
+        "userContextId": userContextId,
+        "clickedContainerTabCount": this._containerTabCount(userContextId)
+      });
+
       const tab = browserWin.gBrowser.addTab(args.url || null, { userContextId });
       browserWin.gBrowser.selectedTab = tab;
       browserWin.focusAndSelectUrlBar();
@@ -892,7 +906,10 @@ ContainerWindow.prototype = {
         menuItemElement.setAttribute("data-identity-color", identity.color);
 
         menuItemElement.addEventListener("command", (e) => {
-          ContainerService.openTab({userContextId: identity.userContextId});
+          ContainerService.openTab({
+            userContextId: identity.userContextId,
+            source: "tab-bar"
+          });
           e.stopPropagation();
         });
 
@@ -925,7 +942,10 @@ ContainerWindow.prototype = {
   _configureFileMenu() {
     return this._configureMenu("menu_newUserContext", null, e => {
       const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
-      ContainerService.openTab({ userContextId });
+      ContainerService.openTab({
+        userContextId: userContextId,
+        source: "file-menu"
+      });
     }, "_fileMenuElements");
   },
 
