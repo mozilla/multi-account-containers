@@ -114,7 +114,6 @@ of a `testpilottest` telemetry ping for each scenario.
 ```js
   {
     "uuid": <uuid>,
-    "userContextId": <userContextId>,
     "event": "add-container"
   }
 ```
