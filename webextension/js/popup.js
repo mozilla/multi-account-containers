@@ -203,6 +203,10 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     });
 
     document.querySelector("#edit-containers-link").addEventListener("click", () => {
+      browser.runtime.sendMessage({
+        method: "sendTelemetryPayload",
+        event: "edit-containers"
+      });
       Logic.showPanel(P_CONTAINERS_EDIT);
     });
 

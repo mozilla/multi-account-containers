@@ -109,6 +109,7 @@ const ContainerService = {
       "removeIdentity",
       "updateIdentity",
       "getPreference",
+      "sendTelemetryPayload"
     ];
 
     // Map of identities.
@@ -179,15 +180,6 @@ const ContainerService = {
       id: self.id,
       version: self.version
     }).sendEvent;
-
-    this._sendTelemetryPayload = function(params = {}) {
-      let payload = { // eslint-disable-line prefer-const
-        "uuid": this._metricsUUID
-      };
-      Object.assign(payload, params);
-
-      this._sendEvent(payload);
-    };
 
   },
 
@@ -357,6 +349,17 @@ const ContainerService = {
     ss.storage.identitiesData = this._identitiesState;
   },
 
+  sendTelemetryPayload(params = {}) {
+    // when pings come from popup, delete "method" prop
+    delete params.method;
+    let payload = { // eslint-disable-line prefer-const
+      "uuid": this._metricsUUID
+    };
+    Object.assign(payload, params);
+
+    this._sendEvent(payload);
+  },
+
   // Tabs management
 
   hideTabs(args) {
@@ -417,7 +420,7 @@ const ContainerService = {
   },
 
   sortTabs() {
-    this._sendTelemetryPayload({
+    this.sendTelemetryPayload({
       "event": "sort-tabs",
       "shownContainersCount": this._shownContainersCount(),
       "totalContainerTabsCount": this._totalContainerTabsCount(),
@@ -577,7 +580,7 @@ const ContainerService = {
         userContextId = args.userContextId;
       }
 
-      this._sendTelemetryPayload({
+      this.sendTelemetryPayload({
         "event": "open-tab",
         "eventSource": args.source,
         "userContextId": userContextId,
