@@ -64,14 +64,12 @@ const ContainerService = {
       const object = {
         version: 1,
         prefs: {},
-        metricsUUID: null
+        metricsUUID: uuid.uuid().toString(),
       };
 
       PREFS.forEach(pref => {
         object.prefs[pref[0]] = prefService.get(pref[0]);
       });
-
-      object.metricsUUID = uuid.uuid().toString();
 
       ss.storage.savedConfiguration = object;
     }
@@ -82,14 +80,7 @@ const ContainerService = {
       prefService.set(pref[0], pref[1]);
     });
 
-    if (ss.storage.savedConfiguration.hasOwnProperty("metricsUUID")) {
-      this._metricsUUID = ss.storage.savedConfiguration.metricsUUID;
-    } else {
-      // The add-on was installed before metricsUUID was added, create one
-      this._metricsUUID = uuid.uuid().toString();
-      ss.storage.savedConfiguration["metricsUUID"] = this._metricsUUID;
-    }
-
+    this._metricsUUID = ss.storage.savedConfiguration.metricsUUID;
 
     // Message routing
 
@@ -186,6 +177,7 @@ const ContainerService = {
   // utility methods
 
   _containerTabCount(userContextId) {
+    // Returns the total of open and hidden tabs with this userContextId
     let containerTabsCount = 0;
     containerTabsCount += this._identitiesState[userContextId].openTabs;
     containerTabsCount += this._identitiesState[userContextId].hiddenTabs.length;
@@ -193,6 +185,7 @@ const ContainerService = {
   },
 
   _totalContainerTabsCount() {
+    // Returns the number of total open tabs across ALL containers
     let totalContainerTabsCount = 0;
     for (const userContextId in this._identitiesState) {
       totalContainerTabsCount += this._identitiesState[userContextId].openTabs;
@@ -201,6 +194,7 @@ const ContainerService = {
   },
 
   _totalNonContainerTabsCount() {
+    // Returns the number of open tabs NOT IN a container
     let totalNonContainerTabsCount = 0;
     for (const tab of tabs) {
       if (this._getUserContextIdFromTab(tab) === 0) {
@@ -211,6 +205,7 @@ const ContainerService = {
   },
 
   _shownContainersCount() {
+    // Returns the number of containers with at least 1 tab open
     let shownContainersCount = 0;
     for (const userContextId in this._identitiesState) {
       if (this._identitiesState[userContextId].openTabs > 0) {
@@ -349,13 +344,13 @@ const ContainerService = {
     ss.storage.identitiesData = this._identitiesState;
   },
 
-  sendTelemetryPayload(params = {}) {
+  sendTelemetryPayload(args = {}) {
     // when pings come from popup, delete "method" prop
-    delete params.method;
+    delete args.method;
     let payload = { // eslint-disable-line prefer-const
       "uuid": this._metricsUUID
     };
-    Object.assign(payload, params);
+    Object.assign(payload, args);
 
     this._sendEvent(payload);
   },
@@ -575,14 +570,12 @@ const ContainerService = {
 
   openTab(args) {
     return this._recentBrowserWindow().then(browserWin => {
-      let userContextId = 0;
-      if ("userContextId" in args) {
-        userContextId = args.userContextId;
-      }
+      const userContextId = ("userContextId" in args) ? args.userContextId : 0;
+      const source = ("source" in args) ? args.source : null;
 
       this.sendTelemetryPayload({
         "event": "open-tab",
-        "eventSource": args.source,
+        "eventSource": source,
         "userContextId": userContextId,
         "clickedContainerTabCount": this._containerTabCount(userContextId)
       });
