@@ -3,6 +3,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
+const DEFAULT_TAB = "about:newtab";
 
 const HIDE_MENU_TIMEOUT = 300;
 
@@ -504,7 +505,7 @@ const ContainerService = {
         userContextId = args.userContextId;
       }
 
-      const tab = browserWin.gBrowser.addTab(args.url || null, { userContextId });
+      const tab = browserWin.gBrowser.addTab(args.url || DEFAULT_TAB, { userContextId });
       browserWin.gBrowser.selectedTab = tab;
       browserWin.focusAndSelectUrlBar();
       return true;
