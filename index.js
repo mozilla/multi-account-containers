@@ -35,6 +35,7 @@ const PREFS = [
 const { attachTo, detachFrom } = require("sdk/content/mod");
 const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
 const { getFavicon } = require("sdk/places/favicon");
+const Metrics = require("./testpilot-metrics");
 const { modelFor } = require("sdk/model/core");
 const prefService = require("sdk/preferences/service");
 const self = require("sdk/self");
@@ -42,10 +43,12 @@ const ss = require("sdk/simple-storage");
 const { Style } = require("sdk/stylesheet/style");
 const tabs = require("sdk/tabs");
 const tabsUtils = require("sdk/tabs/utils");
+const uuid = require("sdk/util/uuid");
 const { viewFor } = require("sdk/view/core");
 const webExtension = require("sdk/webextension");
 const windows = require("sdk/windows");
 const windowUtils = require("sdk/window/utils");
+
 
 // ----------------------------------------------------------------------------
 // ContainerService
@@ -61,7 +64,8 @@ const ContainerService = {
     if (installation) {
       const object = {
         version: 1,
-        prefs: {}
+        prefs: {},
+        metricsUUID: uuid.uuid().toString(),
       };
 
       PREFS.forEach(pref => {
@@ -76,6 +80,8 @@ const ContainerService = {
     PREFS.forEach((pref) => {
       prefService.set(pref[0], pref[1]);
     });
+
+    this._metricsUUID = ss.storage.savedConfiguration.metricsUUID;
 
     // Message routing
 
@@ -95,6 +101,7 @@ const ContainerService = {
       "removeIdentity",
       "updateIdentity",
       "getPreference",
+      "sendTelemetryPayload"
     ];
 
     // Map of identities.
@@ -159,9 +166,64 @@ const ContainerService = {
     }).catch(() => {
       throw new Error("WebExtension startup failed. Unable to continue.");
     });
+
+    this._sendEvent = new Metrics({
+      type: "sdk",
+      id: self.id,
+      version: self.version
+    }).sendEvent;
+
   },
 
   // utility methods
+
+  _containerTabCount(userContextId) {
+    // Returns the total of open and hidden tabs with this userContextId
+    let containerTabsCount = 0;
+    containerTabsCount += this._identitiesState[userContextId].openTabs;
+    containerTabsCount += this._identitiesState[userContextId].hiddenTabs.length;
+    return containerTabsCount;
+  },
+
+  _totalContainerTabsCount() {
+    // Returns the number of total open tabs across ALL containers
+    let totalContainerTabsCount = 0;
+    for (const userContextId in this._identitiesState) {
+      totalContainerTabsCount += this._identitiesState[userContextId].openTabs;
+    }
+    return totalContainerTabsCount;
+  },
+
+  _totalNonContainerTabsCount() {
+    // Returns the number of open tabs NOT IN a container
+    let totalNonContainerTabsCount = 0;
+    for (const tab of tabs) {
+      if (this._getUserContextIdFromTab(tab) === 0) {
+        ++totalNonContainerTabsCount;
+      }
+    }
+    return totalNonContainerTabsCount;
+  },
+
+  _containersCounts() {
+    let containersCounts = { // eslint-disable-line prefer-const
+      "shown": 0,
+      "hidden": 0,
+      "total": 0
+    };
+    for (const userContextId in this._identitiesState) {
+      if (this._identitiesState[userContextId].openTabs > 0) {
+        ++containersCounts.shown;
+        ++containersCounts.total;
+        continue;
+      } else if (this._identitiesState[userContextId].hiddenTabs.length > 0) {
+        ++containersCounts.hidden;
+        ++containersCounts.total;
+        continue;
+      }
+    }
+    return containersCounts;
+  },
 
   _convert(identity) {
     // Let's convert the known colors to their color names.
@@ -291,6 +353,17 @@ const ContainerService = {
     ss.storage.identitiesData = this._identitiesState;
   },
 
+  sendTelemetryPayload(args = {}) {
+    // when pings come from popup, delete "method" prop
+    delete args.method;
+    let payload = { // eslint-disable-line prefer-const
+      "uuid": this._metricsUUID
+    };
+    Object.assign(payload, args);
+
+    this._sendEvent(payload);
+  },
+
   // Tabs management
 
   hideTabs(args) {
@@ -302,6 +375,16 @@ const ContainerService = {
     if (!this._isKnownContainer(args.userContextId)) {
       return Promise.resolve(null);
     }
+
+    const containersCounts = this._containersCounts();
+    this.sendTelemetryPayload({
+      "event": "hide-tabs",
+      "userContextId": args.userContextId,
+      "clickedContainerTabCount": this._containerTabCount(args.userContextId),
+      "shownContainersCount": containersCounts.shown,
+      "hiddenContainersCount": containersCounts.hidden,
+      "totalContainersCount": containersCounts.total
+    });
 
     const tabsToClose = [];
 
@@ -337,6 +420,16 @@ const ContainerService = {
       return Promise.resolve(null);
     }
 
+    const containersCounts = this._containersCounts();
+    this.sendTelemetryPayload({
+      "event": "show-tabs",
+      "userContextId": args.userContextId,
+      "clickedContainerTabCount": this._containerTabCount(args.userContextId),
+      "shownContainersCount": containersCounts.shown,
+      "hiddenContainersCount": containersCounts.hidden,
+      "totalContainersCount": containersCounts.total
+    });
+
     const promises = [];
 
     for (let object of this._identitiesState[args.userContextId].hiddenTabs) { // eslint-disable-line prefer-const
@@ -351,6 +444,13 @@ const ContainerService = {
   },
 
   sortTabs() {
+    const containersCounts = this._containersCounts();
+    this.sendTelemetryPayload({
+      "event": "sort-tabs",
+      "shownContainersCount": containersCounts.shown,
+      "totalContainerTabsCount": this._totalContainerTabsCount(),
+      "totalNonContainerTabsCount": this._totalNonContainerTabsCount()
+    });
     return new Promise(resolve => {
       for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
         // First the pinned tabs, then the normal ones.
@@ -460,6 +560,12 @@ const ContainerService = {
         return;
       }
 
+      this.sendTelemetryPayload({
+        "event": "move-tabs-to-window",
+        "userContextId": args.userContextId,
+        "clickedContainerTabCount": this._containerTabCount(args.userContextId),
+      });
+
       // Let's create a list of the tabs.
       const list = [];
       this._containerTabIterator(args.userContextId, tab => {
@@ -500,9 +606,17 @@ const ContainerService = {
 
   openTab(args) {
     return this._recentBrowserWindow().then(browserWin => {
-      let userContextId = 0;
-      if ("userContextId" in args) {
-        userContextId = args.userContextId;
+      const userContextId = ("userContextId" in args) ? args.userContextId : 0;
+      const source = ("source" in args) ? args.source : null;
+
+      // Only send telemetry for tabs opened by UI - i.e., not via showTabs
+      if (source) {
+        this.sendTelemetryPayload({
+          "event": "open-tab",
+          "eventSource": source,
+          "userContextId": userContextId,
+          "clickedContainerTabCount": this._containerTabCount(userContextId)
+        });
       }
 
       const tab = browserWin.gBrowser.addTab(args.url || DEFAULT_TAB, { userContextId });
@@ -538,6 +652,10 @@ const ContainerService = {
   },
 
   createIdentity(args) {
+    this.sendTelemetryPayload({
+      "event": "add-container",
+    });
+
     for (let arg of [ "name", "color", "icon"]) { // eslint-disable-line prefer-const
       if (!(arg in args)) {
         return Promise.reject("createIdentity must be called with " + arg + " argument.");
@@ -562,6 +680,11 @@ const ContainerService = {
     if (!("userContextId" in args)) {
       return Promise.reject("updateIdentity must be called with userContextId argument.");
     }
+
+    this.sendTelemetryPayload({
+      "event": "edit-container",
+      "userContextId": args.userContextId
+    });
 
     const identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
     for (let arg of [ "name", "color", "icon"]) { // eslint-disable-line prefer-const
@@ -588,6 +711,11 @@ const ContainerService = {
     if (!("userContextId" in args)) {
       return Promise.reject("removeIdentity must be called with userContextId argument.");
     }
+
+    this.sendTelemetryPayload({
+      "event": "delete-container",
+      "userContextId": args.userContextId
+    });
 
     const tabsToClose = [];
     this._containerTabIterator(args.userContextId, tab => {
@@ -837,7 +965,10 @@ ContainerWindow.prototype = {
         menuItemElement.setAttribute("data-identity-color", identity.color);
 
         menuItemElement.addEventListener("command", (e) => {
-          ContainerService.openTab({userContextId: identity.userContextId});
+          ContainerService.openTab({
+            userContextId: identity.userContextId,
+            source: "tab-bar"
+          });
           e.stopPropagation();
         });
 
@@ -870,7 +1001,10 @@ ContainerWindow.prototype = {
   _configureFileMenu() {
     return this._configureMenu("menu_newUserContext", null, e => {
       const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
-      ContainerService.openTab({ userContextId });
+      ContainerService.openTab({
+        userContextId: userContextId,
+        source: "file-menu"
+      });
     }, "_fileMenuElements");
   },
 
