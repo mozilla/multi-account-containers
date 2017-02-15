@@ -230,7 +230,10 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       const arrowClass = hasTabs ? "show-tabs-img" : "no-tabs-img";
       const tr = document.createElement("tr");
       fragment.appendChild(tr);
-      tr.classList.add("container-panel-row", "clickable");
+      tr.classList.add("container-panel-row");
+      if (hasTabs) {
+        tr.classList.add("container-panel-row", "clickable");
+      }
       tr.innerHTML = `
         <td>
           <div class="userContext-icon open-newtab"
@@ -238,7 +241,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             data-identity-color="${identity.color}">
           </div>
         </td>
-        <td class="open-newtab container-name">${identity.name}</td>
+        <td class="container-name">${identity.name}</td>
         <td class="show-tabs"><img src="/img/container-arrow.svg" class="show-tabs ${arrowClass}" /></td>`;
 
       tr.addEventListener("click", e => {
@@ -257,7 +260,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
           }).catch(() => {
             window.close();
           });
-        } else if (hasTabs && e.target.matches(".show-tabs")) {
+        } else if (hasTabs) {
           Logic.showPanel(P_CONTAINER_INFO, identity);
         }
       });

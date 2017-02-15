@@ -118,7 +118,7 @@ table.unstriped tbody tr {
   padding-right: 10px;
 }
 
-.container-panel-row:hover .usercontext-icon {
+.container-panel-row .usercontext-icon:hover {
   background-image: url('/img/container-newtab.svg');
   fill: 'gray';
   filter: url('/img/filters.svg#fill');
@@ -350,6 +350,10 @@ table.unstriped tbody tr {
 
 .clickable {
   cursor: pointer;
+}
+
+.clickable:hover {
+  background-color: #ebebeb;
 }
 
 .edit-containers-panel-footer a {
