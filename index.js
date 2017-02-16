@@ -865,21 +865,17 @@ ContainerWindow.prototype = {
   _style: null,
   _panelElement: null,
   _timeoutId: 0,
-  _fileMenuElements: [],
-  _contextMenuElements: [],
-  _plusButtonElements: [],
-  _plusButtonTooltip: "",
-  _overflowPlusButtonElements: [],
-  _overflowPlusButtonTooltip: "",
-  _button: null,
-  _overflowButton: null,
+  _elementCache: {},
+  _tooltipCache: {},
+  _plusButton: null,
+  _overflowPlusButton: null,
   _tabsElement: null,
 
   _init(window) {
     this._window = window;
     this._tabsElement = this._window.document.getElementById("tabbrowser-tabs");
-    this._button = this._window.document.getAnonymousElementByAttribute(this._tabsElement, "anonid", "tabs-newtab-button");
-    this._overflowButton = this._window.document.getElementById("new-tab-button");
+    this._plusButton = this._window.document.getAnonymousElementByAttribute(this._tabsElement, "anonid", "tabs-newtab-button");
+    this._overflowPlusButton = this._window.document.getElementById("new-tab-button");
     this._style = Style({ uri: self.data.url("usercontext.css") });
     attachTo(this._style, this._window);
   },
@@ -906,8 +902,8 @@ ContainerWindow.prototype = {
     case "mouseout":
       while(el) {
         if (el === this._panelElement ||
-            el === this._button ||
-            el === this._overflowButton) {
+            el === this._plusButton ||
+            el === this._overflowPlusButton) {
           this._createTimeout();
           return;
         }
@@ -922,17 +918,19 @@ ContainerWindow.prototype = {
     this._panelElement.openPopup(buttonElement);
   },
 
+  _configurePlusButtonMenuElement(name, buttonElement) {
+    // Let's remove the tooltip because it can go over our panel.
+    this._tooltipCache[name] = buttonElement.getAttribute("tooltip");
+    buttonElement.setAttribute("tooltip", "");
+    this._disableElement(buttonElement, name);
+
+    buttonElement.addEventListener("mouseover", this);
+    buttonElement.addEventListener("click", this);
+    buttonElement.addEventListener("mouseout", this);
+  },
+
   _configurePlusButtonMenu() {
     const mainPopupSetElement = this._window.document.getElementById("mainPopupSet");
-    this._disableElement(this._button, "_plusButtonElements");
-    this._disableElement(this._overflowButton, "_overflowPlusButtonElements");
-
-    // Let's remove the tooltip because it can go over our panel.
-    this._plusButtonTooltip = this._button.getAttribute("tooltip");
-    this._button.setAttribute("tooltip", "");
-
-    this._overflowPlusButtonTooltip = this._overflowButton.getAttribute("tooltip");
-    this._overflowButton.setAttribute("tooltip", "");
 
     // Let's remove all the previous panels.
     if (this._panelElement) {
@@ -949,12 +947,8 @@ ContainerWindow.prototype = {
     this._panelElement.setAttribute("consumeoutsideclicks", "never");
     mainPopupSetElement.appendChild(this._panelElement);
 
-
-    [this._button, this._overflowButton].forEach((buttonElement) => {
-      buttonElement.addEventListener("mouseover", this);
-      buttonElement.addEventListener("click", this);
-      buttonElement.addEventListener("mouseout", this);
-    });
+    this._configurePlusButtonMenuElement("plusButton", this._plusButton);
+    this._configurePlusButtonMenuElement("overflowPlusButton", this._overflowPlusButton);
 
     this._panelElement.addEventListener("mouseout", this);
 
@@ -1013,7 +1007,7 @@ ContainerWindow.prototype = {
         userContextId: userContextId,
         source: "file-menu"
       });
-    }, "_fileMenuElements");
+    }, "fileMenu");
   },
 
   _configureContextMenu() {
@@ -1028,15 +1022,15 @@ ContainerWindow.prototype = {
         // next FF releases.
         this._window.gContextMenu.openLinkInTab(e);
       },
-      "_contextMenuElements"
+      "contextMenu"
     );
   },
 
   // Generic menu configuration.
-  _configureMenu(menuId, excludedContainerCb, clickCb, arrayName) {
+  _configureMenu(menuId, excludedContainerCb, clickCb, elementKey) {
     const menu = this._window.document.getElementById(menuId);
-    this._disableElement(menu, arrayName);
-    if (!this._disableElement(menu, arrayName)) {
+    this._disableElement(menu, elementKey);
+    if (!this._disableElement(menu, elementKey)) {
       // Delete stale menu that isn't native elements
       while (menu.firstChild) {
         menu.removeChild(menu.firstChild);
@@ -1126,55 +1120,56 @@ ContainerWindow.prototype = {
     this._shutdownContextMenu();
   },
 
+  _shutDownPlusButtonMenuElement(name, buttonElement) {
+    this._shutdownElement(buttonElement, name);
+    buttonElement.setAttribute("tooltip", this._tooltipCache[name]);
+
+    buttonElement.removeEventListener("mouseover", this);
+    buttonElement.removeEventListener("click", this);
+    buttonElement.removeEventListener("mouseout", this);
+  },
+
   _shutdownPlusButtonMenu() {
-    [this._button, this._overflowButton].forEach((buttonElement) => {
-      buttonElement.removeEventListener("mouseover", this);
-      buttonElement.removeEventListener("click", this);
-      buttonElement.removeEventListener("mouseout", this);
-    });
-
-    this._shutdownElement(this._button, "_plusButtonElements");
-    this._button.setAttribute("tooltip", this._plusButtonTooltip);
-
-    this._shutdownElement(this._overflowButton, "_overflowPlusButtonElements");
-    this._overflowButton.setAttribute("tooltip", this._overflowPlusButtonTooltip);
+    this._shutDownPlusButtonMenuElement("plusButton", this._plusButton);
+    this._shutDownPlusButtonMenuElement("overflowPlusButton", this._overflowPlusButton);
   },
 
   _shutdownFileMenu() {
-    this._shutdownMenu("menu_newUserContext", "_fileMenuElements");
+    this._shutdownMenu("menu_newUserContext", "fileMenu");
   },
 
   _shutdownContextMenu() {
     this._shutdownMenu("context-openlinkinusercontext-menu",
-                       "_contextMenuElements");
+                       "contextMenu");
   },
 
-  _shutdownMenu(menuId, arrayName) {
+  _shutdownMenu(menuId, elementKey) {
     const menu = this._window.document.getElementById(menuId);
-    this._shutdownElement(menu, arrayName);
+    this._shutdownElement(menu, elementKey);
   },
 
-  _shutdownElement(element, arrayName) {
+  _shutdownElement(element, elementKey) {
     // Let's remove our elements.
     while (element.firstChild) {
       element.firstChild.remove();
     }
 
-    for (let e of this[arrayName]) { // eslint-disable-line prefer-const
+    for (let e of this._elementCache[elementKey]) { // eslint-disable-line prefer-const
       element.appendChild(e);
     }
   },
 
-  _disableElement(element, arrayName) {
+  _disableElement(element, elementKey) {
     // Nothing to disable.
-    if (!element || this[arrayName].length) {
+    if (!element || this._elementCache[elementKey]) {
       return false;
     }
+    this._elementCache[elementKey] = [];
 
     // Let's store the previous elements so that we can repopulate it in case
     // the addon is uninstalled.
     while (element.firstChild) {
-      this[arrayName].push(element.removeChild(element.firstChild));
+      this._elementCache[elementKey].push(element.removeChild(element.firstChild));
     }
 
     return true;
