@@ -865,8 +865,8 @@ ContainerWindow.prototype = {
   _style: null,
   _panelElement: null,
   _timeoutId: 0,
-  _elementCache: {},
-  _tooltipCache: {},
+  _elementCache: new Map(),
+  _tooltipCache: new Map(),
   _plusButton: null,
   _overflowPlusButton: null,
   _tabsElement: null,
@@ -918,11 +918,11 @@ ContainerWindow.prototype = {
     this._panelElement.openPopup(buttonElement);
   },
 
-  _configurePlusButtonMenuElement(name, buttonElement) {
+  _configurePlusButtonMenuElement(buttonElement) {
     // Let's remove the tooltip because it can go over our panel.
-    this._tooltipCache[name] = buttonElement.getAttribute("tooltip");
+    this._tooltipCache.set(buttonElement, buttonElement.getAttribute("tooltip"));
     buttonElement.setAttribute("tooltip", "");
-    this._disableElement(buttonElement, name);
+    this._disableElement(buttonElement);
 
     buttonElement.addEventListener("mouseover", this);
     buttonElement.addEventListener("click", this);
@@ -947,8 +947,8 @@ ContainerWindow.prototype = {
     this._panelElement.setAttribute("consumeoutsideclicks", "never");
     mainPopupSetElement.appendChild(this._panelElement);
 
-    this._configurePlusButtonMenuElement("plusButton", this._plusButton);
-    this._configurePlusButtonMenuElement("overflowPlusButton", this._overflowPlusButton);
+    this._configurePlusButtonMenuElement(this._plusButton);
+    this._configurePlusButtonMenuElement(this._overflowPlusButton);
 
     this._panelElement.addEventListener("mouseout", this);
 
@@ -1007,7 +1007,7 @@ ContainerWindow.prototype = {
         userContextId: userContextId,
         source: "file-menu"
       });
-    }, "fileMenu");
+    });
   },
 
   _configureContextMenu() {
@@ -1021,16 +1021,15 @@ ContainerWindow.prototype = {
         // This is a super internal method. Hopefully it will be stable in the
         // next FF releases.
         this._window.gContextMenu.openLinkInTab(e);
-      },
-      "contextMenu"
+      }
     );
   },
 
   // Generic menu configuration.
-  _configureMenu(menuId, excludedContainerCb, clickCb, elementKey) {
+  _configureMenu(menuId, excludedContainerCb, clickCb) {
     const menu = this._window.document.getElementById(menuId);
-    this._disableElement(menu, elementKey);
-    if (!this._disableElement(menu, elementKey)) {
+    this._disableElement(menu);
+    if (!this._disableElement(menu)) {
       // Delete stale menu that isn't native elements
       while (menu.firstChild) {
         menu.removeChild(menu.firstChild);
@@ -1120,9 +1119,9 @@ ContainerWindow.prototype = {
     this._shutdownContextMenu();
   },
 
-  _shutDownPlusButtonMenuElement(name, buttonElement) {
-    this._shutdownElement(buttonElement, name);
-    buttonElement.setAttribute("tooltip", this._tooltipCache[name]);
+  _shutDownPlusButtonMenuElement(buttonElement) {
+    this._shutdownElement(buttonElement);
+    buttonElement.setAttribute("tooltip", this._tooltipCache.get(buttonElement));
 
     buttonElement.removeEventListener("mouseover", this);
     buttonElement.removeEventListener("click", this);
@@ -1130,47 +1129,50 @@ ContainerWindow.prototype = {
   },
 
   _shutdownPlusButtonMenu() {
-    this._shutDownPlusButtonMenuElement("plusButton", this._plusButton);
-    this._shutDownPlusButtonMenuElement("overflowPlusButton", this._overflowPlusButton);
+    this._shutDownPlusButtonMenuElement(this._plusButton);
+    this._shutDownPlusButtonMenuElement(this._overflowPlusButton);
   },
 
   _shutdownFileMenu() {
-    this._shutdownMenu("menu_newUserContext", "fileMenu");
+    this._shutdownMenu("menu_newUserContext");
   },
 
   _shutdownContextMenu() {
-    this._shutdownMenu("context-openlinkinusercontext-menu",
-                       "contextMenu");
+    this._shutdownMenu("context-openlinkinusercontext-menu");
   },
 
-  _shutdownMenu(menuId, elementKey) {
+  _shutdownMenu(menuId) {
     const menu = this._window.document.getElementById(menuId);
-    this._shutdownElement(menu, elementKey);
+    this._shutdownElement(menu);
   },
 
-  _shutdownElement(element, elementKey) {
+  _shutdownElement(element) {
     // Let's remove our elements.
     while (element.firstChild) {
       element.firstChild.remove();
     }
 
-    for (let e of this._elementCache[elementKey]) { // eslint-disable-line prefer-const
+    const elementCache = this._elementCache.get(element);
+
+    for (let e of elementCache) { // eslint-disable-line prefer-const
       element.appendChild(e);
     }
   },
 
-  _disableElement(element, elementKey) {
+  _disableElement(element) {
     // Nothing to disable.
-    if (!element || this._elementCache[elementKey]) {
+    if (!element || this._elementCache.has(element)) {
       return false;
     }
-    this._elementCache[elementKey] = [];
+    const cacheArray = [];
 
     // Let's store the previous elements so that we can repopulate it in case
     // the addon is uninstalled.
     while (element.firstChild) {
-      this._elementCache[elementKey].push(element.removeChild(element.firstChild));
+      cacheArray.push(element.removeChild(element.firstChild));
     }
+
+    this._elementCache.set(element, cacheArray);
 
     return true;
   },
