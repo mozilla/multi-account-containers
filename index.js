@@ -1027,62 +1027,63 @@ ContainerWindow.prototype = {
   // Generic menu configuration.
   _configureMenu(menuId, excludedContainerCb, clickCb, arrayName) {
     const menu = this._window.document.getElementById(menuId);
+    this._disableElement(menu, arrayName);
     if (!this._disableElement(menu, arrayName)) {
-      return Promise.resolve(null);
+      // Delete stale menu that isn't native elements
+      while (menu.firstChild) {
+        menu.removeChild(menu.firstChild);
+      }
     }
 
     const menupopup = this._window.document.createElementNS(XUL_NS, "menupopup");
     menu.appendChild(menupopup);
 
     menupopup.addEventListener("command", clickCb);
-    menupopup.addEventListener("popupshowing", e => {
-      return this._createMenu(e, excludedContainerCb);
-    });
-
-    return Promise.resolve(null);
+    return this._createMenu(menupopup, excludedContainerCb);
   },
 
-  _createMenu(event, excludedContainerCb) {
-    while (event.target.hasChildNodes()) {
-      event.target.removeChild(event.target.firstChild);
+  _createMenu(target, excludedContainerCb) {
+    while (target.hasChildNodes()) {
+      target.removeChild(target.firstChild);
     }
 
-    ContainerService.queryIdentities().then(identities => {
-      const fragment = this._window.document.createDocumentFragment();
+    return new Promise((resolve, reject) => {
+      ContainerService.queryIdentities().then(identities => {
+        const fragment = this._window.document.createDocumentFragment();
 
-      const excludedUserContextId = excludedContainerCb ? excludedContainerCb() : 0;
-      if (excludedUserContextId) {
-        const bundle = this._window.document.getElementById("bundle_browser");
+        const excludedUserContextId = excludedContainerCb ? excludedContainerCb() : 0;
+        if (excludedUserContextId) {
+          const bundle = this._window.document.getElementById("bundle_browser");
 
-        const menuitem = this._window.document.createElementNS(XUL_NS, "menuitem");
-        menuitem.setAttribute("data-usercontextid", "0");
-        menuitem.setAttribute("label", bundle.getString("userContextNone.label"));
-        menuitem.setAttribute("accesskey", bundle.getString("userContextNone.accesskey"));
+          const menuitem = this._window.document.createElementNS(XUL_NS, "menuitem");
+          menuitem.setAttribute("data-usercontextid", "0");
+          menuitem.setAttribute("label", bundle.getString("userContextNone.label"));
+          menuitem.setAttribute("accesskey", bundle.getString("userContextNone.accesskey"));
 
-        fragment.appendChild(menuitem);
+          fragment.appendChild(menuitem);
 
-        const menuseparator = this._window.document.createElementNS(XUL_NS, "menuseparator");
-        fragment.appendChild(menuseparator);
-      }
-
-      identities.forEach(identity => {
-        if (identity.userContextId === excludedUserContextId) {
-          return;
+          const menuseparator = this._window.document.createElementNS(XUL_NS, "menuseparator");
+          fragment.appendChild(menuseparator);
         }
 
-        const menuitem = this._window.document.createElementNS(XUL_NS, "menuitem");
-        menuitem.setAttribute("label", identity.name);
-        menuitem.classList.add("menuitem-iconic");
-        menuitem.setAttribute("data-usercontextid", identity.userContextId);
-        menuitem.setAttribute("data-identity-color", identity.color);
-        menuitem.setAttribute("data-identity-icon", identity.image);
-        fragment.appendChild(menuitem);
-      });
+        identities.forEach(identity => {
+          if (identity.userContextId === excludedUserContextId) {
+            return;
+          }
 
-      event.target.appendChild(fragment);
-    }).catch(() => {});
+          const menuitem = this._window.document.createElementNS(XUL_NS, "menuitem");
+          menuitem.setAttribute("label", identity.name);
+          menuitem.classList.add("menuitem-iconic");
+          menuitem.setAttribute("data-usercontextid", identity.userContextId);
+          menuitem.setAttribute("data-identity-color", identity.color);
+          menuitem.setAttribute("data-identity-icon", identity.image);
+          fragment.appendChild(menuitem);
+        });
 
-    return true;
+        target.appendChild(fragment);
+        resolve();
+      }).catch(() => {reject();});
+    });
   },
 
   // This timer is used to hide the panel auto-magically if it's not used in
