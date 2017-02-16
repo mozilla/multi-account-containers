@@ -871,9 +871,15 @@ ContainerWindow.prototype = {
   _plusButtonTooltip: "",
   _overflowPlusButtonElements: [],
   _overflowPlusButtonTooltip: "",
+  _button: null,
+  _overflowButton: null,
+  _tabsElement: null,
 
   _init(window) {
     this._window = window;
+    this._tabsElement = this._window.document.getElementById("tabbrowser-tabs");
+    this._button = this._window.document.getAnonymousElementByAttribute(this._tabsElement, "anonid", "tabs-newtab-button");
+    this._overflowButton = this._window.document.getElementById("new-tab-button");
     this._style = Style({ uri: self.data.url("usercontext.css") });
     attachTo(this._style, this._window);
   },
@@ -888,22 +894,45 @@ ContainerWindow.prototype = {
     ]);
   },
 
+  handleEvent(e) {
+    let el = e.target;
+    switch (e.type) {
+    case "mouseover":
+      this.showPopup(el);
+      break;
+    case "click":
+      this.hidePanel();
+      break;
+    case "mouseout":
+      while(el) {
+        if (el === this._panelElement ||
+            el === this._button ||
+            el === this._overflowButton) {
+          this._createTimeout();
+          return;
+        }
+        el = el.parentElement;
+      }
+      break;
+    }
+  },
+
+  showPopup(buttonElement) {
+    this._cleanTimeout();
+    this._panelElement.openPopup(buttonElement);
+  },
+
   _configurePlusButtonMenu() {
-    const tabsElement = this._window.document.getElementById("tabbrowser-tabs");
-
     const mainPopupSetElement = this._window.document.getElementById("mainPopupSet");
-    const button = this._window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
-    this._disableElement(button, "_plusButtonElements");
-
-    const overflowButton = this._window.document.getElementById("new-tab-button");
-    this._disableElement(overflowButton, "_overflowPlusButtonElements");
+    this._disableElement(this._button, "_plusButtonElements");
+    this._disableElement(this._overflowButton, "_overflowPlusButtonElements");
 
     // Let's remove the tooltip because it can go over our panel.
-    this._plusButtonTooltip = button.getAttribute("tooltip");
-    button.setAttribute("tooltip", "");
+    this._plusButtonTooltip = this._button.getAttribute("tooltip");
+    this._button.setAttribute("tooltip", "");
 
-    this._overflowPlusButtonTooltip = overflowButton.getAttribute("tooltip");
-    overflowButton.setAttribute("tooltip", "");
+    this._overflowPlusButtonTooltip = this._overflowButton.getAttribute("tooltip");
+    this._overflowButton.setAttribute("tooltip", "");
 
     // Let's remove all the previous panels.
     if (this._panelElement) {
@@ -920,35 +949,14 @@ ContainerWindow.prototype = {
     this._panelElement.setAttribute("consumeoutsideclicks", "never");
     mainPopupSetElement.appendChild(this._panelElement);
 
-    const showPopup = (buttonElement) => {
-      this._cleanTimeout();
-      this._panelElement.openPopup(buttonElement);
-    };
 
-    const mouseoutHandle = (e) => {
-      let el = e.target;
-      while(el) {
-        if (el === this._panelElement ||
-            el === button ||
-            el === overflowButton) {
-          this._createTimeout();
-          return;
-        }
-        el = el.parentElement;
-      }
-    };
-
-    [button, overflowButton].forEach((buttonElement) => {
-      buttonElement.addEventListener("mouseover", () => {
-        showPopup(buttonElement);
-      });
-      buttonElement.addEventListener("click", () => {
-        this.hidePanel();
-      });
-      buttonElement.addEventListener("mouseout", mouseoutHandle);
+    [this._button, this._overflowButton].forEach((buttonElement) => {
+      buttonElement.addEventListener("mouseover", this);
+      buttonElement.addEventListener("click", this);
+      buttonElement.addEventListener("mouseout", this);
     });
 
-    this._panelElement.addEventListener("mouseout", mouseoutHandle);
+    this._panelElement.addEventListener("mouseout", this);
 
     this._panelElement.addEventListener("mouseover", () => {
       this._cleanTimeout();
@@ -976,7 +984,7 @@ ContainerWindow.prototype = {
           this._cleanTimeout();
         });
 
-        menuItemElement.addEventListener("mouseout", mouseoutHandle);
+        menuItemElement.addEventListener("mouseout", this);
 
         this._panelElement.appendChild(menuItemElement);
       });
@@ -1119,14 +1127,17 @@ ContainerWindow.prototype = {
   },
 
   _shutdownPlusButtonMenu() {
-    const tabsElement = this._window.document.getElementById("tabbrowser-tabs");
-    const button = this._window.document.getAnonymousElementByAttribute(tabsElement, "anonid", "tabs-newtab-button");
-    this._shutdownElement(button, "_plusButtonElements");
-    button.setAttribute("tooltip", this._plusButtonTooltip);
+    [this._button, this._overflowButton].forEach((buttonElement) => {
+      buttonElement.removeEventListener("mouseover", this);
+      buttonElement.removeEventListener("click", this);
+      buttonElement.removeEventListener("mouseout", this);
+    });
 
-    const overflowButton = this._window.document.getElementById("new-tab-button");
-    this._shutdownElement(overflowButton, "_overflowPlusButtonElements");
-    overflowButton.setAttribute("tooltip", this._overflowPlusButtonTooltip);
+    this._shutdownElement(this._button, "_plusButtonElements");
+    this._button.setAttribute("tooltip", this._plusButtonTooltip);
+
+    this._shutdownElement(this._overflowButton, "_overflowPlusButtonElements");
+    this._overflowButton.setAttribute("tooltip", this._overflowPlusButtonTooltip);
   },
 
   _shutdownFileMenu() {
