@@ -55,7 +55,7 @@ const windowUtils = require("sdk/window/utils");
 
 const ContainerService = {
   _identitiesState: {},
-  _windowMap: {},
+  _windowMap: new Map(),
 
   init(installation) {
     // If we are just been installed, we must store some information for the
@@ -753,17 +753,15 @@ const ContainerService = {
   },
 
   closeWindow(window) {
-    const id = windowUtils.getInnerId(window);
-    delete this._windowMap[id];
+    this._windowMap.delete(window);
   },
 
   _getOrCreateContainerWindow(window) {
-    const id = windowUtils.getInnerId(window);
-    if (!(id in this._windowMap)) {
-      this._windowMap[id] = new ContainerWindow(window);
+    if (!(this._windowMap.has(window))) {
+      this._windowMap.set(window, new ContainerWindow(window));
     }
 
-    return this._windowMap[id];
+    return this._windowMap.get(window);
   },
 
   _refreshNeeded() {
@@ -771,8 +769,8 @@ const ContainerService = {
   },
 
   _hideAllPanels() {
-    for (let id in this._windowMap) { // eslint-disable-line prefer-const
-      this._windowMap[id].hidePanel();
+    for (let windowObject of this._windowMap.values()) { // eslint-disable-line prefer-const
+      windowObject.hidePanel();
     }
   },
 
@@ -838,7 +836,7 @@ const ContainerService = {
     }
 
     // all the configuration must go away now.
-    this._windowMap = {};
+    this._windowMap = new Map();
 
     // Let's close all the container tabs (note: we don't care if containers
     // are supported but the current FF version).
