@@ -5,6 +5,7 @@
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 const DEFAULT_TAB = "about:newtab";
 
+const SHOW_MENU_TIMEOUT = 100;
 const HIDE_MENU_TIMEOUT = 300;
 
 const IDENTITY_COLORS = [
@@ -864,7 +865,7 @@ ContainerWindow.prototype = {
   _window: null,
   _style: null,
   _panelElement: null,
-  _timeoutId: 0,
+  _timeoutStore: new Map(),
   _elementCache: new Map(),
   _tooltipCache: new Map(),
   _plusButton: null,
@@ -894,7 +895,9 @@ ContainerWindow.prototype = {
     let el = e.target;
     switch (e.type) {
     case "mouseover":
-      this.showPopup(el);
+      this._createTimeout("show", () => {
+        this.showPopup(el);
+      }, SHOW_MENU_TIMEOUT);
       break;
     case "click":
       this.hidePanel();
@@ -904,7 +907,11 @@ ContainerWindow.prototype = {
         if (el === this._panelElement ||
             el === this._plusButton ||
             el === this._overflowPlusButton) {
-          this._createTimeout();
+          // Clear show timeout so we don't hide and reshow
+          this._cleanTimeout("show");
+          this._createTimeout("hidden", () => {
+            this.hidePanel();
+          }, HIDE_MENU_TIMEOUT);
           return;
         }
         el = el.parentElement;
@@ -914,7 +921,7 @@ ContainerWindow.prototype = {
   },
 
   showPopup(buttonElement) {
-    this._cleanTimeout();
+    this._cleanAllTimeouts();
     this._panelElement.openPopup(buttonElement);
   },
 
@@ -953,7 +960,7 @@ ContainerWindow.prototype = {
     this._panelElement.addEventListener("mouseout", this);
 
     this._panelElement.addEventListener("mouseover", () => {
-      this._cleanTimeout();
+      this._cleanAllTimeouts();
     });
 
     return ContainerService.queryIdentities().then(identities => {
@@ -975,7 +982,7 @@ ContainerWindow.prototype = {
         });
 
         menuItemElement.addEventListener("mouseover", () => {
-          this._cleanTimeout();
+          this._cleanAllTimeouts();
         });
 
         menuItemElement.addEventListener("mouseout", this);
@@ -1090,23 +1097,29 @@ ContainerWindow.prototype = {
   // This timer is used to hide the panel auto-magically if it's not used in
   // the following X seconds. This is need to avoid the leaking of the panel
   // when the mouse goes out of of the 'plus' button.
-  _createTimeout() {
-    this._cleanTimeout();
-    this._timeoutId = this._window.setTimeout(() => {
-      this.hidePanel();
-      this._timeoutId = 0;
-    }, HIDE_MENU_TIMEOUT);
+  _createTimeout(key, callback, timeoutTime) {
+    this._cleanTimeout(key);
+    this._timeoutStore.set(key, this._window.setTimeout(() => {
+      callback();
+      this._timeoutStore.delete(key);
+    }, timeoutTime));
   },
 
-  _cleanTimeout() {
-    if (this._timeoutId) {
-      this._window.clearTimeout(this._timeoutId);
-      this._timeoutId = 0;
+  _cleanAllTimeouts() {
+    for (let key of this._timeoutStore.keys()) { // eslint-disable-line prefer-const
+      this._cleanTimeout(key);
+    }
+  },
+
+  _cleanTimeout(key) {
+    if (this._timeoutStore.has(key)) {
+      this._window.clearTimeout(this._timeoutStore.get(key));
+      this._timeoutStore.delete(key);
     }
   },
 
   hidePanel() {
-    this._cleanTimeout();
+    this._cleanAllTimeouts();
     this._panelElement.hidePopup();
   },
 
