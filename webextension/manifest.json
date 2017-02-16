@@ -13,7 +13,7 @@
     "gecko": {
       "id": "testpilot-containers@mozilla.org",
       "strict_min_version": "50.0",
-      "update_url": "https://testpilot.firefox.com/files/containers/updates.json"
+      "update_url": "https://testpilot.firefox.com/files/testpilot-containers@mozilla.org/updates.json"
     }
   },
 
