@@ -804,6 +804,8 @@ const ContainerService = {
       const indicator = viewFor(tab.window).document.getElementById("userContext-indicator");
       indicator.setAttribute("data-identity-icon", identity.image);
       indicator.style.listStyleImage = "";
+    }).then(() => {
+      return this._restyleTab(tab);
     });
   },
 
