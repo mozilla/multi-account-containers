@@ -34,6 +34,7 @@ const PREFS = [
 ];
 
 const { attachTo, detachFrom } = require("sdk/content/mod");
+const { Cu } = require("chrome");
 const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
 const { getFavicon } = require("sdk/places/favicon");
 const Metrics = require("./testpilot-metrics");
@@ -50,6 +51,8 @@ const webExtension = require("sdk/webextension");
 const windows = require("sdk/windows");
 const windowUtils = require("sdk/window/utils");
 
+Cu.import("resource:///modules/CustomizableUI.jsm");
+Cu.import("resource:///modules/CustomizableWidgets.jsm");
 
 // ----------------------------------------------------------------------------
 // ContainerService
@@ -83,6 +86,9 @@ const ContainerService = {
     });
 
     this._metricsUUID = ss.storage.savedConfiguration.metricsUUID;
+
+    // Disabling the customizable container panel.
+    CustomizableUI.destroyWidget("containers-panelmenu");
 
     // Message routing
 
@@ -831,6 +837,12 @@ const ContainerService = {
       }
     });
 
+    // Restore the customizable container panel.
+    const widget = CustomizableWidgets.find(widget => widget.id === "containers-panelmenu");
+    if (widget) {
+      CustomizableUI.createWidget(widget);
+    }
+
     // Let's delete the configuration.
     delete ss.storage.savedConfiguration;
 
@@ -1166,9 +1178,10 @@ ContainerWindow.prototype = {
     }
 
     const elementCache = this._elementCache.get(element);
-
-    for (let e of elementCache) { // eslint-disable-line prefer-const
-      element.appendChild(e);
+    if (elementCache) {
+      for (let e of elementCache) { // eslint-disable-line prefer-const
+        element.appendChild(e);
+      }
     }
   },
 
