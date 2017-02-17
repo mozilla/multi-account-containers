@@ -77,12 +77,6 @@
   -moz-box-align: center;
 }
 
-.tabbrowser-tab[usercontextid] {
-  background-image: linear-gradient(to right, transparent 20%, var(--identity-tab-color) 30%, var(--identity-tab-color) 70%, transparent 80%);
-  background-size: auto 2px;
-  background-repeat: no-repeat;
-}
-
 .userContext-icon,
 .menuitem-iconic[data-usercontextid] > .menu-iconic-left > .menu-iconic-icon,
 .subviewbutton[usercontextid] > .toolbarbutton-icon,
@@ -97,76 +91,66 @@
 }
 
 /* containers experiment */
+
+/* reset nightly containers */
 .tabbrowser-tab[usercontextid] {
-  background-image: linear-gradient(to right, var(--identity-tab-color) 0%, var(--identity-tab-color) 100%) !important;
-  background-size: var(--identity-stroke-background-size) !important;
-  background-repeat: no-repeat !important;
-  background-position: 0 29px !important;
-  --identity-stroke-background-size: auto 2px;
-}
-
-.tabbrowser-tab[usercontextid] .tab-background-start:not([selected="true"]) {
-  background-image: linear-gradient(to left, var(--identity-tab-color) 0%, var(--identity-tab-color) 50%, transparent 50%, transparent 100%);
-  background-position: 0 28px;
-  background-size: var(--identity-stroke-background-size);
+  background: none !important;
+  background-image: none;
+  background-size: 0;
   background-repeat: no-repeat;
 }
 
-.tabbrowser-tab[usercontextid][afterhovered=true] .tab-background-start:not([selected="true"]) {
-  background-image: linear-gradient(to left, var(--identity-tab-color) 0%, var(--identity-tab-color) 22%, transparent 30%, transparent 100%);
+/* special styles run through a psuedo-class off of
+these elements so they need to be relatively positioned.
+these styles address both regular and compact themes,
+special cases are addressed below */
+.tabbrowser-tab[usercontextid] .tab-background-middle,
+#main-window[style*='compact'] .tabbrowser-tab[usercontextid] .tab-content,
+#verticaltabs-box .tabbrowser-tab[usercontextid] .tab-content {
+  position: relative;
 }
 
-.tabbrowser-tab[usercontextid]:hover .tab-background-start:not([selected="true"]) {
-  background-image: linear-gradient(to left, var(--identity-tab-color) 0%, var(--identity-tab-color) 70%, transparent 80%, transparent 100%);
+.tabbrowser-tab[usercontextid] .tab-background-middle::after,
+#main-window[style*='compact'] .tabbrowser-tab[usercontextid] .tab-content::after {
+  background-color: var(--identity-tab-color);
+  bottom: 0;
+  content: '';
+  height: 2px;
+  left: 0;
+  position: absolute;
+  right: 0;
+  width: 100%;
+  z-index: 999;
 }
 
-.tabbrowser-tab[usercontextid] .tab-background-start[selected="true"]::before {
-  background-image: linear-gradient(to left, var(--identity-tab-color) 0%, var(--identity-tab-color) 30%, transparent 100%),
-                    url(chrome://browser/skin/tabbrowser/tab-selected-start.svg) !important;
-  background-size: var(--identity-stroke-background-size), 100% 100% !important;
-  background-position: 0px 28px, 0;
-  background-repeat: no-repeat;
+.tabbrowser-tab[usercontextid] .tab-background-middle::after {
+  background-color: var(--identity-tab-color);
+  border-radius: 2px 2px 0 0;
+  bottom: 1px;
+  height: 3px;
 }
 
-.tabbrowser-tab[usercontextid] .tab-background-end:not([selected="true"]) {
-  background-image: linear-gradient(to right, var(--identity-tab-color) 0%, var(--identity-tab-color) 50%, transparent 50%, transparent 100%);
-  background-position: 0 28px;
-  background-size: var(--identity-stroke-background-size);
-  background-repeat: no-repeat;
+.tabbrowser-tab[usercontextid]:not([visuallyselected="true"]) .tab-background-middle::after {
+  bottom: 2px;
+  height: 2px !important;
 }
 
-.tabbrowser-tab[usercontextid][beforehovered=true] .tab-background-end:not([selected="true"]) {
-  background-image: linear-gradient(to right, var(--identity-tab-color) 0%, var(--identity-tab-color) 22%, transparent 30%, transparent 100%);
+.tabbrowser-tab[usercontextid][pinned="true"] .tab-background-middle::after {
+  left: -150%;
+  width: 400%;
 }
 
-.tabbrowser-tab[usercontextid]:hover .tab-background-end:not([selected="true"]) {
-  background-image: linear-gradient(to right, var(--identity-tab-color) 0%, var(--identity-tab-color) 70%, transparent 80%, transparent 100%);
+/* this fixes containers tab center */
+#verticaltabs-box .tabbrowser-tab[usercontextid] .tab-content::after {
+  background-color: var(--identity-tab-color);
+  top: 0;
+  left: 0;
+  content: '';
+  height: 100% !important;
+  position: absolute;
+  width: 3px !important;
+  z-index: 999;
 }
-
-.tabbrowser-tab[usercontextid] .tab-background-end[selected="true"]::before {
-  background-image: linear-gradient(to right, var(--identity-tab-color) 0%, var(--identity-tab-color) 30%, transparent 100%),
-                    url(chrome://browser/skin/tabbrowser/tab-selected-end.svg) !important;
-  background-size: var(--identity-stroke-background-size), 100% 100% !important;
-  background-position: 0 28px, 0;
-  background-repeat: no-repeat;
-}
-
-.tabbrowser-tab[usercontextid] .tab-background-middle {
-  background-position: 0 28px, 0;
-  background-repeat: repeat-x;
-  background-size: var(--identity-stroke-background-size), auto;
-  background-image: linear-gradient(to right, var(--identity-tab-color) 0%, var(--identity-tab-color) 100%), none;
-}
-
-.tabbrowser-tab[usercontextid] .tab-background-middle[selected="true"] {
-  background-image: url(chrome://browser/skin/tabbrowser/tab-active-middle.png),
-                    linear-gradient(to right, var(--identity-tab-color) 0%, var(--identity-tab-color) 100%),
-                    none;
-  background-position: 0, 0 28px, 0;
-  background-size: var(--tab-stroke-background-size), var(--identity-stroke-background-size), auto;
-  background-repeat: repeat-x;
-}
-/* end containers experiment */
 
 .tabs-newtab-button .toolbarbutton-icon[type="menu"] {
   margin-inline-end: 0;
