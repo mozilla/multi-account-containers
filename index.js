@@ -129,25 +129,20 @@ const ContainerService = {
     }
 
     tabs.on("open", tab => {
-      const userContextId = this._getUserContextIdFromTab(tab);
-      if (userContextId) {
-        ++this._identitiesState[userContextId].openTabs;
-      }
       this._hideAllPanels();
       this._restyleTab(tab);
+      this._remapTab(tab);
     });
 
     tabs.on("close", tab => {
-      const userContextId = this._getUserContextIdFromTab(tab);
-      if (userContextId && this._identitiesState[userContextId].openTabs) {
-        --this._identitiesState[userContextId].openTabs;
-      }
       this._hideAllPanels();
+      this._remapTab(tab);
     });
 
     tabs.on("activate", tab => {
       this._hideAllPanels();
       this._restyleActiveTab(tab).catch(() => {});
+      this._remapTab(tab);
     });
 
     // Modify CSS and other stuff for each window.
@@ -318,9 +313,21 @@ const ContainerService = {
     }
 
     this._identitiesState[userContextId] = this._createIdentityState();
+    this._remapTabsFromUserContextId(userContextId);
+  },
+
+  _remapTabsFromUserContextId(userContextId) {
+    this._identitiesState[userContextId].openTabs = 0;
     this._containerTabIterator(userContextId, () => {
       ++this._identitiesState[userContextId].openTabs;
     });
+  },
+
+  _remapTab(tab) {
+    const userContextId = this._getUserContextIdFromTab(tab);
+    if (userContextId) {
+      this._remapTabsFromUserContextId(userContextId);
+    }
   },
 
   _isKnownContainer(userContextId) {
