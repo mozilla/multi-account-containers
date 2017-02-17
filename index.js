@@ -907,6 +907,7 @@ ContainerWindow.prototype = {
       this._configurePlusButtonMenu(),
       this._configureActiveTab(),
       this._configureFileMenu(),
+      this._configureAllTabsMenu(),
       this._configureContextMenu(),
       this._configureTabStyle(),
     ]);
@@ -1038,6 +1039,16 @@ ContainerWindow.prototype = {
     });
   },
 
+  _configureAllTabsMenu() {
+    return this._configureMenu("alltabs_containersTab", null, e => {
+      const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
+      ContainerService.openTab({
+        userContextId: userContextId,
+        source: "alltabs-menu"
+      });
+    });
+  },
+
   _configureContextMenu() {
     return this._configureMenu("context-openlinkinusercontext-menu",
       () => {
@@ -1056,7 +1067,6 @@ ContainerWindow.prototype = {
   // Generic menu configuration.
   _configureMenu(menuId, excludedContainerCb, clickCb) {
     const menu = this._window.document.getElementById(menuId);
-    this._disableElement(menu);
     if (!this._disableElement(menu)) {
       // Delete stale menu that isn't native elements
       while (menu.firstChild) {
@@ -1150,6 +1160,7 @@ ContainerWindow.prototype = {
 
     this._shutdownPlusButtonMenu();
     this._shutdownFileMenu();
+    this._shutdownAllTabsMenu();
     this._shutdownContextMenu();
   },
 
@@ -1169,6 +1180,10 @@ ContainerWindow.prototype = {
 
   _shutdownFileMenu() {
     this._shutdownMenu("menu_newUserContext");
+  },
+
+  _shutdownAllTabsMenu() {
+    this._shutdownMenu("alltabs_containersTab");
   },
 
   _shutdownContextMenu() {
