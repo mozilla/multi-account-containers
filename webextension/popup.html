@@ -2,20 +2,17 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <title>Containers browserAction Popup</title>
-  <link rel="stylesheet" href="/css/foundation.min.css">
   <link rel="stylesheet" href="/css/popup.css">
 </head>
 <body>
 
-  <div class="panel onboarding onboarding-panel-1 hide" id="onboarding-panel-1">
+  <div class="hide panel onboarding onboarding-panel-1" id="onboarding-panel-1">
     <img class="onboarding-img" alt="Container Tabs Overview" src="/img/onboarding-1.png" />
     <h3 class="onboarding-title">A better way to manage all the things you do online</h3>
     <p>
       Use containers to organize tasks, manage accounts, and keep your focus where you want it.
-      <br/>
-      <a href="#">Learn more</a>
     </p>
-    <a href="#" id="onboarding-start-button" class="button expanded onboarding-button">Get Started</a>
+    <a href="#" id="onboarding-start-button" class="onboarding-button">Get Started</a>
   </div>
 
 
@@ -23,61 +20,54 @@
     <img class="onboarding-img" alt="How Containers Work" src="/img/onboarding-2.png" />
     <h3 class="onboarding-title">Put containers to work for you.</h3>
     <p>Features like color-coding and separate container tabs help you find things easily, focus your attention, and minimize distractions.</p>
-    <a href="#" id="onboarding-next-button" class="button expanded spacing">Next</a>
+    <a href="#" id="onboarding-next-button" class="onboarding-button">Next</a>
   </div>
 
   <div class="panel onboarding onboarding-panel-3 hide" id="onboarding-panel-3">
     <img class="onboarding-img" alt="How Containers Work" src="/img/onboarding-3.png" />
     <h3 class="onboarding-title">A place for everything, and everything in its place.</h3>
     <p>Start with the containers we've created, or create your own.</p>
-    <a href="#" id="onboarding-done-button" class="button expanded spacing">Done</a>
+    <a href="#" id="onboarding-done-button" class="onboarding-button">Done</a>
   </div>
 
-  <div class="panel container-panel" id="container-panel">
-    <div class="row panel-header">
-      <div class="small-10 columns">
-        <h3 class="panel-header-text">Containers</h3>
-      </div>
-      <div class="small-2 columns panel-header-button">
-        <a id="sort-containers-link"><img alt="Sort Containers" title="Sort Containers" class="icon" src="/img/container-sort.svg"></a>
-      </div>
+  <div class="panel container-panel hide" id="container-panel">
+    <div class="panel-header">
+      <h3 class="panel-header-text">Containers</h3>
+      <a class="pop-button" id="sort-containers-link"><img class="pop-button-image" alt="Sort Containers" title="Sort Containers" src="/img/container-sort.svg"></a>
     </div>
-    <div class="scrollable">
-      <table class="unstriped">
+    <div class="scrollable panel-content">
+      <table>
         <tbody class="identities-list"></tbody>
       </table>
     </div>
-    <div class="row panel-footer edit-identities">
-      <div class="small-10 columns edit-containers-text">
+    <div class="panel-footer edit-identities">
+      <div class="edit-containers-text panel-footer-secondary">
         <a id="edit-containers-link">Edit Containers</a>
       </div>
-      <div class="small-2 columns add-container">
-        <a class="add-container-link" id="container-add-link">
-          <img alt="Create new container icon" title="Create new container" src="/img/container-add.svg" class="icon" />
-        </a>
-      </div>
+      <a class="add-container-link pop-button" id="container-add-link">
+        <img class="pop-button-image-small icon" alt="Create new container icon" title="Create new container" src="/img/container-add.svg" />
+      </a>
     </div>
   </div>
 
 
   <div class="hide panel container-info-panel" id="container-info-panel">
-    <div class="row">
-      <div class="small-2 columns panel-back-arrow clickable" id="close-container-info-panel">
+    <div class="columns">
+      <div class="panel-back-arrow" id="close-container-info-panel">
         <img alt="Panel Back Arrow" src="/img/container-arrow.svg" class="back-arrow-img" />
       </div>
-      <div class="small-10 columns">
-        <div class="row container-info-panel-header">
+      <div class="column-panel-content">
+        <div class="panel-header container-info-panel-header">
           <span class="usercontext-icon" id="container-info-icon"></span>
           <h3 id="container-info-name" class="panel-header-text container-name"></h3>
         </div>
-        <div class="row container-info-panel-hide container-info-has-tabs clickable" id="container-info-hideorshow">
-          <img id="container-info-hideorshow-icon" alt="Hide Container icon" src="/img/container-hide.svg" class="icon container-info-panel-hideorshow-icon"/><span id="container-info-hideorshow-label">Hide this container</span><br/>
+        <div class="select-row clickable container-info-panel-hide container-info-has-tabs" id="container-info-hideorshow">
+          <img id="container-info-hideorshow-icon" alt="Hide Container icon" src="/img/container-hide.svg" class="icon container-info-panel-hideorshow-icon"/>
+          <span id="container-info-hideorshow-label">Hide this container</span>
         </div>
-        <div class="row container-info-panel-movetabs container-info-has-tabs clickable" id="container-info-movetabs">
-          Move tabs to a new window
-        </div>
+        <div class="select-row clickable container-info-panel-movetabs container-info-has-tabs" id="container-info-movetabs">Move tabs to a new window</div>
         <div class="scrollable">
-          <table class="unstriped" id="container-info-table">
+          <table id="container-info-table" class="container-info-list">
           </table>
         </div>
       </div>
@@ -86,35 +76,26 @@
 
 
   <div class="panel edit-containers-panel hide" id="edit-containers-panel">
-    <div class="row panel-header">
-      <div class="small-12 columns">
-        <h3 class="panel-header-text">Edit Containers</h3>
-      </div>
+    <div class="panel-header">
+      <h3 class="panel-header-text">Edit Containers</h3>
     </div>
-    <div class="scrollable">
+    <div class="scrollable panel-content">
       <table class="unstriped">
         <tbody id="edit-identities-list"></tbody>
       </table>
     </div>
-    <div class="row panel-footer edit-containers-panel-footer">
-      <div class="small-10 columns edit-containers-exit-text">
-        <a id="exit-edit-mode-link" class="exit-edit-mode-link">Exit Edit Mode</a>
-      </div>
-      <div class="small-2 columns add-container">
-        <a class="add-container-link" id="edit-containers-add-link">
-          <img alt="Create new container icon" title="Create new container" src="/img/container-add.svg" class="icon" />
-        </a>
-      </div>
+    <div class="panel-footer edit-containers-panel-footer">
+      <a id="exit-edit-mode-link" class="exit-edit-mode-link edit-containers-exit-text">Exit Edit Mode</a>
     </div>
   </div>
 
 
   <div class="panel edit-container-panel hide" id="edit-container-panel">
-    <div class="row">
-      <div class="small-2 columns panel-back-arrow clickable" id="edit-container-panel-back-arrow">
+    <div class="columns">
+      <div class="panel-back-arrow" id="edit-container-panel-back-arrow">
         <img alt="Panel Back Arrow" src="/img/container-arrow.svg" class="back-arrow-img" />
       </div>
-      <div class="small-10 columns">
+      <div class="column-panel-content">
         <form id="edit-container-panel-form">
           <fieldset>
             <legend>Name</legend>
@@ -127,38 +108,26 @@
             <legend>Choose an icon</legend>
           </fieldset>
         </form>
-        <div class="row">
-          <div class="small-6 columns footer-columns">
-            <a class="button secondary expanded footer-button cancel-button" id="edit-container-cancel-link">Cancel</a>
-          </div>
-          <div class="small-6 columns footer-columns">
-            <a class="button expanded footer-button" id="edit-container-ok-link">OK</a>
-          </div>
+        <div class="panel-footer">
+          <a class="button secondary expanded footer-button cancel-button" id="edit-container-cancel-link">Cancel</a>
+          <a class="button primary expanded footer-button" id="edit-container-ok-link">OK</a>
         </div>
       </div>
     </div>
   </div>
 
   <div class="hide panel delete-container-panel" id="delete-container-panel">
-    <div class="row">
-      <div class="small-12 columns">
-        <div class="row container-info-panel-header">
-          <span class="usercontext-icon" id="delete-container-icon"></span>
-          <h3 id="delete-container-name" class="panel-header-text container-name"></h3>
-        </div>
-        <div class="row delete-container-confirm">
-          <h4 class="delete-container-confirm-title">Remove This Container</h4>
-          <p>If you remove this container now, <span id="delete-container-tab-count"></span> container tabs will be closed. Are you sure you want to remove this Container?</p>
-        </div>
-        <div class="row">
-          <div class="small-6 columns footer-columns">
-            <a class="button expanded secondary footer-button cancel-button" id="delete-container-cancel-link">Cancel</a>
-          </div>
-          <div class="small-6 columns footer-columns">
-            <a class="button expanded footer-button" id="delete-container-ok-link">OK</a>
-          </div>
-        </div>
-      </div>
+    <div class="panel-header">
+      <span class="usercontext-icon" id="delete-container-icon"></span>
+      <h3 id="delete-container-name" class="panel-header-text container-name"></h3>
+    </div>
+    <div class="panel-content delete-container-confirm">
+      <h4 class="delete-container-confirm-title">Remove This Container</h4>
+      <p>If you remove this container now, <span id="delete-container-tab-count"></span> container tabs will be closed. Are you sure you want to remove this Container?</p>
+    </div>
+    <div class="panel-footer">
+      <a class="button expanded secondary footer-button cancel-button" id="delete-container-cancel-link">Cancel</a>
+      <a class="button expanded primary footer-button" id="delete-container-ok-link">OK</a>
     </div>
   </div>
 
