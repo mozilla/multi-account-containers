@@ -56,6 +56,43 @@ Cu.import("resource:///modules/CustomizableWidgets.jsm");
 Cu.import("resource:///modules/sessionstore/SessionStore.jsm");
 
 // ----------------------------------------------------------------------------
+// ContextualIdentityProxy
+
+const ContextualIdentityProxy = {
+  getIdentities() {
+    if ("getPublicIdentities" in ContextualIdentityService) {
+      return ContextualIdentityService.getPublicIdentities();
+    }
+
+    return ContextualIdentityService.getIdentities();
+  },
+
+  getUserContextLabel(userContextId) {
+    return ContextualIdentityService.getUserContextLabel(userContextId);
+  },
+
+  getIdentityFromId(userContextId) {
+    if ("getPublicIdentityFromId" in ContextualIdentityService) {
+      return ContextualIdentityService.getPublicIdentityFromId(userContextId);
+    }
+
+    return ContextualIdentityService.getIdentityFromId(userContextId);
+  },
+
+  create(name, icon, color) {
+    return ContextualIdentityService.create(name, icon, color);
+  },
+
+  update(userContextId, name, icon, color) {
+    return ContextualIdentityService.update(userContextId, name, icon, color);
+  },
+
+  remove(userContextId) {
+    return ContextualIdentityService.remove(userContextId);
+  }
+};
+
+// ----------------------------------------------------------------------------
 // ContainerService
 
 const ContainerService = {
@@ -130,14 +167,14 @@ const ContainerService = {
     ];
 
     // Map of identities.
-    ContextualIdentityService.getIdentities().forEach(identity => {
+    ContextualIdentityProxy.getIdentities().forEach(identity => {
       this._remapTabsIfMissing(identity.userContextId);
     });
 
     // Let's restore the hidden tabs from the previous session.
     if (prefService.get("browser.startup.page") === 3 &&
         "identitiesData" in ss.storage) {
-      ContextualIdentityService.getIdentities().forEach(identity => {
+      ContextualIdentityProxy.getIdentities().forEach(identity => {
         if (identity.userContextId in ss.storage.identitiesData &&
             "hiddenTabs" in ss.storage.identitiesData[identity.userContextId]) {
           this._identitiesState[identity.userContextId].hiddenTabs =
@@ -248,7 +285,7 @@ const ContainerService = {
   _convert(identity) {
     // Let's convert the known colors to their color names.
     return {
-      name: ContextualIdentityService.getUserContextLabel(identity.userContextId),
+      name: ContextualIdentityProxy.getUserContextLabel(identity.userContextId),
       image: this._fromIconToName(identity.icon),
       color: this._fromColorToName(identity.color),
       userContextId: identity.userContextId,
@@ -680,7 +717,7 @@ const ContainerService = {
     return new Promise(resolve => {
       const identities = [];
 
-      ContextualIdentityService.getIdentities().forEach(identity => {
+      ContextualIdentityProxy.getIdentities().forEach(identity => {
         this._remapTabsIfMissing(identity.userContextId);
         const convertedIdentity = this._convert(identity);
         identities.push(convertedIdentity);
@@ -695,7 +732,7 @@ const ContainerService = {
       return Promise.reject("getIdentity must be called with userContextId argument.");
     }
 
-    const identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
+    const identity = ContextualIdentityProxy.getIdentityFromId(args.userContextId);
     return Promise.resolve(identity ? this._convert(identity) : null);
   },
 
@@ -713,7 +750,7 @@ const ContainerService = {
     const color = this._fromNameToColor(args.color);
     const icon = this._fromNameToIcon(args.icon);
 
-    const identity = ContextualIdentityService.create(args.name, icon, color);
+    const identity = ContextualIdentityProxy.create(args.name, icon, color);
 
     this._identitiesState[identity.userContextId] = this._createIdentityState();
 
@@ -734,7 +771,7 @@ const ContainerService = {
       "userContextId": args.userContextId
     });
 
-    const identity = ContextualIdentityService.getIdentityFromId(args.userContextId);
+    const identity = ContextualIdentityProxy.getIdentityFromId(args.userContextId);
     for (let arg of [ "name", "color", "icon"]) { // eslint-disable-line prefer-const
       if ((arg in args)) {
         identity[arg] = args[arg];
@@ -744,9 +781,9 @@ const ContainerService = {
     const color = this._fromNameToColor(identity.color);
     const icon = this._fromNameToIcon(identity.icon);
 
-    const updated = ContextualIdentityService.update(args.userContextId,
-                                                     identity.name,
-                                                     icon, color);
+    const updated = ContextualIdentityProxy.update(args.userContextId,
+                                                   identity.name,
+                                                   icon, color);
 
     this._refreshNeeded().then(() => {
       return updated;
@@ -771,7 +808,7 @@ const ContainerService = {
     });
 
     return this._closeTabs(tabsToClose).then(() => {
-      const removed = ContextualIdentityService.remove(args.userContextId);
+      const removed = ContextualIdentityProxy.remove(args.userContextId);
       this._forgetIdentity(args.userContextId);
       return this._refreshNeeded().then(() => removed );
     });
