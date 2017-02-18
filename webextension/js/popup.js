@@ -247,14 +247,9 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       tr.addEventListener("click", e => {
         if (e.target.matches(".open-newtab")) {
           browser.runtime.sendMessage({
-            method: "showTabs",
-            userContextId: identity.userContextId
-          }).then(() => {
-            return browser.runtime.sendMessage({
-              method: "openTab",
-              userContextId: identity.userContextId,
-              source: "pop-up"
-            });
+            method: "openTab",
+            userContextId: identity.userContextId,
+            source: "pop-up"
           }).then(() => {
             window.close();
           }).catch(() => {
