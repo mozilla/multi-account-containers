@@ -66,10 +66,16 @@ const ContainerService = {
     // uninstallation. This object contains also a version number, in case we
     // need to implement a migration in the future.
     if (installation) {
+      let preInstalledIdentities = []; // eslint-disable-line prefer-const
+      ContextualIdentityService.getIdentities().forEach(identity => {
+        preInstalledIdentities.push(identity.userContextId);
+      });
+
       const object = {
         version: 1,
         prefs: {},
         metricsUUID: uuid.uuid().toString(),
+        preInstalledIdentities: preInstalledIdentities
       };
 
       PREFS.forEach(pref => {
@@ -850,9 +856,6 @@ const ContainerService = {
       CustomizableUI.createWidget(widget);
     }
 
-    // Let's delete the configuration.
-    delete ss.storage.savedConfiguration;
-
     for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
       this._getOrCreateContainerWindow(viewFor(window)).shutdown();
     }
@@ -869,6 +872,16 @@ const ContainerService = {
       }
     }
     this._closeTabs(tabsToClose);
+
+    const preInstalledIdentities = data.preInstalledIdentities;
+    ContextualIdentityService.getIdentities().forEach(identity => {
+      if (!preInstalledIdentities.includes(identity.userContextId)) {
+        ContextualIdentityService.remove(identity.userContextId);
+      }
+    });
+
+    // Let's delete the configuration.
+    delete ss.storage.savedConfiguration;
   },
 };
 
