@@ -649,7 +649,7 @@ const ContainerService = {
       const source = ("source" in args) ? args.source : null;
 
       // Only send telemetry for tabs opened by UI - i.e., not via showTabs
-      if (source) {
+      if (source && userContextId) {
         this.sendTelemetryPayload({
           "event": "open-tab",
           "eventSource": source,
@@ -658,10 +658,19 @@ const ContainerService = {
         });
       }
 
-      const tab = browserWin.gBrowser.addTab(args.url || DEFAULT_TAB, { userContextId });
-      browserWin.gBrowser.selectedTab = tab;
-      browserWin.focusAndSelectUrlBar();
-      return true;
+      let promise;
+      if (userContextId) {
+        promise = this.showTabs(args);
+      } else {
+        promise = Promise.resolve(null);
+      }
+
+      return promise.then(() => {
+        const tab = browserWin.gBrowser.addTab(args.url || DEFAULT_TAB, { userContextId });
+        browserWin.gBrowser.selectedTab = tab;
+        browserWin.focusAndSelectUrlBar();
+        return true;
+      });
     }).catch(() => false);
   },
 
