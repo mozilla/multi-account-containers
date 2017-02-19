@@ -10,7 +10,8 @@ module.exports = {
   ],
   "globals": {
     "CustomizableUI": true,
-    "CustomizableWidgets": true
+    "CustomizableWidgets": true,
+    "SessionStore": true
   },
   "plugins": [
     "promise"
