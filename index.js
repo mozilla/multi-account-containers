@@ -53,6 +53,7 @@ const windowUtils = require("sdk/window/utils");
 
 Cu.import("resource:///modules/CustomizableUI.jsm");
 Cu.import("resource:///modules/CustomizableWidgets.jsm");
+Cu.import("resource:///modules/sessionstore/SessionStore.jsm");
 
 // ----------------------------------------------------------------------------
 // ContainerService
@@ -363,7 +364,14 @@ const ContainerService = {
 
     return promise.then(() => {
       for (let tab of tabsToClose) { // eslint-disable-line prefer-const
+        // after .close() window is null. Let's take it now.
+        const window = viewFor(tab.window);
+
         tab.close();
+
+        // forget about this tab. 0 is the index of the forgotten tab and 0
+        // means the last one.
+        SessionStore.forgetClosedTab(window, 0);
       }
     }).catch(() => null);
   },
@@ -755,6 +763,7 @@ const ContainerService = {
 
     return this._closeTabs(tabsToClose).then(() => {
       const removed = ContextualIdentityService.remove(args.userContextId);
+      this._forgetIdentity(args.userContextId);
       return this._refreshNeeded().then(() => removed );
     });
   },
@@ -885,7 +894,11 @@ const ContainerService = {
         tabsToClose.push(tab);
       }
     }
+
     this._closeTabs(tabsToClose);
+
+    // Let's forget all the previous closed tabs.
+    this._forgetIdentity();
 
     const preInstalledIdentities = data.preInstalledIdentities;
     ContextualIdentityService.getIdentities().forEach(identity => {
@@ -896,6 +909,23 @@ const ContainerService = {
 
     // Let's delete the configuration.
     delete ss.storage.savedConfiguration;
+  },
+
+  _forgetIdentity(userContextId = 0) {
+    for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
+      window = viewFor(window);
+      const closedTabData = JSON.parse(SessionStore.getClosedTabData(window));
+      for (let i = closedTabData.length - 1; i >= 0; --i) {
+        if (!closedTabData[i].state.userContextId) {
+          continue;
+        }
+
+        if (userContextId === 0 ||
+            closedTabData[i].state.userContextId === userContextId) {
+          SessionStore.forgetClosedTab(window, i);
+        }
+      }
+    }
   },
 };
 
