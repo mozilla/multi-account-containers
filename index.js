@@ -83,6 +83,17 @@ const ContainerService = {
       });
 
       ss.storage.savedConfiguration = object;
+
+      // Maybe rename the Banking container.
+      if (prefService.get("privacy.userContext.enabled") !== true) {
+        const identity = ContextualIdentityService.getIdentityFromId(3);
+        if (identity && identity.l10nID === "userContextBanking.label") {
+          ContextualIdentityService.update(identity.userContextId,
+                                           "Finance",
+                                           identity.icon,
+                                           identity.color);
+        }
+      }
     }
 
     // Enabling preferences
@@ -849,6 +860,9 @@ const ContainerService = {
         prefService.set(pref[0], data.prefs[pref[0]]);
       }
     });
+
+    // Note: We cannot go back renaming the Finance identity back to Banking:
+    // the locale system doesn't work with renamed containers.
 
     // Restore the customizable container panel.
     const widget = CustomizableWidgets.find(widget => widget.id === "containers-panelmenu");
