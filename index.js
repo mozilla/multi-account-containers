@@ -230,6 +230,34 @@ const ContainerService = {
       version: self.version
     }).sendEvent;
 
+    // Begin-Of-Hack
+    function workaroundForCookieManager(method, userContextId) {
+      let identity = method.call(ContextualIdentityService, userContextId);
+      if (!identity && userContextId) {
+        identity = {
+          userContextId,
+          icon: "",
+          color: "",
+          name: "Pending to be deleted",
+          public: true,
+        }
+      }
+
+      return identity;
+    }
+
+    let oldGetIdentityFromId = ContextualIdentityService.getIdentityFromId;
+    ContextualIdentityService.getIdentityFromId = function(userContextId) {
+      return workaroundForCookieManager(oldGetIdentityFromId, userContextId);
+    }
+
+    if ("getPublicIdentityFromId" in ContextualIdentityService) {
+      let oldGetPublicIdentityFromId = ContextualIdentityService.getIdentityFromId;
+      ContextualIdentityService.getIdentityFromId = function(userContextId) {
+        return workaroundForCookieManager(oldGetPublicIdentityFromId, userContextId);
+      }
+    }
+    // End-Of-Hack
   },
 
   // utility methods
