@@ -1,59 +1,75 @@
-[data-identity-color="blue"] {
+/* HACK: Custom Container vars do not propigate correctly
+until the container tab is blurred and refocused, 
+adding the data-identity-color with the default hex
+value, or chrome url path as an alternate selector mitiages this bug.*/
+[data-identity-color="blue"],
+[data-identity-color="#00a7e0"] {
   --identity-tab-color: #37adff;
   --identity-icon-color: #37adff;
 }
 
-[data-identity-color="turquoise"] {
+[data-identity-color="turquoise"],
+[data-identity-color="#01bdad"] {
   --identity-tab-color: #00c79a;
   --identity-icon-color: #00c79a;
 }
 
-[data-identity-color="green"] {
+[data-identity-color="green"],
+[data-identity-color="#7dc14c"] {
   --identity-tab-color: #51cd00;
   --identity-icon-color:  #51cd00;
 }
 
-[data-identity-color="yellow"] {
+[data-identity-color="yellow"],
+[data-identity-color="#ffcb00"] {
   --identity-tab-color: #ffcb00;
   --identity-icon-color: #ffcb00;
 }
 
-[data-identity-color="orange"] {
+[data-identity-color="orange"],
+[data-identity-color="#f89c24"] {
   --identity-tab-color: #ff9f00;
   --identity-icon-color: #ff9f00;
 }
 
-[data-identity-color="red"] {
+[data-identity-color="red"],
+[data-identity-color="#d92215"] {
   --identity-tab-color: #ff613d;
   --identity-icon-color: #ff613d;
 }
 
-[data-identity-color="pink"] {
+[data-identity-color="pink"],
+[data-identity-color="#ee5195"] {
   --identity-tab-color: #ff4bda;
   --identity-icon-color: #ff4bda;
 }
 
-[data-identity-color="purple"] {
+[data-identity-color="purple"],
+[data-identity-color="#7a2f7a"] {
   --identity-tab-color: #af51f5;
   --identity-icon-color: #af51f5;
 }
 
-[data-identity-icon="fingerprint"] {
+[data-identity-icon="fingerprint"],
+[data-identity-icon="chrome://browser/skin/usercontext/personal.svg"] {
   /*--identity-icon: url("chrome://browser/content/usercontext.svg#fingerprint"); */
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#fingerprint");
 }
 
-[data-identity-icon="briefcase"] {
+[data-identity-icon="briefcase"],
+[data-identity-icon="chrome://browser/skin/usercontext/work.svg"] {
   /* --identity-icon: url("chrome://browser/content/usercontext.svg#briefcase"); */
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#briefcase");
 }
 
-[data-identity-icon="dollar"] {
+[data-identity-icon="dollar"],
+[data-identity-icon="chrome://browser/skin/usercontext/banking.svg"] {
   /* --identity-icon: url("chrome://browser/content/usercontext.svg#dollar"); */
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#dollar");
 }
 
-[data-identity-icon="cart"] {
+[data-identity-icon="cart"],
+[data-identity-icon="chrome://browser/skin/usercontext/cart.svg"] {
   /* --identity-icon: url("chrome://browser/content/usercontext.svg#cart"); */
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#cart");
 }
@@ -69,8 +85,8 @@
 }
 
 #userContext-label {
-  margin-inline-end: 3px;
-  color: var(--identity-tab-color);
+  margin-inline-end: 5px;
+  color: var(--identity-tab-color) !important;
 }
 
 #userContext-icons {
@@ -81,11 +97,11 @@
 .menuitem-iconic[data-usercontextid] > .menu-iconic-left > .menu-iconic-icon,
 .subviewbutton[usercontextid] > .toolbarbutton-icon,
 #userContext-indicator {
-  background-image: var(--identity-icon);
+  background-image: var(--identity-icon) !important;
   background-position: center center;
   background-repeat: no-repeat;
   background-size: contain;
-  fill: var(--identity-icon-color);
+  fill: var(--identity-icon-color) !important;
   filter: url(/img/filters.svg#fill);
   filter: url(resource://testpilot-containers/data/filters.svg#fill);
 }
