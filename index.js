@@ -24,7 +24,7 @@ const IDENTITY_ICONS = [
   { name: "briefcase", image: "chrome://browser/skin/usercontext/work.svg" },
   { name: "dollar", image: "chrome://browser/skin/usercontext/banking.svg" },
   { name: "cart", image: "chrome://browser/skin/usercontext/shopping.svg" },
-  { name: "circle", image: "" }, // this doesn't exist in m-b
+  { name: "circle", image: "circle" }, // this doesn't exist in m-b
 ];
 
 const PREFS = [
