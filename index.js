@@ -408,7 +408,9 @@ const ContainerService = {
 
         // forget about this tab. 0 is the index of the forgotten tab and 0
         // means the last one.
-        SessionStore.forgetClosedTab(window, 0);
+        try {
+          SessionStore.forgetClosedTab(window, 0);
+        } catch(e) {} // eslint-disable-line no-empty
       }
     }).catch(() => null);
   },
@@ -926,22 +928,25 @@ const ContainerService = {
     }
 
     for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
+      // Let's close all the container tabs.
+      // Note 1: we don't care if containers are supported but the current FF
+      //         version.
+      // Note 2: We cannot use _closeTabs() because at this point tab.window is
+      //         null.
+      for (let tab of window.tabs) { // eslint-disable-line prefer-const
+        if (this._getUserContextIdFromTab(tab)) {
+          tab.close();
+          try {
+            SessionStore.forgetClosedTab(viewFor(window), 0);
+          } catch(e) {} // eslint-disable-line no-empty
+        }
+      }
+
       this._getOrCreateContainerWindow(viewFor(window)).shutdown();
     }
 
     // all the configuration must go away now.
     this._windowMap = new Map();
-
-    // Let's close all the container tabs (note: we don't care if containers
-    // are supported but the current FF version).
-    const tabsToClose = [];
-    for (let tab of tabs) { // eslint-disable-line prefer-const
-      if (this._getUserContextIdFromTab(tab)) {
-        tabsToClose.push(tab);
-      }
-    }
-
-    this._closeTabs(tabsToClose);
 
     // Let's forget all the previous closed tabs.
     this._forgetIdentity();
@@ -968,7 +973,9 @@ const ContainerService = {
 
         if (userContextId === 0 ||
             closedTabData[i].state.userContextId === userContextId) {
-          SessionStore.forgetClosedTab(window, i);
+          try {
+            SessionStore.forgetClosedTab(window, i);
+          } catch(e) {} // eslint-disable-line no-empty
         }
       }
     }
