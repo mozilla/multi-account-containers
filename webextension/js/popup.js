@@ -494,7 +494,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       return `<input type="radio" value="${containerIcon}" name="container-icon" id="edit-container-panel-choose-icon-${containerIcon}" />
      <label for="edit-container-panel-choose-icon-${containerIcon}" class="usercontext-icon choose-color-icon" data-identity-color="grey" data-identity-icon="${containerIcon}">`;
     };
-    const icons = ["fingerprint", "briefcase", "dollar", "cart", "circle"];
+    const icons = ["fingerprint", "briefcase", "dollar", "cart", "vacation", "gift", "food", "circle"];
     const iconRadioFieldset = document.getElementById("edit-container-panel-choose-icon");
     icons.forEach((containerIcon) => {
       const templateInstance = document.createElement("span");
