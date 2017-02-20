@@ -1,59 +1,75 @@
-[data-identity-color="blue"] {
+/* HACK: Custom Container vars do not propigate correctly
+until the container tab is blurred and refocused, 
+adding the data-identity-color with the default hex
+value, or chrome url path as an alternate selector mitiages this bug.*/
+[data-identity-color="blue"],
+[data-identity-color="#00a7e0"] {
   --identity-tab-color: #37adff;
   --identity-icon-color: #37adff;
 }
 
-[data-identity-color="turquoise"] {
+[data-identity-color="turquoise"],
+[data-identity-color="#01bdad"] {
   --identity-tab-color: #00c79a;
   --identity-icon-color: #00c79a;
 }
 
-[data-identity-color="green"] {
+[data-identity-color="green"],
+[data-identity-color="#7dc14c"] {
   --identity-tab-color: #51cd00;
   --identity-icon-color:  #51cd00;
 }
 
-[data-identity-color="yellow"] {
+[data-identity-color="yellow"],
+[data-identity-color="#ffcb00"] {
   --identity-tab-color: #ffcb00;
   --identity-icon-color: #ffcb00;
 }
 
-[data-identity-color="orange"] {
+[data-identity-color="orange"],
+[data-identity-color="#f89c24"] {
   --identity-tab-color: #ff9f00;
   --identity-icon-color: #ff9f00;
 }
 
-[data-identity-color="red"] {
+[data-identity-color="red"],
+[data-identity-color="#d92215"] {
   --identity-tab-color: #ff613d;
   --identity-icon-color: #ff613d;
 }
 
-[data-identity-color="pink"] {
+[data-identity-color="pink"],
+[data-identity-color="#ee5195"] {
   --identity-tab-color: #ff4bda;
   --identity-icon-color: #ff4bda;
 }
 
-[data-identity-color="purple"] {
+[data-identity-color="purple"],
+[data-identity-color="#7a2f7a"] {
   --identity-tab-color: #af51f5;
   --identity-icon-color: #af51f5;
 }
 
-[data-identity-icon="fingerprint"] {
+[data-identity-icon="fingerprint"],
+[data-identity-icon="chrome://browser/skin/usercontext/personal.svg"] {
   /*--identity-icon: url("chrome://browser/content/usercontext.svg#fingerprint"); */
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#fingerprint");
 }
 
-[data-identity-icon="briefcase"] {
+[data-identity-icon="briefcase"],
+[data-identity-icon="chrome://browser/skin/usercontext/work.svg"] {
   /* --identity-icon: url("chrome://browser/content/usercontext.svg#briefcase"); */
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#briefcase");
 }
 
-[data-identity-icon="dollar"] {
+[data-identity-icon="dollar"],
+[data-identity-icon="chrome://browser/skin/usercontext/banking.svg"] {
   /* --identity-icon: url("chrome://browser/content/usercontext.svg#dollar"); */
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#dollar");
 }
 
-[data-identity-icon="cart"] {
+[data-identity-icon="cart"],
+[data-identity-icon="chrome://browser/skin/usercontext/cart.svg"] {
   /* --identity-icon: url("chrome://browser/content/usercontext.svg#cart"); */
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#cart");
 }
@@ -69,8 +85,8 @@
 }
 
 #userContext-label {
-  margin-inline-end: 3px;
-  color: var(--identity-tab-color);
+  margin-inline-end: 5px;
+  color: var(--identity-tab-color) !important;
 }
 
 #userContext-icons {
@@ -81,23 +97,23 @@
 .menuitem-iconic[data-usercontextid] > .menu-iconic-left > .menu-iconic-icon,
 .subviewbutton[usercontextid] > .toolbarbutton-icon,
 #userContext-indicator {
-  background-image: var(--identity-icon);
+  background-image: var(--identity-icon) !important;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  fill: var(--identity-icon-color) !important;
   filter: url(/img/filters.svg#fill);
   filter: url(resource://testpilot-containers/data/filters.svg#fill);
-  fill: var(--identity-icon-color);
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
 }
 
 /* containers experiment */
 
 /* reset nightly containers */
 .tabbrowser-tab[usercontextid] {
-  background: none !important;
   background-image: none;
-  background-size: 0;
   background-repeat: no-repeat;
+  background-size: 0;
+  background: none !important;
 }
 
 /* special styles run through a psuedo-class off of
@@ -143,11 +159,11 @@ special cases are addressed below */
 /* this fixes containers tab center */
 #verticaltabs-box .tabbrowser-tab[usercontextid] .tab-content::after {
   background-color: var(--identity-tab-color);
-  top: 0;
-  left: 0;
   content: '';
   height: 100% !important;
+  left: 0;
   position: absolute;
+  top: 0;
   width: 3px !important;
   z-index: 999;
 }
@@ -161,31 +177,29 @@ special cases are addressed below */
 }
 
 #new-tab-overlay {
-  visibility: visible;
-  background: transparent;
-  -moz-appearance: none;
-  offset-block-start: 29px;
-
-  font-style: -moz-use-system-font;
   --icon-size: 26px;
+  -moz-appearance: none;
+  background: transparent;
+  font-style: -moz-use-system-font;
+  inline-size: 180px;
+  margin-inline-start: -50px !important;
+  visibility: visible;
 }
 
 #new-tab-overlay .panel-arrowcontent {
-  -moz-appearance: none;
+  -moz-appearance: none !important;
   background: none;
   border: 0;
   box-shadow: none;
-  block-size: 200px;
   display: block;
   margin-block-end: 0;
-  margin-block-start: 0;
-  padding-block-start: 0;
+  margin-block-start: 2px;
+  padding-block-start: 0 !important;
 }
 
 #new-tab-overlay .panel-arrowcontent,
 #new-tab-overlay menuitem {
-  /* Limited width to 8chars roughly */
-  inline-size: calc(calc(8*1.5ch) + var(--icon-size) + 3px);
+  inline-size: 100%;
 }
 
 #new-tab-overlay .panel-arrowbox {
@@ -197,13 +211,21 @@ special cases are addressed below */
 }
 
 #new-tab-overlay menuitem {
-  background: white;
-  margin-block-end: 12px;
-  border-radius: 20px;
   -moz-appearance: none;
+  background: white;
+  border-radius: 20px;
+  border: 0;
+  box-shadow: 0 0 7px #0004;
   color: #4b4b4b;
-  padding: 6px;
-  box-shadow: 3px 7px 7px #0006;
+  margin-block-end: 5px;
+  padding-block-end: 10px;
+  padding-block-start: 10px;
+  padding-inline-end: 10px;
+  padding-inline-start: 10px;
+}
+
+#new-tab-overlay menuitem:hover {
+  background: #f2f2f2;
 }
 
 #new-tab-overlay .menuitem-iconic[data-usercontextid] > .menu-iconic-left > .menu-iconic-icon {
