@@ -24,6 +24,9 @@ const IDENTITY_ICONS = [
   { name: "briefcase", image: "chrome://browser/skin/usercontext/work.svg" },
   { name: "dollar", image: "chrome://browser/skin/usercontext/banking.svg" },
   { name: "cart", image: "chrome://browser/skin/usercontext/shopping.svg" },
+  { name: "gift", image: "gift" },
+  { name: "vacation", image: "vacation" },
+  { name: "food", image: "food" },
   { name: "circle", image: "circle" }, // this doesn't exist in m-b
 ];
 

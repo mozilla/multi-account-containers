@@ -96,6 +96,18 @@ table {
   --identity-icon: url("/img/usercontext.svg#circle");
 }
 
+[data-identity-icon="food"] {
+  --identity-icon: url("/img/usercontext.svg#food");
+}
+
+[data-identity-icon="gift"] {
+  --identity-icon: url("/img/usercontext.svg#gift");
+}
+
+[data-identity-icon="vacation"] {
+  --identity-icon: url("/img/usercontext.svg#vacation");
+}
+
 /* Buttons */
 .button.primary {
   background-color: #0996f8;
