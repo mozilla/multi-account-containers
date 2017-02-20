@@ -75,8 +75,19 @@ value, or chrome url path as an alternate selector mitiages this bug.*/
 }
 
 [data-identity-icon="circle"] {
-  /* --identity-icon: url("chrome://browser/content/usercontext.svg#circle"); */
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#circle");
+}
+
+[data-identity-icon="gift"] {
+  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#gift");
+}
+
+[data-identity-icon="vacation"] {
+  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#vacation");
+}
+
+[data-identity-icon="food"] {
+  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#food");
 }
 
 #userContext-indicator {
