@@ -108,6 +108,22 @@ table {
   --identity-icon: url("/img/usercontext.svg#vacation");
 }
 
+[data-identity-icon="fruit"] {
+  --identity-icon: url("/img/usercontext.svg#fruit");
+}
+
+[data-identity-icon="pet"] {
+  --identity-icon: url("/img/usercontext.svg#pet");
+}
+
+[data-identity-icon="tree"] {
+  --identity-icon: url("/img/usercontext.svg#tree");
+}
+
+[data-identity-icon="chill"] {
+  --identity-icon: url("/img/usercontext.svg#chill");
+}
+
 /* Buttons */
 .button.primary {
   background-color: #0996f8;
