@@ -243,22 +243,22 @@ const ContainerService = {
           color: "",
           name: "Pending to be deleted",
           public: true,
-        }
+        };
       }
 
       return identity;
     }
 
-    let oldGetIdentityFromId = ContextualIdentityService.getIdentityFromId;
+    const oldGetIdentityFromId = ContextualIdentityService.getIdentityFromId;
     ContextualIdentityService.getIdentityFromId = function(userContextId) {
       return workaroundForCookieManager(oldGetIdentityFromId, userContextId);
-    }
+    };
 
     if ("getPublicIdentityFromId" in ContextualIdentityService) {
-      let oldGetPublicIdentityFromId = ContextualIdentityService.getIdentityFromId;
+      const oldGetPublicIdentityFromId = ContextualIdentityService.getIdentityFromId;
       ContextualIdentityService.getIdentityFromId = function(userContextId) {
         return workaroundForCookieManager(oldGetPublicIdentityFromId, userContextId);
-      }
+      };
     }
     // End-Of-Hack
   },
