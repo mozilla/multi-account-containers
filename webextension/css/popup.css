@@ -37,18 +37,18 @@ table {
 
 /* Color and icon helpers */
 [data-identity-color="blue"] {
-  --identity-tab-color: #0996f8;
-  --identity-icon-color: #00a7e0;
+  --identity-tab-color: #37adff;
+  --identity-icon-color: #37adff;
 }
 
 [data-identity-color="turquoise"] {
-  --identity-tab-color: #01bdad;
-  --identity-icon-color: #01bdad;
+  --identity-tab-color: #00c79a;
+  --identity-icon-color: #00c79a;
 }
 
 [data-identity-color="green"] {
-  --identity-tab-color: #57bd35;
-  --identity-icon-color: #7dc14c;
+  --identity-tab-color: #51cd00;
+  --identity-icon-color: #51cd00;
 }
 
 [data-identity-color="yellow"] {
@@ -57,23 +57,23 @@ table {
 }
 
 [data-identity-color="orange"] {
-  --identity-tab-color: #ff9216;
-  --identity-icon-color: #ff9216;
+  --identity-tab-color: #ff9f00;
+  --identity-icon-color: #ff9f00;
 }
 
 [data-identity-color="red"] {
-  --identity-tab-color: #d92215;
-  --identity-icon-color: #d92215;
+  --identity-tab-color: #ff613d;
+  --identity-icon-color: #ff613d;
 }
 
 [data-identity-color="pink"] {
-  --identity-tab-color: #ea385e;
-  --identity-icon-color: #ee5195;
+  --identity-tab-color: #ff4bda;
+  --identity-icon-color: #ff4bda;
 }
 
 [data-identity-color="purple"] {
-  --identity-tab-color: #7a2f7a;
-  --identity-icon-color: #7a2f7a;
+  --identity-tab-color: #af51f5;
+  --identity-icon-color: #af51f5;
 }
 
 [data-identity-icon="fingerprint"] {
@@ -106,6 +106,22 @@ table {
 
 [data-identity-icon="vacation"] {
   --identity-icon: url("/img/usercontext.svg#vacation");
+}
+
+[data-identity-icon="fruit"] {
+  --identity-icon: url("/img/usercontext.svg#fruit");
+}
+
+[data-identity-icon="pet"] {
+  --identity-icon: url("/img/usercontext.svg#pet");
+}
+
+[data-identity-icon="tree"] {
+  --identity-icon: url("/img/usercontext.svg#tree");
+}
+
+[data-identity-icon="chill"] {
+  --identity-icon: url("/img/usercontext.svg#chill");
 }
 
 /* Buttons */
@@ -518,6 +534,11 @@ span ~ .panel-header-text {
 
 .edit-container-panel label::before {
   opacity: 0 !important;
+}
+
+.edit-container-panel [type="radio"] {
+  display: inline;
+  opacity: 0;
 }
 
 .edit-container-panel [type="radio"]:checked + label {
