@@ -27,6 +27,10 @@ const IDENTITY_ICONS = [
   { name: "gift", image: "gift" },
   { name: "vacation", image: "vacation" },
   { name: "food", image: "food" },
+  { name: "fruit", image: "fruit" },
+  { name: "pet", image: "pet" },
+  { name: "tree", image: "tree" },
+  { name: "chill", image: "chill" },
   { name: "circle", image: "circle" }, // this doesn't exist in m-b
 ];
 
