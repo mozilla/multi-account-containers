@@ -131,12 +131,12 @@ const ContainerService = {
 
       // Maybe rename the Banking container.
       if (prefService.get("privacy.userContext.enabled") !== true) {
-        const identity = ContextualIdentityService.getIdentityFromId(3);
+        const identity = ContextualIdentityProxy.getIdentityFromId(3);
         if (identity && identity.l10nID === "userContextBanking.label") {
-          ContextualIdentityService.update(identity.userContextId,
-                                           "Finance",
-                                           identity.icon,
-                                           identity.color);
+          ContextualIdentityProxy.update(identity.userContextId,
+                                        "Finance",
+                                        identity.icon,
+                                        identity.color);
         }
       }
     }
