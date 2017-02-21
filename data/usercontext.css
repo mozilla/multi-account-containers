@@ -86,6 +86,22 @@ value, or chrome url path as an alternate selector mitiages this bug.*/
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#food");
 }
 
+[data-identity-icon="fruit"] {
+  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#fruit");
+}
+
+[data-identity-icon="pet"] {
+  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#pet");
+}
+
+[data-identity-icon="tree"] {
+  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#tree");
+}
+
+[data-identity-icon="chill"] {
+  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#chill");
+}
+
 #userContext-indicator {
   height: 16px;
   width: 16px;
