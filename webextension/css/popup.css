@@ -520,6 +520,11 @@ span ~ .panel-header-text {
   opacity: 0 !important;
 }
 
+.edit-container-panel [type="radio"] {
+  display: inline;
+  opacity: 0;
+}
+
 .edit-container-panel [type="radio"]:checked + label {
   outline: 2px solid grey;
   -moz-outline-radius: 50px;
