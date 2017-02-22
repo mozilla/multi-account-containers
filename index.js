@@ -251,7 +251,7 @@ const ContainerService = {
       }
 
       return identity;
-    }
+    };
 
     this._oldGetIdentityFromId = ContextualIdentityService.getIdentityFromId;
     ContextualIdentityService.getIdentityFromId = function(userContextId) {
