@@ -20,7 +20,7 @@
     "testpilot-metrics": "^2.1.0"
   },
   "engines": {
-    "firefox": ">=50.0"
+    "firefox": ">=51.0"
   },
   "permissions": {
     "multiprocess": true
