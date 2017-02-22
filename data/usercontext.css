@@ -104,6 +104,7 @@ value, or chrome url path as an alternate selector mitiages this bug.*/
 
 #userContext-indicator {
   height: 16px;
+  list-style-image: none !important;
   width: 16px;
 }
 
