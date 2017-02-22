@@ -1,11 +1,15 @@
 {
+  "plugins": [
+    "stylelint-order"
+  ],
+
   "extends": "stylelint-config-standard",
 
   "ignoreFiles": ["webextension/css/*.min.css"],
 
   "rules": {
     "declaration-block-no-duplicate-properties": true,
-    "declaration-block-properties-order": "alphabetical",
+    "order/declaration-block-properties-alphabetical-order": true,
     "property-blacklist": [
       "/height/",
       "/width/",
