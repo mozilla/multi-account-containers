@@ -134,10 +134,9 @@ value, or chrome url path as an alternate selector mitiages this bug.*/
 
 /* reset nightly containers */
 .tabbrowser-tab[usercontextid] {
-  background-image: none;
+  background-image: none !important;
   background-repeat: no-repeat;
   background-size: 0;
-  background: none !important;
 }
 
 /* special styles run through a psuedo-class off of
