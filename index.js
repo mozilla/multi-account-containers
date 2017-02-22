@@ -27,6 +27,10 @@ const IDENTITY_ICONS = [
   { name: "gift", image: "gift" },
   { name: "vacation", image: "vacation" },
   { name: "food", image: "food" },
+  { name: "fruit", image: "fruit" },
+  { name: "pet", image: "pet" },
+  { name: "tree", image: "tree" },
+  { name: "chill", image: "chill" },
   { name: "circle", image: "circle" }, // this doesn't exist in m-b
 ];
 
@@ -108,7 +112,7 @@ const ContainerService = {
     // need to implement a migration in the future.
     if (installation) {
       let preInstalledIdentities = []; // eslint-disable-line prefer-const
-      ContextualIdentityService.getIdentities().forEach(identity => {
+      ContextualIdentityProxy.getIdentities().forEach(identity => {
         preInstalledIdentities.push(identity.userContextId);
       });
 
@@ -127,12 +131,12 @@ const ContainerService = {
 
       // Maybe rename the Banking container.
       if (prefService.get("privacy.userContext.enabled") !== true) {
-        const identity = ContextualIdentityService.getIdentityFromId(3);
+        const identity = ContextualIdentityProxy.getIdentityFromId(3);
         if (identity && identity.l10nID === "userContextBanking.label") {
-          ContextualIdentityService.update(identity.userContextId,
-                                           "Finance",
-                                           identity.icon,
-                                           identity.color);
+          ContextualIdentityProxy.update(identity.userContextId,
+                                         "Finance",
+                                         identity.icon,
+                                         identity.color);
         }
       }
     }
@@ -234,7 +238,7 @@ const ContainerService = {
     }).sendEvent;
 
     // Begin-Of-Hack
-    function workaroundForCookieManager(method, userContextId) {
+    ContextualIdentityService.workaroundForCookieManager = function(method, userContextId) {
       let identity = method.call(ContextualIdentityService, userContextId);
       if (!identity && userContextId) {
         identity = {
@@ -243,22 +247,22 @@ const ContainerService = {
           color: "",
           name: "Pending to be deleted",
           public: true,
-        }
+        };
       }
 
       return identity;
-    }
+    };
 
-    let oldGetIdentityFromId = ContextualIdentityService.getIdentityFromId;
+    this._oldGetIdentityFromId = ContextualIdentityService.getIdentityFromId;
     ContextualIdentityService.getIdentityFromId = function(userContextId) {
-      return workaroundForCookieManager(oldGetIdentityFromId, userContextId);
-    }
+      return this.workaroundForCookieManager(ContainerService._oldGetIdentityFromId, userContextId);
+    };
 
     if ("getPublicIdentityFromId" in ContextualIdentityService) {
-      let oldGetPublicIdentityFromId = ContextualIdentityService.getIdentityFromId;
-      ContextualIdentityService.getIdentityFromId = function(userContextId) {
-        return workaroundForCookieManager(oldGetPublicIdentityFromId, userContextId);
-      }
+      this._oldGetPublicIdentityFromId = ContextualIdentityService.getPublicIdentityFromId;
+      ContextualIdentityService.getPublicIdentityFromId = function(userContextId) {
+        return this.workaroundForCookieManager(ContainerService._oldGetPublicIdentityFromId, userContextId);
+      };
     }
     // End-Of-Hack
   },
@@ -983,14 +987,24 @@ const ContainerService = {
     this._forgetIdentity();
 
     const preInstalledIdentities = data.preInstalledIdentities;
-    ContextualIdentityService.getIdentities().forEach(identity => {
+    ContextualIdentityProxy.getIdentities().forEach(identity => {
       if (!preInstalledIdentities.includes(identity.userContextId)) {
-        ContextualIdentityService.remove(identity.userContextId);
+        ContextualIdentityProxy.remove(identity.userContextId);
       }
     });
 
     // Let's delete the configuration.
     delete ss.storage.savedConfiguration;
+
+    // Begin-Of-Hack
+    if (this._oldGetIdentityFromId) {
+      ContextualIdentityService.getIdentityFromId = this._oldGetIdentityFromId;
+    }
+
+    if (this._oldGetPublicIdentityFromId) {
+      ContextualIdentityService.getPublicIdentityFromId = this._oldGetPublicIdentityFromId;
+    }
+    // End-Of-Hack
   },
 
   _forgetIdentity(userContextId = 0) {

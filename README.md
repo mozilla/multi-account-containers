@@ -58,6 +58,20 @@ The only way to run the experiment is using an [unbranded version build](https:/
 Check out the [Browser Toolbox](https://developer.mozilla.org/en-US/docs/Tools/Browser_Toolbox) for more information about debugging add-on code.
 
 
+### Building .xpi
+
+To build a local .xpi, use the plain [`jpm
+xpi`](https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_xpi) command.
+
+### Signing an .xpi
+
+To sign an .xpi, use [`jpm
+sign`](https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_sign)
+command.
+
+Note: You will need to be [an author on the AMO
+add-on](https://addons.mozilla.org/en-US/developers/addon/containers-experiment/ownership).
+
 ### Testing
 TBD
 

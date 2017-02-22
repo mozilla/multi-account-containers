@@ -52,25 +52,21 @@ value, or chrome url path as an alternate selector mitiages this bug.*/
 
 [data-identity-icon="fingerprint"],
 [data-identity-icon="chrome://browser/skin/usercontext/personal.svg"] {
-  /*--identity-icon: url("chrome://browser/content/usercontext.svg#fingerprint"); */
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#fingerprint");
 }
 
 [data-identity-icon="briefcase"],
 [data-identity-icon="chrome://browser/skin/usercontext/work.svg"] {
-  /* --identity-icon: url("chrome://browser/content/usercontext.svg#briefcase"); */
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#briefcase");
 }
 
 [data-identity-icon="dollar"],
 [data-identity-icon="chrome://browser/skin/usercontext/banking.svg"] {
-  /* --identity-icon: url("chrome://browser/content/usercontext.svg#dollar"); */
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#dollar");
 }
 
 [data-identity-icon="cart"],
 [data-identity-icon="chrome://browser/skin/usercontext/cart.svg"] {
-  /* --identity-icon: url("chrome://browser/content/usercontext.svg#cart"); */
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#cart");
 }
 
@@ -90,8 +86,25 @@ value, or chrome url path as an alternate selector mitiages this bug.*/
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#food");
 }
 
+[data-identity-icon="fruit"] {
+  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#fruit");
+}
+
+[data-identity-icon="pet"] {
+  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#pet");
+}
+
+[data-identity-icon="tree"] {
+  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#tree");
+}
+
+[data-identity-icon="chill"] {
+  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#chill");
+}
+
 #userContext-indicator {
   height: 16px;
+  list-style-image: none !important;
   width: 16px;
 }
 
