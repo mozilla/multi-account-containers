@@ -52,10 +52,12 @@ const { attachTo, detachFrom } = require("sdk/content/mod");
 const { Cu } = require("chrome");
 const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
 const { getFavicon } = require("sdk/places/favicon");
+const { LightweightThemeManager } = Cu.import("resource://gre/modules/LightweightThemeManager.jsm", {});
 const Metrics = require("./testpilot-metrics");
 const { modelFor } = require("sdk/model/core");
 const prefService = require("sdk/preferences/service");
 const self = require("sdk/self");
+const { Services }  = require("resource://gre/modules/Services.jsm");
 const ss = require("sdk/simple-storage");
 const { Style } = require("sdk/stylesheet/style");
 const tabs = require("sdk/tabs");
@@ -115,6 +117,7 @@ const ContainerService = {
   _identitiesState: {},
   _windowMap: new Map(),
   _containerWasEnabled: false,
+  _onThemeChangedCallback: null,
 
   init(installation) {
     // If we are just been installed, we must store some information for the
@@ -196,6 +199,7 @@ const ContainerService = {
       "updateIdentity",
       "getPreference",
       "sendTelemetryPayload",
+      "getTheme",
       "checkIncompatibleAddons"
     ];
 
@@ -254,6 +258,8 @@ const ContainerService = {
           sendReply(this[message.method](message));
         }
       });
+
+      this.registerThemeConnection(api);
     }).catch(() => {
       throw new Error("WebExtension startup failed. Unable to continue.");
     });
@@ -292,6 +298,51 @@ const ContainerService = {
       };
     }
     // End-Of-Hack
+
+    Services.obs.addObserver(this, "lightweight-theme-changed", false);
+  },
+
+  registerThemeConnection(api) {
+    // This is only used for theme notifications
+    api.browser.runtime.onConnect.addListener((port) => {
+      this.onThemeChanged((theme, topic) => {
+        port.postMessage({
+          type: topic,
+          theme
+        });
+      });
+    });
+  },
+
+  triggerThemeChanged(theme, topic) {
+    if (this._onThemeChangedCallback) {
+      this._onThemeChangedCallback(theme, topic);
+    }
+  },
+
+  observe(subject, topic) {
+    if (topic === "lightweight-theme-changed") {
+      this.getTheme().then((theme) => {
+        this.triggerThemeChanged(theme, topic);
+      }).catch(() => {
+        throw new Error("Unable to get theme");
+      });
+    }
+  },
+
+  getTheme() {
+    const defaultTheme = "firefox-compact-light@mozilla.org";
+    return new Promise(function (resolve) {
+      let theme = defaultTheme;
+      if (LightweightThemeManager.currentTheme && LightweightThemeManager.currentTheme.id) {
+        theme = LightweightThemeManager.currentTheme.id;
+      }
+      resolve(theme);
+    });
+  },
+
+  onThemeChanged(callback) {
+    this._onThemeChangedCallback = callback;
   },
 
   // utility methods
