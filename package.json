@@ -2,7 +2,7 @@
   "name": "testpilot-containers",
   "title": "Containers Experiment",
   "description": "Containers works by isolating cookie jars using separate origin-attributes defined visually by colored ‘Container Tabs’. This add-on is a modified version of the containers feature for Firefox Test Pilot.",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "author": "Andrea Marchesini, Luke Crouch and Jonathan Kingston",
   "bugs": {
     "url": "https://github.com/mozilla/testpilot-containers/issues"
@@ -10,6 +10,7 @@
   "dependencies": {},
   "devDependencies": {
     "addons-linter": "^0.15.14",
+    "deploy-txp": "^1.0.7",
     "eslint": "^3.12.2",
     "eslint-plugin-promise": "^3.4.0",
     "htmllint-cli": "^0.0.5",
@@ -38,12 +39,14 @@
     "url": "git+https://github.com/mozilla/testpilot-containers.git"
   },
   "scripts": {
-    "build": "jpm xpi",
+    "build": "npm test && jpm xpi",
+    "deploy": "deploy-txp",
     "lint": "npm-run-all lint:*",
     "lint:addon": "addons-linter webextension --self-hosted",
     "lint:css": "stylelint webextension/css/*.css",
     "lint:html": "htmllint webextension/*.html",
     "lint:js": "eslint .",
+    "package": "npm run build && mv testpilot-containers.xpi addon.xpi",
     "test": "npm run lint"
   },
   "updateURL": "https://testpilot.firefox.com/files/@testpilot-containers/updates.json"
