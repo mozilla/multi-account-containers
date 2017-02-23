@@ -3,7 +3,6 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
-const DEFAULT_TAB = "about:newtab";
 
 const SHOW_MENU_TIMEOUT = 100;
 const HIDE_MENU_TIMEOUT = 300;
@@ -740,7 +739,7 @@ const ContainerService = {
       }
 
       return promise.then(() => {
-        const tab = browserWin.gBrowser.addTab(args.url || DEFAULT_TAB, { userContextId });
+        const tab = browserWin.gBrowser.addTab(args.url || browserWin.BROWSER_NEW_TAB_URL, { userContextId });
         browserWin.gBrowser.selectedTab = tab;
         browserWin.focusAndSelectUrlBar();
         return true;
