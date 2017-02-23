@@ -4,3 +4,5 @@ README.html
 *.xpi
 *.swp
 .vimrc
+.env
+addon.env
