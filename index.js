@@ -1101,14 +1101,16 @@ ContainerWindow.prototype = {
   },
 
   _configurePlusButtonMenuElement(buttonElement) {
-    // Let's remove the tooltip because it can go over our panel.
-    this._tooltipCache.set(buttonElement, buttonElement.getAttribute("tooltip"));
-    buttonElement.setAttribute("tooltip", "");
-    this._disableElement(buttonElement);
+    if (buttonElement) {
+      // Let's remove the tooltip because it can go over our panel.
+      this._tooltipCache.set(buttonElement, buttonElement.getAttribute("tooltip"));
+      buttonElement.setAttribute("tooltip", "");
+      this._disableElement(buttonElement);
 
-    buttonElement.addEventListener("mouseover", this);
-    buttonElement.addEventListener("click", this);
-    buttonElement.addEventListener("mouseout", this);
+      buttonElement.addEventListener("mouseover", this);
+      buttonElement.addEventListener("click", this);
+      buttonElement.addEventListener("mouseout", this);
+    }
   },
 
   _configurePlusButtonMenu() {
@@ -1318,12 +1320,14 @@ ContainerWindow.prototype = {
   },
 
   _shutDownPlusButtonMenuElement(buttonElement) {
-    this._shutdownElement(buttonElement);
-    buttonElement.setAttribute("tooltip", this._tooltipCache.get(buttonElement));
+    if (buttonElement) {
+      this._shutdownElement(buttonElement);
+      buttonElement.setAttribute("tooltip", this._tooltipCache.get(buttonElement));
 
-    buttonElement.removeEventListener("mouseover", this);
-    buttonElement.removeEventListener("click", this);
-    buttonElement.removeEventListener("mouseout", this);
+      buttonElement.removeEventListener("mouseover", this);
+      buttonElement.removeEventListener("click", this);
+      buttonElement.removeEventListener("mouseout", this);
+    }
   },
 
   _shutdownPlusButtonMenu() {
