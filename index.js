@@ -139,6 +139,17 @@ const ContainerService = {
                                          identity.color);
         }
       }
+
+      // Let's create the default containers in case there are none.
+      if (prefService.get("privacy.userContext.enabled") !== true &&
+          ss.storage.savedConfiguration.preInstalledIdentities.length === 0) {
+        // Note: we have to create them in this way because there is no way to
+        // reuse the same ID and the localized strings.
+        ContextualIdentityService.create("Personal", "fingerprint", "blue");
+        ContextualIdentityService.create("Work", "briefcase", "orange");
+        ContextualIdentityService.create("Finance", "dollar", "green");
+        ContextualIdentityService.create("Shopping", "cart", "pink");
+      }
     }
 
     // Enabling preferences
