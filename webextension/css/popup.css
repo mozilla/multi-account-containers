@@ -420,7 +420,13 @@ span ~ .panel-header-text {
   margin-block-start: 4px;
 }
 
-.container-info-tab-row:not(.clickable) {
+#container-info-movetabs-incompat {
+  font-size: 10px;
+  opacity: 0.3;
+}
+
+.container-info-tab-row:not(.clickable),
+.select-row:not(.clickable) {
   opacity: 0.3;
 }
 
