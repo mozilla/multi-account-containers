@@ -8,6 +8,12 @@ const DEFAULT_TAB = "about:newtab";
 const SHOW_MENU_TIMEOUT = 100;
 const HIDE_MENU_TIMEOUT = 300;
 
+const INCOMPATIBLE_ADDON_IDS = [
+  "pulse@mozilla.com",
+  "snoozetabs@mozilla.com",
+  "jid1-NeEaf3sAHdKHPA@jetpack" // PageShot
+];
+
 const IDENTITY_COLORS = [
  { name: "blue", color: "#00a7e0" },
  { name: "turquoise", color: "#01bdad" },
@@ -40,6 +46,7 @@ const PREFS = [
   [ "privacy.usercontext.about_newtab_segregation.enabled", true ],
 ];
 
+const { AddonManager } = require("resource://gre/modules/AddonManager.jsm");
 const { attachTo, detachFrom } = require("sdk/content/mod");
 const { Cu } = require("chrome");
 const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
@@ -181,7 +188,8 @@ const ContainerService = {
       "removeIdentity",
       "updateIdentity",
       "getPreference",
-      "sendTelemetryPayload"
+      "sendTelemetryPayload",
+      "checkIncompatibleAddons"
     ];
 
     // Map of identities.
@@ -486,6 +494,15 @@ const ContainerService = {
     Object.assign(payload, args);
 
     this._sendEvent(payload);
+  },
+
+  checkIncompatibleAddons() {
+    return new Promise(resolve => {
+      AddonManager.getAddonsByIDs(INCOMPATIBLE_ADDON_IDS, (addons) => {
+        addons = addons.filter((a) => a && a.isActive);
+        resolve(addons.length !== 0);
+      });
+    });
   },
 
   // Tabs management
