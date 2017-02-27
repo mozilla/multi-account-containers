@@ -105,16 +105,23 @@ value, or chrome url path as an alternate selector mitiages this bug.*/
 #userContext-indicator {
   height: 16px;
   list-style-image: none !important;
+  vertical-align: middle;
   width: 16px;
 }
 
 #userContext-label {
-  margin-inline-end: 5px;
   color: var(--identity-tab-color) !important;
+  margin-inline-end: 5px;
+  max-inline-size: 75px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #userContext-icons {
   -moz-box-align: center;
+  align-items: center;
+  display: flex;
+  max-inline-size: 120px;
 }
 
 .userContext-icon,
