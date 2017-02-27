@@ -684,6 +684,11 @@ const ContainerService = {
         return;
       }
 
+      this._remapTabsIfMissing(args.userContextId);
+      if (!this._isKnownContainer(args.userContextId)) {
+        return Promise.resolve(null);
+      }
+
       this.sendTelemetryPayload({
         "event": "move-tabs-to-window",
         "userContextId": args.userContextId,
@@ -697,7 +702,8 @@ const ContainerService = {
       });
 
       // Nothing to do
-      if (list.length === 0) {
+      if (list.length === 0 &&
+          this._identitiesState[args.userContextId].hiddenTabs.length === 0) {
         resolve(null);
         return;
       }
@@ -712,6 +718,13 @@ const ContainerService = {
           for (let tab of list) { // eslint-disable-line prefer-const
             newBrowserWindow.gBrowser.adoptTab(viewFor(tab), pos++, false);
           }
+
+          // Let's show the hidden tabs.
+          for (let object of this._identitiesState[args.userContextId].hiddenTabs) { // eslint-disable-line prefer-const
+            newBrowserWindow.gBrowser.addTab(object.url || DEFAULT_TAB, { userContextId: args.userContextId });
+          }
+
+          this._identitiesState[args.userContextId].hiddenTabs = [];
 
           // Let's close all the normal tab in the new window. In theory it
           // should be only the first tab, but maybe there are addons doing
