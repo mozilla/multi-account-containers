@@ -302,13 +302,36 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       });
     });
 
-    document.querySelector("#container-info-movetabs").addEventListener("click", () => {
-      return browser.runtime.sendMessage({
-        method: "moveTabsToWindow",
-        userContextId: Logic.currentIdentity().userContextId,
-      }).then(() => {
-        window.close();
-      });
+    // Check if the user has incompatible add-ons installed
+    browser.runtime.sendMessage({
+      method: "checkIncompatibleAddons"
+    }).then(incompatible => {
+      const moveTabsEl = document.querySelector("#container-info-movetabs");
+      if (incompatible) {
+        const fragment = document.createDocumentFragment();
+        const incompatEl = document.createElement("div");
+
+        moveTabsEl.classList.remove("clickable");
+        moveTabsEl.setAttribute("title", "Moving container tabs is incompatible with Pulse, PageShot, and SnoozeTabs.");
+
+        fragment.appendChild(incompatEl);
+        incompatEl.setAttribute("id", "container-info-movetabs-incompat");
+        incompatEl.innerText = "Incompatible with other Experiments.";
+        incompatEl.classList.add("container-info-tab-row");
+
+        moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
+      } else {
+        moveTabsEl.addEventListener("click", () => {
+          return browser.runtime.sendMessage({
+            method: "moveTabsToWindow",
+            userContextId: Logic.currentIdentity().userContextId,
+          }).then(() => {
+            window.close();
+          });
+        });
+      }
+    }).catch(() => {
+      throw new Error("Could not check for incompatible add-ons.");
     });
   },
 
