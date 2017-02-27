@@ -169,6 +169,15 @@ of a `testpilottest` telemetry ping for each scenario.
   }
 ```
 
+* When a user encounters the disabled "move" feature because of incompatible add-ons
+
+```js
+  {
+    "uuid": <uuid>,
+    "event": "incompatible-addons-detected"
+  }
+```
+
 ### A Redshift schema for the payload:
 
 ```lua
