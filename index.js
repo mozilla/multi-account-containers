@@ -8,6 +8,12 @@ const DEFAULT_TAB = "about:newtab";
 const SHOW_MENU_TIMEOUT = 100;
 const HIDE_MENU_TIMEOUT = 300;
 
+const INCOMPATIBLE_ADDON_IDS = [
+  "pulse@mozilla.com",
+  "snoozetabs@mozilla.com",
+  "jid1-NeEaf3sAHdKHPA@jetpack" // PageShot
+];
+
 const IDENTITY_COLORS = [
  { name: "blue", color: "#00a7e0" },
  { name: "turquoise", color: "#01bdad" },
@@ -40,6 +46,7 @@ const PREFS = [
   [ "privacy.usercontext.about_newtab_segregation.enabled", true ],
 ];
 
+const { AddonManager } = require("resource://gre/modules/AddonManager.jsm");
 const { attachTo, detachFrom } = require("sdk/content/mod");
 const { Cu } = require("chrome");
 const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
@@ -105,6 +112,7 @@ const ContextualIdentityProxy = {
 const ContainerService = {
   _identitiesState: {},
   _windowMap: new Map(),
+  _containerWasEnabled: false,
 
   init(installation) {
     // If we are just been installed, we must store some information for the
@@ -139,7 +147,22 @@ const ContainerService = {
                                          identity.color);
         }
       }
+
+      // Let's create the default containers in case there are none.
+      if (prefService.get("privacy.userContext.enabled") !== true &&
+          ss.storage.savedConfiguration.preInstalledIdentities.length === 0) {
+        // Note: we have to create them in this way because there is no way to
+        // reuse the same ID and the localized strings.
+        ContextualIdentityService.create("Personal", "fingerprint", "blue");
+        ContextualIdentityService.create("Work", "briefcase", "orange");
+        ContextualIdentityService.create("Finance", "dollar", "green");
+        ContextualIdentityService.create("Shopping", "cart", "pink");
+      }
     }
+
+    // Let's see if containers were enabled before this addon.
+    this._containerWasEnabled =
+      ss.storage.savedConfiguration.prefs["privacy.userContext.enabled"];
 
     // Enabling preferences
 
@@ -170,7 +193,8 @@ const ContainerService = {
       "removeIdentity",
       "updateIdentity",
       "getPreference",
-      "sendTelemetryPayload"
+      "sendTelemetryPayload",
+      "checkIncompatibleAddons"
     ];
 
     // Map of identities.
@@ -477,6 +501,21 @@ const ContainerService = {
     this._sendEvent(payload);
   },
 
+  checkIncompatibleAddons() {
+    return new Promise(resolve => {
+      AddonManager.getAddonsByIDs(INCOMPATIBLE_ADDON_IDS, (addons) => {
+        addons = addons.filter((a) => a && a.isActive);
+        const incompatibleAddons = addons.length !== 0;
+        if (incompatibleAddons) {
+          this.sendTelemetryPayload({
+            "event": "incompatible-addons-detected"
+          });
+        }
+        resolve(incompatibleAddons);
+      });
+    });
+  },
+
   // Tabs management
 
   hideTabs(args) {
@@ -673,6 +712,11 @@ const ContainerService = {
         return;
       }
 
+      this._remapTabsIfMissing(args.userContextId);
+      if (!this._isKnownContainer(args.userContextId)) {
+        return Promise.resolve(null);
+      }
+
       this.sendTelemetryPayload({
         "event": "move-tabs-to-window",
         "userContextId": args.userContextId,
@@ -686,7 +730,8 @@ const ContainerService = {
       });
 
       // Nothing to do
-      if (list.length === 0) {
+      if (list.length === 0 &&
+          this._identitiesState[args.userContextId].hiddenTabs.length === 0) {
         resolve(null);
         return;
       }
@@ -701,6 +746,13 @@ const ContainerService = {
           for (let tab of list) { // eslint-disable-line prefer-const
             newBrowserWindow.gBrowser.adoptTab(viewFor(tab), pos++, false);
           }
+
+          // Let's show the hidden tabs.
+          for (let object of this._identitiesState[args.userContextId].hiddenTabs) { // eslint-disable-line prefer-const
+            newBrowserWindow.gBrowser.addTab(object.url || DEFAULT_TAB, { userContextId: args.userContextId });
+          }
+
+          this._identitiesState[args.userContextId].hiddenTabs = [];
 
           // Let's close all the normal tab in the new window. In theory it
           // should be only the first tab, but maybe there are addons doing
@@ -964,16 +1016,16 @@ const ContainerService = {
 
     for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
       // Let's close all the container tabs.
-      // Note 1: we don't care if containers are supported but the current FF
-      //         version.
-      // Note 2: We cannot use _closeTabs() because at this point tab.window is
-      //         null.
-      for (let tab of window.tabs) { // eslint-disable-line prefer-const
-        if (this._getUserContextIdFromTab(tab)) {
-          tab.close();
-          try {
-            SessionStore.forgetClosedTab(viewFor(window), 0);
-          } catch(e) {} // eslint-disable-line no-empty
+      // Note: We cannot use _closeTabs() because at this point tab.window is
+      // null.
+      if (!this._containerWasEnabled) {
+        for (let tab of window.tabs) { // eslint-disable-line prefer-const
+          if (this._getUserContextIdFromTab(tab)) {
+            tab.close();
+            try {
+              SessionStore.forgetClosedTab(viewFor(window), 0);
+            } catch(e) {} // eslint-disable-line no-empty
+          }
         }
       }
 
@@ -1101,14 +1153,16 @@ ContainerWindow.prototype = {
   },
 
   _configurePlusButtonMenuElement(buttonElement) {
-    // Let's remove the tooltip because it can go over our panel.
-    this._tooltipCache.set(buttonElement, buttonElement.getAttribute("tooltip"));
-    buttonElement.setAttribute("tooltip", "");
-    this._disableElement(buttonElement);
+    if (buttonElement) {
+      // Let's remove the tooltip because it can go over our panel.
+      this._tooltipCache.set(buttonElement, buttonElement.getAttribute("tooltip"));
+      buttonElement.setAttribute("tooltip", "");
+      this._disableElement(buttonElement);
 
-    buttonElement.addEventListener("mouseover", this);
-    buttonElement.addEventListener("click", this);
-    buttonElement.addEventListener("mouseout", this);
+      buttonElement.addEventListener("mouseover", this);
+      buttonElement.addEventListener("click", this);
+      buttonElement.addEventListener("mouseout", this);
+    }
   },
 
   _configurePlusButtonMenu() {
@@ -1318,12 +1372,14 @@ ContainerWindow.prototype = {
   },
 
   _shutDownPlusButtonMenuElement(buttonElement) {
-    this._shutdownElement(buttonElement);
-    buttonElement.setAttribute("tooltip", this._tooltipCache.get(buttonElement));
+    if (buttonElement) {
+      this._shutdownElement(buttonElement);
+      buttonElement.setAttribute("tooltip", this._tooltipCache.get(buttonElement));
 
-    buttonElement.removeEventListener("mouseover", this);
-    buttonElement.removeEventListener("click", this);
-    buttonElement.removeEventListener("mouseout", this);
+      buttonElement.removeEventListener("mouseover", this);
+      buttonElement.removeEventListener("click", this);
+      buttonElement.removeEventListener("mouseout", this);
+    }
   },
 
   _shutdownPlusButtonMenu() {
