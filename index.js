@@ -500,7 +500,13 @@ const ContainerService = {
     return new Promise(resolve => {
       AddonManager.getAddonsByIDs(INCOMPATIBLE_ADDON_IDS, (addons) => {
         addons = addons.filter((a) => a && a.isActive);
-        resolve(addons.length !== 0);
+        const incompatibleAddons = addons.length !== 0;
+        if (incompatibleAddons) {
+          this.sendTelemetryPayload({
+            "event": "incompatible-addons-detected"
+          });
+        }
+        resolve(incompatibleAddons);
       });
     });
   },
