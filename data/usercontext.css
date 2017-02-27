@@ -124,6 +124,10 @@ value, or chrome url path as an alternate selector mitiages this bug.*/
   max-inline-size: 120px;
 }
 
+#userContext-icons[data-identity-color=""] {
+  display: none;
+}
+
 .userContext-icon,
 .menuitem-iconic[data-usercontextid] > .menu-iconic-left > .menu-iconic-icon,
 .subviewbutton[usercontextid] > .toolbarbutton-icon,
