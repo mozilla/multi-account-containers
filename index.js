@@ -784,7 +784,7 @@ const ContainerService = {
       } else {
         this._recentBrowserWindow().then(browserWin => {
           resolve(browserWin);
-        });
+        }).catch(() => {});
       }
     }).then(browserWin => {
       const userContextId = ("userContextId" in args) ? args.userContextId : 0;
@@ -1284,7 +1284,7 @@ ContainerWindow.prototype = {
           source: "alltabs-menu",
           window: this._window,
         });
-      });
+      }).catch(() => {});
     });
   },
 
@@ -1300,7 +1300,7 @@ ContainerWindow.prototype = {
         // next FF releases.
         this._window.gContextMenu.openLinkInTab(e);
 
-        let userContextId = parseInt(e.target.getAttribute('data-usercontextid'), 10);
+        const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
         ContainerService.showTabs({
           userContextId,
           nofocus: true,
