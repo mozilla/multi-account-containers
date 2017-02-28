@@ -592,6 +592,7 @@ const ContainerService = {
         userContextId: args.userContextId,
         url: object.url,
         nofocus: args.nofocus || false,
+        window: args.window || null,
       }));
     }
 
@@ -777,7 +778,15 @@ const ContainerService = {
   },
 
   openTab(args) {
-    return this._recentBrowserWindow().then(browserWin => {
+    return new Promise(resolve => {
+      if ("window" in args && args.window) {
+        resolve(args.window);
+      } else {
+        this._recentBrowserWindow().then(browserWin => {
+          resolve(browserWin);
+        });
+      }
+    }).then(browserWin => {
       const userContextId = ("userContextId" in args) ? args.userContextId : 0;
       const source = ("source" in args) ? args.source : null;
       const nofocus = ("nofocus" in args) ? args.nofocus : false;
@@ -1219,7 +1228,8 @@ ContainerWindow.prototype = {
         menuItemElement.addEventListener("command", (e) => {
           ContainerService.openTab({
             userContextId: identity.userContextId,
-            source: "tab-bar"
+            source: "tab-bar",
+            window: this._window,
           });
           e.stopPropagation();
         });
@@ -1255,7 +1265,8 @@ ContainerWindow.prototype = {
       const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
       ContainerService.openTab({
         userContextId: userContextId,
-        source: "file-menu"
+        source: "file-menu",
+        window: this._window,
       });
     });
   },
@@ -1265,11 +1276,13 @@ ContainerWindow.prototype = {
       const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
       ContainerService.showTabs({
         userContextId,
-        nofocus: true
+        nofocus: true,
+        window: this._window,
       }).then(() => {
         return ContainerService.openTab({
           userContextId,
-          source: "alltabs-menu"
+          source: "alltabs-menu",
+          window: this._window,
         });
       });
     });
@@ -1288,7 +1301,11 @@ ContainerWindow.prototype = {
         this._window.gContextMenu.openLinkInTab(e);
 
         let userContextId = parseInt(e.target.getAttribute('data-usercontextid'), 10);
-        ContainerService.showTabs({ userContextId, nofocus: true });
+        ContainerService.showTabs({
+          userContextId,
+          nofocus: true,
+          window: this._window,
+        });
       }
     );
   },
