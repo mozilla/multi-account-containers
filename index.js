@@ -228,15 +228,16 @@ const ContainerService = {
     tabs.on("activate", tab => {
       this._hideAllPanels();
       this._restyleActiveTab(tab).catch(() => {});
+      this._configureActiveWindows();
       this._remapTab(tab);
     });
 
     // Modify CSS and other stuff for each window.
 
-    this.configureWindows().catch(() => {});
+    this._configureWindows().catch(() => {});
 
     windows.browserWindows.on("open", window => {
-      this.configureWindow(viewFor(window)).catch(() => {});
+      this._configureWindow(viewFor(window)).catch(() => {});
     });
 
     windows.browserWindows.on("close", window => {
@@ -934,16 +935,28 @@ const ContainerService = {
 
   // Styling the window
 
-  configureWindows() {
+  _configureWindows() {
     const promises = [];
     for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
-      promises.push(this.configureWindow(viewFor(window)));
+      promises.push(this._configureWindow(viewFor(window)));
     }
     return Promise.all(promises);
   },
 
-  configureWindow(window) {
+  _configureWindow(window) {
     return this._getOrCreateContainerWindow(window).configure();
+  },
+
+  _configureActiveWindows() {
+    const promises = [];
+    for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
+      promises.push(this._configureActiveWindow(viewFor(window)));
+    }
+    return Promise.all(promises);
+  },
+
+  _configureActiveWindow(window) {
+    return this._getOrCreateContainerWindow(window).configureActive();
   },
 
   closeWindow(window) {
@@ -1136,9 +1149,13 @@ ContainerWindow.prototype = {
       this._configureActiveTab(),
       this._configureFileMenu(),
       this._configureAllTabsMenu(),
-      this._configureContextMenu(),
       this._configureTabStyle(),
+      this.configureActive(),
     ]);
+  },
+
+  configureActive() {
+    return this._configureContextMenu();
   },
 
   handleEvent(e) {
