@@ -584,8 +584,15 @@ const ContainerService = {
 
     const promises = [];
 
-    for (let object of this._identitiesState[args.userContextId].hiddenTabs) { // eslint-disable-line prefer-const
-      promises.push(this.openTab({ userContextId: args.userContextId, url: object.url }));
+    const hiddenTabs = this._identitiesState[args.userContextId].hiddenTabs;
+    this._identitiesState[args.userContextId].hiddenTabs = [];
+
+    for (let object of hiddenTabs) { // eslint-disable-line prefer-const
+      promises.push(this.openTab({
+        userContextId: args.userContextId,
+        url: object.url,
+        nofocus: args.nofocus || false,
+      }));
     }
 
     this._identitiesState[args.userContextId].hiddenTabs = [];
@@ -773,6 +780,7 @@ const ContainerService = {
     return this._recentBrowserWindow().then(browserWin => {
       const userContextId = ("userContextId" in args) ? args.userContextId : 0;
       const source = ("source" in args) ? args.source : null;
+      const nofocus = ("nofocus" in args) ? args.nofocus : false;
 
       // Only send telemetry for tabs opened by UI - i.e., not via showTabs
       if (source && userContextId) {
@@ -793,8 +801,10 @@ const ContainerService = {
 
       return promise.then(() => {
         const tab = browserWin.gBrowser.addTab(args.url || DEFAULT_TAB, { userContextId });
-        browserWin.gBrowser.selectedTab = tab;
-        browserWin.focusAndSelectUrlBar();
+        if (!nofocus) {
+          browserWin.gBrowser.selectedTab = tab;
+          browserWin.focusAndSelectUrlBar();
+        }
         return true;
       });
     }).catch(() => false);
@@ -1253,9 +1263,14 @@ ContainerWindow.prototype = {
   _configureAllTabsMenu() {
     return this._configureMenu("alltabs_containersTab", null, e => {
       const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
-      ContainerService.openTab({
-        userContextId: userContextId,
-        source: "alltabs-menu"
+      ContainerService.showTabs({
+        userContextId,
+        nofocus: true
+      }).then(() => {
+        return ContainerService.openTab({
+          userContextId,
+          source: "alltabs-menu"
+        });
       });
     });
   },
@@ -1271,6 +1286,9 @@ ContainerWindow.prototype = {
         // This is a super internal method. Hopefully it will be stable in the
         // next FF releases.
         this._window.gContextMenu.openLinkInTab(e);
+
+        let userContextId = parseInt(e.target.getAttribute('data-usercontextid'), 10);
+        ContainerService.showTabs({ userContextId, nofocus: true });
       }
     );
   },
