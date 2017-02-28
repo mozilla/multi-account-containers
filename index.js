@@ -228,15 +228,16 @@ const ContainerService = {
     tabs.on("activate", tab => {
       this._hideAllPanels();
       this._restyleActiveTab(tab).catch(() => {});
+      this._configureActiveWindows();
       this._remapTab(tab);
     });
 
     // Modify CSS and other stuff for each window.
 
-    this.configureWindows().catch(() => {});
+    this._configureWindows().catch(() => {});
 
     windows.browserWindows.on("open", window => {
-      this.configureWindow(viewFor(window)).catch(() => {});
+      this._configureWindow(viewFor(window)).catch(() => {});
     });
 
     windows.browserWindows.on("close", window => {
@@ -584,8 +585,16 @@ const ContainerService = {
 
     const promises = [];
 
-    for (let object of this._identitiesState[args.userContextId].hiddenTabs) { // eslint-disable-line prefer-const
-      promises.push(this.openTab({ userContextId: args.userContextId, url: object.url }));
+    const hiddenTabs = this._identitiesState[args.userContextId].hiddenTabs;
+    this._identitiesState[args.userContextId].hiddenTabs = [];
+
+    for (let object of hiddenTabs) { // eslint-disable-line prefer-const
+      promises.push(this.openTab({
+        userContextId: args.userContextId,
+        url: object.url,
+        nofocus: args.nofocus || false,
+        window: args.window || null,
+      }));
     }
 
     this._identitiesState[args.userContextId].hiddenTabs = [];
@@ -770,9 +779,18 @@ const ContainerService = {
   },
 
   openTab(args) {
-    return this._recentBrowserWindow().then(browserWin => {
+    return new Promise(resolve => {
+      if ("window" in args && args.window) {
+        resolve(args.window);
+      } else {
+        this._recentBrowserWindow().then(browserWin => {
+          resolve(browserWin);
+        }).catch(() => {});
+      }
+    }).then(browserWin => {
       const userContextId = ("userContextId" in args) ? args.userContextId : 0;
       const source = ("source" in args) ? args.source : null;
+      const nofocus = ("nofocus" in args) ? args.nofocus : false;
 
       // Only send telemetry for tabs opened by UI - i.e., not via showTabs
       if (source && userContextId) {
@@ -793,8 +811,10 @@ const ContainerService = {
 
       return promise.then(() => {
         const tab = browserWin.gBrowser.addTab(args.url || DEFAULT_TAB, { userContextId });
-        browserWin.gBrowser.selectedTab = tab;
-        browserWin.focusAndSelectUrlBar();
+        if (!nofocus) {
+          browserWin.gBrowser.selectedTab = tab;
+          browserWin.focusAndSelectUrlBar();
+        }
         return true;
       });
     }).catch(() => false);
@@ -915,16 +935,28 @@ const ContainerService = {
 
   // Styling the window
 
-  configureWindows() {
+  _configureWindows() {
     const promises = [];
     for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
-      promises.push(this.configureWindow(viewFor(window)));
+      promises.push(this._configureWindow(viewFor(window)));
     }
     return Promise.all(promises);
   },
 
-  configureWindow(window) {
+  _configureWindow(window) {
     return this._getOrCreateContainerWindow(window).configure();
+  },
+
+  _configureActiveWindows() {
+    const promises = [];
+    for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
+      promises.push(this._configureActiveWindow(viewFor(window)));
+    }
+    return Promise.all(promises);
+  },
+
+  _configureActiveWindow(window) {
+    return this._getOrCreateContainerWindow(window).configureActive();
   },
 
   closeWindow(window) {
@@ -956,11 +988,13 @@ const ContainerService = {
 
     const userContextId = ContainerService._getUserContextIdFromTab(tab);
     return ContainerService.getIdentity({userContextId}).then(identity => {
+      const hbox = viewFor(tab.window).document.getElementById("userContext-icons");
+
       if (!identity) {
+        hbox.setAttribute("data-identity-color", "");
         return;
       }
 
-      const hbox = viewFor(tab.window).document.getElementById("userContext-icons");
       hbox.setAttribute("data-identity-color", identity.color);
 
       const label = viewFor(tab.window).document.getElementById("userContext-label");
@@ -1113,9 +1147,13 @@ ContainerWindow.prototype = {
       this._configureActiveTab(),
       this._configureFileMenu(),
       this._configureAllTabsMenu(),
-      this._configureContextMenu(),
       this._configureTabStyle(),
+      this.configureActive(),
     ]);
+  },
+
+  configureActive() {
+    return this._configureContextMenu();
   },
 
   handleEvent(e) {
@@ -1205,7 +1243,8 @@ ContainerWindow.prototype = {
         menuItemElement.addEventListener("command", (e) => {
           ContainerService.openTab({
             userContextId: identity.userContextId,
-            source: "tab-bar"
+            source: "tab-bar",
+            window: this._window,
           });
           e.stopPropagation();
         });
@@ -1241,7 +1280,8 @@ ContainerWindow.prototype = {
       const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
       ContainerService.openTab({
         userContextId: userContextId,
-        source: "file-menu"
+        source: "file-menu",
+        window: this._window,
       });
     });
   },
@@ -1249,10 +1289,17 @@ ContainerWindow.prototype = {
   _configureAllTabsMenu() {
     return this._configureMenu("alltabs_containersTab", null, e => {
       const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
-      ContainerService.openTab({
-        userContextId: userContextId,
-        source: "alltabs-menu"
-      });
+      ContainerService.showTabs({
+        userContextId,
+        nofocus: true,
+        window: this._window,
+      }).then(() => {
+        return ContainerService.openTab({
+          userContextId,
+          source: "alltabs-menu",
+          window: this._window,
+        });
+      }).catch(() => {});
     });
   },
 
@@ -1267,6 +1314,13 @@ ContainerWindow.prototype = {
         // This is a super internal method. Hopefully it will be stable in the
         // next FF releases.
         this._window.gContextMenu.openLinkInTab(e);
+
+        const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
+        ContainerService.showTabs({
+          userContextId,
+          nofocus: true,
+          window: this._window,
+        });
       }
     );
   },
