@@ -9,6 +9,7 @@ node_modules/
 .gitignore
 .htmllintrc
 .jpmignore
+.npm
 .stylelintrc
 .travis.yml
 *.xpi
