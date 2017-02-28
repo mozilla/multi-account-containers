@@ -992,12 +992,10 @@ const ContainerService = {
 
       if (!identity) {
         hbox.setAttribute("data-identity-color", "");
-        hbox.hidden = true;
         return;
       }
 
       hbox.setAttribute("data-identity-color", identity.color);
-      hbox.hidden = false;
 
       const label = viewFor(tab.window).document.getElementById("userContext-label");
       label.setAttribute("value", identity.name);
