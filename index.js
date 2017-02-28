@@ -956,12 +956,16 @@ const ContainerService = {
 
     const userContextId = ContainerService._getUserContextIdFromTab(tab);
     return ContainerService.getIdentity({userContextId}).then(identity => {
+      const hbox = viewFor(tab.window).document.getElementById("userContext-icons");
+
       if (!identity) {
+        hbox.setAttribute("data-identity-color", "");
+        hbox.hidden = true;
         return;
       }
 
-      const hbox = viewFor(tab.window).document.getElementById("userContext-icons");
       hbox.setAttribute("data-identity-color", identity.color);
+      hbox.hidden = false;
 
       const label = viewFor(tab.window).document.getElementById("userContext-label");
       label.setAttribute("value", identity.name);
