@@ -1,6 +1,7 @@
 .git/
 docs/
 test/
+.npm/
 node_modules/
 
 .env
