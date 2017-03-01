@@ -972,7 +972,7 @@ const ContainerService = {
   },
 
   _refreshNeeded() {
-    return this.configureWindows();
+    return this._configureWindows();
   },
 
   _hideAllPanels() {
