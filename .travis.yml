@@ -1,3 +1,7 @@
 language: node_js
 node_js:
     - "6.1"
+
+notifications:
+    irc:
+        - "ircs://irc.mozilla.org:6697/#testpilot-containers-bots"
