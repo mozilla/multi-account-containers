@@ -32,7 +32,8 @@ const Logic = {
 
     // Routing to the correct panel.
     .then(() => {
-      if (localStorage.getItem("onboarded3")) {
+      // If localStorage is disabled, we don't show the onboarding.
+      if (!localStorage || localStorage.getItem("onboarded3")) {
         this.showPanel(P_CONTAINERS_LIST);
       } else if (localStorage.getItem("onboarded2")) {
         this.showPanel(P_ONBOARDING_3);
