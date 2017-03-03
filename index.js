@@ -30,6 +30,7 @@ const IDENTITY_ICONS = [
   { name: "briefcase", image: "chrome://browser/skin/usercontext/work.svg" },
   { name: "dollar", image: "chrome://browser/skin/usercontext/banking.svg" },
   { name: "cart", image: "chrome://browser/skin/usercontext/shopping.svg" },
+  // All of these do not exist in gecko
   { name: "gift", image: "gift" },
   { name: "vacation", image: "vacation" },
   { name: "food", image: "food" },
@@ -37,7 +38,7 @@ const IDENTITY_ICONS = [
   { name: "pet", image: "pet" },
   { name: "tree", image: "tree" },
   { name: "chill", image: "chill" },
-  { name: "circle", image: "circle" }, // this doesn't exist in m-b
+  { name: "circle", image: "circle" },
 ];
 
 const PREFS = [
@@ -68,6 +69,7 @@ const windowUtils = require("sdk/window/utils");
 Cu.import("resource:///modules/CustomizableUI.jsm");
 Cu.import("resource:///modules/CustomizableWidgets.jsm");
 Cu.import("resource:///modules/sessionstore/SessionStore.jsm");
+Cu.import("resource://gre/modules/Services.jsm");
 
 // ----------------------------------------------------------------------------
 // ContextualIdentityProxy
@@ -1076,6 +1078,10 @@ const ContainerService = {
     ContextualIdentityProxy.getIdentities().forEach(identity => {
       if (!preInstalledIdentities.includes(identity.userContextId)) {
         ContextualIdentityProxy.remove(identity.userContextId);
+      } else {
+        // Let's cleanup all the cookies for this container.
+        Services.obs.notifyObservers(null, "clear-origin-attributes-data",
+                                     JSON.stringify({ userContextId: identity.userContextId }));
       }
     });
 
