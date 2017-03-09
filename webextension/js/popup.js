@@ -482,22 +482,28 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       Logic.showPreviousPanel();
     });
 
-    document.querySelector("#edit-container-ok-link").addEventListener("click", () => {
-      const identity = Logic.currentIdentity();
-      const formValues = new FormData(document.getElementById("edit-container-panel-form"));
-      browser.runtime.sendMessage({
-        method: identity.userContextId ? "updateIdentity" : "createIdentity",
-        userContextId: identity.userContextId || 0,
-        name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
-        icon: formValues.get("container-icon") || DEFAULT_ICON,
-        color: formValues.get("container-color") || DEFAULT_COLOR,
-      }).then(() => {
-        return Logic.refreshIdentities();
-      }).then(() => {
-        Logic.showPreviousPanel();
-      }).catch(() => {
-        Logic.showPanel(P_CONTAINERS_LIST);
-      });
+    this._editForm = document.getElementById("edit-container-panel-form");
+    const editLink = document.querySelector("#edit-container-ok-link");
+    editLink.addEventListener("click", this._submitForm);
+    editLink.addEventListener("submit", this._submitForm);
+    this._editForm.addEventListener("submit", this._submitForm);
+  },
+
+  _submitForm() {
+    const identity = Logic.currentIdentity();
+    const formValues = new FormData(this._editForm);
+    browser.runtime.sendMessage({
+      method: identity.userContextId ? "updateIdentity" : "createIdentity",
+      userContextId: identity.userContextId || 0,
+      name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
+      icon: formValues.get("container-icon") || DEFAULT_ICON,
+      color: formValues.get("container-color") || DEFAULT_COLOR,
+    }).then(() => {
+      return Logic.refreshIdentities();
+    }).then(() => {
+      Logic.showPreviousPanel();
+    }).catch(() => {
+      Logic.showPanel(P_CONTAINERS_LIST);
     });
   },
 
