@@ -484,9 +484,9 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
     this._editForm = document.getElementById("edit-container-panel-form");
     const editLink = document.querySelector("#edit-container-ok-link");
-    editLink.addEventListener("click", this._submitForm);
-    editLink.addEventListener("submit", this._submitForm);
-    this._editForm.addEventListener("submit", this._submitForm);
+    editLink.addEventListener("click", this._submitForm.bind(this));
+    editLink.addEventListener("submit", this._submitForm.bind(this));
+    this._editForm.addEventListener("submit", this._submitForm.bind(this));
   },
 
   _submitForm() {
