@@ -1,6 +1,6 @@
 # Containers: Test Pilot Experiment
 
-Soon to be [![Available on Test Pilot](https://img.shields.io/badge/available_on-Test_Pilot-0996F8.svg)](https://testpilot.firefox.com/)
+[![Available on Test Pilot](https://img.shields.io/badge/available_on-Test_Pilot-0996F8.svg)](https://testpilot.firefox.com/experiments/containers)
 
 [Embedded Web Extension](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Embedded_WebExtensions) to experiment with [Containers](https://blog.mozilla.org/tanvi/2016/06/16/contextual-identities-on-the-web/) in [Firefox Test Pilot](https://testpilot.firefox.com/) to learn:
 

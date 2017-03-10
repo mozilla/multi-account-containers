@@ -30,6 +30,7 @@ const IDENTITY_ICONS = [
   { name: "briefcase", image: "chrome://browser/skin/usercontext/work.svg" },
   { name: "dollar", image: "chrome://browser/skin/usercontext/banking.svg" },
   { name: "cart", image: "chrome://browser/skin/usercontext/shopping.svg" },
+  // All of these do not exist in gecko
   { name: "gift", image: "gift" },
   { name: "vacation", image: "vacation" },
   { name: "food", image: "food" },
@@ -37,7 +38,7 @@ const IDENTITY_ICONS = [
   { name: "pet", image: "pet" },
   { name: "tree", image: "tree" },
   { name: "chill", image: "chill" },
-  { name: "circle", image: "circle" }, // this doesn't exist in m-b
+  { name: "circle", image: "circle" },
 ];
 
 const PREFS = [
@@ -51,10 +52,12 @@ const { attachTo, detachFrom } = require("sdk/content/mod");
 const { Cu } = require("chrome");
 const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
 const { getFavicon } = require("sdk/places/favicon");
+const { LightweightThemeManager } = Cu.import("resource://gre/modules/LightweightThemeManager.jsm", {});
 const Metrics = require("./testpilot-metrics");
 const { modelFor } = require("sdk/model/core");
 const prefService = require("sdk/preferences/service");
 const self = require("sdk/self");
+const { Services }  = require("resource://gre/modules/Services.jsm");
 const ss = require("sdk/simple-storage");
 const { Style } = require("sdk/stylesheet/style");
 const tabs = require("sdk/tabs");
@@ -68,6 +71,7 @@ const windowUtils = require("sdk/window/utils");
 Cu.import("resource:///modules/CustomizableUI.jsm");
 Cu.import("resource:///modules/CustomizableWidgets.jsm");
 Cu.import("resource:///modules/sessionstore/SessionStore.jsm");
+Cu.import("resource://gre/modules/Services.jsm");
 
 // ----------------------------------------------------------------------------
 // ContextualIdentityProxy
@@ -113,6 +117,7 @@ const ContainerService = {
   _identitiesState: {},
   _windowMap: new Map(),
   _containerWasEnabled: false,
+  _onThemeChangedCallback: null,
 
   init(installation) {
     // If we are just been installed, we must store some information for the
@@ -194,6 +199,7 @@ const ContainerService = {
       "updateIdentity",
       "getPreference",
       "sendTelemetryPayload",
+      "getTheme",
       "checkIncompatibleAddons"
     ];
 
@@ -252,6 +258,8 @@ const ContainerService = {
           sendReply(this[message.method](message));
         }
       });
+
+      this.registerThemeConnection(api);
     }).catch(() => {
       throw new Error("WebExtension startup failed. Unable to continue.");
     });
@@ -290,6 +298,51 @@ const ContainerService = {
       };
     }
     // End-Of-Hack
+
+    Services.obs.addObserver(this, "lightweight-theme-changed", false);
+  },
+
+  registerThemeConnection(api) {
+    // This is only used for theme notifications
+    api.browser.runtime.onConnect.addListener((port) => {
+      this.onThemeChanged((theme, topic) => {
+        port.postMessage({
+          type: topic,
+          theme
+        });
+      });
+    });
+  },
+
+  triggerThemeChanged(theme, topic) {
+    if (this._onThemeChangedCallback) {
+      this._onThemeChangedCallback(theme, topic);
+    }
+  },
+
+  observe(subject, topic) {
+    if (topic === "lightweight-theme-changed") {
+      this.getTheme().then((theme) => {
+        this.triggerThemeChanged(theme, topic);
+      }).catch(() => {
+        throw new Error("Unable to get theme");
+      });
+    }
+  },
+
+  getTheme() {
+    const defaultTheme = "firefox-compact-light@mozilla.org";
+    return new Promise(function (resolve) {
+      let theme = defaultTheme;
+      if (LightweightThemeManager.currentTheme && LightweightThemeManager.currentTheme.id) {
+        theme = LightweightThemeManager.currentTheme.id;
+      }
+      resolve(theme);
+    });
+  },
+
+  onThemeChanged(callback) {
+    this._onThemeChangedCallback = callback;
   },
 
   // utility methods
@@ -1076,6 +1129,10 @@ const ContainerService = {
     ContextualIdentityProxy.getIdentities().forEach(identity => {
       if (!preInstalledIdentities.includes(identity.userContextId)) {
         ContextualIdentityProxy.remove(identity.userContextId);
+      } else {
+        // Let's cleanup all the cookies for this container.
+        Services.obs.notifyObservers(null, "clear-origin-attributes-data",
+                                     JSON.stringify({ userContextId: identity.userContextId }));
       }
     });
 
