@@ -13,7 +13,7 @@
     "deploy-txp": "^1.0.7",
     "eslint": "^3.17.1",
     "eslint-plugin-promise": "^3.4.0",
-    "eslint-plugin-unsafe-property-assign": "^1.0.2",
+    "eslint-plugin-unsafe-property-assignment": "^1.0.2",
     "htmllint-cli": "^0.0.5",
     "jpm": "^1.2.2",
     "npm-run-all": "^4.0.0",
