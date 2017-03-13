@@ -19,15 +19,15 @@ const P_CONTAINER_EDIT   = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
 
 /**
- * Escapes any occurances of &, ", < or > with XML entities.
+ * Escapes any occurances of &, ", <, > or / with XML entities.
  *
  * @param {string} str
  *        The string to escape.
  * @return {string} The escaped string.
  */
 function escapeXML(str) {
-  const replacements = {"&": "&amp;", "\"": "&quot;", "'": "&apos;", "<": "&lt;", ">": "&gt;"};
-  return String(str).replace(/[&"''<>]/g, m => replacements[m]);
+  const replacements = {"&": "&amp;", "\"": "&quot;", "'": "&apos;", "<": "&lt;", ">": "&gt;", "/": "&#x2F;"};
+  return String(str).replace(/[&"'<>/]/g, m => replacements[m]);
 }
 
 /**
@@ -278,7 +278,8 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             data-identity-color="${identity.color}">
           </div>
         </div>
-        <div class="container-name">${identity.name}</div>`;
+        <div class="container-name"></div>`;
+      context.querySelector(".container-name").textContent = identity.name;
       manage.innerHTML = "<img src='/img/container-arrow.svg' class='show-tabs pop-button-image-small' />";
 
       fragment.appendChild(tr);
@@ -353,7 +354,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
         fragment.appendChild(incompatEl);
         incompatEl.setAttribute("id", "container-info-movetabs-incompat");
-        incompatEl.innerText = "Incompatible with other Experiments.";
+        incompatEl.textContent = "Incompatible with other Experiments.";
         incompatEl.classList.add("container-info-tab-row");
 
         moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
@@ -377,7 +378,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     const identity = Logic.currentIdentity();
 
     // Populating the panel: name and icon
-    document.getElementById("container-info-name").innerText = identity.name;
+    document.getElementById("container-info-name").textContent = identity.name;
 
     const icon = document.getElementById("container-info-icon");
     icon.setAttribute("data-identity-icon", identity.image);
@@ -392,7 +393,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     hideShowIcon.src = identity.hasHiddenTabs ? CONTAINER_UNHIDE_SRC : CONTAINER_HIDE_SRC;
 
     const hideShowLabel = document.getElementById("container-info-hideorshow-label");
-    hideShowLabel.innerText = identity.hasHiddenTabs ? "Show this container" : "Hide this container";
+    hideShowLabel.textContent = identity.hasHiddenTabs ? "Show this container" : "Hide this container";
 
     // Let's remove all the previous tabs.
     const table = document.getElementById("container-info-table");
@@ -466,21 +467,23 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
               data-identity-color="${identity.color}">
             </div>
           </div>
-          <div class="container-name">${identity.name}</div>
+          <div class="container-name"></div>
         </td>
         <td class="edit-container pop-button edit-container-icon">
           <img
-            title="Edit ${identity.name} container"
             src="/img/container-edit.svg"
             class="pop-button-image" />
         </td>
         <td class="remove-container pop-button delete-container-icon" >
           <img
-            title="Remove ${identity.name} container"
             class="pop-button-image"
             src="/img/container-delete.svg"
           />
         </td>`;
+      tr.querySelector(".container-name").textContent = identity.name;
+      tr.querySelector(".edit-container .pop-button-image").setAttribute("title", `Edit ${identity.name} container`);
+      tr.querySelector(".remove-container .pop-button-image").setAttribute("title", `Edit ${identity.name} container`);
+
 
       tr.addEventListener("click", e => {
         if (e.target.matches(".edit-container-icon") || e.target.parentNode.matches(".edit-container-icon")) {
@@ -618,7 +621,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     const identity = Logic.currentIdentity();
 
     // Populating the panel: name and icon
-    document.getElementById("delete-container-name").innerText = identity.name;
+    document.getElementById("delete-container-name").textContent = identity.name;
 
     const icon = document.getElementById("delete-container-icon");
     icon.setAttribute("data-identity-icon", identity.image);
