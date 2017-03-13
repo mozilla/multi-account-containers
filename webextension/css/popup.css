@@ -383,7 +383,7 @@ span ~ .panel-header-text {
 .panel-footer {
   align-items: center;
   background: #efefef;
-  block-size: 55px;
+  block-size: 54px;
   border-block-end: 1px solid #d8d8d8;
   color: #000;
   display: flex;
