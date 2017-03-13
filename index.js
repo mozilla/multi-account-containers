@@ -1553,8 +1553,8 @@ ContainerWindow.prototype = {
 exports.main = function (options) {
   const installation = options.loadReason === "install" ||
                        options.loadReason === "downgrade" ||
-                       options.loadReason === "enable" ||
-                       options.loadReason === "upgrade";
+                       options.loadReason === "enable";
+                       // TODO check if we need this also options.loadReason === "upgrade";
 
   // Let's start :)
   ContainerService.init(installation);
