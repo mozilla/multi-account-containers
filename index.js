@@ -1563,8 +1563,8 @@ exports.main = function (options) {
 exports.onUnload = function (reason) {
   if (reason === "disable" ||
       reason === "downgrade" ||
-      reason === "uninstall" ||
-      reason === "upgrade") {
+      reason === "uninstall") {
+// TODO check if we need this reason === "upgrade") {
     ContainerService.uninstall();
   }
 };
