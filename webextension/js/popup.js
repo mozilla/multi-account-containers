@@ -18,6 +18,42 @@ const P_CONTAINER_INFO   = "containerInfo";
 const P_CONTAINER_EDIT   = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
 
+/**
+ * Escapes any occurances of &, ", < or > with XML entities.
+ *
+ * @param {string} str
+ *        The string to escape.
+ * @return {string} The escaped string.
+ */
+function escapeXML(str) {
+  const replacements = {"&": "&amp;", "\"": "&quot;", "'": "&apos;", "<": "&lt;", ">": "&gt;"};
+  return String(str).replace(/[&"''<>]/g, m => replacements[m]);
+}
+
+/**
+ * A tagged template function which escapes any XML metacharacters in
+ * interpolated values.
+ *
+ * @param {Array<string>} strings
+ *        An array of literal strings extracted from the templates.
+ * @param {Array} values
+ *        An array of interpolated values extracted from the template.
+ * @returns {string}
+ *        The result of the escaped values interpolated with the literal
+ *        strings.
+ */
+function escaped(strings, ...values) {
+  const result = [];
+
+  for (const [i, string] of strings.entries()) {
+    result.push(string);
+    if (i < values.length)
+      result.push(escapeXML(values[i]));
+  }
+
+  return result.join("");
+}
+
 // This object controls all the panels, identities and many other things.
 const Logic = {
   _identities: [],
@@ -235,7 +271,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       tr.classList.add("container-panel-row");
       context.classList.add("userContext-wrapper", "open-newtab", "clickable");
       manage.classList.add("show-tabs", "pop-button");
-      context.innerHTML = `
+      context.innerHTML = escaped`
         <div class="userContext-icon-wrapper open-newtab">
           <div class="userContext-icon"
             data-identity-icon="${identity.image}"
@@ -378,7 +414,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       const tr = document.createElement("tr");
       fragment.appendChild(tr);
       tr.classList.add("container-info-tab-row");
-      tr.innerHTML = `
+      tr.innerHTML = escaped`
         <td><img class="icon" src="${tab.favicon}" /></td>
         <td class="container-info-tab-title">${tab.title}</td>`;
 
@@ -422,7 +458,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       const tr = document.createElement("tr");
       fragment.appendChild(tr);
       tr.classList.add("container-panel-row");
-      tr.innerHTML = `
+      tr.innerHTML = escaped`
         <td class="userContext-wrapper">
           <div class="userContext-icon-wrapper">
             <div class="userContext-icon"
@@ -509,25 +545,27 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
   initializeRadioButtons() {
     const colorRadioTemplate = (containerColor) => {
-      return `<input type="radio" value="${containerColor}" name="container-color" id="edit-container-panel-choose-color-${containerColor}" />
+      return escaped`<input type="radio" value="${containerColor}" name="container-color" id="edit-container-panel-choose-color-${containerColor}" />
      <label for="edit-container-panel-choose-color-${containerColor}" class="usercontext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="${containerColor}">`;
     };
     const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple" ];
     const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
     colors.forEach((containerColor) => {
       const templateInstance = document.createElement("span");
+      // eslint-disable-next-line unsafe-property-assignment/enforce-tagged-template-protection
       templateInstance.innerHTML = colorRadioTemplate(containerColor);
       colorRadioFieldset.appendChild(templateInstance);
     });
 
     const iconRadioTemplate = (containerIcon) => {
-      return `<input type="radio" value="${containerIcon}" name="container-icon" id="edit-container-panel-choose-icon-${containerIcon}" />
+      return escaped`<input type="radio" value="${containerIcon}" name="container-icon" id="edit-container-panel-choose-icon-${containerIcon}" />
      <label for="edit-container-panel-choose-icon-${containerIcon}" class="usercontext-icon choose-color-icon" data-identity-color="grey" data-identity-icon="${containerIcon}">`;
     };
     const icons = ["fingerprint", "briefcase", "dollar", "cart", "vacation", "gift", "food", "fruit", "pet", "tree", "chill", "circle"];
     const iconRadioFieldset = document.getElementById("edit-container-panel-choose-icon");
     icons.forEach((containerIcon) => {
       const templateInstance = document.createElement("span");
+      // eslint-disable-next-line unsafe-property-assignment/enforce-tagged-template-protection
       templateInstance.innerHTML = iconRadioTemplate(containerIcon);
       iconRadioFieldset.appendChild(templateInstance);
     });
