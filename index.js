@@ -119,11 +119,12 @@ const ContainerService = {
   _containerWasEnabled: false,
   _onThemeChangedCallback: null,
 
-  init(installation) {
+  init(installation, reason) {
     // If we are just been installed, we must store some information for the
     // uninstallation. This object contains also a version number, in case we
     // need to implement a migration in the future.
-    if (installation) {
+    // In 1.1.1 and less we deleted savedConfiguration on upgrade so we need to rebuild
+    if (installation && (reason !== "upgrade" || !ss.storage.savedConfiguration)) {
       let preInstalledIdentities = []; // eslint-disable-line prefer-const
       ContextualIdentityProxy.getIdentities().forEach(identity => {
         preInstalledIdentities.push(identity.userContextId);
@@ -286,13 +287,17 @@ const ContainerService = {
       return identity;
     };
 
-    this._oldGetIdentityFromId = ContextualIdentityService.getIdentityFromId;
+    if (!this._oldGetIdentityFromId) {
+      this._oldGetIdentityFromId = ContextualIdentityService.getIdentityFromId;
+    }
     ContextualIdentityService.getIdentityFromId = function(userContextId) {
       return this.workaroundForCookieManager(ContainerService._oldGetIdentityFromId, userContextId);
     };
 
     if ("getPublicIdentityFromId" in ContextualIdentityService) {
-      this._oldGetPublicIdentityFromId = ContextualIdentityService.getPublicIdentityFromId;
+      if (!this._oldGetPublicIdentityFromId) {
+        this._oldGetPublicIdentityFromId = ContextualIdentityService.getPublicIdentityFromId;
+      }
       ContextualIdentityService.getPublicIdentityFromId = function(userContextId) {
         return this.workaroundForCookieManager(ContainerService._oldGetPublicIdentityFromId, userContextId);
       };
@@ -1076,7 +1081,7 @@ const ContainerService = {
   },
 
   // Uninstallation
-  uninstall() {
+  uninstall(reason) {
     const data = ss.storage.savedConfiguration;
     if (!data) {
       throw new DOMError("ERROR - No saved configuration!!");
@@ -1086,11 +1091,13 @@ const ContainerService = {
       throw new DOMError("ERROR - Unknown version!!");
     }
 
-    PREFS.forEach(pref => {
-      if (pref[0] in data.prefs) {
-        prefService.set(pref[0], data.prefs[pref[0]]);
-      }
-    });
+    if (reason !== "upgrade") {
+      PREFS.forEach(pref => {
+        if (pref[0] in data.prefs) {
+          prefService.set(pref[0], data.prefs[pref[0]]);
+        }
+      });
+    }
 
     // Note: We cannot go back renaming the Finance identity back to Banking:
     // the locale system doesn't work with renamed containers.
@@ -1105,7 +1112,7 @@ const ContainerService = {
       // Let's close all the container tabs.
       // Note: We cannot use _closeTabs() because at this point tab.window is
       // null.
-      if (!this._containerWasEnabled) {
+      if (!this._containerWasEnabled && reason !== "upgrade") {
         for (let tab of window.tabs) { // eslint-disable-line prefer-const
           if (this._getUserContextIdFromTab(tab)) {
             tab.close();
@@ -1122,22 +1129,24 @@ const ContainerService = {
     // all the configuration must go away now.
     this._windowMap = new Map();
 
-    // Let's forget all the previous closed tabs.
-    this._forgetIdentity();
+    if (reason !== "upgrade") {
+      // Let's forget all the previous closed tabs.
+      this._forgetIdentity();
 
-    const preInstalledIdentities = data.preInstalledIdentities;
-    ContextualIdentityProxy.getIdentities().forEach(identity => {
-      if (!preInstalledIdentities.includes(identity.userContextId)) {
-        ContextualIdentityProxy.remove(identity.userContextId);
-      } else {
-        // Let's cleanup all the cookies for this container.
-        Services.obs.notifyObservers(null, "clear-origin-attributes-data",
-                                     JSON.stringify({ userContextId: identity.userContextId }));
-      }
-    });
+      const preInstalledIdentities = data.preInstalledIdentities;
+      ContextualIdentityProxy.getIdentities().forEach(identity => {
+        if (!preInstalledIdentities.includes(identity.userContextId)) {
+          ContextualIdentityProxy.remove(identity.userContextId);
+        } else {
+          // Let's cleanup all the cookies for this container.
+          Services.obs.notifyObservers(null, "clear-origin-attributes-data",
+                                       JSON.stringify({ userContextId: identity.userContextId }));
+        }
+      });
 
-    // Let's delete the configuration.
-    delete ss.storage.savedConfiguration;
+      // Let's delete the configuration.
+      delete ss.storage.savedConfiguration;
+    }
 
     // Begin-Of-Hack
     if (this._oldGetIdentityFromId) {
@@ -1557,7 +1566,7 @@ exports.main = function (options) {
                        options.loadReason === "upgrade";
 
   // Let's start :)
-  ContainerService.init(installation);
+  ContainerService.init(installation, options.loadReason);
 };
 
 exports.onUnload = function (reason) {
@@ -1565,6 +1574,6 @@ exports.onUnload = function (reason) {
       reason === "downgrade" ||
       reason === "uninstall" ||
       reason === "upgrade") {
-    ContainerService.uninstall();
+    ContainerService.uninstall(reason);
   }
 };
