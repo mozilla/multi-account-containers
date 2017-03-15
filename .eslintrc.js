@@ -16,7 +16,7 @@ module.exports = {
   },
   "plugins": [
     "promise",
-    "unsafe-property-assignment"
+    "no-unescaped"
   ],
   "root": true,
   "rules": {
@@ -29,8 +29,8 @@ module.exports = {
     "promise/no-promise-in-callback": "warn",
     "promise/no-return-wrap": "error",
     "promise/param-names": "error",
-    "unsafe-property-assignment/no-key-assignment": ["error"],
-    "unsafe-property-assignment/enforce-tagged-template-protection": ["error"],
+    "no-unescaped/no-key-assignment": "error",
+    "no-unescaped/enforce": "error",
 
     "eqeqeq": "error",
     "indent": ["error", 2],
