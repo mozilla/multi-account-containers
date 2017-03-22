@@ -1370,25 +1370,48 @@ ContainerWindow.prototype = {
   },
 
   _configureContextMenu() {
-    return this._configureMenu("context-openlinkinusercontext-menu",
-      () => {
-        // This userContextId is what we want to exclude.
-        const tab = modelFor(this._window).tabs.activeTab;
-        return ContainerService._getUserContextIdFromTab(tab);
-      },
-      e => {
-        // This is a super internal method. Hopefully it will be stable in the
-        // next FF releases.
-        this._window.gContextMenu.openLinkInTab(e);
+    return Promise.all([
+      this._configureMenu("context-openlinkinusercontext-menu",
+        () => {
+          // This userContextId is what we want to exclude.
+          const tab = modelFor(this._window).tabs.activeTab;
+          return ContainerService._getUserContextIdFromTab(tab);
+        },
+        e => {
+          // This is a super internal method. Hopefully it will be stable in the
+          // next FF releases.
+          this._window.gContextMenu.openLinkInTab(e);
 
-        const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
-        ContainerService.showTabs({
-          userContextId,
-          nofocus: true,
-          window: this._window,
-        });
-      }
-    );
+          const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
+          ContainerService.showTabs({
+            userContextId,
+            nofocus: true,
+            window: this._window,
+          });
+        }
+      ),
+      this._configureContextMenuOpenLink(),
+    ]);
+  },
+
+  _configureContextMenuOpenLink() {
+    return new Promise(resolve => {
+      const self = this;
+      this._window.gSetUserContextIdAndClick = function(event) {
+        const tab = modelFor(self._window).tabs.activeTab;
+        const userContextId = ContainerService._getUserContextIdFromTab(tab);
+        event.target.setAttribute("data-usercontextid", userContextId);
+        self._window.gContextMenu.openLinkInTab(event);
+      };
+
+      let item = this._window.document.getElementById("context-openlinkincontainertab");
+      item.setAttribute("oncommand", "gSetUserContextIdAndClick(event)");
+
+      item = this._window.document.getElementById("context-openlinkintab");
+      item.setAttribute("oncommand", "gSetUserContextIdAndClick(event)");
+
+      resolve();
+    });
   },
 
   // Generic menu configuration.
