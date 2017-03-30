@@ -1,4 +1,3 @@
-
 const themeManager = {
   existingTheme: null,
   init() {
@@ -43,7 +42,43 @@ const themeManager = {
   }
 };
 
+const tabPageCounter = {
+  counter: {},
+
+  init() {
+    browser.tabs.onCreated.addListener(this.initTabCounter.bind(this));
+    browser.tabs.onRemoved.addListener(this.sendTabCountAndDelete.bind(this));
+    browser.webRequest.onCompleted.addListener(this.incrementTabCount.bind(this), {urls: ["<all_urls>"], types: ["main_frame"]});
+  },
+
+  initTabCounter(tab) {
+    this.counter[tab.id] = {
+      "cookieStoreId": tab.cookieStoreId,
+      "pageRequests": 0
+    };
+  },
+
+  sendTabCountAndDelete(tab) {
+    browser.runtime.sendMessage({
+      method: "sendTelemetryPayload",
+      event: "page-requests-completed-per-tab",
+      userContextId: this.counter[tab].cookieStoreId,
+      pageRequestCount: this.counter[tab].pageRequests
+    });
+    delete this.counter[tab.id];
+  },
+
+  incrementTabCount(details) {
+    browser.tabs.get(details.tabId).then(tab => {
+      this.counter[tab.id].pageRequests++;
+    }).catch(e => {
+      throw e;
+    });
+  }
+};
+
 themeManager.init();
+tabPageCounter.init();
 
 browser.runtime.sendMessage({
   method: "getPreference",
