@@ -115,6 +115,11 @@ const assignManager = {
             message: `Successfully ${actionName} site to always open in this container`,
             iconUrl: browser.extension.getURL("/img/onboarding-1.png")
           });
+          browser.runtime.sendMessage({
+            method: "sendTelemetryPayload",
+            event: `${actionName}-container-assignment`,
+            userContextId: userContextId,
+          });
           this.calculateContextMenu(tab);
         }).catch((e) => {
           throw e;
@@ -227,7 +232,17 @@ const assignManager = {
     // If the user has explicitly checked "Never Ask Again" on the warning page we will send them straight there
     if (neverAsk) {
       browser.tabs.create({url, cookieStoreId: `firefox-container-${userContextId}`, index});
+      browser.runtime.sendMessage({
+        method: "sendTelemetryPayload",
+        event: "auto-reload-page-in-container",
+        userContextId: userContextId,
+      });
     } else {
+      browser.runtime.sendMessage({
+        method: "sendTelemetryPayload",
+        event: "prompt-to-reload-page-in-container",
+        userContextId: userContextId,
+      });
       const confirmUrl = `${loadPage}?url=${url}`;
       browser.tabs.create({url: confirmUrl, cookieStoreId: `firefox-container-${userContextId}`, index}).then(() => {
         // We don't want to sync this URL ever nor clutter the users history
