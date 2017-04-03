@@ -189,6 +189,45 @@ of a `testpilottest` telemetry ping for each scenario.
   }
 ```
 
+* The user chooses "Always Open in this Container" context menu option. (Note: We send two separate event names: one for assigning a site to a container, one for removing a site from a container.)
+
+```js
+  {
+    "uuid": <uuid>,
+    "userContextId": <userContextId>,
+    "event": "[added|removed]-container-assignment"
+  }
+```
+
+* Firefox prompts the user to reload a site into a container after the user picked "Always Open in this Container".
+
+```js
+  {
+    "uuid": <uuid>,
+    "userContextId": <userContextId>,
+    "event": "prompt-reload-page-in-container"
+  }
+```
+
+* The user clicks "Take me there" to reload a site into a container after the user picked "Always Open in this Container".
+
+```js
+  {
+    "uuid": <uuid>,
+    "event": "click-to-reload-page-in-container"
+  }
+```
+
+* Firefox automatically reloads a site into a container after the user picked "Always Open in this Container".
+
+```js
+  {
+    "uuid": <uuid>,
+    "userContextId": <userContextId>,
+    "event": "auto-reload-page-in-container"
+  }
+```
+
 ### A Redshift schema for the payload:
 
 ```lua
