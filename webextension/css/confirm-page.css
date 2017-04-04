@@ -1,0 +1,37 @@
+/* General Rules and Resets */
+.title {
+  background-image: none;
+}
+
+main {
+  background: url(/img/onboarding-1.png) no-repeat;
+  background-position: -10px -15px;
+  background-size: 285px;
+  margin-inline-start: -285px;
+  padding-inline-start: 285px;
+}
+
+@media only screen and (max-width: 1300px) {
+  main {
+    background: none;
+  }
+
+  /* for a mid sized window we have enough for this but not our image */
+  .title {
+    background-image: url("chrome://global/skin/icons/info.svg");
+  }
+}
+
+html {
+  box-sizing: border-box;
+  font: message-box;
+}
+
+#redirect-url,
+#redirect-origin {
+  font-weight: bold;
+}
+
+dfn {
+  font-style: normal;
+}
