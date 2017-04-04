@@ -125,7 +125,7 @@ const assignManager = {
           return {};
         }
 
-        this.reloadPageInContainer(options.url, siteSettings.userContextId, tab.index, siteSettings.neverAsk);
+        this.reloadPageInContainer(options.url, siteSettings.userContextId, tab.index + 1, siteSettings.neverAsk);
         this.calculateContextMenu(tab);
         // If the user just opened the tab, we can auto close it
         if (this.CLOSEABLE_WINDOWS.has(tab.url)) {
