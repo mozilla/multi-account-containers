@@ -160,7 +160,8 @@ const assignManager = {
   isTabPermittedAssign(tab) {
     // Ensure we are not an important about url
     // Ensure we are not in incognito mode
-    if (this.CLOSEABLE_WINDOWS.has(tab.url)
+    const url = new URL(tab.url);
+    if (url.protocol === "about:"
         || tab.incognito) {
       return false;
     }
