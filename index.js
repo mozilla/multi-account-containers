@@ -117,7 +117,7 @@ const ContainerService = {
   _identitiesState: {},
   _windowMap: new Map(),
   _containerWasEnabled: false,
-  _onThemeChangedCallback: null,
+  _onBackgroundConnectCallback: null,
 
   init(installation, reason) {
     // If we are just been installed, we must store some information for the
@@ -260,7 +260,7 @@ const ContainerService = {
         }
       });
 
-      this.registerThemeConnection(api);
+      this.registerBackgroundConnection(api);
     }).catch(() => {
       throw new Error("WebExtension startup failed. Unable to continue.");
     });
@@ -307,28 +307,28 @@ const ContainerService = {
     Services.obs.addObserver(this, "lightweight-theme-changed", false);
   },
 
-  registerThemeConnection(api) {
-    // This is only used for theme notifications
+  registerBackgroundConnection(api) {
+    // This is only used for theme and container deletion notifications
     api.browser.runtime.onConnect.addListener((port) => {
-      this.onThemeChanged((theme, topic) => {
+      this._onBackgroundConnectCallback = (message, topic) => {
         port.postMessage({
           type: topic,
-          theme
+          message
         });
-      });
+      };
     });
   },
 
-  triggerThemeChanged(theme, topic) {
-    if (this._onThemeChangedCallback) {
-      this._onThemeChangedCallback(theme, topic);
+  triggerBackgroundCallback(message, topic) {
+    if (this._onBackgroundConnectCallback) {
+      this._onBackgroundConnectCallback(message, topic);
     }
   },
 
   observe(subject, topic) {
     if (topic === "lightweight-theme-changed") {
       this.getTheme().then((theme) => {
-        this.triggerThemeChanged(theme, topic);
+        this.triggerBackgroundCallback(theme, topic);
       }).catch(() => {
         throw new Error("Unable to get theme");
       });
@@ -344,10 +344,6 @@ const ContainerService = {
       }
       resolve(theme);
     });
-  },
-
-  onThemeChanged(callback) {
-    this._onThemeChangedCallback = callback;
   },
 
   // utility methods
@@ -960,12 +956,13 @@ const ContainerService = {
   },
 
   removeIdentity(args) {
+    const eventName = "delete-container";
     if (!("userContextId" in args)) {
       return Promise.reject("removeIdentity must be called with userContextId argument.");
     }
 
     this.sendTelemetryPayload({
-      "event": "delete-container",
+      "event": eventName,
       "userContextId": args.userContextId
     });
 
@@ -976,6 +973,7 @@ const ContainerService = {
 
     return this._closeTabs(tabsToClose).then(() => {
       const removed = ContextualIdentityProxy.remove(args.userContextId);
+      this.triggerBackgroundCallback({userContextId: args.userContextId}, eventName);
       this._forgetIdentity(args.userContextId);
       return this._refreshNeeded().then(() => removed );
     });
@@ -1370,25 +1368,48 @@ ContainerWindow.prototype = {
   },
 
   _configureContextMenu() {
-    return this._configureMenu("context-openlinkinusercontext-menu",
-      () => {
-        // This userContextId is what we want to exclude.
-        const tab = modelFor(this._window).tabs.activeTab;
-        return ContainerService._getUserContextIdFromTab(tab);
-      },
-      e => {
-        // This is a super internal method. Hopefully it will be stable in the
-        // next FF releases.
-        this._window.gContextMenu.openLinkInTab(e);
+    return Promise.all([
+      this._configureMenu("context-openlinkinusercontext-menu",
+        () => {
+          // This userContextId is what we want to exclude.
+          const tab = modelFor(this._window).tabs.activeTab;
+          return ContainerService._getUserContextIdFromTab(tab);
+        },
+        e => {
+          // This is a super internal method. Hopefully it will be stable in the
+          // next FF releases.
+          this._window.gContextMenu.openLinkInTab(e);
 
-        const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
-        ContainerService.showTabs({
-          userContextId,
-          nofocus: true,
-          window: this._window,
-        });
-      }
-    );
+          const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
+          ContainerService.showTabs({
+            userContextId,
+            nofocus: true,
+            window: this._window,
+          });
+        }
+      ),
+      this._configureContextMenuOpenLink(),
+    ]);
+  },
+
+  _configureContextMenuOpenLink() {
+    return new Promise(resolve => {
+      const self = this;
+      this._window.gSetUserContextIdAndClick = function(event) {
+        const tab = modelFor(self._window).tabs.activeTab;
+        const userContextId = ContainerService._getUserContextIdFromTab(tab);
+        event.target.setAttribute("data-usercontextid", userContextId);
+        self._window.gContextMenu.openLinkInTab(event);
+      };
+
+      let item = this._window.document.getElementById("context-openlinkincontainertab");
+      item.setAttribute("oncommand", "gSetUserContextIdAndClick(event)");
+
+      item = this._window.document.getElementById("context-openlinkintab");
+      item.setAttribute("oncommand", "gSetUserContextIdAndClick(event)");
+
+      resolve();
+    });
   },
 
   // Generic menu configuration.

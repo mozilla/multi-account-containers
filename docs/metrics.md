@@ -49,7 +49,7 @@ whether they are actively interacting with it.
   * Average number of container tabs when new window was clicked
 * How many containers do users have hidden at the same time? (when should we measure this? each time a container is hidden?)
 * Do users pin container tabs? (do we have existing Telemetry for pinning?)
-* Do users change URLs in a container tab? (sounds like it could be a flood unless we only record the first URL change?)
+* Do users visit more pages in container tabs than non-container tabs?
 
 ### Follow-up Questions
 
@@ -178,6 +178,56 @@ of a `testpilottest` telemetry ping for each scenario.
   }
 ```
 
+* The user closes a tab
+
+```js
+  {
+    "uuid": <uuid>,
+    "userContextId": <userContextId>,
+    "event": "page-requests-completed-per-tab",
+    "pageRequestCount": <pageRequestCount>
+  }
+```
+
+* The user chooses "Always Open in this Container" context menu option. (Note: We send two separate event names: one for assigning a site to a container, one for removing a site from a container.)
+
+```js
+  {
+    "uuid": <uuid>,
+    "userContextId": <userContextId>,
+    "event": "[added|removed]-container-assignment"
+  }
+```
+
+* Firefox prompts the user to reload a site into a container after the user picked "Always Open in this Container".
+
+```js
+  {
+    "uuid": <uuid>,
+    "userContextId": <userContextId>,
+    "event": "prompt-reload-page-in-container"
+  }
+```
+
+* The user clicks "Take me there" to reload a site into a container after the user picked "Always Open in this Container".
+
+```js
+  {
+    "uuid": <uuid>,
+    "event": "click-to-reload-page-in-container"
+  }
+```
+
+* Firefox automatically reloads a site into a container after the user picked "Always Open in this Container".
+
+```js
+  {
+    "uuid": <uuid>,
+    "userContextId": <userContextId>,
+    "event": "auto-reload-page-in-container"
+  }
+```
+
 ### A Redshift schema for the payload:
 
 ```lua
@@ -188,6 +238,7 @@ local schema = {
     {"clickedContainerTabCount",    "INTEGER",   255,    nil,         "Fields[payload.clickedContainerTabCount]"},
     {"eventSource",                 "VARCHAR",   255,    nil,         "Fields[payload.eventSource]"},
     {"event",                       "VARCHAR",   255,    nil,         "Fields[payload.event]"},
+    {"pageRequestCount",            "INTEGER",   255,    nil,         "Fields[payload.pageRequestCount]"}
     {"hiddenContainersCount",       "INTEGER",   255,    nil,         "Fields[payload.hiddenContainersCount]"},
     {"shownContainersCount",        "INTEGER",   255,    nil,         "Fields[payload.shownContainersCount]"},
     {"totalContainersCount",        "INTEGER",   255,    nil,         "Fields[payload.totalContainersCount]"},

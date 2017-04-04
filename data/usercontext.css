@@ -1,5 +1,5 @@
 /* HACK: Custom Container vars do not propigate correctly
-until the container tab is blurred and refocused, 
+until the container tab is blurred and refocused,
 adding the data-identity-color with the default hex
 value, or chrome url path as an alternate selector mitiages this bug.*/
 [data-identity-color="blue"],
@@ -66,7 +66,8 @@ value, or chrome url path as an alternate selector mitiages this bug.*/
 }
 
 [data-identity-icon="cart"],
-[data-identity-icon="chrome://browser/skin/usercontext/cart.svg"] {
+[data-identity-icon="chrome://browser/skin/usercontext/cart.svg"],
+[data-identity-icon="chrome://browser/skin/usercontext/shopping.svg"] {
   --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#cart");
 }
 
@@ -188,18 +189,6 @@ special cases are addressed below */
 .tabbrowser-tab[usercontextid][pinned="true"] .tab-background-middle::after {
   left: -150%;
   width: 400%;
-}
-
-/* this fixes containers tab center */
-#verticaltabs-box .tabbrowser-tab[usercontextid] .tab-content::after {
-  background-color: var(--identity-tab-color);
-  content: '';
-  height: 100% !important;
-  left: 0;
-  position: absolute;
-  top: 0;
-  width: 3px !important;
-  z-index: 999;
 }
 
 .tabs-newtab-button .toolbarbutton-icon[type="menu"] {
