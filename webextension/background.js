@@ -59,24 +59,6 @@ const assignManager = {
   },
 
   init() {
-    browser.tabs.onActivated.addListener((info) => {
-      browser.tabs.get(info.tabId).then((tab) => {
-        this.calculateContextMenu(tab);
-      }).catch((e) => {
-        throw e;
-      });
-    });
-
-    browser.windows.onFocusChanged.addListener((windowId) => {
-      browser.tabs.query({active: true, windowId}).then((tabs) => {
-        if (tabs && tabs[0]) {
-          this.calculateContextMenu(tabs[0]);
-        }
-      }).catch((e) => {
-        throw e;
-      });
-    });
-
     browser.runtime.onMessage.addListener((neverAskMessage) => {
       const pageUrl = neverAskMessage.pageUrl;
       if (neverAskMessage.neverAsk === true) {
@@ -115,6 +97,11 @@ const assignManager = {
             message: `Successfully ${actionName} site to always open in this container`,
             iconUrl: browser.extension.getURL("/img/onboarding-1.png")
           });
+          browser.runtime.sendMessage({
+            method: "sendTelemetryPayload",
+            event: `${actionName}-container-assignment`,
+            userContextId: userContextId,
+          });
           this.calculateContextMenu(tab);
         }).catch((e) => {
           throw e;
@@ -122,6 +109,7 @@ const assignManager = {
       }
     });
 
+    // Before a request is handled by the browser we decide if we should route through a different container
     browser.webRequest.onBeforeRequest.addListener((options) => {
       if (options.frameId !== 0 || options.tabId === -1) {
         return {};
@@ -150,17 +138,6 @@ const assignManager = {
         throw e;
       });
     },{urls: ["<all_urls>"], types: ["main_frame"]}, ["blocking"]);
-
-    browser.webRequest.onCompleted.addListener((options) => {
-      if (options.frameId !== 0 || options.tabId === -1) {
-        return {};
-      }
-      browser.tabs.get(options.tabId).then((tab) => {
-        this.calculateContextMenu(tab);
-      }).catch((e) => {
-        throw e;
-      });
-    },{urls: ["<all_urls>"], types: ["main_frame"]});
   },
 
 
@@ -227,7 +204,17 @@ const assignManager = {
     // If the user has explicitly checked "Never Ask Again" on the warning page we will send them straight there
     if (neverAsk) {
       browser.tabs.create({url, cookieStoreId: `firefox-container-${userContextId}`, index});
+      browser.runtime.sendMessage({
+        method: "sendTelemetryPayload",
+        event: "auto-reload-page-in-container",
+        userContextId: userContextId,
+      });
     } else {
+      browser.runtime.sendMessage({
+        method: "sendTelemetryPayload",
+        event: "prompt-to-reload-page-in-container",
+        userContextId: userContextId,
+      });
       const confirmUrl = `${loadPage}?url=${url}`;
       browser.tabs.create({url: confirmUrl, cookieStoreId: `firefox-container-${userContextId}`, index}).then(() => {
         // We don't want to sync this URL ever nor clutter the users history
@@ -241,6 +228,7 @@ const assignManager = {
 
 const messageHandler = {
   init() {
+    // Handles messages from index.js
     const port = browser.runtime.connect();
     port.onMessage.addListener(m => {
       switch (m.type) {
@@ -254,6 +242,55 @@ const messageHandler = {
         throw new Error(`Unhandled message type: ${m.message}`);
       }
     });
+
+    browser.tabs.onCreated.addListener((tab) => {
+      // This works at capturing the tabs as they are created
+      // However we need onFocusChanged and onActivated to capture the initial tab
+      if (tab.id === -1) {
+        return {};
+      }
+      tabPageCounter.initTabCounter(tab);
+    });
+
+    browser.tabs.onRemoved.addListener((tabId) => {
+      if (tabId === -1) {
+        return {};
+      }
+      tabPageCounter.sendTabCountAndDelete(tabId);
+    });
+
+    browser.tabs.onActivated.addListener((info) => {
+      browser.tabs.get(info.tabId).then((tab) => {
+        tabPageCounter.initTabCounter(tab);
+        assignManager.calculateContextMenu(tab);
+      }).catch((e) => {
+        throw e;
+      });
+    });
+
+    browser.windows.onFocusChanged.addListener((windowId) => {
+      browser.tabs.query({active: true, windowId}).then((tabs) => {
+        if (tabs && tabs[0]) {
+          tabPageCounter.initTabCounter(tabs[0]);
+          assignManager.calculateContextMenu(tabs[0]);
+        }
+      }).catch((e) => {
+        throw e;
+      });
+    });
+
+    browser.webRequest.onCompleted.addListener((details) => {
+      if (details.frameId !== 0 || details.tabId === -1) {
+        return {};
+      }
+
+      browser.tabs.get(details.tabId).then((tab) => {
+        tabPageCounter.incrementTabCount(tab);
+        assignManager.calculateContextMenu(tab);
+      }).catch((e) => {
+        throw e;
+      });
+    }, {urls: ["<all_urls>"], types: ["main_frame"]});
   }
 };
 
@@ -297,41 +334,33 @@ const themeManager = {
 const tabPageCounter = {
   counter: {},
 
-  init() {
-    browser.tabs.onCreated.addListener(this.initTabCounter.bind(this));
-    browser.tabs.onRemoved.addListener(this.sendTabCountAndDelete.bind(this));
-    browser.webRequest.onCompleted.addListener(this.incrementTabCount.bind(this), {urls: ["<all_urls>"], types: ["main_frame"]});
-  },
-
   initTabCounter(tab) {
+    if (tab.id in this.counter) {
+      return;
+    }
     this.counter[tab.id] = {
       "cookieStoreId": tab.cookieStoreId,
       "pageRequests": 0
     };
   },
 
-  sendTabCountAndDelete(tab) {
+  sendTabCountAndDelete(tabId) {
     browser.runtime.sendMessage({
       method: "sendTelemetryPayload",
       event: "page-requests-completed-per-tab",
-      userContextId: this.counter[tab].cookieStoreId,
-      pageRequestCount: this.counter[tab].pageRequests
+      userContextId: this.counter[tabId].cookieStoreId,
+      pageRequestCount: this.counter[tabId].pageRequests
     });
-    delete this.counter[tab.id];
+    delete this.counter[tabId];
   },
 
-  incrementTabCount(details) {
-    browser.tabs.get(details.tabId).then(tab => {
-      this.counter[tab.id].pageRequests++;
-    }).catch(e => {
-      throw e;
-    });
+  incrementTabCount(tab) {
+    this.counter[tab.id].pageRequests++;
   }
 };
 
 assignManager.init();
 themeManager.init();
-tabPageCounter.init();
 // Lets do this last as theme manager did a check before connecting before
 messageHandler.init();
 
