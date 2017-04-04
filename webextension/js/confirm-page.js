@@ -17,6 +17,10 @@ document.getElementById("redirect-form").addEventListener("submit", (e) => {
       // Can't really do much here user will have to click it again
     });
   }
+  browser.runtime.sendMessage({
+    method: "sendTelemetryPayload",
+    event: "click-to-reload-page-in-container",
+  });
   redirect();
 });
 
