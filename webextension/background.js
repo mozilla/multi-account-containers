@@ -243,7 +243,7 @@ const messageHandler = {
       }
     });
 
-    browser.tabs.onCreated.addListener((tab, other) => {
+    browser.tabs.onCreated.addListener((tab) => {
       // This works at capturing the tabs as they are created
       // However we need onFocusChanged and onActivated to capture the initial tab
       if (tab.id === -1) {
@@ -252,7 +252,7 @@ const messageHandler = {
       tabPageCounter.initTabCounter(tab);
     });
 
-    browser.tabs.onRemoved.addListener((tabId, other) => {
+    browser.tabs.onRemoved.addListener((tabId) => {
       if (tabId === -1) {
         return {};
       }
