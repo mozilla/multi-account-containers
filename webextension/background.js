@@ -280,6 +280,20 @@ const messageHandler = {
       });
     });
 
+    browser.idle.onStateChanged.addListener((newState) => {
+      browser.tabs.query({}).then(tabs => {
+        for (let tab of tabs) { // eslint-disable-line prefer-const
+          if (newState === "idle" || newState === "locked") {
+            tabPageCounter.sendTabCountAndDelete(tab.id, "user-went-idle");
+          } else if (newState === "active") {
+            tabPageCounter.initTabCounter(tab, "user-became-active");
+          }
+        }
+      }).catch(e => {
+        throw e;
+      });
+    });
+
     browser.webRequest.onCompleted.addListener((details) => {
       if (details.frameId !== 0 || details.tabId === -1) {
         return {};
@@ -333,30 +347,62 @@ const themeManager = {
 };
 
 const tabPageCounter = {
-  counter: {},
+  counters: {},
 
-  initTabCounter(tab) {
-    if (tab.id in this.counter) {
+  initTabCounter(tab, why = "user-activated-tab") {
+    // When the user becomes active,
+    // we ONLY need to initialize the activity counter
+    if (tab.id in this.counters && why === "user-became-active") {
+      this.counters[tab.id].activity = {
+        "cookieStoreId": tab.cookieStoreId,
+        "pageRequests": 0
+      };
       return;
     }
-    this.counter[tab.id] = {
+    if (tab.id in this.counters) {
+      return;
+    }
+    this.counters[tab.id] = {};
+    this.counters[tab.id].tab = {
+      "cookieStoreId": tab.cookieStoreId,
+      "pageRequests": 0
+    };
+    this.counters[tab.id].activity = {
       "cookieStoreId": tab.cookieStoreId,
       "pageRequests": 0
     };
   },
 
-  sendTabCountAndDelete(tabId) {
-    browser.runtime.sendMessage({
-      method: "sendTelemetryPayload",
-      event: "page-requests-completed-per-tab",
-      userContextId: this.counter[tabId].cookieStoreId,
-      pageRequestCount: this.counter[tabId].pageRequests
-    });
-    delete this.counter[tabId];
+  sendTabCountAndDelete(tabId, why = "user-closed-tab") {
+    if (why === "user-closed-tab") {
+      browser.runtime.sendMessage({
+        method: "sendTelemetryPayload",
+        event: "page-requests-completed-per-tab",
+        userContextId: this.counters[tabId].tab.cookieStoreId,
+        pageRequestCount: this.counters[tabId].tab.pageRequests
+      });
+      // When we send the ping because the user closed the tab,
+      // delete both the 'tab' and 'activity' counters
+      delete this.counters[tabId];
+    } else if (why === "user-went-idle") {
+      browser.runtime.sendMessage({
+        method: "sendTelemetryPayload",
+        event: "page-requests-completed-per-activity",
+        userContextId: this.counters[tabId].activity.cookieStoreId,
+        pageRequestCount: this.counters[tabId].activity.pageRequests
+      });
+      // When we send the ping because the user went idle,
+      // only reset the 'activity' counter
+      this.counters[tabId].activity = {
+        "cookieStoreId": this.counters[tabId].tab.cookieStoreId,
+        "pageRequests": 0
+      };
+    }
   },
 
   incrementTabCount(tab) {
-    this.counter[tab.id].pageRequests++;
+    this.counters[tab.id].tab.pageRequests++;
+    this.counters[tab.id].activity.pageRequests++;
   }
 };
 
