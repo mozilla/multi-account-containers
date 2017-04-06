@@ -189,6 +189,17 @@ of a `testpilottest` telemetry ping for each scenario.
   }
 ```
 
+* The user goes idle
+
+```js
+  {
+    "uuid": <uuid>,
+    "userContextId": <userContextId>,
+    "event": "page-requests-completed-per-activity",
+    "pageRequestCount": <pageRequestCount>
+  }
+```
+
 * The user chooses "Always Open in this Container" context menu option. (Note: We send two separate event names: one for assigning a site to a container, one for removing a site from a container.)
 
 ```js
