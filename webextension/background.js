@@ -127,8 +127,21 @@ const assignManager = {
 
         this.reloadPageInContainer(options.url, siteSettings.userContextId, tab.index + 1, siteSettings.neverAsk);
         this.calculateContextMenu(tab);
-        // If the user just opened the tab, we can auto close it
-        if (this.CLOSEABLE_WINDOWS.has(tab.url)) {
+
+        /* Removal of existing tabs:
+           We aim to open the new assigned container tab / warning prompt in it's own tab:
+             - As the history won't span from one container to another it seems most sane to not try and reopen a tab on history.back()
+             - When users open a new tab themselves we want to make sure we don't end up with three tabs as per: https://github.com/mozilla/testpilot-containers/issues/421
+           If we are coming from an internal url that are used for the new tab page (CLOSEABLE_WINDOWS), we can safely close as user is unlikely losing history
+           Detecting redirects on "new tab" opening actions is pretty hard as we don't get tab history:
+           - Redirects happen from Short URLs and tracking links that act as a gateway
+           - Extensions don't provide a way to history crawl for tabs, we could inject content scripts to do this
+               however they don't run on about:blank so this would likely be just as hacky.
+           We capture the time the tab was created and close if it was within the timeout to try to capture pages which haven't had user interaction or history.
+        */
+        if (this.CLOSEABLE_WINDOWS.has(tab.url)
+            || (messageHandler.lastCreatedTab
+            && messageHandler.lastCreatedTab.id === tab.id)) {
           browser.tabs.remove(tab.id);
         }
         return {
@@ -228,6 +241,11 @@ const assignManager = {
 };
 
 const messageHandler = {
+  // After the timer completes we assume it's a tab the user meant to keep open
+  // We use this to catch redirected tabs that have just opened
+  // If this were in platform we would change how the tab opens based on "new tab" link navigations such as ctrl+click
+  LAST_CREATED_TAB_TIMER: 2000,
+
   init() {
     // Handles messages from index.js
     const port = browser.runtime.connect();
@@ -292,6 +310,15 @@ const messageHandler = {
         throw e;
       });
     }, {urls: ["<all_urls>"], types: ["main_frame"]});
+
+    // lets remember the last tab created so we can close it if it looks like a redirect
+    browser.tabs.onCreated.addListener((details) => {
+      this.lastCreatedTab = details;
+      setTimeout(() => {
+        this.lastCreatedTab = null;
+      }, this.LAST_CREATED_TAB_TIMER);
+    });
+
   }
 };
 
