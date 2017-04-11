@@ -283,10 +283,10 @@ const messageHandler = {
     browser.idle.onStateChanged.addListener((newState) => {
       browser.tabs.query({}).then(tabs => {
         for (let tab of tabs) { // eslint-disable-line prefer-const
-          if (newState === "idle" || newState === "locked") {
+          if (newState === "idle") {
             tabPageCounter.sendTabCountAndDelete(tab.id, "user-went-idle");
-          } else if (newState === "active") {
-            tabPageCounter.initTabCounter(tab, "user-became-active");
+          } else if (newState === "active" && tab.active) {
+            tabPageCounter.initTabCounter(tab);
           }
         }
       }).catch(e => {
@@ -349,32 +349,38 @@ const themeManager = {
 const tabPageCounter = {
   counters: {},
 
-  initTabCounter(tab, why = "user-activated-tab") {
-    // When the user becomes active,
-    // we ONLY need to initialize the activity counter
-    if (tab.id in this.counters && why === "user-became-active") {
+  initTabCounter(tab) {
+    if (tab.id in this.counters) {
+      if (!("activity" in this.counters[tab.id])) {
+        this.counters[tab.id].activity = {
+          "cookieStoreId": tab.cookieStoreId,
+          "pageRequests": 0
+        };
+      }
+      if (!("tab" in this.counters[tab.id])) {
+        this.counters[tab.id].tab = {
+          "cookieStoreId": tab.cookieStoreId,
+          "pageRequests": 0
+        };
+      }
+    } else {
+      this.counters[tab.id] = {};
+      this.counters[tab.id].tab = {
+        "cookieStoreId": tab.cookieStoreId,
+        "pageRequests": 0
+      };
       this.counters[tab.id].activity = {
         "cookieStoreId": tab.cookieStoreId,
         "pageRequests": 0
       };
-      return;
     }
-    if (tab.id in this.counters) {
-      return;
-    }
-    this.counters[tab.id] = {};
-    this.counters[tab.id].tab = {
-      "cookieStoreId": tab.cookieStoreId,
-      "pageRequests": 0
-    };
-    this.counters[tab.id].activity = {
-      "cookieStoreId": tab.cookieStoreId,
-      "pageRequests": 0
-    };
   },
 
   sendTabCountAndDelete(tabId, why = "user-closed-tab") {
-    if (why === "user-closed-tab") {
+    if (!(this.counters[tabId])) {
+      return;
+    }
+    if (why === "user-closed-tab" && this.counters[tabId].tab) {
       browser.runtime.sendMessage({
         method: "sendTelemetryPayload",
         event: "page-requests-completed-per-tab",
@@ -384,7 +390,7 @@ const tabPageCounter = {
       // When we send the ping because the user closed the tab,
       // delete both the 'tab' and 'activity' counters
       delete this.counters[tabId];
-    } else if (why === "user-went-idle") {
+    } else if (why === "user-went-idle" && this.counters[tabId].activity) {
       browser.runtime.sendMessage({
         method: "sendTelemetryPayload",
         event: "page-requests-completed-per-activity",
