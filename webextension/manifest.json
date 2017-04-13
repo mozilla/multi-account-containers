@@ -24,6 +24,7 @@
     "cookies",
     "contextMenus",
     "history",
+    "idle",
     "notifications",
     "storage",
     "tabs",
