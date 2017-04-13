@@ -30,6 +30,10 @@ html {
 #redirect-url,
 #redirect-origin {
   font-weight: bold;
+
+  /* max-inline-size is needed to force this text smaller than the layout at a mid-sized window */
+  max-inline-size: 40rem;
+  word-break: break-all;
 }
 
 dfn {
