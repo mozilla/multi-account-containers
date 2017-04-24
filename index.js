@@ -457,7 +457,13 @@ const ContainerService = {
   },
 
   _createTabObject(tab) {
-    return { title: tab.title, url: tab.url, id: tab.id, active: true };
+    return {
+      title: tab.title,
+      url: tab.url,
+      id: tab.id,
+      active: true,
+      pinned: tabsUtils.isPinned(viewFor(tab))
+    };
   },
 
   _containerTabIterator(userContextId, cb) {
@@ -648,6 +654,7 @@ const ContainerService = {
         url: object.url,
         nofocus: args.nofocus || false,
         window: args.window || null,
+        pinned: object.pinned,
       }));
     }
 
@@ -868,6 +875,10 @@ const ContainerService = {
         if (!nofocus) {
           browserWin.gBrowser.selectedTab = tab;
           browserWin.focusAndSelectUrlBar();
+        }
+
+        if (args.pinned) {
+          browserWin.gBrowser.pinTab(tab);
         }
         return true;
       });
