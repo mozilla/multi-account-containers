@@ -141,6 +141,58 @@ const Logic = {
     return this._currentIdentity;
   },
 
+  cookieStoreId(userContextId) {
+    return `firefox-container-${userContextId}`;
+  },
+
+  _containerTabIterator(userContextId, cb) {
+    browser.tabs.query({
+      cookieStoreId: Logic.cookieStoreId(userContextId)
+    }).then((tabs) => {
+      tabs.forEach((tab) => {
+        cb(tab);
+      });
+    });
+  },
+
+  _containers(userContextId) {
+    return browser.tabs.query({
+      cookieStoreId: Logic.cookieStoreId(userContextId)
+    });
+  },
+
+  removeIdentity(userContextId) {
+    const eventName = "delete-container";
+    if (!userContextId) {
+      return Promise.reject("removeIdentity must be called with userContextId argument.");
+    }
+
+    browser.runtime.sendMessage({
+      method: "sendTelemetryPayload",
+      event: eventName,
+      userContextId
+    });
+
+    const removeTabsPromise = Logic._containers(userContextId).then((tabs) => {
+      const tabIds = tabs.map((tab) => tab.id);
+      return browser.tabs.remove(tabIds);
+    });
+
+    return removeTabsPromise.then(() => {
+      const removed = browser.contextualIdentities.remove(Logic.cookieStoreId(userContextId));
+      // Send delete event to webextension/background.js
+      browser.runtime.sendMessage({
+        type: eventName,
+        message: {userContextId}
+      });
+      browser.runtime.sendMessage({
+        method: "forgetIdentityAndRefresh"
+      }).then(() => {
+        return removed;
+      });
+    });
+  },
+
   generateIdentityName() {
     const defaultName = "Container #";
     const ids = [];
@@ -603,10 +655,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     });
 
     document.querySelector("#delete-container-ok-link").addEventListener("click", () => {
-      browser.runtime.sendMessage({
-        method: "removeIdentity",
-        userContextId: Logic.currentIdentity().userContextId,
-      }).then(() => {
+      Logic.removeIdentity(Logic.currentIdentity().userContextId).then(() => {
         return Logic.refreshIdentities();
       }).then(() => {
         Logic.showPreviousPanel();
