@@ -197,11 +197,11 @@ const ContainerService = {
       "queryIdentities",
       "getIdentity",
       "createIdentity",
-      "removeIdentity",
       "updateIdentity",
       "getPreference",
       "sendTelemetryPayload",
       "getTheme",
+      "forgetIdentityAndRefresh",
       "checkIncompatibleAddons"
     ];
 
@@ -309,7 +309,7 @@ const ContainerService = {
   },
 
   registerBackgroundConnection(api) {
-    // This is only used for theme and container deletion notifications
+    // This is only used for theme notifications
     api.browser.runtime.onConnect.addListener((port) => {
       this._onBackgroundConnectCallback = (message, topic) => {
         port.postMessage({
@@ -967,30 +967,6 @@ const ContainerService = {
     });
   },
 
-  removeIdentity(args) {
-    const eventName = "delete-container";
-    if (!("userContextId" in args)) {
-      return Promise.reject("removeIdentity must be called with userContextId argument.");
-    }
-
-    this.sendTelemetryPayload({
-      "event": eventName,
-      "userContextId": args.userContextId
-    });
-
-    const tabsToClose = [];
-    this._containerTabIterator(args.userContextId, tab => {
-      tabsToClose.push(tab);
-    });
-
-    return this._closeTabs(tabsToClose).then(() => {
-      const removed = ContextualIdentityProxy.remove(args.userContextId);
-      this.triggerBackgroundCallback({userContextId: args.userContextId}, eventName);
-      this._forgetIdentity(args.userContextId);
-      return this._refreshNeeded().then(() => removed );
-    });
-  },
-
   // Preferences
 
   getPreference(args) {
@@ -1167,6 +1143,11 @@ const ContainerService = {
       ContextualIdentityService.getPublicIdentityFromId = this._oldGetPublicIdentityFromId;
     }
     // End-Of-Hack
+  },
+
+  forgetIdentityAndRefresh(args) {
+    this._forgetIdentity(args.userContextId);
+    return this._refreshNeeded();
   },
 
   _forgetIdentity(userContextId = 0) {
