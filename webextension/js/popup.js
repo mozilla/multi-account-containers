@@ -152,7 +152,7 @@ const Logic = {
       tabs.forEach((tab) => {
         cb(tab);
       });
-    });
+    }).catch((e) => {throw e;});
   },
 
   _containers(userContextId) {
@@ -161,14 +161,21 @@ const Logic = {
     });
   },
 
+  sendTelemetryPayload(message = {}) {
+    if (!message.event) {
+      throw new Error("Missing event name for telemetry");
+    }
+    message.method = "sendTelemetryPayload";
+    browser.runtime.sendMessage(message);
+  },
+
   removeIdentity(userContextId) {
     const eventName = "delete-container";
     if (!userContextId) {
       return Promise.reject("removeIdentity must be called with userContextId argument.");
     }
 
-    browser.runtime.sendMessage({
-      method: "sendTelemetryPayload",
+    this.sendTelemetryPayload({
       event: eventName,
       userContextId
     });
@@ -189,7 +196,7 @@ const Logic = {
         method: "forgetIdentityAndRefresh"
       }).then(() => {
         return removed;
-      });
+      }).catch((e) => {throw e;});
     });
   },
 
@@ -292,8 +299,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     });
 
     document.querySelector("#edit-containers-link").addEventListener("click", () => {
-      browser.runtime.sendMessage({
-        method: "sendTelemetryPayload",
+      Logic.sendTelemetryPayload({
         event: "edit-containers"
       });
       Logic.showPanel(P_CONTAINERS_EDIT);
@@ -412,12 +418,12 @@ Logic.registerPanel(P_CONTAINER_INFO, {
         moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
       } else {
         moveTabsEl.addEventListener("click", () => {
-          return browser.runtime.sendMessage({
+          browser.runtime.sendMessage({
             method: "moveTabsToWindow",
             userContextId: Logic.currentIdentity().userContextId,
           }).then(() => {
             window.close();
-          });
+          }).catch((e) => { throw e; });
         });
       }
     }).catch(() => {
@@ -583,18 +589,43 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   _submitForm() {
     const identity = Logic.currentIdentity();
     const formValues = new FormData(this._editForm);
-    browser.runtime.sendMessage({
-      method: identity.userContextId ? "updateIdentity" : "createIdentity",
-      userContextId: identity.userContextId || 0,
-      name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
-      icon: formValues.get("container-icon") || DEFAULT_ICON,
-      color: formValues.get("container-color") || DEFAULT_COLOR,
-    }).then(() => {
+    this._createOrUpdateIdentity(
+      {
+        name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
+        icon: formValues.get("container-icon") || DEFAULT_ICON,
+        color: formValues.get("container-color") || DEFAULT_COLOR,
+      },
+      identity.userContextId || false
+    ).then(() => {
       return Logic.refreshIdentities();
     }).then(() => {
       Logic.showPreviousPanel();
     }).catch(() => {
       Logic.showPanel(P_CONTAINERS_LIST);
+    });
+  },
+
+  _createOrUpdateIdentity(params, userContextId) {
+    let donePromise;
+    if (userContextId) {
+      donePromise = browser.contextualIdentities.update(
+        Logic.cookieStoreId(userContextId),
+        params
+      );
+      Logic.sendTelemetryPayload({
+        event: "edit-container",
+        userContextId
+      });
+    } else {
+      donePromise = browser.contextualIdentities.create(params);
+      Logic.sendTelemetryPayload({
+        event: "add-container"
+      });
+    }
+    return donePromise.then(() => {
+      browser.runtime.sendMessage({
+        method: "refreshNeeded"
+      });
     });
   },
 
