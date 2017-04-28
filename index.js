@@ -196,11 +196,10 @@ const ContainerService = {
       "moveTabsToWindow",
       "queryIdentities",
       "getIdentity",
-      "createIdentity",
-      "updateIdentity",
       "getPreference",
       "sendTelemetryPayload",
       "getTheme",
+      "refreshNeeded",
       "forgetIdentityAndRefresh",
       "checkIncompatibleAddons"
     ];
@@ -911,62 +910,6 @@ const ContainerService = {
     return Promise.resolve(identity ? this._convert(identity) : null);
   },
 
-  createIdentity(args) {
-    this.sendTelemetryPayload({
-      "event": "add-container",
-    });
-
-    for (let arg of [ "name", "color", "icon"]) { // eslint-disable-line prefer-const
-      if (!(arg in args)) {
-        return Promise.reject("createIdentity must be called with " + arg + " argument.");
-      }
-    }
-
-    const color = this._fromNameToColor(args.color);
-    const icon = this._fromNameToIcon(args.icon);
-
-    const identity = ContextualIdentityProxy.create(args.name, icon, color);
-
-    this._identitiesState[identity.userContextId] = this._createIdentityState();
-
-    this._refreshNeeded().then(() => {
-      return this._convert(identity);
-    }).catch(() => {
-      return this._convert(identity);
-    });
-  },
-
-  updateIdentity(args) {
-    if (!("userContextId" in args)) {
-      return Promise.reject("updateIdentity must be called with userContextId argument.");
-    }
-
-    this.sendTelemetryPayload({
-      "event": "edit-container",
-      "userContextId": args.userContextId
-    });
-
-    const identity = ContextualIdentityProxy.getIdentityFromId(args.userContextId);
-    for (let arg of [ "name", "color", "icon"]) { // eslint-disable-line prefer-const
-      if ((arg in args)) {
-        identity[arg] = args[arg];
-      }
-    }
-
-    const color = this._fromNameToColor(identity.color);
-    const icon = this._fromNameToIcon(identity.icon);
-
-    const updated = ContextualIdentityProxy.update(args.userContextId,
-                                                   identity.name,
-                                                   icon, color);
-
-    this._refreshNeeded().then(() => {
-      return updated;
-    }).catch(() => {
-      return updated;
-    });
-  },
-
   // Preferences
 
   getPreference(args) {
@@ -1015,7 +958,7 @@ const ContainerService = {
     return this._windowMap.get(window);
   },
 
-  _refreshNeeded() {
+  refreshNeeded() {
     return this._configureWindows();
   },
 
@@ -1147,7 +1090,7 @@ const ContainerService = {
 
   forgetIdentityAndRefresh(args) {
     this._forgetIdentity(args.userContextId);
-    return this._refreshNeeded();
+    return this.refreshNeeded();
   },
 
   _forgetIdentity(userContextId = 0) {
