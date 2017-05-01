@@ -17,6 +17,7 @@
     "htmllint-cli": "^0.0.5",
     "jpm": "^1.2.2",
     "npm-run-all": "^4.0.0",
+    "shield-studies-addon-utils": "^2.0.0",
     "stylelint": "^7.9.0",
     "stylelint-config-standard": "^16.0.0",
     "stylelint-order": "^0.3.0",
