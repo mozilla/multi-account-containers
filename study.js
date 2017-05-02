@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 const self = require("sdk/self");
 const { when: unload } = require("sdk/system/unload");
 const tabs = require("sdk/tabs");
@@ -25,18 +29,13 @@ class ContainersStudy extends shield.Study {
   }
 
   whenEligible () {
-    console.log("ContainersStudy.whenEligible()");
   }
 
   whenInstalled () {
-    console.log("ContainersStudy.whenInstalled()");
-    console.log("shield variation: ", this.variation);
     tabs.open(`data:text/html, Thank you for helping us study Containers in Firefox. You are in the ${this.variation} variation.`);
   }
 
-  cleanup(reason) {
-    console.log("ContainersStudy.cleanup()");
-    console.log(reason);
+  cleanup() {
   }
 }
 
