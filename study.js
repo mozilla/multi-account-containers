@@ -1,5 +1,5 @@
 const self = require("sdk/self");
-const { shield } = require("./node_modules/shield-studies-addon-utils/lib/index");
+const shield = require("./lib/shield/index");
 const { when: unload } = require("sdk/system/unload");
 
 const studyConfig = {
