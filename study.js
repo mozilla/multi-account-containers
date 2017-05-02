@@ -19,7 +19,9 @@ const studyConfig = {
 
 class ContainersStudy extends shield.Study {
   isEligible () {
-    console.log("ContainersStudy.isEligible()");
+    // If the user already has testpilot-containers extension, they are in the
+    // Test Pilot experiment, so exclude them.
+    return super.isEligible();
   }
 
   whenEligible () {
@@ -42,4 +44,4 @@ const thisStudy = new ContainersStudy(studyConfig);
 
 unload((reason) => thisStudy.shutdown(reason));
 
-thisStudy.startup(self.loadReason);
+exports.study = thisStudy;
