@@ -58,19 +58,30 @@ const assignManager = {
     }
   },
 
+  _neverAsk(m) {
+    const pageUrl = m.pageUrl;
+    if (m.neverAsk === true) {
+      // If we have existing data and for some reason it hasn't been deleted etc lets update it
+      this.storageArea.get(pageUrl).then((siteSettings) => {
+        if (siteSettings) {
+          siteSettings.neverAsk = true;
+          this.storageArea.set(pageUrl, siteSettings);
+        }
+      }).catch((e) => {
+        throw e;
+      });
+    }
+  },
+
   init() {
-    browser.runtime.onMessage.addListener((neverAskMessage) => {
-      const pageUrl = neverAskMessage.pageUrl;
-      if (neverAskMessage.neverAsk === true) {
-        // If we have existing data and for some reason it hasn't been deleted etc lets update it
-        this.storageArea.get(pageUrl).then((siteSettings) => {
-          if (siteSettings) {
-            siteSettings.neverAsk = true;
-            this.storageArea.set(pageUrl, siteSettings);
-          }
-        }).catch((e) => {
-          throw e;
-        });
+    browser.runtime.onMessage.addListener((m) => {
+      switch (m.type) {
+      case "delete-container":
+        assignManager.deleteContainer(m.message.userContextId);
+        break;
+      case "never-ask":
+        this._neverAsk(m);
+        break;
       }
     });
 
@@ -253,9 +264,6 @@ const messageHandler = {
       switch (m.type) {
       case "lightweight-theme-changed":
         themeManager.update(m.message);
-        break;
-      case "delete-container":
-        assignManager.deleteContainer(m.message.userContextId);
         break;
       default:
         throw new Error(`Unhandled message type: ${m.message}`);
