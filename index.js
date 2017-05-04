@@ -124,7 +124,8 @@ const ContainerService = {
     // uninstallation. This object contains also a version number, in case we
     // need to implement a migration in the future.
     // In 1.1.1 and less we deleted savedConfiguration on upgrade so we need to rebuild
-    if (installation && (reason !== "upgrade" || !ss.storage.savedConfiguration)) {
+    if (!ss.storage.savedConfiguration ||
+        (installation && reason !== "upgrade")) {
       let preInstalledIdentities = []; // eslint-disable-line prefer-const
       ContextualIdentityProxy.getIdentities().forEach(identity => {
         preInstalledIdentities.push(identity.userContextId);
