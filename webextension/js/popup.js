@@ -155,7 +155,7 @@ const Logic = {
     }).catch((e) => {throw e;});
   },
 
-  _containers(userContextId) {
+  _containerTabs(userContextId) {
     return browser.tabs.query({
       cookieStoreId: Logic.cookieStoreId(userContextId)
     });
@@ -180,7 +180,7 @@ const Logic = {
       userContextId
     });
 
-    const removeTabsPromise = Logic._containers(userContextId).then((tabs) => {
+    const removeTabsPromise = Logic._containerTabs(userContextId).then((tabs) => {
       const tabIds = tabs.map((tab) => tab.id);
       return browser.tabs.remove(tabIds);
     });
