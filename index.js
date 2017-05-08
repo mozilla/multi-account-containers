@@ -4,6 +4,7 @@
 
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 const DEFAULT_TAB = "about:newtab";
+const LOOKUP_KEY = "$ref";
 
 const SHOW_MENU_TIMEOUT = 100;
 const HIDE_MENU_TIMEOUT = 300;
@@ -73,41 +74,43 @@ Cu.import("resource:///modules/CustomizableWidgets.jsm");
 Cu.import("resource:///modules/sessionstore/SessionStore.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
-// ----------------------------------------------------------------------------
 // ContextualIdentityProxy
 
 const ContextualIdentityProxy = {
   getIdentities() {
+    let response;
     if ("getPublicIdentities" in ContextualIdentityService) {
-      return ContextualIdentityService.getPublicIdentities();
+      response = ContextualIdentityService.getPublicIdentities();
+    } else {
+      response = ContextualIdentityService.getIdentities();
     }
 
-    return ContextualIdentityService.getIdentities();
-  },
-
-  getUserContextLabel(userContextId) {
-    return ContextualIdentityService.getUserContextLabel(userContextId);
+    return response.map((identity) => {
+      return this._convert(identity);
+    });
   },
 
   getIdentityFromId(userContextId) {
+    let response;
     if ("getPublicIdentityFromId" in ContextualIdentityService) {
-      return ContextualIdentityService.getPublicIdentityFromId(userContextId);
+      response = ContextualIdentityService.getPublicIdentityFromId(userContextId);
+    } else {
+      response = ContextualIdentityService.getIdentityFromId(userContextId);
     }
-
-    return ContextualIdentityService.getIdentityFromId(userContextId);
+    if (response) {
+      return this._convert(response);
+    }
+    return response;
   },
 
-  create(name, icon, color) {
-    return ContextualIdentityService.create(name, icon, color);
+  _convert(identity) {
+    return {
+      name: ContextualIdentityService.getUserContextLabel(identity.userContextId),
+      icon: identity.icon,
+      color: identity.color,
+      userContextId: identity.userContextId,
+    };
   },
-
-  update(userContextId, name, icon, color) {
-    return ContextualIdentityService.update(userContextId, name, icon, color);
-  },
-
-  remove(userContextId) {
-    return ContextualIdentityService.remove(userContextId);
-  }
 };
 
 // ----------------------------------------------------------------------------
@@ -149,7 +152,7 @@ const ContainerService = {
         // Maybe rename the Banking container.
         const identity = ContextualIdentityProxy.getIdentityFromId(3);
         if (identity && identity.l10nID === "userContextBanking.label") {
-          ContextualIdentityProxy.update(identity.userContextId,
+          ContextualIdentityService.update(identity.userContextId,
                                          "Finance",
                                          identity.icon,
                                          identity.color);
@@ -166,6 +169,18 @@ const ContainerService = {
         }
       }
     }
+
+    // TOCHECK should this run on all code
+    ContextualIdentityProxy.getIdentities().forEach(identity => {
+      const newIcon = this._fromIconToName(identity.icon);
+      const newColor = this._fromColorToName(identity.color);
+      if (newIcon !== identity.icon || newColor !== identity.color) {
+        ContextualIdentityService.update(identity.userContextId,
+                                       ContextualIdentityService.getUserContextLabel(identity.userContextId),
+                                       newIcon,
+                                       newColor);
+      }
+    });
 
     // Let's see if containers were enabled before this addon.
     this._containerWasEnabled =
@@ -192,9 +207,8 @@ const ContainerService = {
       "sortTabs",
       "getTabs",
       "showTab",
-      "openTab",
       "moveTabsToWindow",
-      "queryIdentities",
+      "queryIdentitiesState",
       "getIdentity",
       "getPreference",
       "sendTelemetryPayload",
@@ -308,7 +322,7 @@ const ContainerService = {
   },
 
   registerBackgroundConnection(api) {
-    // This is only used for theme notifications
+    // This is only used for theme notifications and new tab
     api.browser.runtime.onConnect.addListener((port) => {
       this._onBackgroundConnectCallback = (message, topic) => {
         port.postMessage({
@@ -396,18 +410,6 @@ const ContainerService = {
     return containersCounts;
   },
 
-  _convert(identity) {
-    // Let's convert the known colors to their color names.
-    return {
-      name: ContextualIdentityProxy.getUserContextLabel(identity.userContextId),
-      image: this._fromIconToName(identity.icon),
-      color: this._fromColorToName(identity.color),
-      userContextId: identity.userContextId,
-      hasHiddenTabs: !!this._identitiesState[identity.userContextId].hiddenTabs.length,
-      hasOpenTabs: !!this._identitiesState[identity.userContextId].openTabs
-    };
-  },
-
   // In FF 50-51, the icon is the full path, in 52 and following
   // releases, we have IDs to be used with a svg file. In this function
   // we map URLs to svg IDs.
@@ -432,10 +434,6 @@ const ContainerService = {
   },
 
   // Helper methods for converting icons to names and names to icons.
-
-  _fromNameToIcon(name) {
-    return this._fromNameOrIcon(name, "image", "");
-  },
 
   _fromIconToName(icon) {
     return this._fromNameOrIcon(icon, "name", "circle");
@@ -559,6 +557,29 @@ const ContainerService = {
     };
     Object.assign(payload, args);
 
+    /* This is to masage the data whilst it is still active in the SDK side */
+    const containersCounts = this._containersCounts();
+    Object.keys(payload).forEach((keyName) => {
+      let value = payload[keyName];
+      if (value === LOOKUP_KEY) {
+        switch (keyName) {
+          case "clickedContainerTabCount":
+            value = this._containerTabCount(payload.userContextId);
+            break;
+          case "shownContainersCount":
+            value = containersCounts.shown;
+            break;
+          case "hiddenContainersCount":
+            value = containersCounts.hidden;
+            break;
+          case "totalContainersCount":
+            value = containersCounts.total;
+            break;
+        }
+      }
+      payload[keyName] = value;
+    });
+
     this._sendEvent(payload);
   },
 
@@ -593,10 +614,10 @@ const ContainerService = {
     this.sendTelemetryPayload({
       "event": "hide-tabs",
       "userContextId": args.userContextId,
-      "clickedContainerTabCount": this._containerTabCount(args.userContextId),
-      "shownContainersCount": containersCounts.shown,
-      "hiddenContainersCount": containersCounts.hidden,
-      "totalContainersCount": containersCounts.total
+      "clickedContainerTabCount": LOOKUP_KEY,
+      "shownContainersCount": LOOKUP_KEY,
+      "hiddenContainersCount": LOOKUP_KEY,
+      "totalContainersCount": LOOKUP_KEY
     });
 
     const tabsToClose = [];
@@ -633,14 +654,13 @@ const ContainerService = {
       return Promise.resolve(null);
     }
 
-    const containersCounts = this._containersCounts();
     this.sendTelemetryPayload({
       "event": "show-tabs",
       "userContextId": args.userContextId,
-      "clickedContainerTabCount": this._containerTabCount(args.userContextId),
-      "shownContainersCount": containersCounts.shown,
-      "hiddenContainersCount": containersCounts.hidden,
-      "totalContainersCount": containersCounts.total
+      "clickedContainerTabCount": LOOKUP_KEY,
+      "shownContainersCount": LOOKUP_KEY,
+      "hiddenContainersCount": LOOKUP_KEY,
+      "totalContainersCount": LOOKUP_KEY
     });
 
     const promises = [];
@@ -653,7 +673,6 @@ const ContainerService = {
         userContextId: args.userContextId,
         url: object.url,
         nofocus: args.nofocus || false,
-        window: args.window || null,
         pinned: object.pinned,
       }));
     }
@@ -840,74 +859,37 @@ const ContainerService = {
   },
 
   openTab(args) {
-    return new Promise(resolve => {
-      if ("window" in args && args.window) {
-        resolve(args.window);
-      } else {
-        this._recentBrowserWindow().then(browserWin => {
-          resolve(browserWin);
-        }).catch(() => {});
-      }
-    }).then(browserWin => {
-      const userContextId = ("userContextId" in args) ? args.userContextId : 0;
-      const source = ("source" in args) ? args.source : null;
-      const nofocus = ("nofocus" in args) ? args.nofocus : false;
-
-      // Only send telemetry for tabs opened by UI - i.e., not via showTabs
-      if (source && userContextId) {
-        this.sendTelemetryPayload({
-          "event": "open-tab",
-          "eventSource": source,
-          "userContextId": userContextId,
-          "clickedContainerTabCount": this._containerTabCount(userContextId)
-        });
-      }
-
-      let promise;
-      if (userContextId) {
-        promise = this.showTabs(args);
-      } else {
-        promise = Promise.resolve(null);
-      }
-
-      return promise.then(() => {
-        const tab = browserWin.gBrowser.addTab(args.url || DEFAULT_TAB, { userContextId });
-        if (!nofocus) {
-          browserWin.gBrowser.selectedTab = tab;
-          browserWin.focusAndSelectUrlBar();
-        }
-
-        if (args.pinned) {
-          browserWin.gBrowser.pinTab(tab);
-        }
-        return true;
-      });
-    }).catch(() => false);
+    return this.triggerBackgroundCallback(args, "open-tab");
   },
 
   // Identities management
-
-  queryIdentities() {
+  queryIdentitiesState() {
     return new Promise(resolve => {
-      const identities = [];
+      const identities = {};
 
       ContextualIdentityProxy.getIdentities().forEach(identity => {
         this._remapTabsIfMissing(identity.userContextId);
-        const convertedIdentity = this._convert(identity);
-        identities.push(convertedIdentity);
+        const convertedIdentity = {
+          hasHiddenTabs: !!this._identitiesState[identity.userContextId].hiddenTabs.length,
+          hasOpenTabs: !!this._identitiesState[identity.userContextId].openTabs
+        };
+
+        identities[identity.userContextId] = convertedIdentity;
       });
 
       resolve(identities);
     });
   },
 
-  getIdentity(args) {
-    if (!("userContextId" in args)) {
-      return Promise.reject("getIdentity must be called with userContextId argument.");
-    }
+  queryIdentities() {
+    return new Promise(resolve => {
+      const identities = ContextualIdentityProxy.getIdentities();
+      identities.forEach(identity => {
+        this._remapTabsIfMissing(identity.userContextId);
+      });
 
-    const identity = ContextualIdentityProxy.getIdentityFromId(args.userContextId);
-    return Promise.resolve(identity ? this._convert(identity) : null);
+      resolve(identities);
+    });
   },
 
   // Preferences
@@ -974,26 +956,25 @@ const ContainerService = {
     }
 
     const userContextId = ContainerService._getUserContextIdFromTab(tab);
-    return ContainerService.getIdentity({userContextId}).then(identity => {
-      const hbox = viewFor(tab.window).document.getElementById("userContext-icons");
+    const identity = ContextualIdentityProxy.getIdentityFromId(userContextId);
+    const hbox = viewFor(tab.window).document.getElementById("userContext-icons");
 
-      if (!identity) {
-        hbox.setAttribute("data-identity-color", "");
-        return;
-      }
+    if (!identity) {
+      hbox.setAttribute("data-identity-color", "");
+      return Promise.resolve(null);
+    }
 
-      hbox.setAttribute("data-identity-color", identity.color);
+    hbox.setAttribute("data-identity-color", identity.color);
 
-      const label = viewFor(tab.window).document.getElementById("userContext-label");
-      label.setAttribute("value", identity.name);
-      label.style.color = ContainerService._fromNameToColor(identity.color);
+    const label = viewFor(tab.window).document.getElementById("userContext-label");
+    label.setAttribute("value", identity.name);
+    label.style.color = ContainerService._fromNameToColor(identity.color);
 
-      const indicator = viewFor(tab.window).document.getElementById("userContext-indicator");
-      indicator.setAttribute("data-identity-icon", identity.image);
-      indicator.style.listStyleImage = "";
-    }).then(() => {
-      return this._restyleTab(tab);
-    });
+    const indicator = viewFor(tab.window).document.getElementById("userContext-indicator");
+    indicator.setAttribute("data-identity-icon", identity.icon);
+    indicator.style.listStyleImage = "";
+
+    return this._restyleTab(tab);
   },
 
   _restyleTab(tab) {
@@ -1001,12 +982,11 @@ const ContainerService = {
       return Promise.resolve(null);
     }
     const userContextId = ContainerService._getUserContextIdFromTab(tab);
-    return ContainerService.getIdentity({userContextId}).then(identity => {
-      if (!identity) {
-        return;
-      }
-      viewFor(tab).setAttribute("data-identity-color", identity.color);
-    });
+    const identity = ContextualIdentityProxy.getIdentityFromId(userContextId);
+    if (!identity) {
+      return Promise.resolve(null);
+    }
+    return Promise.resolve(viewFor(tab).setAttribute("data-identity-color", identity.color));
   },
 
   // Uninstallation
@@ -1065,7 +1045,7 @@ const ContainerService = {
       const preInstalledIdentities = data.preInstalledIdentities;
       ContextualIdentityProxy.getIdentities().forEach(identity => {
         if (!preInstalledIdentities.includes(identity.userContextId)) {
-          ContextualIdentityProxy.remove(identity.userContextId);
+          ContextualIdentityService.remove(identity.userContextId);
         } else {
           // Let's cleanup all the cookies for this container.
           Services.obs.notifyObservers(null, "clear-origin-attributes-data",
@@ -1237,14 +1217,13 @@ ContainerWindow.prototype = {
         menuItemElement.className = "menuitem-iconic";
         menuItemElement.setAttribute("label", identity.name);
         menuItemElement.setAttribute("data-usercontextid", identity.userContextId);
-        menuItemElement.setAttribute("data-identity-icon", identity.image);
+        menuItemElement.setAttribute("data-identity-icon", identity.icon);
         menuItemElement.setAttribute("data-identity-color", identity.color);
 
         menuItemElement.addEventListener("command", (e) => {
           ContainerService.openTab({
             userContextId: identity.userContextId,
-            source: "tab-bar",
-            window: this._window,
+            source: "tab-bar"
           });
           e.stopPropagation();
         });
@@ -1280,8 +1259,7 @@ ContainerWindow.prototype = {
       const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
       ContainerService.openTab({
         userContextId: userContextId,
-        source: "file-menu",
-        window: this._window,
+        source: "file-menu"
       });
     });
   },
@@ -1296,8 +1274,7 @@ ContainerWindow.prototype = {
       }).then(() => {
         return ContainerService.openTab({
           userContextId,
-          source: "alltabs-menu",
-          window: this._window,
+          source: "alltabs-menu"
         });
       }).catch(() => {});
     });
@@ -1399,7 +1376,7 @@ ContainerWindow.prototype = {
           menuitem.classList.add("menuitem-iconic");
           menuitem.setAttribute("data-usercontextid", identity.userContextId);
           menuitem.setAttribute("data-identity-color", identity.color);
-          menuitem.setAttribute("data-identity-icon", identity.image);
+          menuitem.setAttribute("data-identity-icon", identity.icon);
           fragment.appendChild(menuitem);
         });
 

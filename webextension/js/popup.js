@@ -116,13 +116,27 @@ const Logic = {
     });
   },
 
+  userContextId(cookieStoreId = "") {
+    const userContextId = cookieStoreId.replace("firefox-container-", "");
+    return (userContextId !== cookieStoreId) ? Number(userContextId) : false;
+  },
+
   refreshIdentities() {
-    return browser.runtime.sendMessage({
-      method: "queryIdentities"
-    })
-    .then(identities => {
-      this._identities = identities;
-    });
+    return Promise.all([
+      browser.contextualIdentities.query({}),
+      browser.runtime.sendMessage({
+        method: "queryIdentitiesState"
+      })
+    ]).then(([identities, state]) => {
+      this._identities = identities.map((identity) => {
+        const stateObject = state[Logic.userContextId(identity.cookieStoreId)];
+        if (stateObject) {
+          identity.hasOpenTabs = stateObject.hasOpenTabs;
+          identity.hasHiddenTabs = stateObject.hasHiddenTabs;
+        }
+        return identity;
+      });
+    }).catch((e) => {throw e;});
   },
 
   showPanel(panel, currentIdentity = null) {
@@ -371,7 +385,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       context.innerHTML = escaped`
         <div class="userContext-icon-wrapper open-newtab">
           <div class="usercontext-icon"
-            data-identity-icon="${identity.image}"
+            data-identity-icon="${identity.icon}"
             data-identity-color="${identity.color}">
           </div>
         </div>
@@ -393,8 +407,10 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             || e.type === "keydown") {
           browser.runtime.sendMessage({
             method: "openTab",
-            userContextId: identity.userContextId,
-            source: "pop-up"
+            message: {
+              userContextId: Logic.userContextId(identity.cookieStoreId),
+              source: "pop-up"
+            }
           }).then(() => {
             window.close();
           }).catch(() => {
@@ -437,7 +453,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       const identity = Logic.currentIdentity();
       browser.runtime.sendMessage({
         method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
-        userContextId: identity.userContextId
+        userContextId: Logic.userContextId(identity.cookieStoreId)
       }).then(() => {
         window.close();
       }).catch(() => {
@@ -467,7 +483,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
         Logic.addEnterHandler(moveTabsEl, () => {
           browser.runtime.sendMessage({
             method: "moveTabsToWindow",
-            userContextId: Logic.currentIdentity().userContextId,
+            userContextId: Logic.userContextId(Logic.currentIdentity().cookieStoreId),
           }).then(() => {
             window.close();
           }).catch((e) => { throw e; });
@@ -486,7 +502,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     document.getElementById("container-info-name").textContent = identity.name;
 
     const icon = document.getElementById("container-info-icon");
-    icon.setAttribute("data-identity-icon", identity.image);
+    icon.setAttribute("data-identity-icon", identity.icon);
     icon.setAttribute("data-identity-color", identity.color);
 
     // Show or not the has-tabs section.
@@ -509,7 +525,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     // Let's retrieve the list of tabs.
     return browser.runtime.sendMessage({
       method: "getTabs",
-      userContextId: identity.userContextId,
+      userContextId: Logic.userContextId(identity.cookieStoreId),
     }).then(this.buildInfoTable);
   },
 
@@ -568,7 +584,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
         <td class="userContext-wrapper">
           <div class="userContext-icon-wrapper">
             <div class="usercontext-icon"
-              data-identity-icon="${identity.image}"
+              data-identity-icon="${identity.icon}"
               data-identity-color="${identity.color}">
             </div>
           </div>
@@ -639,7 +655,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     return browser.runtime.sendMessage({
       method: "createOrUpdateContainer",
       message: {
-        userContextId: identity.userContextId || false,
+        userContextId: Logic.userContextId(identity.cookieStoreId) || false,
         params: {
           name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
           icon: formValues.get("container-icon") || DEFAULT_ICON,
@@ -691,7 +707,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       colorInput.checked = colorInput.value === identity.color;
     });
     [...document.querySelectorAll("[name='container-icon']")].forEach(iconInput => {
-      iconInput.checked = iconInput.value === identity.image;
+      iconInput.checked = iconInput.value === identity.icon;
     });
 
     return Promise.resolve(null);
@@ -717,7 +733,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
           if you want to do anything post delete do it in the background script.
           Browser console currently warns about not listening also.
       */
-      Logic.removeIdentity(Logic.currentIdentity().userContextId).then(() => {
+      Logic.removeIdentity(Logic.userContextId(Logic.currentIdentity().cookieStoreId)).then(() => {
         return Logic.refreshIdentities();
       }).then(() => {
         Logic.showPreviousPanel();
@@ -735,7 +751,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     document.getElementById("delete-container-name").textContent = identity.name;
 
     const icon = document.getElementById("delete-container-icon");
-    icon.setAttribute("data-identity-icon", identity.image);
+    icon.setAttribute("data-identity-icon", identity.icon);
     icon.setAttribute("data-identity-color", identity.color);
 
     return Promise.resolve(null);
