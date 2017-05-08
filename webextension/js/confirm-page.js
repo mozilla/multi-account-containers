@@ -9,7 +9,7 @@ document.getElementById("redirect-form").addEventListener("submit", (e) => {
   // Sending neverAsk message to background to store for next time we see this process
   if (neverAsk) {
     browser.runtime.sendMessage({
-      type: "never-ask",
+      method: "neverAsk",
       neverAsk: true,
       pageUrl: redirectUrl
     }).then(() => {
