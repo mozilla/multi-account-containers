@@ -141,6 +141,25 @@ const Logic = {
     return this._currentIdentity;
   },
 
+  sendTelemetryPayload(message = {}) {
+    if (!message.event) {
+      throw new Error("Missing event name for telemetry");
+    }
+    message.method = "sendTelemetryPayload";
+    browser.runtime.sendMessage(message);
+  },
+
+  removeIdentity(userContextId) {
+    if (!userContextId) {
+      return Promise.reject("removeIdentity must be called with userContextId argument.");
+    }
+
+    return browser.runtime.sendMessage({
+      method: "deleteContainer",
+      message: {userContextId}
+    });
+  },
+
   generateIdentityName() {
     const defaultName = "Container #";
     const ids = [];
@@ -240,8 +259,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     });
 
     document.querySelector("#edit-containers-link").addEventListener("click", () => {
-      browser.runtime.sendMessage({
-        method: "sendTelemetryPayload",
+      Logic.sendTelemetryPayload({
         event: "edit-containers"
       });
       Logic.showPanel(P_CONTAINERS_EDIT);
@@ -360,12 +378,12 @@ Logic.registerPanel(P_CONTAINER_INFO, {
         moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
       } else {
         moveTabsEl.addEventListener("click", () => {
-          return browser.runtime.sendMessage({
+          browser.runtime.sendMessage({
             method: "moveTabsToWindow",
             userContextId: Logic.currentIdentity().userContextId,
           }).then(() => {
             window.close();
-          });
+          }).catch((e) => { throw e; });
         });
       }
     }).catch(() => {
@@ -531,12 +549,16 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   _submitForm() {
     const identity = Logic.currentIdentity();
     const formValues = new FormData(this._editForm);
-    browser.runtime.sendMessage({
-      method: identity.userContextId ? "updateIdentity" : "createIdentity",
-      userContextId: identity.userContextId || 0,
-      name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
-      icon: formValues.get("container-icon") || DEFAULT_ICON,
-      color: formValues.get("container-color") || DEFAULT_COLOR,
+    return browser.runtime.sendMessage({
+      method: "createOrUpdateContainer",
+      message: {
+        userContextId: identity.userContextId || false,
+        params: {
+          name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
+          icon: formValues.get("container-icon") || DEFAULT_ICON,
+          color: formValues.get("container-color") || DEFAULT_COLOR,
+        }
+      }
     }).then(() => {
       return Logic.refreshIdentities();
     }).then(() => {
@@ -603,10 +625,12 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     });
 
     document.querySelector("#delete-container-ok-link").addEventListener("click", () => {
-      browser.runtime.sendMessage({
-        method: "removeIdentity",
-        userContextId: Logic.currentIdentity().userContextId,
-      }).then(() => {
+      /* This promise wont resolve if the last tab was removed from the window.
+          as the message async callback stops listening, this isn't an issue for us however it might be in future
+          if you want to do anything post delete do it in the background script.
+          Browser console currently warns about not listening also.
+      */
+      Logic.removeIdentity(Logic.currentIdentity().userContextId).then(() => {
         return Logic.refreshIdentities();
       }).then(() => {
         Logic.showPreviousPanel();
