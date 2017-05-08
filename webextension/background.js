@@ -74,17 +74,6 @@ const assignManager = {
   },
 
   init() {
-    browser.runtime.onMessage.addListener((m) => {
-      switch (m.type) {
-      case "delete-container":
-        assignManager.deleteContainer(m.message.userContextId);
-        break;
-      case "never-ask":
-        this._neverAsk(m);
-        break;
-      }
-    });
-
     browser.contextMenus.onClicked.addListener((info, tab) => {
       const userContextId = this.getUserContextIdFromCookieStore(tab);
       // Mapping ${URL(info.pageUrl).hostname} to ${userContextId}
@@ -108,8 +97,7 @@ const assignManager = {
             message: `Successfully ${actionName} site to always open in this container`,
             iconUrl: browser.extension.getURL("/img/onboarding-1.png")
           });
-          browser.runtime.sendMessage({
-            method: "sendTelemetryPayload",
+          backgroundLogic.sendTelemetryPayload({
             event: `${actionName}-container-assignment`,
             userContextId: userContextId,
           });
@@ -229,14 +217,12 @@ const assignManager = {
     // If the user has explicitly checked "Never Ask Again" on the warning page we will send them straight there
     if (neverAsk) {
       browser.tabs.create({url, cookieStoreId: `firefox-container-${userContextId}`, index});
-      browser.runtime.sendMessage({
-        method: "sendTelemetryPayload",
+      backgroundLogic.sendTelemetryPayload({
         event: "auto-reload-page-in-container",
         userContextId: userContextId,
       });
     } else {
-      browser.runtime.sendMessage({
-        method: "sendTelemetryPayload",
+      backgroundLogic.sendTelemetryPayload({
         event: "prompt-to-reload-page-in-container",
         userContextId: userContextId,
       });
@@ -251,6 +237,77 @@ const assignManager = {
   }
 };
 
+
+const backgroundLogic = {
+  deleteContainer(userContextId) {
+    this.sendTelemetryPayload({
+      event: "delete-container",
+      userContextId
+    });
+
+    const removeTabsPromise = this._containerTabs(userContextId).then((tabs) => {
+      const tabIds = tabs.map((tab) => tab.id);
+      return browser.tabs.remove(tabIds);
+    });
+
+    return new Promise((resolve) => {
+      removeTabsPromise.then(() => {
+        const removed = browser.contextualIdentities.remove(this.cookieStoreId(userContextId));
+        removed.then(() => {
+          assignManager.deleteContainer(userContextId);
+          browser.runtime.sendMessage({
+            method: "forgetIdentityAndRefresh"
+          }).then(() => {
+            resolve({done: true, userContextId});
+          }).catch((e) => {throw e;});
+        }).catch((e) => {throw e;});
+      }).catch((e) => {throw e;});
+    });
+  },
+
+  createOrUpdateContainer(options) {
+    let donePromise;
+    if (options.userContextId) {
+      donePromise = browser.contextualIdentities.update(
+        this.cookieStoreId(options.userContextId),
+        options.params
+      );
+      this.sendTelemetryPayload({
+        event: "edit-container",
+        userContextId: options.userContextId
+      });
+    } else {
+      donePromise = browser.contextualIdentities.create(options.params);
+      this.sendTelemetryPayload({
+        event: "add-container"
+      });
+    }
+    return donePromise.then(() => {
+      browser.runtime.sendMessage({
+        method: "refreshNeeded"
+      });
+    });
+  },
+
+  sendTelemetryPayload(message = {}) {
+    if (!message.event) {
+      throw new Error("Missing event name for telemetry");
+    }
+    message.method = "sendTelemetryPayload";
+    browser.runtime.sendMessage(message);
+  },
+
+  cookieStoreId(userContextId) {
+    return `firefox-container-${userContextId}`;
+  },
+
+  _containerTabs(userContextId) {
+    return browser.tabs.query({
+      cookieStoreId: this.cookieStoreId(userContextId)
+    }).catch((e) => {throw e;});
+  },
+};
+
 const messageHandler = {
   // After the timer completes we assume it's a tab the user meant to keep open
   // We use this to catch redirected tabs that have just opened
@@ -258,6 +315,23 @@ const messageHandler = {
   LAST_CREATED_TAB_TIMER: 2000,
 
   init() {
+    browser.runtime.onMessage.addListener((m) => {
+      let response;
+
+      switch (m.method) {
+      case "deleteContainer":
+        response = backgroundLogic.deleteContainer(m.message.userContextId);
+        break;
+      case "createOrUpdateContainer":
+        response = backgroundLogic.createOrUpdateContainer(m.message);
+        break;
+      case "neverAsk":
+        assignManager._neverAsk(m);
+        break;
+      }
+      return response;
+    });
+
     // Handles messages from index.js
     const port = browser.runtime.connect();
     port.onMessage.addListener(m => {
@@ -416,8 +490,7 @@ const tabPageCounter = {
       return;
     }
     if (why === "user-closed-tab" && this.counters[tabId].tab) {
-      browser.runtime.sendMessage({
-        method: "sendTelemetryPayload",
+      backgroundLogic.sendTelemetryPayload({
         event: "page-requests-completed-per-tab",
         userContextId: this.counters[tabId].tab.cookieStoreId,
         pageRequestCount: this.counters[tabId].tab.pageRequests
@@ -426,8 +499,7 @@ const tabPageCounter = {
       // delete both the 'tab' and 'activity' counters
       delete this.counters[tabId];
     } else if (why === "user-went-idle" && this.counters[tabId].activity) {
-      browser.runtime.sendMessage({
-        method: "sendTelemetryPayload",
+      backgroundLogic.sendTelemetryPayload({
         event: "page-requests-completed-per-activity",
         userContextId: this.counters[tabId].activity.cookieStoreId,
         pageRequestCount: this.counters[tabId].activity.pageRequests

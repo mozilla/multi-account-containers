@@ -141,26 +141,6 @@ const Logic = {
     return this._currentIdentity;
   },
 
-  cookieStoreId(userContextId) {
-    return `firefox-container-${userContextId}`;
-  },
-
-  _containerTabIterator(userContextId, cb) {
-    browser.tabs.query({
-      cookieStoreId: Logic.cookieStoreId(userContextId)
-    }).then((tabs) => {
-      tabs.forEach((tab) => {
-        cb(tab);
-      });
-    }).catch((e) => {throw e;});
-  },
-
-  _containerTabs(userContextId) {
-    return browser.tabs.query({
-      cookieStoreId: Logic.cookieStoreId(userContextId)
-    });
-  },
-
   sendTelemetryPayload(message = {}) {
     if (!message.event) {
       throw new Error("Missing event name for telemetry");
@@ -170,33 +150,13 @@ const Logic = {
   },
 
   removeIdentity(userContextId) {
-    const eventName = "delete-container";
     if (!userContextId) {
       return Promise.reject("removeIdentity must be called with userContextId argument.");
     }
 
-    this.sendTelemetryPayload({
-      event: eventName,
-      userContextId
-    });
-
-    const removeTabsPromise = Logic._containerTabs(userContextId).then((tabs) => {
-      const tabIds = tabs.map((tab) => tab.id);
-      return browser.tabs.remove(tabIds);
-    });
-
-    return removeTabsPromise.then(() => {
-      const removed = browser.contextualIdentities.remove(Logic.cookieStoreId(userContextId));
-      // Send delete event to webextension/background.js
-      browser.runtime.sendMessage({
-        type: eventName,
-        message: {userContextId}
-      });
-      browser.runtime.sendMessage({
-        method: "forgetIdentityAndRefresh"
-      }).then(() => {
-        return removed;
-      }).catch((e) => {throw e;});
+    return browser.runtime.sendMessage({
+      method: "deleteContainer",
+      message: {userContextId}
     });
   },
 
@@ -589,43 +549,22 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   _submitForm() {
     const identity = Logic.currentIdentity();
     const formValues = new FormData(this._editForm);
-    this._createOrUpdateIdentity(
-      {
-        name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
-        icon: formValues.get("container-icon") || DEFAULT_ICON,
-        color: formValues.get("container-color") || DEFAULT_COLOR,
-      },
-      identity.userContextId || false
-    ).then(() => {
+    return browser.runtime.sendMessage({
+      method: "createOrUpdateContainer",
+      message: {
+        userContextId: identity.userContextId || false,
+        params: {
+          name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
+          icon: formValues.get("container-icon") || DEFAULT_ICON,
+          color: formValues.get("container-color") || DEFAULT_COLOR,
+        }
+      }
+    }).then(() => {
       return Logic.refreshIdentities();
     }).then(() => {
       Logic.showPreviousPanel();
     }).catch(() => {
       Logic.showPanel(P_CONTAINERS_LIST);
-    });
-  },
-
-  _createOrUpdateIdentity(params, userContextId) {
-    let donePromise;
-    if (userContextId) {
-      donePromise = browser.contextualIdentities.update(
-        Logic.cookieStoreId(userContextId),
-        params
-      );
-      Logic.sendTelemetryPayload({
-        event: "edit-container",
-        userContextId
-      });
-    } else {
-      donePromise = browser.contextualIdentities.create(params);
-      Logic.sendTelemetryPayload({
-        event: "add-container"
-      });
-    }
-    return donePromise.then(() => {
-      browser.runtime.sendMessage({
-        method: "refreshNeeded"
-      });
     });
   },
 
@@ -686,6 +625,11 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     });
 
     document.querySelector("#delete-container-ok-link").addEventListener("click", () => {
+      /* This promise wont resolve if the last tab was removed from the window.
+          as the message async callback stops listening, this isn't an issue for us however it might be in future
+          if you want to do anything post delete do it in the background script.
+          Browser console currently warns about not listening also.
+      */
       Logic.removeIdentity(Logic.currentIdentity().userContextId).then(() => {
         return Logic.refreshIdentities();
       }).then(() => {
