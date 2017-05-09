@@ -12,7 +12,7 @@
     "addons-linter": "^0.15.14",
     "deploy-txp": "^1.0.7",
     "eslint": "^3.17.1",
-    "eslint-plugin-no-unescaped": "^1.1.0",
+    "eslint-plugin-no-unsanitized": "^2.0.0",
     "eslint-plugin-promise": "^3.4.0",
     "htmllint-cli": "^0.0.5",
     "jpm": "^1.2.2",
