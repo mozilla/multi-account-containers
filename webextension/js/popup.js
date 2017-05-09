@@ -555,7 +555,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
     colors.forEach((containerColor) => {
       const templateInstance = document.createElement("span");
-      // eslint-disable-next-line no-unescaped/enforce
+      // eslint-disable-next-line no-unsanitized/property
       templateInstance.innerHTML = colorRadioTemplate(containerColor);
       colorRadioFieldset.appendChild(templateInstance);
     });
@@ -568,7 +568,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const iconRadioFieldset = document.getElementById("edit-container-panel-choose-icon");
     icons.forEach((containerIcon) => {
       const templateInstance = document.createElement("span");
-      // eslint-disable-next-line no-unescaped/enforce
+      // eslint-disable-next-line no-unsanitized/property
       templateInstance.innerHTML = iconRadioTemplate(containerIcon);
       iconRadioFieldset.appendChild(templateInstance);
     });
