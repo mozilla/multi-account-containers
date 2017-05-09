@@ -5,9 +5,6 @@ module.exports = {
     "node": true,
     "webextensions": true
   },
-  "extends": [
-    "eslint:recommended"
-  ],
   "globals": {
     "CustomizableUI": true,
     "CustomizableWidgets": true,
@@ -16,7 +13,10 @@ module.exports = {
   },
   "plugins": [
     "promise",
-    "no-unescaped"
+    "no-unsanitized"
+  ],
+  "extends": [
+    "eslint:recommended"
   ],
   "root": true,
   "rules": {
@@ -29,8 +29,18 @@ module.exports = {
     "promise/no-promise-in-callback": "warn",
     "promise/no-return-wrap": "error",
     "promise/param-names": "error",
-    "no-unescaped/no-key-assignment": "error",
-    "no-unescaped/enforce": "error",
+
+    "no-unsanitized/method": [
+      "error"
+    ],
+    "no-unsanitized/property": [
+      "error",
+      {
+        "escape": {
+          "taggedTemplates": ["escaped"]
+        }
+      }
+    ],
 
     "eqeqeq": "error",
     "indent": ["error", 2],
