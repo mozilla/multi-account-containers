@@ -64,6 +64,10 @@ const Logic = {
   _panels: {},
 
   init() {
+    // Remove browserAction "upgraded" badge when opening panel
+    browser.browserAction.setBadgeBackgroundColor({color: ""});
+    browser.browserAction.setBadgeText({text: ""});
+
     // Retrieve the list of identities.
     this.refreshIdentities()
 

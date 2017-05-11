@@ -467,6 +467,13 @@ browser.runtime.sendMessage({
   }
 }).catch(() => {});
 
+browser.runtime.sendMessage({method: "checkForMajorUpgrade"}).then(upgrading=> {
+  if (upgrading) {
+    browser.browserAction.setBadgeBackgroundColor({color: "rgba(0,217,0,255)"});
+    browser.browserAction.setBadgeText({text: "NEW"});
+  }
+}).catch((e) => { throw e;});
+
 function disableAddon(tabId) {
   browser.browserAction.disable(tabId);
   browser.browserAction.setTitle({ tabId, title: "Containers disabled in Private Browsing Mode" });
