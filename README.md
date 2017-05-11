@@ -59,8 +59,12 @@ Check out the [Browser Toolbox](https://developer.mozilla.org/en-US/docs/Tools/B
 
 ### Building .xpi
 
-To build a local .xpi, use the plain [`jpm
-xpi`](https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_xpi) command.
+To build a local testpilot-containers.xpi, use the plain [`jpm
+xpi`](https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_xpi) command,
+or run `npm run build`.
+
+#### Building a shield .xpi
+To build a local shield-study-containers.xpi, run `npm run build-shield`.
 
 ### Signing an .xpi
 

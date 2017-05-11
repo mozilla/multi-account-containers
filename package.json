@@ -16,6 +16,7 @@
     "eslint-plugin-promise": "^3.4.0",
     "htmllint-cli": "^0.0.5",
     "jpm": "^1.2.2",
+    "json": "^9.0.6",
     "npm-run-all": "^4.0.0",
     "shield-studies-addon-utils": "^2.0.0",
     "stylelint": "^7.9.0",
@@ -42,6 +43,7 @@
   },
   "scripts": {
     "build": "npm test && jpm xpi",
+    "build-shield": "npm test && json -I -f package.json -e 'this.name=\"shield-study-containers\"' && jpm xpi && json -I -f package.json -e 'this.name=\"testpilot-containers\"'",
     "deploy": "deploy-txp",
     "lint": "npm-run-all lint:*",
     "lint:addon": "addons-linter webextension --self-hosted",
