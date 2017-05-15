@@ -65,8 +65,7 @@ const Logic = {
 
   init() {
     // Remove browserAction "upgraded" badge when opening panel
-    browser.browserAction.setBadgeBackgroundColor({color: ""});
-    browser.browserAction.setBadgeText({text: ""});
+    this.clearBrowserActionBadge();
 
     // Retrieve the list of identities.
     this.refreshIdentities()
@@ -90,6 +89,11 @@ const Logic = {
     .catch(() => {
       throw new Error("Failed to retrieve the identities. We cannot continue.");
     });
+  },
+
+  clearBrowserActionBadge() {
+    browser.browserAction.setBadgeBackgroundColor({color: ""});
+    browser.browserAction.setBadgeText({text: ""});
   },
 
   refreshIdentities() {
