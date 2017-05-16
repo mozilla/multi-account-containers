@@ -100,13 +100,13 @@ const Logic = {
 
   clearBrowserActionBadge() {
     getExtensionInfo().then(extensionInfo=>{
-      const storage = browser.storage.local.get({browserActionBadgesClicked: []}).then(storage=>{
+      browser.storage.local.get({browserActionBadgesClicked: []}).then(storage=>{
         browser.browserAction.setBadgeBackgroundColor({color: ""});
         browser.browserAction.setBadgeText({text: ""});
         storage.browserActionBadgesClicked.push(extensionInfo.version);
         browser.storage.local.set({browserActionBadgesClicked: storage.browserActionBadgesClicked});
-      });
-    });
+      }).catch(e=>{throw e;});
+    }).catch(e=>{throw e;});
   },
 
   refreshIdentities() {
