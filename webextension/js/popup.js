@@ -12,6 +12,7 @@ const DEFAULT_ICON = "circle";
 const P_ONBOARDING_1     = "onboarding1";
 const P_ONBOARDING_2     = "onboarding2";
 const P_ONBOARDING_3     = "onboarding3";
+const P_ONBOARDING_4     = "onboarding4";
 const P_CONTAINERS_LIST  = "containersList";
 const P_CONTAINERS_EDIT  = "containersEdit";
 const P_CONTAINER_INFO   = "containerInfo";
@@ -54,6 +55,13 @@ function escaped(strings, ...values) {
   return result.join("");
 }
 
+async function getExtensionInfo() {
+  const manifestPath = browser.extension.getURL("manifest.json");
+  const response = await fetch(manifestPath);
+  const extensionInfo = await response.json();
+  return extensionInfo;
+}
+
 // This object controls all the panels, identities and many other things.
 const Logic = {
   _identities: [],
@@ -63,14 +71,19 @@ const Logic = {
   _panels: {},
 
   init() {
+    // Remove browserAction "upgraded" badge when opening panel
+    this.clearBrowserActionBadge();
+
     // Retrieve the list of identities.
     this.refreshIdentities()
 
     // Routing to the correct panel.
     .then(() => {
       // If localStorage is disabled, we don't show the onboarding.
-      if (!localStorage || localStorage.getItem("onboarded3")) {
+      if (!localStorage || localStorage.getItem("onboarded4")) {
         this.showPanel(P_CONTAINERS_LIST);
+      } else if (localStorage.getItem("onboarded3")) {
+        this.showPanel(P_ONBOARDING_4);
       } else if (localStorage.getItem("onboarded2")) {
         this.showPanel(P_ONBOARDING_3);
       } else if (localStorage.getItem("onboarded1")) {
@@ -83,6 +96,15 @@ const Logic = {
     .catch(() => {
       throw new Error("Failed to retrieve the identities. We cannot continue.");
     });
+  },
+
+  async clearBrowserActionBadge() {
+    const extensionInfo = await getExtensionInfo();
+    const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
+    browser.browserAction.setBadgeBackgroundColor({color: ""});
+    browser.browserAction.setBadgeText({text: ""});
+    storage.browserActionBadgesClicked.push(extensionInfo.version);
+    browser.storage.local.set({browserActionBadgesClicked: storage.browserActionBadgesClicked});
   },
 
   refreshIdentities() {
@@ -234,8 +256,29 @@ Logic.registerPanel(P_ONBOARDING_3, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    document.querySelector("#onboarding-done-button").addEventListener("click", () => {
+    document.querySelector("#onboarding-almost-done-button").addEventListener("click", () => {
       localStorage.setItem("onboarded3", true);
+      Logic.showPanel(P_ONBOARDING_4);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    return Promise.resolve(null);
+  },
+});
+
+// P_ONBOARDING_4: Fourth page for Onboarding.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_ONBOARDING_4, {
+  panelSelector: ".onboarding-panel-4",
+
+  // This method is called when the object is registered.
+  initialize() {
+    // Let's move to the containers list panel.
+    document.querySelector("#onboarding-done-button").addEventListener("click", () => {
+      localStorage.setItem("onboarded4", true);
       Logic.showPanel(P_CONTAINERS_LIST);
     });
   },
