@@ -124,7 +124,8 @@ const ContainerService = {
     // uninstallation. This object contains also a version number, in case we
     // need to implement a migration in the future.
     // In 1.1.1 and less we deleted savedConfiguration on upgrade so we need to rebuild
-    if (!ss.storage.savedConfiguration ||
+    if (!("savedConfiguration" in ss.storage) ||
+        !("prefs" in ss.storage.savedConfiguration) ||
         (installation && reason !== "upgrade")) {
       let preInstalledIdentities = []; // eslint-disable-line prefer-const
       ContextualIdentityProxy.getIdentities().forEach(identity => {
@@ -144,8 +145,8 @@ const ContainerService = {
 
       ss.storage.savedConfiguration = object;
 
-      // Maybe rename the Banking container.
       if (prefService.get("privacy.userContext.enabled") !== true) {
+        // Maybe rename the Banking container.
         const identity = ContextualIdentityProxy.getIdentityFromId(3);
         if (identity && identity.l10nID === "userContextBanking.label") {
           ContextualIdentityProxy.update(identity.userContextId,
@@ -153,17 +154,16 @@ const ContainerService = {
                                          identity.icon,
                                          identity.color);
         }
-      }
 
-      // Let's create the default containers in case there are none.
-      if (prefService.get("privacy.userContext.enabled") !== true &&
-          ss.storage.savedConfiguration.preInstalledIdentities.length === 0) {
-        // Note: we have to create them in this way because there is no way to
-        // reuse the same ID and the localized strings.
-        ContextualIdentityService.create("Personal", "fingerprint", "blue");
-        ContextualIdentityService.create("Work", "briefcase", "orange");
-        ContextualIdentityService.create("Finance", "dollar", "green");
-        ContextualIdentityService.create("Shopping", "cart", "pink");
+        // Let's create the default containers in case there are none.
+        if (ss.storage.savedConfiguration.preInstalledIdentities.length === 0) {
+          // Note: we have to create them in this way because there is no way to
+          // reuse the same ID and the localized strings.
+          ContextualIdentityService.create("Personal", "fingerprint", "blue");
+          ContextualIdentityService.create("Work", "briefcase", "orange");
+          ContextualIdentityService.create("Finance", "dollar", "green");
+          ContextualIdentityService.create("Shopping", "cart", "pink");
+        }
       }
     }
 
