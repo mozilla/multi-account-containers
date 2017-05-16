@@ -55,6 +55,13 @@ function escaped(strings, ...values) {
   return result.join("");
 }
 
+async function getExtensionInfo() {
+  const manifestPath = browser.extension.getURL("manifest.json");
+  const response = await fetch(manifestPath);
+  const extensionInfo = await response.json();
+  return extensionInfo;
+}
+
 // This object controls all the panels, identities and many other things.
 const Logic = {
   _identities: [],
@@ -92,8 +99,14 @@ const Logic = {
   },
 
   clearBrowserActionBadge() {
-    browser.browserAction.setBadgeBackgroundColor({color: ""});
-    browser.browserAction.setBadgeText({text: ""});
+    getExtensionInfo().then(extensionInfo=>{
+      const storage = browser.storage.local.get({browserActionBadgesClicked: []}).then(storage=>{
+        browser.browserAction.setBadgeBackgroundColor({color: ""});
+        browser.browserAction.setBadgeText({text: ""});
+        storage.browserActionBadgesClicked.push(extensionInfo.version);
+        browser.storage.local.set({browserActionBadgesClicked: storage.browserActionBadgesClicked});
+      });
+    });
   },
 
   refreshIdentities() {

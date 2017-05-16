@@ -8,8 +8,6 @@ const DEFAULT_TAB = "about:newtab";
 const SHOW_MENU_TIMEOUT = 100;
 const HIDE_MENU_TIMEOUT = 300;
 
-const MAJOR_VERSIONS = ["2.2.1"];
-
 const INCOMPATIBLE_ADDON_IDS = [
   "pulse@mozilla.com",
   "snoozetabs@mozilla.com",
@@ -258,9 +256,6 @@ const ContainerService = {
 
     webExtension.startup().then(api => {
       api.browser.runtime.onMessage.addListener((message, sender, sendReply) => {
-        if (message.method === "checkForMajorUpgrade") {
-          sendReply(reason === "upgrade" && MAJOR_VERSIONS.indexOf(self.version) > -1);
-        }
         if ("method" in message && methods.indexOf(message.method) !== -1) {
           sendReply(this[message.method](message));
         }
