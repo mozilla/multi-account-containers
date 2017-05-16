@@ -98,15 +98,13 @@ const Logic = {
     });
   },
 
-  clearBrowserActionBadge() {
-    getExtensionInfo().then(extensionInfo=>{
-      browser.storage.local.get({browserActionBadgesClicked: []}).then(storage=>{
-        browser.browserAction.setBadgeBackgroundColor({color: ""});
-        browser.browserAction.setBadgeText({text: ""});
-        storage.browserActionBadgesClicked.push(extensionInfo.version);
-        browser.storage.local.set({browserActionBadgesClicked: storage.browserActionBadgesClicked});
-      }).catch(e=>{throw e;});
-    }).catch(e=>{throw e;});
+  async clearBrowserActionBadge() {
+    const extensionInfo = await getExtensionInfo();
+    const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
+    browser.browserAction.setBadgeBackgroundColor({color: ""});
+    browser.browserAction.setBadgeText({text: ""});
+    storage.browserActionBadgesClicked.push(extensionInfo.version);
+    browser.storage.local.set({browserActionBadgesClicked: storage.browserActionBadgesClicked});
   },
 
   refreshIdentities() {
