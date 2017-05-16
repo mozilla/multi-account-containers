@@ -107,6 +107,15 @@ const Logic = {
     browser.storage.local.set({browserActionBadgesClicked: storage.browserActionBadgesClicked});
   },
 
+  addEnterHandler(element, handler) {
+    element.addEventListener("click", handler);
+    element.addEventListener("keydown", (e) => {
+      if (e.keyCode === 13) {
+        handler(e);
+      }
+    });
+  },
+
   refreshIdentities() {
     return browser.runtime.sendMessage({
       method: "queryIdentities"
@@ -214,7 +223,7 @@ Logic.registerPanel(P_ONBOARDING_1, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the next panel.
-    document.querySelector("#onboarding-start-button").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#onboarding-start-button"), () => {
       localStorage.setItem("onboarded1", true);
       Logic.showPanel(P_ONBOARDING_2);
     });
@@ -235,7 +244,7 @@ Logic.registerPanel(P_ONBOARDING_2, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    document.querySelector("#onboarding-next-button").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#onboarding-next-button"), () => {
       localStorage.setItem("onboarded2", true);
       Logic.showPanel(P_ONBOARDING_3);
     });
@@ -256,7 +265,7 @@ Logic.registerPanel(P_ONBOARDING_3, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    document.querySelector("#onboarding-almost-done-button").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#onboarding-almost-done-button"), () => {
       localStorage.setItem("onboarded3", true);
       Logic.showPanel(P_ONBOARDING_4);
     });
@@ -297,18 +306,18 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
   // This method is called when the object is registered.
   initialize() {
-    document.querySelector("#container-add-link").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#container-add-link"), () => {
       Logic.showPanel(P_CONTAINER_EDIT, { name: Logic.generateIdentityName() });
     });
 
-    document.querySelector("#edit-containers-link").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#edit-containers-link"), () => {
       Logic.sendTelemetryPayload({
         event: "edit-containers"
       });
       Logic.showPanel(P_CONTAINERS_EDIT);
     });
 
-    document.querySelector("#sort-containers-link").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#sort-containers-link"), () => {
       browser.runtime.sendMessage({
         method: "sortTabs"
       }).then(() => {
@@ -316,6 +325,30 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       }).catch(() => {
         window.close();
       });
+    });
+
+    document.addEventListener("keydown", (e) => {
+      const element = document.activeElement;
+      function next() {
+        const nextElement = element.nextElementSibling;
+        if (nextElement) {
+          nextElement.focus();
+        }
+      }
+      function previous() {
+        const previousElement = element.previousElementSibling;
+        if (previousElement) {
+          previousElement.focus();
+        }
+      }
+      switch (e.keyCode) {
+      case 40:
+        next();
+        break;
+      case 38:
+        previous();
+        break;
+      }
     });
   },
 
@@ -330,11 +363,14 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       const manage = document.createElement("td");
 
       tr.classList.add("container-panel-row");
+
+      tr.setAttribute("tabindex", "0");
+
       context.classList.add("userContext-wrapper", "open-newtab", "clickable");
       manage.classList.add("show-tabs", "pop-button");
       context.innerHTML = escaped`
         <div class="userContext-icon-wrapper open-newtab">
-          <div class="userContext-icon"
+          <div class="usercontext-icon"
             data-identity-icon="${identity.image}"
             data-identity-color="${identity.color}">
           </div>
@@ -351,8 +387,10 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         tr.appendChild(manage);
       }
 
-      tr.addEventListener("click", e => {
-        if (e.target.matches(".open-newtab") || e.target.parentNode.matches(".open-newtab")) {
+      Logic.addEnterHandler(tr, e => {
+        if (e.target.matches(".open-newtab")
+            || e.target.parentNode.matches(".open-newtab")
+            || e.type === "keydown") {
           browser.runtime.sendMessage({
             method: "openTab",
             userContextId: identity.userContextId,
@@ -372,6 +410,12 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
     list.innerHTML = "";
     list.appendChild(fragment);
+    /* Not sure why extensions require a focus for the doorhanger,
+       however it allows us to have a tabindex before the first selected item
+     */
+    document.addEventListener("focus", () => {
+      list.querySelector("tr").focus();
+    });
 
     return Promise.resolve();
   },
@@ -385,11 +429,11 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
   // This method is called when the object is registered.
   initialize() {
-    document.querySelector("#close-container-info-panel").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#close-container-info-panel"), () => {
       Logic.showPreviousPanel();
     });
 
-    document.querySelector("#container-info-hideorshow").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#container-info-hideorshow"), () => {
       const identity = Logic.currentIdentity();
       browser.runtime.sendMessage({
         method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
@@ -420,7 +464,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
         moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
       } else {
-        moveTabsEl.addEventListener("click", () => {
+        Logic.addEnterHandler(moveTabsEl, () => {
           browser.runtime.sendMessage({
             method: "moveTabsToWindow",
             userContextId: Logic.currentIdentity().userContextId,
@@ -483,7 +527,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       // On click, we activate this tab. But only if this tab is active.
       if (tab.active) {
         tr.classList.add("clickable");
-        tr.addEventListener("click", () => {
+        Logic.addEnterHandler(tr, () => {
           browser.runtime.sendMessage({
             method: "showTab",
             tabId: tab.id,
@@ -508,7 +552,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
 
   // This method is called when the object is registered.
   initialize() {
-    document.querySelector("#exit-edit-mode-link").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#exit-edit-mode-link"), () => {
       Logic.showPanel(P_CONTAINERS_LIST);
     });
   },
@@ -523,7 +567,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       tr.innerHTML = escaped`
         <td class="userContext-wrapper">
           <div class="userContext-icon-wrapper">
-            <div class="userContext-icon"
+            <div class="usercontext-icon"
               data-identity-icon="${identity.image}"
               data-identity-color="${identity.color}">
             </div>
@@ -546,7 +590,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       tr.querySelector(".remove-container .pop-button-image").setAttribute("title", `Edit ${identity.name} container`);
 
 
-      tr.addEventListener("click", e => {
+      Logic.addEnterHandler(tr, e => {
         if (e.target.matches(".edit-container-icon") || e.target.parentNode.matches(".edit-container-icon")) {
           Logic.showPanel(P_CONTAINER_EDIT, identity);
         } else if (e.target.matches(".delete-container-icon") || e.target.parentNode.matches(".delete-container-icon")) {
@@ -574,17 +618,17 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   initialize() {
     this.initializeRadioButtons();
 
-    document.querySelector("#edit-container-panel-back-arrow").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#edit-container-panel-back-arrow"), () => {
       Logic.showPreviousPanel();
     });
 
-    document.querySelector("#edit-container-cancel-link").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#edit-container-cancel-link"), () => {
       Logic.showPreviousPanel();
     });
 
     this._editForm = document.getElementById("edit-container-panel-form");
     const editLink = document.querySelector("#edit-container-ok-link");
-    editLink.addEventListener("click", this._submitForm.bind(this));
+    Logic.addEnterHandler(editLink, this._submitForm.bind(this));
     editLink.addEventListener("submit", this._submitForm.bind(this));
     this._editForm.addEventListener("submit", this._submitForm.bind(this));
   },
@@ -663,11 +707,11 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
 
   // This method is called when the object is registered.
   initialize() {
-    document.querySelector("#delete-container-cancel-link").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#delete-container-cancel-link"), () => {
       Logic.showPreviousPanel();
     });
 
-    document.querySelector("#delete-container-ok-link").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#delete-container-ok-link"), () => {
       /* This promise wont resolve if the last tab was removed from the window.
           as the message async callback stops listening, this isn't an issue for us however it might be in future
           if you want to do anything post delete do it in the background script.
