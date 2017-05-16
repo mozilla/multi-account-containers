@@ -40,25 +40,25 @@
   <div class="panel container-panel hide" id="container-panel">
     <div class="panel-header">
       <h3 class="panel-header-text">Containers</h3>
-      <a class="pop-button" id="sort-containers-link"><img class="pop-button-image" alt="Sort Containers" title="Sort Containers" src="/img/container-sort.svg"></a>
+      <a href="#" class="pop-button" id="sort-containers-link"><img class="pop-button-image" alt="Sort Containers" title="Sort Containers" src="/img/container-sort.svg"></a>
     </div>
-    <div class="scrollable panel-content">
+    <div class="scrollable panel-content" tabindex="-1">
       <table>
         <tbody class="identities-list"></tbody>
       </table>
     </div>
     <div class="panel-footer edit-identities">
       <div class="edit-containers-text panel-footer-secondary">
-        <a id="edit-containers-link">Edit Containers</a>
+        <a href="#" tabindex="0" id="edit-containers-link">Edit Containers</a>
       </div>
-      <a class="add-container-link pop-button" id="container-add-link">
+      <a href="#" tabindex="0" class="add-container-link pop-button" id="container-add-link">
         <img class="pop-button-image-small icon" alt="Create new container icon" title="Create new container" src="/img/container-add.svg" />
       </a>
     </div>
   </div>
 
 
-  <div class="hide panel container-info-panel" id="container-info-panel">
+  <div class="hide panel container-info-panel" id="container-info-panel" tabindex="-1">
     <div class="columns">
       <div class="panel-back-arrow" id="close-container-info-panel">
         <img alt="Panel Back Arrow" src="/img/container-arrow.svg" class="back-arrow-img" />
@@ -92,7 +92,7 @@
       </table>
     </div>
     <div class="panel-footer edit-containers-panel-footer">
-      <a id="exit-edit-mode-link" class="exit-edit-mode-link edit-containers-exit-text">Exit Edit Mode</a>
+      <a href="#" id="exit-edit-mode-link" class="exit-edit-mode-link edit-containers-exit-text">Exit Edit Mode</a>
     </div>
   </div>
 
@@ -116,7 +116,7 @@
           </fieldset>
         </form>
         <div class="panel-footer">
-          <a class="button secondary expanded footer-button cancel-button" id="edit-container-cancel-link">Cancel</a>
+          <a href="#" class="button secondary expanded footer-button cancel-button" id="edit-container-cancel-link">Cancel</a>
           <a class="button primary expanded footer-button" id="edit-container-ok-link">OK</a>
         </div>
       </div>
@@ -133,8 +133,8 @@
       <p>If you remove this container now, <span id="delete-container-tab-count"></span> container tabs will be closed. Are you sure you want to remove this Container?</p>
     </div>
     <div class="panel-footer">
-      <a class="button expanded secondary footer-button cancel-button" id="delete-container-cancel-link">Cancel</a>
-      <a class="button expanded primary footer-button" id="delete-container-ok-link">OK</a>
+      <a href="#" class="button expanded secondary footer-button cancel-button" id="delete-container-cancel-link">Cancel</a>
+      <a href="#" class="button expanded primary footer-button" id="delete-container-ok-link">OK</a>
     </div>
   </div>
 
