@@ -1,3 +1,5 @@
+const MAJOR_VERSIONS = ["2.3.0"];
+
 const assignManager = {
   CLOSEABLE_WINDOWS: new Set([
     "about:startpage",
@@ -551,3 +553,22 @@ function disableAddon(tabId) {
   browser.browserAction.disable(tabId);
   browser.browserAction.setTitle({ tabId, title: "Containers disabled in Private Browsing Mode" });
 }
+
+async function getExtensionInfo() {
+  const manifestPath = browser.extension.getURL("manifest.json");
+  const response = await fetch(manifestPath);
+  const extensionInfo = await response.json();
+  return extensionInfo;
+}
+
+async function displayBrowserActionBadge() {
+  const extensionInfo = await getExtensionInfo();
+  const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
+
+  if (MAJOR_VERSIONS.indexOf(extensionInfo.version) > -1 &&
+      storage.browserActionBadgesClicked.indexOf(extensionInfo.version) < 0) {
+    browser.browserAction.setBadgeBackgroundColor({color: "rgba(0,217,0,255)"});
+    browser.browserAction.setBadgeText({text: "NEW"});
+  }
+}
+displayBrowserActionBadge();
