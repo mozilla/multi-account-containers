@@ -321,6 +321,8 @@ const ContainerService = {
     // End-Of-Hack
 
     Services.obs.addObserver(this, "lightweight-theme-changed", false);
+
+    study.startup(reason);
   },
 
   registerBackgroundConnection(api) {
