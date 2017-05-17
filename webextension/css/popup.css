@@ -279,6 +279,12 @@ manage things like container crud */
   background-color: rgba(0, 0, 0, 0.08);
 }
 
+.pop-button a,
+.panel-footer a,
+.panel-footer-secondary a {
+  text-decoration: none;
+}
+
 .pop-button-image {
   block-size: 20px;
   flex: 0 0 20px;
