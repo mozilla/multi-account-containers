@@ -1,6 +1,9 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
+const Experiment = require('./lib/testpilot/experiment');
+
+const experiment = new Experiment();
 
 /**
  * Class that represents a metrics event broker. Events are sent to Google
@@ -170,6 +173,7 @@ Metrics.prototype = {
       };
 
       try {
+        console.log("notifying observerser of testpilot::send-metric; subject: ", subject, " stringified: ", stringified);
         Services.obs.notifyObservers(subject, 'testpilot::send-metric', stringified);
         this._log(`Sent client message via nsIObserverService: ${stringified}`);
       } catch (ex) {
