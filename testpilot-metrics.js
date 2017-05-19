@@ -173,7 +173,6 @@ Metrics.prototype = {
       };
 
       try {
-        console.log("notifying observerser of testpilot::send-metric; subject: ", subject, " stringified: ", stringified);
         Services.obs.notifyObservers(subject, 'testpilot::send-metric', stringified);
         this._log(`Sent client message via nsIObserverService: ${stringified}`);
       } catch (ex) {
