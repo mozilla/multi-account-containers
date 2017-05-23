@@ -18,6 +18,7 @@ const P_CONTAINERS_EDIT  = "containersEdit";
 const P_CONTAINER_INFO   = "containerInfo";
 const P_CONTAINER_EDIT   = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
+const DEFAULT_FAVICON = "moz-icon://goat?size=16";
 
 /**
  * Escapes any occurances of &, ", <, > or / with XML entities.
@@ -107,6 +108,16 @@ const Logic = {
     browser.storage.local.set({browserActionBadgesClicked: storage.browserActionBadgesClicked});
   },
 
+  async identity(cookieStoreId) {
+    const identity = await browser.contextualIdentities.get(cookieStoreId);
+    return identity || {
+      name: "Default",
+      cookieStoreId,
+      icon: "circle",
+      color: "black"
+    };
+  },
+
   addEnterHandler(element, handler) {
     element.addEventListener("click", handler);
     element.addEventListener("keydown", (e) => {
@@ -119,6 +130,14 @@ const Logic = {
   userContextId(cookieStoreId = "") {
     const userContextId = cookieStoreId.replace("firefox-container-", "");
     return (userContextId !== cookieStoreId) ? Number(userContextId) : false;
+  },
+
+  async currentTab() {
+    const activeTabs = await browser.tabs.query({active: true});
+    if (activeTabs.length > 0) {
+      return activeTabs[0]
+    }
+    return false;
   },
 
   refreshIdentities() {
@@ -139,7 +158,7 @@ const Logic = {
     }).catch((e) => {throw e;});
   },
 
-  showPanel(panel, currentIdentity = null) {
+  async showPanel(panel, currentIdentity = null) {
     // Invalid panel... ?!?
     if (!(panel in this._panels)) {
       throw new Error("Something really bad happened. Unknown panel: " + panel);
@@ -151,15 +170,18 @@ const Logic = {
     this._currentIdentity = currentIdentity;
 
     // Initialize the panel before showing it.
-    this._panels[panel].prepare().then(() => {
-      for (let panelElement of document.querySelectorAll(".panel")) { // eslint-disable-line prefer-const
+    await this._panels[panel].prepare();
+    Object.keys(this._panels).forEach((panelKey) => {
+      const panelItem = this._panels[panelKey];
+      const panelElement = document.querySelector(panelItem.panelSelector);
+      if (!panelElement.classList.contains("hide")) {
         panelElement.classList.add("hide");
+        if ("unregister" in panelItem) {
+          panelItem.unregister();
+        }
       }
-      document.querySelector(this._panels[panel].panelSelector).classList.remove("hide");
-    })
-    .catch(() => {
-      throw new Error("Failed to show panel " + panel);
     });
+    document.querySelector(this._panels[panel].panelSelector).classList.remove("hide");
   },
 
   showPreviousPanel() {
@@ -202,6 +224,21 @@ const Logic = {
     return browser.runtime.sendMessage({
       method: "deleteContainer",
       message: {userContextId}
+    });
+  },
+
+  getAssignment(tab) {
+    return browser.runtime.sendMessage({
+      method: "getAssignment",
+      tabId: tab.id
+    });
+  },
+
+  setOrRemoveAssignment(tab, value) {
+    return browser.runtime.sendMessage({
+      method: "setOrRemoveAssignment",
+      tabId: tab.id,
+      value
     });
   },
 
@@ -364,11 +401,85 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         break;
       }
     });
+
+    // When the popup is open sometimes the tab will still be updating it's state
+    this.tabUpdateHandler = (tabId, changeInfo) => {
+      const propertiesToUpdate = ["title", "favIconUrl"];
+      const hasChanged = Object.keys(changeInfo).find((changeInfoKey) => {
+        if (propertiesToUpdate.includes(changeInfoKey)) {
+          return true;
+        }
+      });
+      if (hasChanged) {
+        this.prepareCurrentTabHeader();
+      }
+    };
+    browser.tabs.onUpdated.addListener(this.tabUpdateHandler);
+  },
+
+  unregister() {
+    browser.tabs.onUpdated.removeListener(this.tabUpdateHandler);
+  },
+
+  setupAssignmentCheckbox(siteSettings) {
+    const assignmentCheckboxElement = document.getElementById("container-page-assigned");
+    // Cater for null and false
+    assignmentCheckboxElement.checked = !!siteSettings;
+    let disabled = false;
+    if (siteSettings === false) {
+      disabled = true;
+    }
+    assignmentCheckboxElement.disabled = disabled;
+  },
+
+  async prepareCurrentTabHeader() {
+    const currentTab = await Logic.currentTab();
+    const currentTabElement = document.getElementById("current-tab");
+    const assignmentCheckboxElement = document.getElementById("container-page-assigned");
+    assignmentCheckboxElement.addEventListener("change", () => {
+      Logic.setOrRemoveAssignment(currentTab, !assignmentCheckboxElement.checked);
+    });
+    currentTabElement.hidden = !currentTab;
+    this.setupAssignmentCheckbox(false);
+    if (currentTab) {
+      const identity = await Logic.identity(currentTab.cookieStoreId);
+      const siteSettings = await Logic.getAssignment(currentTab);
+      this.setupAssignmentCheckbox(siteSettings);
+      const currentPage = document.getElementById("current-page");
+      const favIconUrl = currentTab.favIconUrl || "";
+      currentPage.innerHTML = escaped`
+        <img class="offpage" src="${favIconUrl}" /> ${currentTab.title}
+      `;
+
+      const imageElement = currentPage.querySelector("img");
+      const loadListener = (e) => {
+        e.target.classList.remove("offpage");
+        e.target.removeEventListener("load", loadListener);
+        e.target.removeEventListener("error", errorListener);
+      };
+      const errorListener = (e) => {
+        e.target.src = DEFAULT_FAVICON;
+      };
+      imageElement.addEventListener("error", errorListener);
+      imageElement.addEventListener("load", loadListener);
+
+      const currentContainer = document.getElementById("current-container");
+      currentContainer.innerHTML = escaped`
+        <div
+           class="usercontext-icon"
+           data-identity-icon="${identity.icon}"
+           data-identity-color="${identity.color}">
+         </div>
+        ${identity.name}
+      `;
+    }
   },
 
   // This method is called when the panel is shown.
-  prepare() {
+  async prepare() {
     const fragment = document.createDocumentFragment();
+
+    this.prepareCurrentTabHeader();
 
     Logic.identities().forEach(identity => {
       const hasTabs = (identity.hasHiddenTabs || identity.hasOpenTabs);

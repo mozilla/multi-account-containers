@@ -3,6 +3,7 @@ node_modules
 README.html
 *.xpi
 *.swp
+*.swo
 .vimrc
 .env
 addon.env
