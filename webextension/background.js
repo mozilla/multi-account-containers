@@ -1,10 +1,7 @@
+const MAJOR_VERSIONS = ["2.3.0"];
+const LOOKUP_KEY = "$ref";
+
 const assignManager = {
-  CLOSEABLE_WINDOWS: new Set([
-    "about:startpage",
-    "about:newtab",
-    "about:home",
-    "about:blank"
-  ]),
   MENU_ASSIGN_ID: "open-in-this-container",
   MENU_REMOVE_ID: "remove-open-in-this-container",
   storageArea: {
@@ -58,22 +55,22 @@ const assignManager = {
     }
   },
 
-  init() {
-    browser.runtime.onMessage.addListener((neverAskMessage) => {
-      const pageUrl = neverAskMessage.pageUrl;
-      if (neverAskMessage.neverAsk === true) {
-        // If we have existing data and for some reason it hasn't been deleted etc lets update it
-        this.storageArea.get(pageUrl).then((siteSettings) => {
-          if (siteSettings) {
-            siteSettings.neverAsk = true;
-            this.storageArea.set(pageUrl, siteSettings);
-          }
-        }).catch((e) => {
-          throw e;
-        });
-      }
-    });
+  _neverAsk(m) {
+    const pageUrl = m.pageUrl;
+    if (m.neverAsk === true) {
+      // If we have existing data and for some reason it hasn't been deleted etc lets update it
+      this.storageArea.get(pageUrl).then((siteSettings) => {
+        if (siteSettings) {
+          siteSettings.neverAsk = true;
+          this.storageArea.set(pageUrl, siteSettings);
+        }
+      }).catch((e) => {
+        throw e;
+      });
+    }
+  },
 
+  init() {
     browser.contextMenus.onClicked.addListener((info, tab) => {
       const userContextId = this.getUserContextIdFromCookieStore(tab);
       // Mapping ${URL(info.pageUrl).hostname} to ${userContextId}
@@ -97,8 +94,7 @@ const assignManager = {
             message: `Successfully ${actionName} site to always open in this container`,
             iconUrl: browser.extension.getURL("/img/onboarding-1.png")
           });
-          browser.runtime.sendMessage({
-            method: "sendTelemetryPayload",
+          backgroundLogic.sendTelemetryPayload({
             event: `${actionName}-container-assignment`,
             userContextId: userContextId,
           });
@@ -132,14 +128,14 @@ const assignManager = {
            We aim to open the new assigned container tab / warning prompt in it's own tab:
              - As the history won't span from one container to another it seems most sane to not try and reopen a tab on history.back()
              - When users open a new tab themselves we want to make sure we don't end up with three tabs as per: https://github.com/mozilla/testpilot-containers/issues/421
-           If we are coming from an internal url that are used for the new tab page (CLOSEABLE_WINDOWS), we can safely close as user is unlikely losing history
+           If we are coming from an internal url that are used for the new tab page (NEW_TAB_PAGES), we can safely close as user is unlikely losing history
            Detecting redirects on "new tab" opening actions is pretty hard as we don't get tab history:
            - Redirects happen from Short URLs and tracking links that act as a gateway
            - Extensions don't provide a way to history crawl for tabs, we could inject content scripts to do this
                however they don't run on about:blank so this would likely be just as hacky.
            We capture the time the tab was created and close if it was within the timeout to try to capture pages which haven't had user interaction or history.
         */
-        if (this.CLOSEABLE_WINDOWS.has(tab.url)
+        if (backgroundLogic.NEW_TAB_PAGES.has(tab.url)
             || (messageHandler.lastCreatedTab
             && messageHandler.lastCreatedTab.id === tab.id)) {
           browser.tabs.remove(tab.id);
@@ -217,20 +213,18 @@ const assignManager = {
     const loadPage = browser.extension.getURL("confirm-page.html");
     // If the user has explicitly checked "Never Ask Again" on the warning page we will send them straight there
     if (neverAsk) {
-      browser.tabs.create({url, cookieStoreId: `firefox-container-${userContextId}`, index});
-      browser.runtime.sendMessage({
-        method: "sendTelemetryPayload",
+      browser.tabs.create({url, cookieStoreId: backgroundLogic.cookieStoreId(userContextId), index});
+      backgroundLogic.sendTelemetryPayload({
         event: "auto-reload-page-in-container",
         userContextId: userContextId,
       });
     } else {
-      browser.runtime.sendMessage({
-        method: "sendTelemetryPayload",
+      backgroundLogic.sendTelemetryPayload({
         event: "prompt-to-reload-page-in-container",
         userContextId: userContextId,
       });
       const confirmUrl = `${loadPage}?url=${url}`;
-      browser.tabs.create({url: confirmUrl, cookieStoreId: `firefox-container-${userContextId}`, index}).then(() => {
+      browser.tabs.create({url: confirmUrl, cookieStoreId: backgroundLogic.cookieStoreId(userContextId), index}).then(() => {
         // We don't want to sync this URL ever nor clutter the users history
         browser.history.deleteUrl({url: confirmUrl});
       }).catch((e) => {
@@ -240,6 +234,119 @@ const assignManager = {
   }
 };
 
+
+const backgroundLogic = {
+  NEW_TAB_PAGES: new Set([
+    "about:startpage",
+    "about:newtab",
+    "about:home",
+    "about:blank"
+  ]),
+
+  deleteContainer(userContextId) {
+    this.sendTelemetryPayload({
+      event: "delete-container",
+      userContextId
+    });
+
+    const removeTabsPromise = this._containerTabs(userContextId).then((tabs) => {
+      const tabIds = tabs.map((tab) => tab.id);
+      return browser.tabs.remove(tabIds);
+    });
+
+    return new Promise((resolve) => {
+      removeTabsPromise.then(() => {
+        const removed = browser.contextualIdentities.remove(this.cookieStoreId(userContextId));
+        removed.then(() => {
+          assignManager.deleteContainer(userContextId);
+          browser.runtime.sendMessage({
+            method: "forgetIdentityAndRefresh"
+          }).then(() => {
+            resolve({done: true, userContextId});
+          }).catch((e) => {throw e;});
+        }).catch((e) => {throw e;});
+      }).catch((e) => {throw e;});
+    });
+  },
+
+  createOrUpdateContainer(options) {
+    let donePromise;
+    if (options.userContextId) {
+      donePromise = browser.contextualIdentities.update(
+        this.cookieStoreId(options.userContextId),
+        options.params
+      );
+      this.sendTelemetryPayload({
+        event: "edit-container",
+        userContextId: options.userContextId
+      });
+    } else {
+      donePromise = browser.contextualIdentities.create(options.params);
+      this.sendTelemetryPayload({
+        event: "add-container"
+      });
+    }
+    return donePromise.then(() => {
+      browser.runtime.sendMessage({
+        method: "refreshNeeded"
+      });
+    });
+  },
+
+  openTab(options) {
+    let url = options.url || undefined;
+    const userContextId = ("userContextId" in options) ? options.userContextId : 0;
+    const active = ("nofocus" in options) ? options.nofocus : true;
+    const source = ("source" in options) ? options.source : null;
+
+    // Only send telemetry for tabs opened by UI - i.e., not via showTabs
+    if (source && userContextId) {
+      this.sendTelemetryPayload({
+        "event": "open-tab",
+        "eventSource": source,
+        "userContextId": userContextId,
+        "clickedContainerTabCount": LOOKUP_KEY
+      });
+    }
+    // Autofocus url bar will happen in 54: https://bugzilla.mozilla.org/show_bug.cgi?id=1295072
+
+    // We can't open new tab pages, so open a blank tab. Used in tab un-hide
+    if (this.NEW_TAB_PAGES.has(url)) {
+      url = undefined;
+    }
+
+    // Unhide all hidden tabs
+    browser.runtime.sendMessage({
+      method: "showTabs",
+      userContextId: options.userContextId
+    });
+    return browser.tabs.create({
+      url,
+      active,
+      pinned: options.pinned || false,
+      cookieStoreId: backgroundLogic.cookieStoreId(options.userContextId)
+    });
+  },
+
+  sendTelemetryPayload(message = {}) {
+    if (!message.event) {
+      throw new Error("Missing event name for telemetry");
+    }
+    message.method = "sendTelemetryPayload";
+    browser.runtime.sendMessage(message);
+  },
+
+  cookieStoreId(userContextId) {
+    return `firefox-container-${userContextId}`;
+  },
+
+  _containerTabs(userContextId) {
+    return browser.tabs.query({
+      cookieStoreId: this.cookieStoreId(userContextId)
+    }).catch((e) => {throw e;});
+  },
+};
+
 const messageHandler = {
   // After the timer completes we assume it's a tab the user meant to keep open
   // We use this to catch redirected tabs that have just opened
@@ -247,6 +354,28 @@ const messageHandler = {
   LAST_CREATED_TAB_TIMER: 2000,
 
   init() {
+    // Handles messages from webextension/js/popup.js
+    browser.runtime.onMessage.addListener((m) => {
+      let response;
+
+      switch (m.method) {
+      case "deleteContainer":
+        response = backgroundLogic.deleteContainer(m.message.userContextId);
+        break;
+      case "createOrUpdateContainer":
+        response = backgroundLogic.createOrUpdateContainer(m.message);
+        break;
+      case "openTab":
+        // Same as open-tab for index.js
+        response = backgroundLogic.openTab(m.message);
+        break;
+      case "neverAsk":
+        assignManager._neverAsk(m);
+        break;
+      }
+      return response;
+    });
+
     // Handles messages from index.js
     const port = browser.runtime.connect();
     port.onMessage.addListener(m => {
@@ -254,8 +383,8 @@ const messageHandler = {
       case "lightweight-theme-changed":
         themeManager.update(m.message);
         break;
-      case "delete-container":
-        assignManager.deleteContainer(m.message.userContextId);
+      case "open-tab":
+        backgroundLogic.openTab(m.message);
         break;
       default:
         throw new Error(`Unhandled message type: ${m.message}`);
@@ -408,8 +537,7 @@ const tabPageCounter = {
       return;
     }
     if (why === "user-closed-tab" && this.counters[tabId].tab) {
-      browser.runtime.sendMessage({
-        method: "sendTelemetryPayload",
+      backgroundLogic.sendTelemetryPayload({
         event: "page-requests-completed-per-tab",
         userContextId: this.counters[tabId].tab.cookieStoreId,
         pageRequestCount: this.counters[tabId].tab.pageRequests
@@ -418,8 +546,7 @@ const tabPageCounter = {
       // delete both the 'tab' and 'activity' counters
       delete this.counters[tabId];
     } else if (why === "user-went-idle" && this.counters[tabId].activity) {
-      browser.runtime.sendMessage({
-        method: "sendTelemetryPayload",
+      backgroundLogic.sendTelemetryPayload({
         event: "page-requests-completed-per-activity",
         userContextId: this.counters[tabId].activity.cookieStoreId,
         pageRequestCount: this.counters[tabId].activity.pageRequests
@@ -471,3 +598,22 @@ function disableAddon(tabId) {
   browser.browserAction.disable(tabId);
   browser.browserAction.setTitle({ tabId, title: "Containers disabled in Private Browsing Mode" });
 }
+
+async function getExtensionInfo() {
+  const manifestPath = browser.extension.getURL("manifest.json");
+  const response = await fetch(manifestPath);
+  const extensionInfo = await response.json();
+  return extensionInfo;
+}
+
+async function displayBrowserActionBadge() {
+  const extensionInfo = await getExtensionInfo();
+  const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
+
+  if (MAJOR_VERSIONS.indexOf(extensionInfo.version) > -1 &&
+      storage.browserActionBadgesClicked.indexOf(extensionInfo.version) < 0) {
+    browser.browserAction.setBadgeBackgroundColor({color: "rgba(0,217,0,255)"});
+    browser.browserAction.setBadgeText({text: "NEW"});
+  }
+}
+displayBrowserActionBadge();

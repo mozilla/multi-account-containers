@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Containers Experiment",
-  "version": "2.2.0",
+  "version": "2.3.0",
 
   "description": "Containers works by isolating cookie jars using separate origin-attributes defined visually by colored ‘Container Tabs’. This add-on is a modified version of the containers feature for Firefox Test Pilot.",
   "icons": {
@@ -23,6 +23,7 @@
     "activeTab",
     "cookies",
     "contextMenus",
+    "contextualIdentities",
     "history",
     "idle",
     "notifications",
@@ -31,6 +32,15 @@
     "webRequestBlocking",
     "webRequest"
   ],
+
+  "commands": {
+    "_execute_browser_action": {
+      "suggested_key": {
+        "default": "Ctrl+Y"
+      },
+      "description": "Open containers panel"
+    }
+  },
 
   "browser_action": {
     "browser_style": true,

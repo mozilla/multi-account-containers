@@ -12,6 +12,7 @@ const DEFAULT_ICON = "circle";
 const P_ONBOARDING_1     = "onboarding1";
 const P_ONBOARDING_2     = "onboarding2";
 const P_ONBOARDING_3     = "onboarding3";
+const P_ONBOARDING_4     = "onboarding4";
 const P_CONTAINERS_LIST  = "containersList";
 const P_CONTAINERS_EDIT  = "containersEdit";
 const P_CONTAINER_INFO   = "containerInfo";
@@ -54,6 +55,13 @@ function escaped(strings, ...values) {
   return result.join("");
 }
 
+async function getExtensionInfo() {
+  const manifestPath = browser.extension.getURL("manifest.json");
+  const response = await fetch(manifestPath);
+  const extensionInfo = await response.json();
+  return extensionInfo;
+}
+
 // This object controls all the panels, identities and many other things.
 const Logic = {
   _identities: [],
@@ -63,14 +71,19 @@ const Logic = {
   _panels: {},
 
   init() {
+    // Remove browserAction "upgraded" badge when opening panel
+    this.clearBrowserActionBadge();
+
     // Retrieve the list of identities.
     this.refreshIdentities()
 
     // Routing to the correct panel.
     .then(() => {
       // If localStorage is disabled, we don't show the onboarding.
-      if (!localStorage || localStorage.getItem("onboarded3")) {
+      if (!localStorage || localStorage.getItem("onboarded4")) {
         this.showPanel(P_CONTAINERS_LIST);
+      } else if (localStorage.getItem("onboarded3")) {
+        this.showPanel(P_ONBOARDING_4);
       } else if (localStorage.getItem("onboarded2")) {
         this.showPanel(P_ONBOARDING_3);
       } else if (localStorage.getItem("onboarded1")) {
@@ -85,13 +98,45 @@ const Logic = {
     });
   },
 
-  refreshIdentities() {
-    return browser.runtime.sendMessage({
-      method: "queryIdentities"
-    })
-    .then(identities => {
-      this._identities = identities;
+  async clearBrowserActionBadge() {
+    const extensionInfo = await getExtensionInfo();
+    const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
+    browser.browserAction.setBadgeBackgroundColor({color: ""});
+    browser.browserAction.setBadgeText({text: ""});
+    storage.browserActionBadgesClicked.push(extensionInfo.version);
+    browser.storage.local.set({browserActionBadgesClicked: storage.browserActionBadgesClicked});
+  },
+
+  addEnterHandler(element, handler) {
+    element.addEventListener("click", handler);
+    element.addEventListener("keydown", (e) => {
+      if (e.keyCode === 13) {
+        handler(e);
+      }
     });
+  },
+
+  userContextId(cookieStoreId = "") {
+    const userContextId = cookieStoreId.replace("firefox-container-", "");
+    return (userContextId !== cookieStoreId) ? Number(userContextId) : false;
+  },
+
+  refreshIdentities() {
+    return Promise.all([
+      browser.contextualIdentities.query({}),
+      browser.runtime.sendMessage({
+        method: "queryIdentitiesState"
+      })
+    ]).then(([identities, state]) => {
+      this._identities = identities.map((identity) => {
+        const stateObject = state[Logic.userContextId(identity.cookieStoreId)];
+        if (stateObject) {
+          identity.hasOpenTabs = stateObject.hasOpenTabs;
+          identity.hasHiddenTabs = stateObject.hasHiddenTabs;
+        }
+        return identity;
+      });
+    }).catch((e) => {throw e;});
   },
 
   showPanel(panel, currentIdentity = null) {
@@ -141,6 +186,25 @@ const Logic = {
     return this._currentIdentity;
   },
 
+  sendTelemetryPayload(message = {}) {
+    if (!message.event) {
+      throw new Error("Missing event name for telemetry");
+    }
+    message.method = "sendTelemetryPayload";
+    browser.runtime.sendMessage(message);
+  },
+
+  removeIdentity(userContextId) {
+    if (!userContextId) {
+      return Promise.reject("removeIdentity must be called with userContextId argument.");
+    }
+
+    return browser.runtime.sendMessage({
+      method: "deleteContainer",
+      message: {userContextId}
+    });
+  },
+
   generateIdentityName() {
     const defaultName = "Container #";
     const ids = [];
@@ -173,7 +237,7 @@ Logic.registerPanel(P_ONBOARDING_1, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the next panel.
-    document.querySelector("#onboarding-start-button").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#onboarding-start-button"), () => {
       localStorage.setItem("onboarded1", true);
       Logic.showPanel(P_ONBOARDING_2);
     });
@@ -194,7 +258,7 @@ Logic.registerPanel(P_ONBOARDING_2, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    document.querySelector("#onboarding-next-button").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#onboarding-next-button"), () => {
       localStorage.setItem("onboarded2", true);
       Logic.showPanel(P_ONBOARDING_3);
     });
@@ -215,8 +279,29 @@ Logic.registerPanel(P_ONBOARDING_3, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    document.querySelector("#onboarding-done-button").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#onboarding-almost-done-button"), () => {
       localStorage.setItem("onboarded3", true);
+      Logic.showPanel(P_ONBOARDING_4);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    return Promise.resolve(null);
+  },
+});
+
+// P_ONBOARDING_4: Fourth page for Onboarding.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_ONBOARDING_4, {
+  panelSelector: ".onboarding-panel-4",
+
+  // This method is called when the object is registered.
+  initialize() {
+    // Let's move to the containers list panel.
+    document.querySelector("#onboarding-done-button").addEventListener("click", () => {
+      localStorage.setItem("onboarded4", true);
       Logic.showPanel(P_CONTAINERS_LIST);
     });
   },
@@ -235,19 +320,18 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
   // This method is called when the object is registered.
   initialize() {
-    document.querySelector("#container-add-link").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#container-add-link"), () => {
       Logic.showPanel(P_CONTAINER_EDIT, { name: Logic.generateIdentityName() });
     });
 
-    document.querySelector("#edit-containers-link").addEventListener("click", () => {
-      browser.runtime.sendMessage({
-        method: "sendTelemetryPayload",
+    Logic.addEnterHandler(document.querySelector("#edit-containers-link"), () => {
+      Logic.sendTelemetryPayload({
         event: "edit-containers"
       });
       Logic.showPanel(P_CONTAINERS_EDIT);
     });
 
-    document.querySelector("#sort-containers-link").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#sort-containers-link"), () => {
       browser.runtime.sendMessage({
         method: "sortTabs"
       }).then(() => {
@@ -255,6 +339,30 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       }).catch(() => {
         window.close();
       });
+    });
+
+    document.addEventListener("keydown", (e) => {
+      const element = document.activeElement;
+      function next() {
+        const nextElement = element.nextElementSibling;
+        if (nextElement) {
+          nextElement.focus();
+        }
+      }
+      function previous() {
+        const previousElement = element.previousElementSibling;
+        if (previousElement) {
+          previousElement.focus();
+        }
+      }
+      switch (e.keyCode) {
+      case 40:
+        next();
+        break;
+      case 38:
+        previous();
+        break;
+      }
     });
   },
 
@@ -269,12 +377,15 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       const manage = document.createElement("td");
 
       tr.classList.add("container-panel-row");
+
+      tr.setAttribute("tabindex", "0");
+
       context.classList.add("userContext-wrapper", "open-newtab", "clickable");
       manage.classList.add("show-tabs", "pop-button");
       context.innerHTML = escaped`
         <div class="userContext-icon-wrapper open-newtab">
-          <div class="userContext-icon"
-            data-identity-icon="${identity.image}"
+          <div class="usercontext-icon"
+            data-identity-icon="${identity.icon}"
             data-identity-color="${identity.color}">
           </div>
         </div>
@@ -290,12 +401,16 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         tr.appendChild(manage);
       }
 
-      tr.addEventListener("click", e => {
-        if (e.target.matches(".open-newtab") || e.target.parentNode.matches(".open-newtab")) {
+      Logic.addEnterHandler(tr, e => {
+        if (e.target.matches(".open-newtab")
+            || e.target.parentNode.matches(".open-newtab")
+            || e.type === "keydown") {
           browser.runtime.sendMessage({
             method: "openTab",
-            userContextId: identity.userContextId,
-            source: "pop-up"
+            message: {
+              userContextId: Logic.userContextId(identity.cookieStoreId),
+              source: "pop-up"
+            }
           }).then(() => {
             window.close();
           }).catch(() => {
@@ -311,6 +426,12 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
     list.innerHTML = "";
     list.appendChild(fragment);
+    /* Not sure why extensions require a focus for the doorhanger,
+       however it allows us to have a tabindex before the first selected item
+     */
+    document.addEventListener("focus", () => {
+      list.querySelector("tr").focus();
+    });
 
     return Promise.resolve();
   },
@@ -324,15 +445,15 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
   // This method is called when the object is registered.
   initialize() {
-    document.querySelector("#close-container-info-panel").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#close-container-info-panel"), () => {
       Logic.showPreviousPanel();
     });
 
-    document.querySelector("#container-info-hideorshow").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#container-info-hideorshow"), () => {
       const identity = Logic.currentIdentity();
       browser.runtime.sendMessage({
         method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
-        userContextId: identity.userContextId
+        userContextId: Logic.userContextId(identity.cookieStoreId)
       }).then(() => {
         window.close();
       }).catch(() => {
@@ -359,13 +480,13 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
         moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
       } else {
-        moveTabsEl.addEventListener("click", () => {
-          return browser.runtime.sendMessage({
+        Logic.addEnterHandler(moveTabsEl, () => {
+          browser.runtime.sendMessage({
             method: "moveTabsToWindow",
-            userContextId: Logic.currentIdentity().userContextId,
+            userContextId: Logic.userContextId(Logic.currentIdentity().cookieStoreId),
           }).then(() => {
             window.close();
-          });
+          }).catch((e) => { throw e; });
         });
       }
     }).catch(() => {
@@ -381,7 +502,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     document.getElementById("container-info-name").textContent = identity.name;
 
     const icon = document.getElementById("container-info-icon");
-    icon.setAttribute("data-identity-icon", identity.image);
+    icon.setAttribute("data-identity-icon", identity.icon);
     icon.setAttribute("data-identity-color", identity.color);
 
     // Show or not the has-tabs section.
@@ -404,7 +525,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     // Let's retrieve the list of tabs.
     return browser.runtime.sendMessage({
       method: "getTabs",
-      userContextId: identity.userContextId,
+      userContextId: Logic.userContextId(identity.cookieStoreId),
     }).then(this.buildInfoTable);
   },
 
@@ -422,7 +543,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       // On click, we activate this tab. But only if this tab is active.
       if (tab.active) {
         tr.classList.add("clickable");
-        tr.addEventListener("click", () => {
+        Logic.addEnterHandler(tr, () => {
           browser.runtime.sendMessage({
             method: "showTab",
             tabId: tab.id,
@@ -447,7 +568,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
 
   // This method is called when the object is registered.
   initialize() {
-    document.querySelector("#exit-edit-mode-link").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#exit-edit-mode-link"), () => {
       Logic.showPanel(P_CONTAINERS_LIST);
     });
   },
@@ -462,8 +583,8 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       tr.innerHTML = escaped`
         <td class="userContext-wrapper">
           <div class="userContext-icon-wrapper">
-            <div class="userContext-icon"
-              data-identity-icon="${identity.image}"
+            <div class="usercontext-icon"
+              data-identity-icon="${identity.icon}"
               data-identity-color="${identity.color}">
             </div>
           </div>
@@ -485,7 +606,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       tr.querySelector(".remove-container .pop-button-image").setAttribute("title", `Edit ${identity.name} container`);
 
 
-      tr.addEventListener("click", e => {
+      Logic.addEnterHandler(tr, e => {
         if (e.target.matches(".edit-container-icon") || e.target.parentNode.matches(".edit-container-icon")) {
           Logic.showPanel(P_CONTAINER_EDIT, identity);
         } else if (e.target.matches(".delete-container-icon") || e.target.parentNode.matches(".delete-container-icon")) {
@@ -513,17 +634,17 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   initialize() {
     this.initializeRadioButtons();
 
-    document.querySelector("#edit-container-panel-back-arrow").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#edit-container-panel-back-arrow"), () => {
       Logic.showPreviousPanel();
     });
 
-    document.querySelector("#edit-container-cancel-link").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#edit-container-cancel-link"), () => {
       Logic.showPreviousPanel();
     });
 
     this._editForm = document.getElementById("edit-container-panel-form");
     const editLink = document.querySelector("#edit-container-ok-link");
-    editLink.addEventListener("click", this._submitForm.bind(this));
+    Logic.addEnterHandler(editLink, this._submitForm.bind(this));
     editLink.addEventListener("submit", this._submitForm.bind(this));
     this._editForm.addEventListener("submit", this._submitForm.bind(this));
   },
@@ -531,12 +652,16 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   _submitForm() {
     const identity = Logic.currentIdentity();
     const formValues = new FormData(this._editForm);
-    browser.runtime.sendMessage({
-      method: identity.userContextId ? "updateIdentity" : "createIdentity",
-      userContextId: identity.userContextId || 0,
-      name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
-      icon: formValues.get("container-icon") || DEFAULT_ICON,
-      color: formValues.get("container-color") || DEFAULT_COLOR,
+    return browser.runtime.sendMessage({
+      method: "createOrUpdateContainer",
+      message: {
+        userContextId: Logic.userContextId(identity.cookieStoreId) || false,
+        params: {
+          name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
+          icon: formValues.get("container-icon") || DEFAULT_ICON,
+          color: formValues.get("container-color") || DEFAULT_COLOR,
+        }
+      }
     }).then(() => {
       return Logic.refreshIdentities();
     }).then(() => {
@@ -555,7 +680,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
     colors.forEach((containerColor) => {
       const templateInstance = document.createElement("span");
-      // eslint-disable-next-line no-unescaped/enforce
+      // eslint-disable-next-line no-unsanitized/property
       templateInstance.innerHTML = colorRadioTemplate(containerColor);
       colorRadioFieldset.appendChild(templateInstance);
     });
@@ -568,7 +693,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const iconRadioFieldset = document.getElementById("edit-container-panel-choose-icon");
     icons.forEach((containerIcon) => {
       const templateInstance = document.createElement("span");
-      // eslint-disable-next-line no-unescaped/enforce
+      // eslint-disable-next-line no-unsanitized/property
       templateInstance.innerHTML = iconRadioTemplate(containerIcon);
       iconRadioFieldset.appendChild(templateInstance);
     });
@@ -582,7 +707,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       colorInput.checked = colorInput.value === identity.color;
     });
     [...document.querySelectorAll("[name='container-icon']")].forEach(iconInput => {
-      iconInput.checked = iconInput.value === identity.image;
+      iconInput.checked = iconInput.value === identity.icon;
     });
 
     return Promise.resolve(null);
@@ -598,15 +723,17 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
 
   // This method is called when the object is registered.
   initialize() {
-    document.querySelector("#delete-container-cancel-link").addEventListener("click", () => {
+    Logic.addEnterHandler(document.querySelector("#delete-container-cancel-link"), () => {
       Logic.showPreviousPanel();
     });
 
-    document.querySelector("#delete-container-ok-link").addEventListener("click", () => {
-      browser.runtime.sendMessage({
-        method: "removeIdentity",
-        userContextId: Logic.currentIdentity().userContextId,
-      }).then(() => {
+    Logic.addEnterHandler(document.querySelector("#delete-container-ok-link"), () => {
+      /* This promise wont resolve if the last tab was removed from the window.
+          as the message async callback stops listening, this isn't an issue for us however it might be in future
+          if you want to do anything post delete do it in the background script.
+          Browser console currently warns about not listening also.
+      */
+      Logic.removeIdentity(Logic.userContextId(Logic.currentIdentity().cookieStoreId)).then(() => {
         return Logic.refreshIdentities();
       }).then(() => {
         Logic.showPreviousPanel();
@@ -624,7 +751,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     document.getElementById("delete-container-name").textContent = identity.name;
 
     const icon = document.getElementById("delete-container-icon");
-    icon.setAttribute("data-identity-icon", identity.image);
+    icon.setAttribute("data-identity-icon", identity.icon);
     icon.setAttribute("data-identity-color", identity.color);
 
     return Promise.resolve(null);

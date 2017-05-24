@@ -4,6 +4,7 @@
 
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 const DEFAULT_TAB = "about:newtab";
+const LOOKUP_KEY = "$ref";
 
 const SHOW_MENU_TIMEOUT = 100;
 const HIDE_MENU_TIMEOUT = 300;
@@ -73,41 +74,43 @@ Cu.import("resource:///modules/CustomizableWidgets.jsm");
 Cu.import("resource:///modules/sessionstore/SessionStore.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
-// ----------------------------------------------------------------------------
 // ContextualIdentityProxy
 
 const ContextualIdentityProxy = {
   getIdentities() {
+    let response;
     if ("getPublicIdentities" in ContextualIdentityService) {
-      return ContextualIdentityService.getPublicIdentities();
+      response = ContextualIdentityService.getPublicIdentities();
+    } else {
+      response = ContextualIdentityService.getIdentities();
     }
 
-    return ContextualIdentityService.getIdentities();
-  },
-
-  getUserContextLabel(userContextId) {
-    return ContextualIdentityService.getUserContextLabel(userContextId);
+    return response.map((identity) => {
+      return this._convert(identity);
+    });
   },
 
   getIdentityFromId(userContextId) {
+    let response;
     if ("getPublicIdentityFromId" in ContextualIdentityService) {
-      return ContextualIdentityService.getPublicIdentityFromId(userContextId);
+      response = ContextualIdentityService.getPublicIdentityFromId(userContextId);
+    } else {
+      response = ContextualIdentityService.getIdentityFromId(userContextId);
     }
-
-    return ContextualIdentityService.getIdentityFromId(userContextId);
+    if (response) {
+      return this._convert(response);
+    }
+    return response;
   },
 
-  create(name, icon, color) {
-    return ContextualIdentityService.create(name, icon, color);
+  _convert(identity) {
+    return {
+      name: ContextualIdentityService.getUserContextLabel(identity.userContextId),
+      icon: identity.icon,
+      color: identity.color,
+      userContextId: identity.userContextId,
+    };
   },
-
-  update(userContextId, name, icon, color) {
-    return ContextualIdentityService.update(userContextId, name, icon, color);
-  },
-
-  remove(userContextId) {
-    return ContextualIdentityService.remove(userContextId);
-  }
 };
 
 // ----------------------------------------------------------------------------
@@ -119,12 +122,14 @@ const ContainerService = {
   _containerWasEnabled: false,
   _onBackgroundConnectCallback: null,
 
-  init(installation, reason) {
+  async init(installation, reason) {
     // If we are just been installed, we must store some information for the
     // uninstallation. This object contains also a version number, in case we
     // need to implement a migration in the future.
     // In 1.1.1 and less we deleted savedConfiguration on upgrade so we need to rebuild
-    if (installation && (reason !== "upgrade" || !ss.storage.savedConfiguration)) {
+    if (!("savedConfiguration" in ss.storage) ||
+        !("prefs" in ss.storage.savedConfiguration) ||
+        (installation && reason !== "upgrade")) {
       let preInstalledIdentities = []; // eslint-disable-line prefer-const
       ContextualIdentityProxy.getIdentities().forEach(identity => {
         preInstalledIdentities.push(identity.userContextId);
@@ -143,28 +148,39 @@ const ContainerService = {
 
       ss.storage.savedConfiguration = object;
 
-      // Maybe rename the Banking container.
       if (prefService.get("privacy.userContext.enabled") !== true) {
+        // Maybe rename the Banking container.
         const identity = ContextualIdentityProxy.getIdentityFromId(3);
         if (identity && identity.l10nID === "userContextBanking.label") {
-          ContextualIdentityProxy.update(identity.userContextId,
+          ContextualIdentityService.update(identity.userContextId,
                                          "Finance",
                                          identity.icon,
                                          identity.color);
         }
-      }
 
-      // Let's create the default containers in case there are none.
-      if (prefService.get("privacy.userContext.enabled") !== true &&
-          ss.storage.savedConfiguration.preInstalledIdentities.length === 0) {
-        // Note: we have to create them in this way because there is no way to
-        // reuse the same ID and the localized strings.
-        ContextualIdentityService.create("Personal", "fingerprint", "blue");
-        ContextualIdentityService.create("Work", "briefcase", "orange");
-        ContextualIdentityService.create("Finance", "dollar", "green");
-        ContextualIdentityService.create("Shopping", "cart", "pink");
+        // Let's create the default containers in case there are none.
+        if (ss.storage.savedConfiguration.preInstalledIdentities.length === 0) {
+          // Note: we have to create them in this way because there is no way to
+          // reuse the same ID and the localized strings.
+          ContextualIdentityService.create("Personal", "fingerprint", "blue");
+          ContextualIdentityService.create("Work", "briefcase", "orange");
+          ContextualIdentityService.create("Finance", "dollar", "green");
+          ContextualIdentityService.create("Shopping", "cart", "pink");
+        }
       }
     }
+
+    // TOCHECK should this run on all code
+    ContextualIdentityProxy.getIdentities().forEach(identity => {
+      const newIcon = this._fromIconToName(identity.icon);
+      const newColor = this._fromColorToName(identity.color);
+      if (newIcon !== identity.icon || newColor !== identity.color) {
+        ContextualIdentityService.update(identity.userContextId,
+                                       ContextualIdentityService.getUserContextLabel(identity.userContextId),
+                                       newIcon,
+                                       newColor);
+      }
+    });
 
     // Let's see if containers were enabled before this addon.
     this._containerWasEnabled =
@@ -191,16 +207,14 @@ const ContainerService = {
       "sortTabs",
       "getTabs",
       "showTab",
-      "openTab",
       "moveTabsToWindow",
-      "queryIdentities",
+      "queryIdentitiesState",
       "getIdentity",
-      "createIdentity",
-      "removeIdentity",
-      "updateIdentity",
       "getPreference",
       "sendTelemetryPayload",
       "getTheme",
+      "refreshNeeded",
+      "forgetIdentityAndRefresh",
       "checkIncompatibleAddons"
     ];
 
@@ -253,7 +267,8 @@ const ContainerService = {
 
     // WebExtension startup
 
-    webExtension.startup().then(api => {
+    try {
+      const api = await webExtension.startup();
       api.browser.runtime.onMessage.addListener((message, sender, sendReply) => {
         if ("method" in message && methods.indexOf(message.method) !== -1) {
           sendReply(this[message.method](message));
@@ -261,9 +276,9 @@ const ContainerService = {
       });
 
       this.registerBackgroundConnection(api);
-    }).catch(() => {
+    } catch (e) {
       throw new Error("WebExtension startup failed. Unable to continue.");
-    });
+    }
 
     this._sendEvent = new Metrics({
       type: "sdk",
@@ -308,7 +323,7 @@ const ContainerService = {
   },
 
   registerBackgroundConnection(api) {
-    // This is only used for theme and container deletion notifications
+    // This is only used for theme notifications and new tab
     api.browser.runtime.onConnect.addListener((port) => {
       this._onBackgroundConnectCallback = (message, topic) => {
         port.postMessage({
@@ -325,13 +340,14 @@ const ContainerService = {
     }
   },
 
-  observe(subject, topic) {
+  async observe(subject, topic) {
     if (topic === "lightweight-theme-changed") {
-      this.getTheme().then((theme) => {
+      try {
+        const theme = await this.getTheme();
         this.triggerBackgroundCallback(theme, topic);
-      }).catch(() => {
+      } catch (e) {
         throw new Error("Unable to get theme");
-      });
+      }
     }
   },
 
@@ -396,18 +412,6 @@ const ContainerService = {
     return containersCounts;
   },
 
-  _convert(identity) {
-    // Let's convert the known colors to their color names.
-    return {
-      name: ContextualIdentityProxy.getUserContextLabel(identity.userContextId),
-      image: this._fromIconToName(identity.icon),
-      color: this._fromColorToName(identity.color),
-      userContextId: identity.userContextId,
-      hasHiddenTabs: !!this._identitiesState[identity.userContextId].hiddenTabs.length,
-      hasOpenTabs: !!this._identitiesState[identity.userContextId].openTabs
-    };
-  },
-
   // In FF 50-51, the icon is the full path, in 52 and following
   // releases, we have IDs to be used with a svg file. In this function
   // we map URLs to svg IDs.
@@ -433,10 +437,6 @@ const ContainerService = {
 
   // Helper methods for converting icons to names and names to icons.
 
-  _fromNameToIcon(name) {
-    return this._fromNameOrIcon(name, "image", "");
-  },
-
   _fromIconToName(icon) {
     return this._fromNameOrIcon(icon, "name", "circle");
   },
@@ -456,16 +456,31 @@ const ContainerService = {
     return parseInt(viewFor(tab).getAttribute("usercontextid") || 0, 10);
   },
 
-  _createTabObject(tab) {
-    return { title: tab.title, url: tab.url, id: tab.id, active: true };
+  async _createTabObject(tab) {
+    let url;
+    try {
+      url = await getFavicon(tab.url);
+    } catch (e) {
+      url = "";
+    }
+    return {
+      title: tab.title,
+      url: tab.url,
+      favicon: url,
+      id: tab.id,
+      active: true,
+      pinned: tabsUtils.isPinned(viewFor(tab))
+    };
   },
 
-  _containerTabIterator(userContextId, cb) {
-    for (let tab of tabs) { // eslint-disable-line prefer-const
+  _matchTabsByContainer(userContextId) {
+    const matchedTabs = [];
+    for (const tab of tabs) {
       if (userContextId === this._getUserContextIdFromTab(tab)) {
-        cb(tab);
+        matchedTabs.push(tab);
       }
     }
+    return matchedTabs;
   },
 
   _createIdentityState() {
@@ -486,10 +501,7 @@ const ContainerService = {
   },
 
   _remapTabsFromUserContextId(userContextId) {
-    this._identitiesState[userContextId].openTabs = 0;
-    this._containerTabIterator(userContextId, () => {
-      ++this._identitiesState[userContextId].openTabs;
-    });
+    this._identitiesState[userContextId].openTabs = this._matchTabsByContainer(userContextId).length;
   },
 
   _remapTab(tab) {
@@ -503,30 +515,25 @@ const ContainerService = {
     return userContextId in this._identitiesState;
   },
 
-  _closeTabs(tabsToClose) {
+  async _closeTabs(tabsToClose) {
     // We create a new tab only if the current operation closes all the
     // existing ones.
-    let promise;
-    if (tabs.length !== tabsToClose.length) {
-      promise = Promise.resolve(null);
-    } else {
-      promise = this.openTab({});
+    if (tabs.length === tabsToClose.length) {
+      await this.openTab({});
     }
 
-    return promise.then(() => {
-      for (let tab of tabsToClose) { // eslint-disable-line prefer-const
-        // after .close() window is null. Let's take it now.
-        const window = viewFor(tab.window);
+    for (const tab of tabsToClose) {
+      // after .close() window is null. Let's take it now.
+      const window = viewFor(tab.window);
 
-        tab.close();
+      tab.close();
 
-        // forget about this tab. 0 is the index of the forgotten tab and 0
-        // means the last one.
-        try {
-          SessionStore.forgetClosedTab(window, 0);
-        } catch(e) {} // eslint-disable-line no-empty
-      }
-    }).catch(() => null);
+      // forget about this tab. 0 is the index of the forgotten tab and 0
+      // means the last one.
+      try {
+        SessionStore.forgetClosedTab(window, 0);
+      } catch (e) {} // eslint-disable-line no-empty
+    }
   },
 
   _recentBrowserWindow() {
@@ -553,6 +560,29 @@ const ContainerService = {
     };
     Object.assign(payload, args);
 
+    /* This is to masage the data whilst it is still active in the SDK side */
+    const containersCounts = this._containersCounts();
+    Object.keys(payload).forEach((keyName) => {
+      let value = payload[keyName];
+      if (value === LOOKUP_KEY) {
+        switch (keyName) {
+        case "clickedContainerTabCount":
+          value = this._containerTabCount(payload.userContextId);
+          break;
+        case "shownContainersCount":
+          value = containersCounts.shown;
+          break;
+        case "hiddenContainersCount":
+          value = containersCounts.hidden;
+          break;
+        case "totalContainersCount":
+          value = containersCounts.total;
+          break;
+        }
+      }
+      payload[keyName] = value;
+    });
+
     this._sendEvent(payload);
   },
 
@@ -573,51 +603,46 @@ const ContainerService = {
 
   // Tabs management
 
-  hideTabs(args) {
+  async hideTabs(args) {
     if (!("userContextId" in args)) {
-      return Promise.reject("hideTabs must be called with userContextId argument.");
+      return new Error("hideTabs must be called with userContextId argument.");
     }
 
     this._remapTabsIfMissing(args.userContextId);
     if (!this._isKnownContainer(args.userContextId)) {
-      return Promise.resolve(null);
+      return null;
     }
 
-    const containersCounts = this._containersCounts();
     this.sendTelemetryPayload({
       "event": "hide-tabs",
       "userContextId": args.userContextId,
-      "clickedContainerTabCount": this._containerTabCount(args.userContextId),
-      "shownContainersCount": containersCounts.shown,
-      "hiddenContainersCount": containersCounts.hidden,
-      "totalContainersCount": containersCounts.total
+      "clickedContainerTabCount": LOOKUP_KEY,
+      "shownContainersCount": LOOKUP_KEY,
+      "hiddenContainersCount": LOOKUP_KEY,
+      "totalContainersCount": LOOKUP_KEY
     });
 
     const tabsToClose = [];
 
-    this._containerTabIterator(args.userContextId, tab => {
-      const object = this._createTabObject(tab);
+    const tabObjects = await Promise.all(this._matchTabsByContainer(args.userContextId).map((tab) => {
+      tabsToClose.push(tab);
+      return this._createTabObject(tab);
+    }));
 
+    tabObjects.forEach((object) => {
       // This tab is going to be closed. Let's mark this tabObject as
       // non-active.
       object.active = false;
 
-      getFavicon(object.url).then(url => {
-        object.favicon = url;
-      }).catch(() => {
-        object.favicon = "";
-      });
-
       this._identitiesState[args.userContextId].hiddenTabs.push(object);
-      tabsToClose.push(tab);
     });
 
-    return this._closeTabs(tabsToClose).then(() => {
-      return this._syncTabs();
-    });
+    await this._closeTabs(tabsToClose);
+
+    return this._syncTabs();
   },
 
-  showTabs(args) {
+  async showTabs(args) {
     if (!("userContextId" in args)) {
       return Promise.reject("showTabs must be called with userContextId argument.");
     }
@@ -627,14 +652,13 @@ const ContainerService = {
       return Promise.resolve(null);
     }
 
-    const containersCounts = this._containersCounts();
     this.sendTelemetryPayload({
       "event": "show-tabs",
       "userContextId": args.userContextId,
-      "clickedContainerTabCount": this._containerTabCount(args.userContextId),
-      "shownContainersCount": containersCounts.shown,
-      "hiddenContainersCount": containersCounts.hidden,
-      "totalContainersCount": containersCounts.total
+      "clickedContainerTabCount": LOOKUP_KEY,
+      "shownContainersCount": LOOKUP_KEY,
+      "hiddenContainersCount": LOOKUP_KEY,
+      "totalContainersCount": LOOKUP_KEY
     });
 
     const promises = [];
@@ -647,15 +671,14 @@ const ContainerService = {
         userContextId: args.userContextId,
         url: object.url,
         nofocus: args.nofocus || false,
-        window: args.window || null,
+        pinned: object.pinned,
       }));
     }
 
     this._identitiesState[args.userContextId].hiddenTabs = [];
 
-    return Promise.all(promises).then(() => {
-      return this._syncTabs();
-    });
+    await Promise.all(promises);
+    return this._syncTabs();
   },
 
   sortTabs() {
@@ -685,7 +708,7 @@ const ContainerService = {
 
     // Let's collect UCIs/tabs for this window.
     const map = new Map;
-    for (let tab of tabs) { // eslint-disable-line prefer-const
+    for (const tab of tabs) {
       if (pinnedTabs && !tabsUtils.isPinned(tab)) {
         // We don't have, or we already handled all the pinned tabs.
         break;
@@ -709,44 +732,29 @@ const ContainerService = {
 
     // Let's move tabs.
     sortMap.forEach(tabs => {
-      for (let tab of tabs) { // eslint-disable-line prefer-const
+      for (const tab of tabs) {
         xulWindow.gBrowser.moveTabTo(tab, pos++);
       }
     });
   },
 
-  getTabs(args) {
+  async getTabs(args) {
     if (!("userContextId" in args)) {
-      return Promise.reject("getTabs must be called with userContextId argument.");
+      return new Error("getTabs must be called with userContextId argument.");
     }
 
     this._remapTabsIfMissing(args.userContextId);
     if (!this._isKnownContainer(args.userContextId)) {
-      return Promise.resolve([]);
+      return [];
     }
 
-    return new Promise((resolve, reject) => {
-      const list = [];
-      this._containerTabIterator(args.userContextId, tab => {
-        list.push(this._createTabObject(tab));
-      });
-
-      const promises = [];
-
-      for (let object of list) { // eslint-disable-line prefer-const
-        promises.push(getFavicon(object.url).then(url => {
-          object.favicon = url;
-        }).catch(() => {
-          object.favicon = "";
-        }));
-      }
-
-      Promise.all(promises).then(() => {
-        resolve(list.concat(this._identitiesState[args.userContextId].hiddenTabs));
-      }).catch((e) => {
-        reject(e);
-      });
+    const promises = [];
+    this._matchTabsByContainer(args.userContextId).forEach((tab) => {
+      promises.push(this._createTabObject(tab));
     });
+
+    const list = await Promise.all(promises);
+    return list.concat(this._identitiesState[args.userContextId].hiddenTabs);
   },
 
   showTab(args) {
@@ -756,7 +764,7 @@ const ContainerService = {
         return;
       }
 
-      for (let tab of tabs) { // eslint-disable-line prefer-const
+      for (const tab of tabs) {
         if (tab.id === args.tabId) {
           tab.window.activate();
           tab.activate();
@@ -786,11 +794,7 @@ const ContainerService = {
         "clickedContainerTabCount": this._containerTabCount(args.userContextId),
       });
 
-      // Let's create a list of the tabs.
-      const list = [];
-      this._containerTabIterator(args.userContextId, tab => {
-        list.push(tab);
-      });
+      const list = this._matchTabsByContainer(args.userContextId);
 
       // Nothing to do
       if (list.length === 0 &&
@@ -833,149 +837,36 @@ const ContainerService = {
   },
 
   openTab(args) {
-    return new Promise(resolve => {
-      if ("window" in args && args.window) {
-        resolve(args.window);
-      } else {
-        this._recentBrowserWindow().then(browserWin => {
-          resolve(browserWin);
-        }).catch(() => {});
-      }
-    }).then(browserWin => {
-      const userContextId = ("userContextId" in args) ? args.userContextId : 0;
-      const source = ("source" in args) ? args.source : null;
-      const nofocus = ("nofocus" in args) ? args.nofocus : false;
-
-      // Only send telemetry for tabs opened by UI - i.e., not via showTabs
-      if (source && userContextId) {
-        this.sendTelemetryPayload({
-          "event": "open-tab",
-          "eventSource": source,
-          "userContextId": userContextId,
-          "clickedContainerTabCount": this._containerTabCount(userContextId)
-        });
-      }
-
-      let promise;
-      if (userContextId) {
-        promise = this.showTabs(args);
-      } else {
-        promise = Promise.resolve(null);
-      }
-
-      return promise.then(() => {
-        const tab = browserWin.gBrowser.addTab(args.url || DEFAULT_TAB, { userContextId });
-        if (!nofocus) {
-          browserWin.gBrowser.selectedTab = tab;
-          browserWin.focusAndSelectUrlBar();
-        }
-        return true;
-      });
-    }).catch(() => false);
+    return this.triggerBackgroundCallback(args, "open-tab");
   },
 
   // Identities management
-
-  queryIdentities() {
+  queryIdentitiesState() {
     return new Promise(resolve => {
-      const identities = [];
+      const identities = {};
 
       ContextualIdentityProxy.getIdentities().forEach(identity => {
         this._remapTabsIfMissing(identity.userContextId);
-        const convertedIdentity = this._convert(identity);
-        identities.push(convertedIdentity);
+        const convertedIdentity = {
+          hasHiddenTabs: !!this._identitiesState[identity.userContextId].hiddenTabs.length,
+          hasOpenTabs: !!this._identitiesState[identity.userContextId].openTabs
+        };
+
+        identities[identity.userContextId] = convertedIdentity;
       });
 
       resolve(identities);
     });
   },
 
-  getIdentity(args) {
-    if (!("userContextId" in args)) {
-      return Promise.reject("getIdentity must be called with userContextId argument.");
-    }
+  queryIdentities() {
+    return new Promise(resolve => {
+      const identities = ContextualIdentityProxy.getIdentities();
+      identities.forEach(identity => {
+        this._remapTabsIfMissing(identity.userContextId);
+      });
 
-    const identity = ContextualIdentityProxy.getIdentityFromId(args.userContextId);
-    return Promise.resolve(identity ? this._convert(identity) : null);
-  },
-
-  createIdentity(args) {
-    this.sendTelemetryPayload({
-      "event": "add-container",
-    });
-
-    for (let arg of [ "name", "color", "icon"]) { // eslint-disable-line prefer-const
-      if (!(arg in args)) {
-        return Promise.reject("createIdentity must be called with " + arg + " argument.");
-      }
-    }
-
-    const color = this._fromNameToColor(args.color);
-    const icon = this._fromNameToIcon(args.icon);
-
-    const identity = ContextualIdentityProxy.create(args.name, icon, color);
-
-    this._identitiesState[identity.userContextId] = this._createIdentityState();
-
-    this._refreshNeeded().then(() => {
-      return this._convert(identity);
-    }).catch(() => {
-      return this._convert(identity);
-    });
-  },
-
-  updateIdentity(args) {
-    if (!("userContextId" in args)) {
-      return Promise.reject("updateIdentity must be called with userContextId argument.");
-    }
-
-    this.sendTelemetryPayload({
-      "event": "edit-container",
-      "userContextId": args.userContextId
-    });
-
-    const identity = ContextualIdentityProxy.getIdentityFromId(args.userContextId);
-    for (let arg of [ "name", "color", "icon"]) { // eslint-disable-line prefer-const
-      if ((arg in args)) {
-        identity[arg] = args[arg];
-      }
-    }
-
-    const color = this._fromNameToColor(identity.color);
-    const icon = this._fromNameToIcon(identity.icon);
-
-    const updated = ContextualIdentityProxy.update(args.userContextId,
-                                                   identity.name,
-                                                   icon, color);
-
-    this._refreshNeeded().then(() => {
-      return updated;
-    }).catch(() => {
-      return updated;
-    });
-  },
-
-  removeIdentity(args) {
-    const eventName = "delete-container";
-    if (!("userContextId" in args)) {
-      return Promise.reject("removeIdentity must be called with userContextId argument.");
-    }
-
-    this.sendTelemetryPayload({
-      "event": eventName,
-      "userContextId": args.userContextId
-    });
-
-    const tabsToClose = [];
-    this._containerTabIterator(args.userContextId, tab => {
-      tabsToClose.push(tab);
-    });
-
-    return this._closeTabs(tabsToClose).then(() => {
-      const removed = ContextualIdentityProxy.remove(args.userContextId);
-      this.triggerBackgroundCallback({userContextId: args.userContextId}, eventName);
-      this._forgetIdentity(args.userContextId);
-      return this._refreshNeeded().then(() => removed );
+      resolve(identities);
     });
   },
 
@@ -1027,7 +918,7 @@ const ContainerService = {
     return this._windowMap.get(window);
   },
 
-  _refreshNeeded() {
+  refreshNeeded() {
     return this._configureWindows();
   },
 
@@ -1043,26 +934,25 @@ const ContainerService = {
     }
 
     const userContextId = ContainerService._getUserContextIdFromTab(tab);
-    return ContainerService.getIdentity({userContextId}).then(identity => {
-      const hbox = viewFor(tab.window).document.getElementById("userContext-icons");
+    const identity = ContextualIdentityProxy.getIdentityFromId(userContextId);
+    const hbox = viewFor(tab.window).document.getElementById("userContext-icons");
 
-      if (!identity) {
-        hbox.setAttribute("data-identity-color", "");
-        return;
-      }
+    if (!identity) {
+      hbox.setAttribute("data-identity-color", "");
+      return Promise.resolve(null);
+    }
 
-      hbox.setAttribute("data-identity-color", identity.color);
+    hbox.setAttribute("data-identity-color", identity.color);
 
-      const label = viewFor(tab.window).document.getElementById("userContext-label");
-      label.setAttribute("value", identity.name);
-      label.style.color = ContainerService._fromNameToColor(identity.color);
+    const label = viewFor(tab.window).document.getElementById("userContext-label");
+    label.setAttribute("value", identity.name);
+    label.style.color = ContainerService._fromNameToColor(identity.color);
 
-      const indicator = viewFor(tab.window).document.getElementById("userContext-indicator");
-      indicator.setAttribute("data-identity-icon", identity.image);
-      indicator.style.listStyleImage = "";
-    }).then(() => {
-      return this._restyleTab(tab);
-    });
+    const indicator = viewFor(tab.window).document.getElementById("userContext-indicator");
+    indicator.setAttribute("data-identity-icon", identity.icon);
+    indicator.style.listStyleImage = "";
+
+    return this._restyleTab(tab);
   },
 
   _restyleTab(tab) {
@@ -1070,12 +960,11 @@ const ContainerService = {
       return Promise.resolve(null);
     }
     const userContextId = ContainerService._getUserContextIdFromTab(tab);
-    return ContainerService.getIdentity({userContextId}).then(identity => {
-      if (!identity) {
-        return;
-      }
-      viewFor(tab).setAttribute("data-identity-color", identity.color);
-    });
+    const identity = ContextualIdentityProxy.getIdentityFromId(userContextId);
+    if (!identity) {
+      return Promise.resolve(null);
+    }
+    return Promise.resolve(viewFor(tab).setAttribute("data-identity-color", identity.color));
   },
 
   // Uninstallation
@@ -1134,7 +1023,7 @@ const ContainerService = {
       const preInstalledIdentities = data.preInstalledIdentities;
       ContextualIdentityProxy.getIdentities().forEach(identity => {
         if (!preInstalledIdentities.includes(identity.userContextId)) {
-          ContextualIdentityProxy.remove(identity.userContextId);
+          ContextualIdentityService.remove(identity.userContextId);
         } else {
           // Let's cleanup all the cookies for this container.
           Services.obs.notifyObservers(null, "clear-origin-attributes-data",
@@ -1155,6 +1044,11 @@ const ContainerService = {
       ContextualIdentityService.getPublicIdentityFromId = this._oldGetPublicIdentityFromId;
     }
     // End-Of-Hack
+  },
+
+  forgetIdentityAndRefresh(args) {
+    this._forgetIdentity(args.userContextId);
+    return this.refreshNeeded();
   },
 
   _forgetIdentity(userContextId = 0) {
@@ -1267,7 +1161,7 @@ ContainerWindow.prototype = {
     }
   },
 
-  _configurePlusButtonMenu() {
+  async _configurePlusButtonMenu() {
     const mainPopupSetElement = this._window.document.getElementById("mainPopupSet");
 
     // Let's remove all the previous panels.
@@ -1294,21 +1188,21 @@ ContainerWindow.prototype = {
       this._cleanAllTimeouts();
     });
 
-    return ContainerService.queryIdentities().then(identities => {
+    try {
+      const identities = await ContainerService.queryIdentities();
       identities.forEach(identity => {
         const menuItemElement = this._window.document.createElementNS(XUL_NS, "menuitem");
         this._panelElement.appendChild(menuItemElement);
         menuItemElement.className = "menuitem-iconic";
         menuItemElement.setAttribute("label", identity.name);
         menuItemElement.setAttribute("data-usercontextid", identity.userContextId);
-        menuItemElement.setAttribute("data-identity-icon", identity.image);
+        menuItemElement.setAttribute("data-identity-icon", identity.icon);
         menuItemElement.setAttribute("data-identity-color", identity.color);
 
         menuItemElement.addEventListener("command", (e) => {
           ContainerService.openTab({
             userContextId: identity.userContextId,
-            source: "tab-bar",
-            window: this._window,
+            source: "tab-bar"
           });
           e.stopPropagation();
         });
@@ -1321,9 +1215,9 @@ ContainerWindow.prototype = {
 
         this._panelElement.appendChild(menuItemElement);
       });
-    }).catch(() => {
+    } catch (e) {
       this.hidePanel();
-    });
+    }
   },
 
   _configureTabStyle() {
@@ -1344,8 +1238,7 @@ ContainerWindow.prototype = {
       const userContextId = parseInt(e.target.getAttribute("data-usercontextid"), 10);
       ContainerService.openTab({
         userContextId: userContextId,
-        source: "file-menu",
-        window: this._window,
+        source: "file-menu"
       });
     });
   },
@@ -1360,8 +1253,7 @@ ContainerWindow.prototype = {
       }).then(() => {
         return ContainerService.openTab({
           userContextId,
-          source: "alltabs-menu",
-          window: this._window,
+          source: "alltabs-menu"
         });
       }).catch(() => {});
     });
@@ -1463,7 +1355,7 @@ ContainerWindow.prototype = {
           menuitem.classList.add("menuitem-iconic");
           menuitem.setAttribute("data-usercontextid", identity.userContextId);
           menuitem.setAttribute("data-identity-color", identity.color);
-          menuitem.setAttribute("data-identity-icon", identity.image);
+          menuitem.setAttribute("data-identity-icon", identity.icon);
           fragment.appendChild(menuitem);
         });
 

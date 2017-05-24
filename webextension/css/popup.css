@@ -130,11 +130,13 @@ table {
   color: white;
 }
 
-.button.primary:hover {
+.button.primary:hover,
+.button.primary:focus {
   background-color: #0675d3;
 }
 
-.button.secondary:hover {
+.button.secondary:hover,
+.button.secondary:focus {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
@@ -198,7 +200,8 @@ table {
   justify-content: center;
 }
 
-.panel-back-arrow:hover {
+.panel-back-arrow:hover,
+.panel-back-arrow:focus {
   background: #dedede;
 }
 
@@ -249,7 +252,8 @@ table {
   transition: background-color 75ms;
 }
 
-.onboarding-button:hover {
+.onboarding-button:hover,
+.onboarding-button:active {
   background-color: #0675d3;
 }
 
@@ -264,13 +268,21 @@ manage things like container crud */
 }
 
 .pop-button:hover,
+.pop-button:focus,
+.panel-footer-secondary:focus,
 .panel-footer-secondary:hover {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
-.pop-button:active,
-.panel-footer-secondary:active {
+.pop-button:focus,
+.panel-footer-secondary:focus {
   background-color: rgba(0, 0, 0, 0.08);
+}
+
+.pop-button a,
+.panel-footer a,
+.panel-footer-secondary a {
+  text-decoration: none;
 }
 
 .pop-button-image {
@@ -350,7 +362,8 @@ span ~ .panel-header-text {
   transition: background-color 75ms;
 }
 
-.clickable.userContext-wrapper:hover {
+.container-panel-row:hover .clickable.userContext-wrapper,
+.container-panel-row:focus .clickable.userContext-wrapper {
   background: #f2f2f2;
 }
 
@@ -360,7 +373,6 @@ span ~ .panel-header-text {
 }
 
 /* .userContext-icon is used natively, Bug 1333811 was raised to fix */
-.userContext-icon,
 .usercontext-icon {
   background-image: var(--identity-icon);
   background-position: center center;
@@ -372,8 +384,8 @@ span ~ .panel-header-text {
   flex: 0 0 48px;
 }
 
-.clickable:hover .userContext-icon,
-.clickable:hover .usercontext-icon {
+.container-panel-row:hover .clickable .usercontext-icon,
+.container-panel-row:focus .clickable .usercontext-icon {
   background-image: url('/img/container-newtab.svg');
   fill: 'gray';
   filter: url('/img/filters.svg#fill');
@@ -482,7 +494,8 @@ span ~ .panel-header-text {
   cursor: pointer;
 }
 
-.clickable:hover {
+.clickable:hover,
+.clickable:focus {
   background-color: #ebebeb;
 }
 
