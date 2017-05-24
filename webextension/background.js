@@ -201,7 +201,7 @@ const assignManager = {
           id: menuId,
           title: `${prefix} Always Open in This Container`,
           checked: true,
-          contexts: ["all", "tab"],
+          contexts: ["all"],
         });
       }).catch((e) => {
         throw e;
