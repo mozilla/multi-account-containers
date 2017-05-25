@@ -8,6 +8,11 @@ html {
   box-sizing: border-box;
 }
 
+:root {
+  --font-size-heading: 16px;
+  --primary-action-color: #248aeb;
+}
+
 *,
 *::before,
 *::after {
@@ -33,6 +38,10 @@ table {
   inline-size: 100%;
   max-block-size: 400px;
   overflow: auto;
+}
+
+.offpage {
+  opacity: 0;
 }
 
 /* Color and icon helpers */
@@ -140,6 +149,18 @@ table {
   background-color: rgba(0, 0, 0, 0.05);
 }
 
+/* Text links with actions */
+
+.action-link:link {
+  color: var(--primary-action-color);
+  text-decoration: none;
+}
+
+.action-link:active,
+.action-link:hover {
+  text-decoration: underline;
+}
+
 /* Panels keep everything togethert */
 .panel {
   display: flex;
@@ -223,7 +244,7 @@ table {
 
 .onboarding-title {
   color: #43484e;
-  font-size: 16px;
+  font-size: var(--font-size-heading);
   margin-block-end: 0;
   margin-block-start: 0;
   margin-inline-end: 0;
@@ -312,7 +333,7 @@ manage things like container crud */
 .panel-header-text {
   color: #4a4a4a;
   flex: 1;
-  font-size: 16px;
+  font-size: var(--font-size-heading);
   font-weight: normal;
   margin-block-end: 0;
   margin-block-start: 0;
@@ -324,11 +345,86 @@ manage things like container crud */
   padding-inline-start: 16px;
 }
 
+#container-panel .panel-header {
+  background-color: #efefef;
+  block-size: 26px;
+  font-size: 14px;
+}
+
+#container-panel .panel-header-text {
+  color: #727272;
+  font-size: 14px;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  text-transform: uppercase;
+}
+
+#container-panel .sort-containers-link {
+  margin-inline-end: 16px;
+}
+
 span ~ .panel-header-text {
   padding-block-end: 0;
   padding-block-start: 0;
   padding-inline-end: 0;
   padding-inline-start: 0;
+}
+
+#current-tab {
+  max-inline-size: 100%;
+  min-block-size: 94px;
+  padding-block-end: 16px;
+  padding-block-start: 16px;
+  padding-inline-end: 16px;
+  padding-inline-start: 16px;
+}
+
+#current-tab > h3 {
+  color: #4a4a4a;
+  font-size: var(--font-size-heading);
+  font-weight: normal;
+  margin-block-end: 0;
+  margin-block-start: 0;
+}
+
+#current-page {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#current-page > img {
+  block-size: 16px;
+  inline-size: 16px;
+}
+
+#current-tab > label {
+  align-items: center;
+  display: flex;
+  margin-inline-start: 17px;
+}
+
+#current-tab > label > input {
+  display: inline;
+}
+
+#current-tab > label > img {
+  block-size: 12px;
+  display: inline-block;
+  inline-size: 12px;
+}
+
+#current-container {
+  display: contents;
+  text-transform: lowercase;
+}
+
+#current-container > .usercontext-icon {
+  background-size: 16px;
+  block-size: 16px;
+  display: block;
+  flex: 0 0 20px;
+  inline-size: 20px;
 }
 
 /* Rows used when iterating over panels */
@@ -501,7 +597,7 @@ span ~ .panel-header-text {
 
 .edit-containers-exit-text {
   align-items: center;
-  background: #248aeb;
+  background: var(--primary-action-color);
   block-size: 100%;
   color: #fff;
   display: flex;
@@ -528,7 +624,7 @@ span ~ .panel-header-text {
 
 .delete-container-confirm-title {
   color: #000;
-  font-size: 16px;
+  font-size: var(--font-size-heading);
 }
 
 /* Form info */

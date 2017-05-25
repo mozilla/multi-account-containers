@@ -38,9 +38,17 @@
   </div>
 
   <div class="panel container-panel hide" id="container-panel">
+    <div id="current-tab">
+      <h3>Current Tab</h3>
+      <div id="current-page"></div>
+      <label for="container-page-assigned">
+        <input type="checkbox" id="container-page-assigned" />
+        Always open in <span id="current-container"></span>
+      </label>
+    </div>
     <div class="panel-header">
       <h3 class="panel-header-text">Containers</h3>
-      <a href="#" class="pop-button" id="sort-containers-link"><img class="pop-button-image" alt="Sort Containers" title="Sort Containers" src="/img/container-sort.svg"></a>
+      <a href="#" class="action-link" id="sort-containers-link">Sort Tabs</a>
     </div>
     <div class="scrollable panel-content" tabindex="-1">
       <table>
