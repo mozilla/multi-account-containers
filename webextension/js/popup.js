@@ -135,7 +135,7 @@ const Logic = {
   async currentTab() {
     const activeTabs = await browser.tabs.query({active: true});
     if (activeTabs.length > 0) {
-      return activeTabs[0]
+      return activeTabs[0];
     }
     return false;
   },
