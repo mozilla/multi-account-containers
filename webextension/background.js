@@ -70,6 +70,18 @@ const assignManager = {
     }
   },
 
+  // We return here so the confirm page can load the tab when exempted
+  async _exemptTab(m) {
+    const pageUrl = m.pageUrl;
+    // If we have existing data and for some reason it hasn't been deleted etc lets update it
+    const siteSettings = await this.storageArea.get(pageUrl);
+    if (siteSettings) {
+      siteSettings.exempted.push(m.tabId);
+      await this.storageArea.set(pageUrl, siteSettings);
+    }
+    return true;
+  },
+
   init() {
     browser.contextMenus.onClicked.addListener((info, tab) => {
       const userContextId = this.getUserContextIdFromCookieStore(tab);
@@ -81,7 +93,8 @@ const assignManager = {
           actionName = "added";
           storageAction = this.storageArea.set(info.pageUrl, {
             userContextId,
-            neverAsk: false
+            neverAsk: false,
+            exempted: []
           });
         } else {
           actionName = "removed";
@@ -117,11 +130,12 @@ const assignManager = {
         const userContextId = this.getUserContextIdFromCookieStore(tab);
         if (!siteSettings
             || userContextId === siteSettings.userContextId
-            || tab.incognito) {
+            || tab.incognito
+            || siteSettings.exempted.includes(tab.id)) {
           return {};
         }
 
-        this.reloadPageInContainer(options.url, siteSettings.userContextId, tab.index + 1, siteSettings.neverAsk);
+        this.reloadPageInContainer(options.url, userContextId, siteSettings.userContextId, tab.index + 1, siteSettings.neverAsk);
         this.calculateContextMenu(tab);
 
         /* Removal of existing tabs:
@@ -209,11 +223,12 @@ const assignManager = {
     }
   },
 
-  reloadPageInContainer(url, userContextId, index, neverAsk = false) {
+  reloadPageInContainer(url, currentUserContextId, userContextId, index, neverAsk = false) {
+    const cookieStoreId = backgroundLogic.cookieStoreId(userContextId);
     const loadPage = browser.extension.getURL("confirm-page.html");
     // If the user has explicitly checked "Never Ask Again" on the warning page we will send them straight there
     if (neverAsk) {
-      browser.tabs.create({url, cookieStoreId: backgroundLogic.cookieStoreId(userContextId), index});
+      browser.tabs.create({url, cookieStoreId, index});
       backgroundLogic.sendTelemetryPayload({
         event: "auto-reload-page-in-container",
         userContextId: userContextId,
@@ -223,8 +238,17 @@ const assignManager = {
         event: "prompt-to-reload-page-in-container",
         userContextId: userContextId,
       });
-      const confirmUrl = `${loadPage}?url=${url}`;
-      browser.tabs.create({url: confirmUrl, cookieStoreId: backgroundLogic.cookieStoreId(userContextId), index}).then(() => {
+      let confirmUrl = `${loadPage}?url=${encodeURIComponent(url)}&cookieStoreId=${cookieStoreId}`;
+      let currentCookieStoreId;
+      if (currentUserContextId) {
+        currentCookieStoreId = backgroundLogic.cookieStoreId(currentUserContextId);
+        confirmUrl += `&currentCookieStoreId=${currentCookieStoreId}`;
+      }
+      browser.tabs.create({
+        url: confirmUrl,
+        cookieStoreId: currentCookieStoreId,
+        index
+      }).then(() => {
         // We don't want to sync this URL ever nor clutter the users history
         browser.history.deleteUrl({url: confirmUrl});
       }).catch((e) => {
@@ -354,7 +378,7 @@ const messageHandler = {
   LAST_CREATED_TAB_TIMER: 2000,
 
   init() {
-    // Handles messages from webextension/js/popup.js
+    // Handles messages from webextension code
     browser.runtime.onMessage.addListener((m) => {
       let response;
 
@@ -372,11 +396,14 @@ const messageHandler = {
       case "neverAsk":
         assignManager._neverAsk(m);
         break;
+      case "exemptContainerAssignment":
+        response = assignManager._exemptTab(m);
+        break;
       }
       return response;
     });
 
-    // Handles messages from index.js
+    // Handles messages from sdk code
     const port = browser.runtime.connect();
     port.onMessage.addListener(m => {
       switch (m.type) {
