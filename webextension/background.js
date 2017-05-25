@@ -6,11 +6,28 @@ const assignManager = {
   MENU_REMOVE_ID: "remove-open-in-this-container",
   storageArea: {
     area: browser.storage.local,
+    exemptedTabs: {},
 
     getSiteStoreKey(pageUrl) {
       const url = new window.URL(pageUrl);
       const storagePrefix = "siteContainerMap@@_";
       return `${storagePrefix}${url.hostname}`;
+    },
+
+    setExempted(pageUrl, tabId) {
+      if (!(tabId in this.exemptedTabs)) {
+        this.exemptedTabs[tabId] = [];
+      }
+      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+      this.exemptedTabs[tabId].push(siteStoreKey);
+    },
+
+    isExempted(pageUrl, tabId) {
+      if (!(tabId in this.exemptedTabs)) {
+        return false;
+      }
+      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+      return this.exemptedTabs[tabId].includes(siteStoreKey);
     },
 
     get(pageUrl) {
@@ -73,12 +90,7 @@ const assignManager = {
   // We return here so the confirm page can load the tab when exempted
   async _exemptTab(m) {
     const pageUrl = m.pageUrl;
-    // If we have existing data and for some reason it hasn't been deleted etc lets update it
-    const siteSettings = await this.storageArea.get(pageUrl);
-    if (siteSettings) {
-      siteSettings.exempted.push(m.tabId);
-      await this.storageArea.set(pageUrl, siteSettings);
-    }
+    this.storageArea.setExempted(pageUrl, m.tabId);
     return true;
   },
 
@@ -100,7 +112,7 @@ const assignManager = {
         if (!siteSettings
             || userContextId === siteSettings.userContextId
             || tab.incognito
-            || siteSettings.exempted.includes(tab.id)) {
+            || this.storageArea.isExempted(options.url, tab.id)) {
           return {};
         }
 
