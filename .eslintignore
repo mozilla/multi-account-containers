@@ -1,1 +1,3 @@
 testpilot-metrics.js
+lib/shield/*.js
+lib/testpilot/*.js

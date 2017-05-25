@@ -60,6 +60,7 @@ const prefService = require("sdk/preferences/service");
 const self = require("sdk/self");
 const { Services }  = require("resource://gre/modules/Services.jsm");
 const ss = require("sdk/simple-storage");
+const { study } = require("./study");
 const { Style } = require("sdk/stylesheet/style");
 const tabs = require("sdk/tabs");
 const tabsUtils = require("sdk/tabs/utils");
@@ -320,6 +321,8 @@ const ContainerService = {
     // End-Of-Hack
 
     Services.obs.addObserver(this, "lightweight-theme-changed", false);
+
+    study.startup(reason);
   },
 
   registerBackgroundConnection(api) {
