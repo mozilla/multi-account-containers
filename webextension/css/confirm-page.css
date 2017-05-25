@@ -4,11 +4,21 @@
 }
 
 main {
-  background: url(/img/onboarding-1.png) no-repeat;
+  background: url(/img/onboarding-4.png) no-repeat;
   background-position: -10px -15px;
-  background-size: 285px;
-  margin-inline-start: -285px;
-  padding-inline-start: 285px;
+  background-size: 300px;
+  margin-inline-start: -350px;
+  padding-inline-start: 350px;
+}
+
+.container-name {
+  font-weight: bold;
+}
+
+button .container-name,
+#current-container-name {
+  font-weight: bold;
+  text-transform: capitalize;
 }
 
 @media only screen and (max-width: 1300px) {
@@ -36,6 +46,28 @@ html {
   word-break: break-all;
 }
 
+#redirect-url {
+  background: #efefef;
+  border-radius: 2px;
+  line-height: 1.5;
+  padding-block-end: 0.5rem;
+  padding-block-start: 0.5rem;
+  padding-inline-end: 0.5rem;
+  padding-inline-start: 0.5rem;
+}
+
+#redirect-url img {
+  block-size: 16px;
+  inline-size: 16px;
+  margin-inline-end: 6px;
+  offset-block-start: 3px;
+  position: relative;
+}
+
 dfn {
   font-style: normal;
+}
+
+.button-container > button {
+  min-inline-size: 240px;
 }

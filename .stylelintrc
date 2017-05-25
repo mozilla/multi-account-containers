@@ -11,7 +11,7 @@
     "declaration-block-no-duplicate-properties": true,
     "order/declaration-block-properties-alphabetical-order": true,
     "property-blacklist": [
-      "/height/",
+      "/(min[-]|max[-])height/",
       "/width/",
       "/top/",
       "/bottom/",

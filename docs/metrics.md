@@ -220,12 +220,21 @@ of a `testpilottest` telemetry ping for each scenario.
   }
 ```
 
-* The user clicks "Take me there" to reload a site into a container after the user picked "Always Open in this Container".
+* The user clicks "Open in *assigned* container" to reload a site into a container after the user picked "Always Open in this Container".
 
 ```js
   {
     "uuid": <uuid>,
     "event": "click-to-reload-page-in-container"
+  }
+```
+
+* The user clicks "Open in *Current* container" to reload a site into a container after the user picked "Always Open in this Container".
+
+```js
+  {
+    "uuid": <uuid>,
+    "event": "click-to-reload-page-in-same-container"
   }
 ```
 
