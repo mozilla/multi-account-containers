@@ -193,7 +193,7 @@ const assignManager = {
   },
 
   async _setOrRemoveAssignment(pageUrl, userContextId, remove) {
-    let storageAction;
+    let actionName;
     if (!remove) {
       await this.storageArea.set(pageUrl, {
         userContextId,

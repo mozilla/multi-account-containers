@@ -346,17 +346,17 @@ manage things like container crud */
 }
 
 #container-panel .panel-header {
-  block-size: 26px;
   background-color: #efefef;
+  block-size: 26px;
   font-size: 14px;
 }
 
 #container-panel .panel-header-text {
-  font-size: 14px;
-  text-transform: uppercase;
   color: #727272;
+  font-size: 14px;
   padding-block-end: 0;
   padding-block-start: 0;
+  text-transform: uppercase;
 }
 
 #container-panel .sort-containers-link {
@@ -388,9 +388,9 @@ span ~ .panel-header-text {
 }
 
 #current-page {
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 #current-page > img {
@@ -407,6 +407,7 @@ span ~ .panel-header-text {
 #current-tab > label > input {
   display: inline;
 }
+
 #current-tab > label > img {
   block-size: 12px;
   display: inline-block;
@@ -419,11 +420,11 @@ span ~ .panel-header-text {
 }
 
 #current-container > .usercontext-icon {
+  background-size: 16px;
   block-size: 16px;
   display: block;
   flex: 0 0 20px;
   inline-size: 20px;
-  background-size: 16px;
 }
 
 /* Rows used when iterating over panels */
