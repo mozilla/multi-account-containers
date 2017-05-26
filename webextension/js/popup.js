@@ -113,8 +113,8 @@ const Logic = {
     return identity || {
       name: "Default",
       cookieStoreId,
-      icon: "circle",
-      color: "black"
+      icon: "default-tab",
+      color: "default-tab"
     };
   },
 
