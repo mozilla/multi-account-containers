@@ -42,6 +42,14 @@ const IDENTITY_ICONS = [
   { name: "circle", image: "circle" },
 ];
 
+const IDENTITY_COLORS_STANDARD = [
+  "blue", "orange", "green", "pink",
+];
+
+const IDENTITY_ICONS_STANDARD = [
+  "fingerprint", "briefcase", "dollar", "cart",
+];
+
 const PREFS = [
   [ "privacy.userContext.enabled", true ],
   [ "privacy.userContext.ui.enabled", false ],
@@ -1407,6 +1415,8 @@ ContainerWindow.prototype = {
     this._shutdownFileMenu();
     this._shutdownAllTabsMenu();
     this._shutdownContextMenu();
+
+    this._shutdownContainers();
   },
 
   _shutDownPlusButtonMenuElement(buttonElement) {
@@ -1473,6 +1483,36 @@ ContainerWindow.prototype = {
 
     return true;
   },
+
+  _shutdownContainers() {
+    ContextualIdentityProxy.getIdentities().forEach(identity => {
+      if (IDENTITY_ICONS_STANDARD.indexOf(identity.icon) !== -1 &&
+          IDENTITY_COLORS_STANDARD.indexOf(identity.color) !== -1) {
+        return;
+      }
+
+      if (IDENTITY_ICONS_STANDARD.indexOf(identity.icon) === -1) {
+        if (identity.userContextId <= IDENTITY_ICONS_STANDARD.length) {
+          identity.icon = IDENTITY_ICONS_STANDARD[identity.userContextId - 1];
+        } else {
+          identity.icon = IDENTITY_ICONS_STANDARD[0];
+        }
+      }
+
+      if (IDENTITY_COLORS_STANDARD.indexOf(identity.color) === -1) {
+        if (identity.userContextId <= IDENTITY_COLORS_STANDARD.length) {
+          identity.color = IDENTITY_COLORS_STANDARD[identity.userContextId - 1];
+        } else {
+          identity.color = IDENTITY_COLORS_STANDARD[0];
+        }
+      }
+
+      ContextualIdentityService.update(identity.userContextId,
+                                       identity.name,
+                                       identity.icon,
+                                       identity.color);
+    });
+  }
 };
 
 // uninstall/install events ---------------------------------------------------
