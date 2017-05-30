@@ -40,10 +40,12 @@
   <div class="panel container-panel hide" id="container-panel">
     <div id="current-tab">
       <h3>Current Tab</h3>
-      <div id="current-page"></div>
+      <div id="current-page" class="truncate-text"></div>
       <label for="container-page-assigned">
         <input type="checkbox" id="container-page-assigned" />
-        Always open in <span id="current-container"></span>
+        Always open in
+        <div id="current-container-icon" class="usercontext-icon"></div>
+        <span id="current-container" class="truncate-text"></span>
       </label>
     </div>
     <div class="panel-header">
@@ -74,7 +76,7 @@
       <div class="column-panel-content">
         <div class="panel-header container-info-panel-header">
           <span class="usercontext-icon" id="container-info-icon"></span>
-          <h3 id="container-info-name" class="panel-header-text container-name"></h3>
+          <h3 id="container-info-name" class="panel-header-text container-name truncate-text"></h3>
         </div>
         <div class="select-row clickable container-info-panel-hide container-info-has-tabs" id="container-info-hideorshow">
           <img id="container-info-hideorshow-icon" alt="Hide Container icon" src="/img/container-hide.svg" class="icon container-info-panel-hideorshow-icon"/>
