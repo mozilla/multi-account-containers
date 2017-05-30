@@ -322,7 +322,9 @@ const ContainerService = {
 
     Services.obs.addObserver(this, "lightweight-theme-changed", false);
 
-    study.startup(reason);
+    if (self.id === "@shield-study-containers") {
+      study.startup(reason);
+    }
   },
 
   registerBackgroundConnection(api) {
