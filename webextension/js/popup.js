@@ -464,14 +464,11 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       imageElement.addEventListener("load", loadListener);
 
       const currentContainer = document.getElementById("current-container");
-      currentContainer.innerHTML = escaped`
-        <div
-           class="usercontext-icon"
-           data-identity-icon="${identity.icon}"
-           data-identity-color="${identity.color}">
-         </div>
-        ${identity.name}
-      `;
+      currentContainer.innerText = identity.name;
+
+      const currentContainerIcon = document.getElementById("current-container-icon");
+      currentContainerIcon.setAttribute("data-identity-icon", identity.icon);
+      currentContainerIcon.setAttribute("data-identity-color", identity.color);
     }
   },
 
@@ -500,7 +497,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             data-identity-color="${identity.color}">
           </div>
         </div>
-        <div class="container-name"></div>`;
+        <div class="container-name truncate-text"></div>`;
       context.querySelector(".container-name").textContent = identity.name;
       manage.innerHTML = "<img src='/img/container-arrow.svg' class='show-tabs pop-button-image-small' />";
 
@@ -649,7 +646,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       tr.classList.add("container-info-tab-row");
       tr.innerHTML = escaped`
         <td><img class="icon" src="${tab.favicon}" /></td>
-        <td class="container-info-tab-title">${tab.title}</td>`;
+        <td class="container-info-tab-title truncate-text">${tab.title}</td>`;
 
       // On click, we activate this tab. But only if this tab is active.
       if (tab.active) {
@@ -699,7 +696,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
               data-identity-color="${identity.color}">
             </div>
           </div>
-          <div class="container-name"></div>
+          <div class="container-name truncate-text"></div>
         </td>
         <td class="edit-container pop-button edit-container-icon">
           <img
