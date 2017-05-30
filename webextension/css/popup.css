@@ -44,6 +44,13 @@ table {
   opacity: 0;
 }
 
+/* Effect borrowed from tabs in Firefox, ensure that the element flexes to the full width */
+.truncate-text {
+  mask-image: linear-gradient(to left, transparent, black 1em);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 /* Color and icon helpers */
 [data-identity-color="blue"] {
   --identity-tab-color: #37adff;
@@ -372,9 +379,9 @@ span ~ .panel-header-text {
 
 #current-tab {
   max-inline-size: 100%;
-  min-block-size: 94px;
-  padding-block-end: 16px;
-  padding-block-start: 16px;
+  min-block-size: 91px;
+  padding-block-end: 13px;
+  padding-block-start: 13px;
   padding-inline-end: 16px;
   padding-inline-start: 16px;
 }
@@ -383,14 +390,8 @@ span ~ .panel-header-text {
   color: #4a4a4a;
   font-size: var(--font-size-heading);
   font-weight: normal;
-  margin-block-end: 0;
+  margin-block-end: 3px;
   margin-block-start: 0;
-}
-
-#current-page {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 #current-page > img {
@@ -402,29 +403,26 @@ span ~ .panel-header-text {
   align-items: center;
   display: flex;
   margin-inline-start: 17px;
+  white-space: nowrap;
 }
 
 #current-tab > label > input {
   display: inline;
 }
 
-#current-tab > label > img {
-  block-size: 12px;
-  display: inline-block;
-  inline-size: 12px;
-}
-
 #current-container {
-  display: contents;
+  flex: 1;
   text-transform: lowercase;
 }
 
-#current-container > .usercontext-icon {
+#current-tab > label > .usercontext-icon {
   background-size: 16px;
   block-size: 16px;
   display: block;
   flex: 0 0 20px;
   inline-size: 20px;
+  margin-inline-end: 3px;
+  margin-inline-start: 3px;
 }
 
 /* Rows used when iterating over panels */
@@ -439,12 +437,10 @@ span ~ .panel-header-text {
 }
 
 .container-panel-row .container-name {
+  flex: 1;
   max-inline-size: 160px;
-  overflow: hidden;
   padding-inline-end: 4px;
   padding-inline-start: 4px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .edit-containers-panel .userContext-wrapper {
@@ -526,9 +522,6 @@ span ~ .panel-header-text {
 /* Container info list */
 #container-info-name {
   margin-inline-end: 0.5rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 #container-info-hideorshow {
@@ -573,9 +566,6 @@ span ~ .panel-header-text {
 
 .container-info-tab-row td {
   max-inline-size: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .container-info-list {
