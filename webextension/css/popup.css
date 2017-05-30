@@ -133,6 +133,11 @@ table {
   --identity-icon: url("/img/usercontext.svg#chill");
 }
 
+#current-tab [data-identity-icon="default-tab"] {
+  background: center center no-repeat url("/img/blank-tab.svg");
+  fill: currentColor;
+}
+
 /* Buttons */
 .button.primary {
   background-color: #0996f8;
@@ -359,7 +364,7 @@ manage things like container crud */
   text-transform: uppercase;
 }
 
-#container-panel .sort-containers-link {
+#container-panel #sort-containers-link {
   margin-inline-end: 16px;
 }
 
