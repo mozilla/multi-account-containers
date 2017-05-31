@@ -529,6 +529,10 @@ span ~ .panel-header-text {
   margin-inline-end: 0.5rem;
 }
 
+.container-info-tab-title {
+  flex: 1;
+}
+
 #container-info-hideorshow {
   margin-block-start: 4px;
 }
