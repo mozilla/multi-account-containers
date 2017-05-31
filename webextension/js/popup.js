@@ -523,8 +523,14 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     /* Not sure why extensions require a focus for the doorhanger,
        however it allows us to have a tabindex before the first selected item
      */
-    document.addEventListener("focus", () => {
+    const focusHandler = () => {
       list.querySelector("tr").focus();
+      document.removeEventListener("focus", focusHandler);
+    };
+    document.addEventListener("focus", focusHandler);
+    /* If the user mousedown's first then remove the focus handler */
+    document.addEventListener("mousedown", () => {
+      document.removeEventListener("focus", focusHandler);
     });
 
     return Promise.resolve();
