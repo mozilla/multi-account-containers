@@ -68,6 +68,8 @@ const { viewFor } = require("sdk/view/core");
 const webExtension = require("sdk/webextension");
 const windows = require("sdk/windows");
 const windowUtils = require("sdk/window/utils");
+const { setTimeout } = require("sdk/timers");
+
 
 Cu.import("resource:///modules/CustomizableUI.jsm");
 Cu.import("resource:///modules/CustomizableWidgets.jsm");
@@ -457,11 +459,22 @@ const ContainerService = {
   },
 
   async _createTabObject(tab) {
+    const defaultIcon = "moz-icon://goat?size=16";
     let url;
     try {
-      url = await getFavicon(tab.url);
+      url = await new Promise((resolve) => {
+        const icon = getFavicon(tab.url);
+        icon.then(resolve).catch(() => {
+          resolve(defaultIcon);
+        });
+        // This is hacky but for some reason in <55 firefox had a broken getFavicon build
+        // Mozregression found: https://hg.mozilla.org/integration/autoland/pushloghtml?fromchange=b01f44c896b2472b154a48c68cf343ae2289d6bd&tochange=d80c517658f5048491b7bf27da25246a297ab50b
+        setTimeout(() => {
+          resolve(defaultIcon);
+        }, 300);
+      });
     } catch (e) {
-      url = "";
+      url = defaultIcon;
     }
     return {
       title: tab.title,
