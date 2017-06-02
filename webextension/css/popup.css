@@ -2,6 +2,7 @@
 body {
   inline-size: 300px;
   max-inline-size: 300px;
+  font-family: Roboto, Noto, "San Francisco", Ubuntu, "Segoe UI", "Fira Sans", message-box, Arial, sans-serif;
 }
 
 html {
@@ -11,6 +12,18 @@ html {
 :root {
   --font-size-heading: 16px;
   --primary-action-color: #248aeb;
+
+  --block-line-space-size: 6px;
+  --block-line-separation-size: 10px;
+  --inline-icon-space-size: 10px;
+  /* Use for url and icon size */
+  --block-url-label-size: 24px;
+  --inline-start-size: 20px;
+  --inline-button-size: 70px;
+
+  --title-text-color: #000;
+  --small-text-size: 10px;
+  --small-radius: 3p 3pxx;
 }
 
 *,
@@ -373,6 +386,10 @@ manage things like container crud */
 
 #container-panel #sort-containers-link {
   margin-inline-end: 16px;
+  inline-size: var(--inline-button-size);
+  color: var(--title-text-color);
+  font-size: var(--small-text-size);
+  border-radius: var(--small-radius);
 }
 
 span ~ .panel-header-text {
@@ -502,13 +519,13 @@ span ~ .panel-header-text {
 }
 
 .panel-footer .pop-button {
-  block-size: 54px;
-  flex: 0 0 54px;
+  block-size: 100%;
+  flex: 0;
 }
 
 .edit-containers-text {
   align-items: center;
-  block-size: 54px;
+  block-size: 100%;
   border-inline-end: solid 1px #d8d8d8;
   display: flex;
   flex: 1;
@@ -517,7 +534,7 @@ span ~ .panel-header-text {
 
 .edit-containers-text a {
   align-items: center;
-  block-size: 54px;
+  block-size: 100%;
   color: #0a0a0a;
   display: flex;
   flex: 1;
