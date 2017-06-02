@@ -445,16 +445,14 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       const siteSettings = await Logic.getAssignment(currentTab);
       this.setupAssignmentCheckbox(siteSettings);
       const currentPage = document.getElementById("current-page");
-      currentPage.innerHTML = escaped`${currentTab.title}`;
+      currentPage.innerHTML = escaped`<span class="page-title truncate-text">${currentTab.title}</span>`;
       const favIconElement = Utils.createFavIconElement(currentTab.favIconUrl || "");
       currentPage.prepend(favIconElement);
 
       const currentContainer = document.getElementById("current-container");
       currentContainer.innerText = identity.name;
 
-      const currentContainerIcon = document.getElementById("current-container-icon");
-      currentContainerIcon.setAttribute("data-identity-icon", identity.icon);
-      currentContainerIcon.setAttribute("data-identity-color", identity.color);
+      currentContainer.setAttribute("data-identity-color", identity.color);
     }
   },
 
@@ -516,7 +514,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       });
     });
 
-    const list = document.querySelector(".identities-list");
+    const list = document.querySelector(".identities-list tbody");
 
     list.innerHTML = "";
     list.appendChild(fragment);
