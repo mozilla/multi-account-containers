@@ -1,16 +1,55 @@
 /* General Rules and Resets */
-body {
-  inline-size: 300px;
-  max-inline-size: 300px;
+* {
+  font-size: inherit;
+  margin-block-end: 0;
+  margin-block-start: 0;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 0;
+  padding-inline-start: 0;
 }
 
 html {
   box-sizing: border-box;
+  font-size: 12px;
+}
+
+body {
+  font-family: Roboto, Noto, "San Francisco", Ubuntu, "Segoe UI", "Fira Sans", message-box, Arial, sans-serif;
+  inline-size: 300px;
+  max-inline-size: 300px;
 }
 
 :root {
-  --font-size-heading: 16px;
   --primary-action-color: #248aeb;
+  --title-text-color: #000;
+  --text-normal-color: #4a4a4a;
+  --text-heading-color: #000;
+
+  /* calculated from 12px */
+  --font-size-heading: 1.33rem; /* 16px */
+  --block-line-space-size: 0.5rem; /* 6px */
+  --inline-item-space-size: 0.5rem; /* 6px */
+  --block-line-separation-size: 0.33rem; /* 10px */
+  --inline-icon-space-size: 0.833rem; /* 10px */
+
+  /* Use for url and icon size */
+  --block-url-label-size: 2rem; /* 24px */
+  --inline-start-size: 1.66rem; /* 20px */
+  --inline-button-size: 5.833rem; /* 70px */
+  --icon-size: 1.166rem; /* 14px */
+
+  --small-text-size: 0.833rem; /* 10px */
+  --small-radius: 3px;
+  --icon-button-size: calc(calc(var(--block-line-separation-size) * 2) + 1.66rem); /* 20px */
+}
+
+@media (min-resolution: 1dppx) {
+  html {
+    font-size: 14px;
+  }
 }
 
 *,
@@ -35,6 +74,7 @@ table {
 }
 
 .scrollable {
+  border-block-start: 1px solid #f1f1f1;
   inline-size: 100%;
   max-block-size: 400px;
   overflow: auto;
@@ -146,6 +186,10 @@ table {
 }
 
 /* Buttons */
+.button {
+  color: black;
+}
+
 .button.primary {
   background-color: #0996f8;
   color: white;
@@ -216,7 +260,7 @@ table {
 .column-panel-content .button,
 .panel-footer .button {
   align-items: center;
-  block-size: 54px;
+  block-size: 100%;
   display: flex;
   flex: 1;
   justify-content: center;
@@ -265,7 +309,7 @@ table {
 }
 
 .onboarding p {
-  color: #4a4a4a;
+  color: var(--text-normal-color);
   font-size: 14px;
   margin-block-end: 16px;
   max-inline-size: 84%;
@@ -294,9 +338,10 @@ table {
 manage things like container crud */
 .pop-button {
   align-items: center;
-  block-size: 48px;
+  block-size: var(--icon-button-size);
+  cursor: pointer;
   display: flex;
-  flex: 0 0 48px;
+  flex: 0 0 var(--icon-button-size);
   justify-content: center;
 }
 
@@ -321,6 +366,10 @@ manage things like container crud */
 .pop-button-image {
   block-size: 20px;
   flex: 0 0 20px;
+  margin-block-end: auto;
+  margin-block-start: auto;
+  margin-inline-end: auto;
+  margin-inline-start: auto;
 }
 
 .pop-button-image-small {
@@ -332,9 +381,12 @@ manage things like container crud */
 .panel-header {
   align-items: center;
   block-size: 48px;
-  border-block-end: 1px solid #ebebeb;
   display: flex;
   justify-content: space-between;
+}
+
+.panel-header .usercontext-icon {
+  inline-size: var(--icon-button-size);
 }
 
 .column-panel-content .panel-header {
@@ -343,7 +395,7 @@ manage things like container crud */
 }
 
 .panel-header-text {
-  color: #4a4a4a;
+  color: var(--text-normal-color);
   flex: 1;
   font-size: var(--font-size-heading);
   font-weight: normal;
@@ -371,8 +423,31 @@ manage things like container crud */
   text-transform: uppercase;
 }
 
+.container-panel-controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-block-end: var(--block-line-space-size);
+  margin-block-start: var(--block-line-space-size);
+  margin-inline-end: var(--inline-item-space-size);
+  margin-inline-start: var(--inline-item-space-size);
+}
+
 #container-panel #sort-containers-link {
-  margin-inline-end: 16px;
+  align-items: center;
+  block-size: var(--block-url-label-size);
+  border: 1px solid #d8d8d8;
+  border-radius: var(--small-radius);
+  color: var(--title-text-color);
+  display: flex;
+  font-size: var(--small-text-size);
+  inline-size: var(--inline-button-size);
+  justify-content: center;
+  text-decoration: none;
+}
+
+#container-panel #sort-containers-link:hover,
+#container-panel #sort-containers-link:focus {
+  background: #f2f2f2;
 }
 
 span ~ .panel-header-text {
@@ -383,41 +458,75 @@ span ~ .panel-header-text {
 }
 
 #current-tab {
+  align-items: center;
+  color: var(--text-normal-color);
+  display: grid;
+  font-size: var(--small-text-size);
+  grid-column-gap: var(--inline-item-space-size);
+  grid-row-gap: var(--block-line-space-size);
+  grid-template-columns: var(--icon-size) var(--icon-size) 1fr;
+  margin-block-end: var(--block-line-space-size);
+  margin-block-start: var(--block-line-separation-size);
+  margin-inline-end: var(--inline-start-size);
+  margin-inline-start: var(--inline-start-size);
   max-inline-size: 100%;
-  min-block-size: 91px;
-  padding-block-end: 13px;
-  padding-block-start: 13px;
-  padding-inline-end: 16px;
-  padding-inline-start: 16px;
+}
+
+#current-tab img {
+  max-block-size: var(--icon-size);
 }
 
 #current-tab > h3 {
-  color: #4a4a4a;
-  font-size: var(--font-size-heading);
+  color: var(--text-heading-color);
   font-weight: normal;
-  margin-block-end: 3px;
+  grid-column: span 3;
+  margin-block-end: 0;
   margin-block-start: 0;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
 }
 
-#current-page > img {
-  block-size: 16px;
-  inline-size: 16px;
+#current-page {
+  display: contents;
+}
+
+#current-tab .page-title {
+  font-size: var(--font-size-heading);
+  grid-column: 2 / 4;
 }
 
 #current-tab > label {
-  align-items: center;
-  display: flex;
-  margin-inline-start: 17px;
-  white-space: nowrap;
+  display: contents;
+  font-size: var(--small-text-size);
 }
 
 #current-tab > label > input {
-  display: inline;
+  -moz-appearance: none;
+  block-size: var(--icon-size);
+  border: 1px solid #d8d8d8;
+  border-radius: var(--small-radius);
+  display: block;
+  grid-column-start: 2;
+  inline-size: var(--icon-size);
+  margin-block-end: 0;
+  margin-block-start: 0;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
+}
+
+#current-tab > label > input[disabled] {
+  background-color: #efefef;
+}
+
+#current-tab > label > input:checked {
+  background-image: url("chrome://global/skin/in-content/check.svg#check-native");
+  background-position: -1px -1px;
+  background-size: var(--icon-size);
 }
 
 #current-container {
+  color: var(--identity-tab-color);
   flex: 1;
-  text-transform: lowercase;
 }
 
 #current-tab > label > .usercontext-icon {
@@ -434,7 +543,6 @@ span ~ .panel-header-text {
 .container-panel-row {
   align-items: center;
   background-color: #fefefe !important;
-  block-size: 48px;
   border-block-end: 1px solid #f1f1f1;
   box-sizing: border-box;
   display: flex;
@@ -465,8 +573,9 @@ span ~ .panel-header-text {
 }
 
 .userContext-icon-wrapper {
-  block-size: 48px;
-  flex: 0 0 48px;
+  block-size: var(--icon-button-size);
+  flex: 0 0 var(--icon-button-size);
+  margin-inline-start: var(--inline-icon-space-size);
 }
 
 /* .userContext-icon is used natively, Bug 1333811 was raised to fix */
@@ -475,24 +584,28 @@ span ~ .panel-header-text {
   background-position: center center;
   background-repeat: no-repeat;
   background-size: 20px 20px;
-  block-size: 48px;
+  block-size: 100%;
   fill: var(--identity-icon-color);
   filter: url('/img/filters.svg#fill');
-  flex: 0 0 48px;
 }
 
 .container-panel-row:hover .clickable .usercontext-icon,
 .container-panel-row:focus .clickable .usercontext-icon {
   background-image: url('/img/container-newtab.svg');
-  fill: 'gray';
+  fill: #979797;
   filter: url('/img/filters.svg#fill');
+}
+
+.container-panel-row .clickable:hover .usercontext-icon,
+.container-panel-row .clickable:focus .usercontext-icon {
+  fill: #0094fb;
 }
 
 /* Panel Footer */
 .panel-footer {
   align-items: center;
   background: #efefef;
-  block-size: 54px;
+  block-size: var(--icon-button-size);
   border-block-end: 1px solid #d8d8d8;
   color: #000;
   display: flex;
@@ -501,14 +614,9 @@ span ~ .panel-header-text {
   justify-content: space-between;
 }
 
-.panel-footer .pop-button {
-  block-size: 54px;
-  flex: 0 0 54px;
-}
-
 .edit-containers-text {
   align-items: center;
-  block-size: 54px;
+  block-size: 100%;
   border-inline-end: solid 1px #d8d8d8;
   display: flex;
   flex: 1;
@@ -517,7 +625,7 @@ span ~ .panel-header-text {
 
 .edit-containers-text a {
   align-items: center;
-  block-size: 54px;
+  block-size: 100%;
   color: #0a0a0a;
   display: flex;
   flex: 1;
@@ -525,10 +633,6 @@ span ~ .panel-header-text {
 }
 
 /* Container info list */
-#container-info-name {
-  margin-inline-end: 0.5rem;
-}
-
 .container-info-tab-title {
   flex: 1;
 }
@@ -578,7 +682,6 @@ span ~ .panel-header-text {
 }
 
 .container-info-list {
-  border-block-start: 1px solid #ebebeb;
   display: flex;
   flex-direction: column;
   margin-block-start: 4px;
