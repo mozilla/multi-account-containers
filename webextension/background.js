@@ -408,6 +408,15 @@ const messageHandler = {
       let response;
 
       switch (m.method) {
+      case "getContainers":
+        response = browser.contextualIdentities.query({});
+        break;
+      case "openTab":
+        response = browser.tabs.create({
+          url: m.url,
+          cookieStoreId: m.cookieStoreId
+        });
+        break;
       case "deleteContainer":
         response = backgroundLogic.deleteContainer(m.message.userContextId);
         break;

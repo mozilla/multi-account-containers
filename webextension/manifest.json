@@ -59,11 +59,13 @@
     {
       "matches": ["<all_urls>"],
       "js": ["js/content-script.js"],
-      "css": ["css/content.css"]
+      "css": ["css/user-context.css", "css/content.css"]
     }
   ],
 
   "web_accessible_resources": [
-    "/img/container-site-d-24.png"
+    "/img/container-site-d-24.png",
+    "/img/usercontext.svg",
+    "/img/filters.svg"
   ]
 }
