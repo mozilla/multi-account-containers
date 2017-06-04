@@ -16,7 +16,7 @@ For more info, see:
 ## Requirements
 
 * node 7+ (for jpm)
-* Firefox 51+
+* Firefox 53+
 
 
 ## Development
