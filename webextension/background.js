@@ -56,19 +56,25 @@ const assignManager = {
       return this.area.remove([siteStoreKey]);
     },
 
-    deleteContainer(userContextId) {
-      const removeKeys = [];
-      this.area.get().then((siteConfigs) => {
-        Object.keys(siteConfigs).forEach((key) => {
-          // For some reason this is stored as string... lets check them both as that
-          if (String(siteConfigs[key].userContextId) === String(userContextId)) {
-            removeKeys.push(key);
-          }
-        });
-        this.area.remove(removeKeys);
-      }).catch((e) => {
-        throw e;
+    async deleteContainer(userContextId) {
+      const sitesByContainer = await this.getByContainer(userContextId);
+      this.area.remove(Object.keys(sitesByContainer));
+    },
+
+    async getByContainer(userContextId) {
+      const sites = {};
+      const siteConfigs = await this.area.get();
+      Object.keys(siteConfigs).forEach((key) => {
+        // For some reason this is stored as string... lets check them both as that
+        if (String(siteConfigs[key].userContextId) === String(userContextId)) {
+          const site = siteConfigs[key];
+          // In hindsight we should have stored this
+          // TODO file a follow up to clean the storage onLoad
+          site.hostname = key.replace(/^siteContainerMap@@_/, "");
+          sites[key] = site;
+        }
       });
+      return sites;
     }
   },
 
@@ -151,12 +157,8 @@ const assignManager = {
      // let actionName;
       let remove;
       if (info.menuItemId === this.MENU_ASSIGN_ID) {
-        //actionName = "added";
-       // storageAction = this._setAssignment(info.pageUrl, userContextId, setOrRemove);
         remove = false;
       } else {
-       // actionName = "removed";
-        //storageAction = this.storageArea.remove(info.pageUrl);
         remove = true;
       }
       await this._setOrRemoveAssignment(info.pageUrl, userContextId, remove);
@@ -225,6 +227,10 @@ const assignManager = {
       return await this.storageArea.get(tab.url);
     }
     return false;
+  },
+
+  _getByContainer(userContextId) {
+    return this.storageArea.getByContainer(userContextId);
   },
 
   async calculateContextMenu(tab) {
@@ -429,11 +435,11 @@ const messageHandler = {
           return assignManager._getAssignment(tab);
         });
         break;
+      case "getAssignmentObjectByContainer":
+        response = assignManager._getByContainer(m.message.userContextId);
+        break;
       case "setOrRemoveAssignment":
-        response = browser.tabs.get(m.tabId).then((tab) => {
-          const userContextId = assignManager.getUserContextIdFromCookieStore(tab);
-          return assignManager._setOrRemoveAssignment(tab.url, userContextId, m.value);
-        });
+        response = assignManager._setOrRemoveAssignment(m.url, m.userContextId, m.value);
         break;
       case "exemptContainerAssignment":
         response = assignManager._exemptTab(m);
