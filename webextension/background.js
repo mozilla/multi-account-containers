@@ -159,7 +159,7 @@ const assignManager = {
         //storageAction = this.storageArea.remove(info.pageUrl);
         remove = true;
       }
-      await this._setOrRemoveAssignment(info.pageUrl, userContextId, remove);
+      await this._setOrRemoveAssignment(tab.id, info.pageUrl, userContextId, remove);
       this.calculateContextMenu(tab);
     }
   },
@@ -192,7 +192,7 @@ const assignManager = {
     return true;
   },
 
-  async _setOrRemoveAssignment(pageUrl, userContextId, remove) {
+  async _setOrRemoveAssignment(tabId, pageUrl, userContextId, remove) {
     let actionName;
     if (!remove) {
       await this.storageArea.set(pageUrl, {
@@ -205,11 +205,8 @@ const assignManager = {
       await this.storageArea.remove(pageUrl);
       actionName = "removed";
     }
-    browser.notifications.create({
-      type: "basic",
-      title: "Containers",
-      message: `Successfully ${actionName} site to always open in this container`,
-      iconUrl: browser.extension.getURL("/img/onboarding-1.png")
+    browser.tabs.sendMessage(tabId, {
+      text: `Successfully ${actionName} site to always open in this container`
     });
     backgroundLogic.sendTelemetryPayload({
       event: `${actionName}-container-assignment`,
@@ -411,6 +408,15 @@ const messageHandler = {
       let response;
 
       switch (m.method) {
+      case "getContainers":
+        response = browser.contextualIdentities.query({});
+        break;
+      case "openTab":
+        response = browser.tabs.create({
+          url: m.url,
+          cookieStoreId: m.cookieStoreId
+        });
+        break;
       case "deleteContainer":
         response = backgroundLogic.deleteContainer(m.message.userContextId);
         break;
@@ -432,7 +438,7 @@ const messageHandler = {
       case "setOrRemoveAssignment":
         response = browser.tabs.get(m.tabId).then((tab) => {
           const userContextId = assignManager.getUserContextIdFromCookieStore(tab);
-          return assignManager._setOrRemoveAssignment(tab.url, userContextId, m.value);
+          return assignManager._setOrRemoveAssignment(tab.id, tab.url, userContextId, m.value);
         });
         break;
       case "exemptContainerAssignment":

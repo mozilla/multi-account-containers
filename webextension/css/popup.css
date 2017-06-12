@@ -2,6 +2,7 @@
 body {
   inline-size: 300px;
   max-inline-size: 300px;
+  font-family: Roboto, Noto, "San Francisco", Ubuntu, "Segoe UI", "Fira Sans", message-box, Arial, sans-serif;
 }
 
 html {
@@ -11,6 +12,18 @@ html {
 :root {
   --font-size-heading: 16px;
   --primary-action-color: #248aeb;
+
+  --block-line-space-size: 6px;
+  --block-line-separation-size: 10px;
+  --inline-icon-space-size: 10px;
+  /* Use for url and icon size */
+  --block-url-label-size: 24px;
+  --inline-start-size: 20px;
+  --inline-button-size: 70px;
+
+  --title-text-color: #000;
+  --small-text-size: 10px;
+  --small-radius: 3p 3pxx;
 }
 
 *,
@@ -49,95 +62,6 @@ table {
   mask-image: linear-gradient(to left, transparent, black 1em);
   overflow: hidden;
   white-space: nowrap;
-}
-
-/* Color and icon helpers */
-[data-identity-color="blue"] {
-  --identity-tab-color: #37adff;
-  --identity-icon-color: #37adff;
-}
-
-[data-identity-color="turquoise"] {
-  --identity-tab-color: #00c79a;
-  --identity-icon-color: #00c79a;
-}
-
-[data-identity-color="green"] {
-  --identity-tab-color: #51cd00;
-  --identity-icon-color: #51cd00;
-}
-
-[data-identity-color="yellow"] {
-  --identity-tab-color: #ffcb00;
-  --identity-icon-color: #ffcb00;
-}
-
-[data-identity-color="orange"] {
-  --identity-tab-color: #ff9f00;
-  --identity-icon-color: #ff9f00;
-}
-
-[data-identity-color="red"] {
-  --identity-tab-color: #ff613d;
-  --identity-icon-color: #ff613d;
-}
-
-[data-identity-color="pink"] {
-  --identity-tab-color: #ff4bda;
-  --identity-icon-color: #ff4bda;
-}
-
-[data-identity-color="purple"] {
-  --identity-tab-color: #af51f5;
-  --identity-icon-color: #af51f5;
-}
-
-[data-identity-icon="fingerprint"] {
-  --identity-icon: url("/img/usercontext.svg#fingerprint");
-}
-
-[data-identity-icon="briefcase"] {
-  --identity-icon: url("/img/usercontext.svg#briefcase");
-}
-
-[data-identity-icon="dollar"] {
-  --identity-icon: url("/img/usercontext.svg#dollar");
-}
-
-[data-identity-icon="cart"] {
-  --identity-icon: url("/img/usercontext.svg#cart");
-}
-
-[data-identity-icon="circle"] {
-  --identity-icon: url("/img/usercontext.svg#circle");
-}
-
-[data-identity-icon="food"] {
-  --identity-icon: url("/img/usercontext.svg#food");
-}
-
-[data-identity-icon="gift"] {
-  --identity-icon: url("/img/usercontext.svg#gift");
-}
-
-[data-identity-icon="vacation"] {
-  --identity-icon: url("/img/usercontext.svg#vacation");
-}
-
-[data-identity-icon="fruit"] {
-  --identity-icon: url("/img/usercontext.svg#fruit");
-}
-
-[data-identity-icon="pet"] {
-  --identity-icon: url("/img/usercontext.svg#pet");
-}
-
-[data-identity-icon="tree"] {
-  --identity-icon: url("/img/usercontext.svg#tree");
-}
-
-[data-identity-icon="chill"] {
-  --identity-icon: url("/img/usercontext.svg#chill");
 }
 
 #current-tab [data-identity-icon="default-tab"] {
@@ -373,6 +297,10 @@ manage things like container crud */
 
 #container-panel #sort-containers-link {
   margin-inline-end: 16px;
+  inline-size: var(--inline-button-size);
+  color: var(--title-text-color);
+  font-size: var(--small-text-size);
+  border-radius: var(--small-radius);
 }
 
 span ~ .panel-header-text {
@@ -469,18 +397,6 @@ span ~ .panel-header-text {
   flex: 0 0 48px;
 }
 
-/* .userContext-icon is used natively, Bug 1333811 was raised to fix */
-.usercontext-icon {
-  background-image: var(--identity-icon);
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-size: 20px 20px;
-  block-size: 48px;
-  fill: var(--identity-icon-color);
-  filter: url('/img/filters.svg#fill');
-  flex: 0 0 48px;
-}
-
 .container-panel-row:hover .clickable .usercontext-icon,
 .container-panel-row:focus .clickable .usercontext-icon {
   background-image: url('/img/container-newtab.svg');
@@ -502,13 +418,13 @@ span ~ .panel-header-text {
 }
 
 .panel-footer .pop-button {
-  block-size: 54px;
-  flex: 0 0 54px;
+  block-size: 100%;
+  flex: 0;
 }
 
 .edit-containers-text {
   align-items: center;
-  block-size: 54px;
+  block-size: 100%;
   border-inline-end: solid 1px #d8d8d8;
   display: flex;
   flex: 1;
@@ -517,7 +433,7 @@ span ~ .panel-header-text {
 
 .edit-containers-text a {
   align-items: center;
-  block-size: 54px;
+  block-size: 100%;
   color: #0a0a0a;
   display: flex;
   flex: 1;
@@ -527,6 +443,10 @@ span ~ .panel-header-text {
 /* Container info list */
 #container-info-name {
   margin-inline-end: 0.5rem;
+}
+
+.container-info-tab-title {
+  flex: 1;
 }
 
 #container-info-hideorshow {

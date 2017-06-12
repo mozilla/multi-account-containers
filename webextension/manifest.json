@@ -26,7 +26,6 @@
     "contextualIdentities",
     "history",
     "idle",
-    "notifications",
     "storage",
     "tabs",
     "webRequestBlocking",
@@ -54,5 +53,19 @@
 
   "background": {
     "scripts": ["background.js"]
-  }
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["js/content-script.js"],
+      "css": ["css/user-context.css", "css/content.css"]
+    }
+  ],
+
+  "web_accessible_resources": [
+    "/img/container-site-d-24.png",
+    "/img/usercontext.svg",
+    "/img/filters.svg"
+  ]
 }

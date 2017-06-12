@@ -1,0 +1,86 @@
+.container-notification {
+  background: #33f70c;
+  color: #003f07;
+  display: block;
+  inline-size: 100vw;
+  offset-block-start: 0;
+  offset-inline-start: 0;
+  padding-block-end: 8px;
+  padding-block-start: 8px;
+  padding-inline-end: 8px;
+  padding-inline-start: 8px;
+  position: fixed;
+  transform: translateY(-100%);
+  transition: transform 0.3s cubic-bezier(0.07, 0.95, 0, 1) 0.3s;
+  z-index: 999999999999;
+}
+
+.container-notification img {
+  block-size: 16px;
+  inline-size: 16px;
+  margin-inline-end: 3px;
+}
+
+#containers-menu {
+  background: #fcfcfc;
+  border: 1px solid #979797;
+  border-radius: 3px;
+  box-shadow: 3px 3px 5px #91919166;
+  font-family: Roboto, Noto, "San Francisco", Ubuntu, "Segoe UI", "Fira Sans", message-box, Arial, sans-serif;
+  inline-size: 7rem;
+  position: absolute;
+  padding: 0;
+  z-index: 9999999;
+  /* This is the area we allow users to move away from the menu without it closing
+  */
+  margin: 4px;
+  -moz-user-select: none;
+}
+
+#containers-menu > li:first-of-type {
+  border-radius: 3px 3px 0 0;
+}
+
+#containers-menu > li:last-of-type {
+  border: none;
+  border-radius: 0 0 3px 3px;
+}
+
+.dark-theme#containers-menu {
+  background: #2b2f38;
+}
+
+#containers-menu > li {
+  align-items: center;
+  border-block-end: 1px solid #979797;
+  color: #434343;
+  display: flex;
+  margin: 0;
+  padding: 10px;
+}
+
+#containers-menu > li > span {
+  flex: 1;
+  mask-image: linear-gradient(to left, transparent, black 1em);
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.dark-theme#containers-menu li {
+  color: #92959b;
+}
+
+#containers-menu li:hover,
+#containers-menu li:focus {
+  outline: none;
+  cursor: pointer;
+  background-color: #f0f0f0;
+}
+
+#containers-menu > li > .usercontext-icon {
+  background-size: 16px;
+  flex: 0 0 16px;
+  margin-inline-end: 6px;
+  max-block-size: 16px;
+  min-block-size: 16px;
+}
