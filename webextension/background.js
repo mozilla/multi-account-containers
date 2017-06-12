@@ -104,6 +104,7 @@ const assignManager = {
       if (options.frameId !== 0 || options.tabId === -1) {
         return {};
       }
+      this.removeContextMenu();
       return Promise.all([
         browser.tabs.get(options.tabId),
         this.storageArea.get(options.url)
@@ -227,7 +228,7 @@ const assignManager = {
     return false;
   },
 
-  async calculateContextMenu(tab) {
+  removeContextMenu() {
     // There is a focus issue in this menu where if you change window with a context menu click
     // you get the wrong menu display because of async
     // See: https://bugzilla.mozilla.org/show_bug.cgi?id=1215376#c16
@@ -235,6 +236,10 @@ const assignManager = {
     // See: https://bugzilla.mozilla.org/show_bug.cgi?id=1352102
     browser.contextMenus.remove(this.MENU_ASSIGN_ID);
     browser.contextMenus.remove(this.MENU_REMOVE_ID);
+  },
+
+  async calculateContextMenu(tab) {
+    this.removeContextMenu();
     const siteSettings = await this._getAssignment(tab);
     // ✓ This is to mitigate https://bugzilla.mozilla.org/show_bug.cgi?id=1351418
     let prefix = "   "; // Alignment of non breaking space, unknown why this requires so many spaces to align with the tick
@@ -474,6 +479,7 @@ const messageHandler = {
     });
 
     browser.tabs.onActivated.addListener((info) => {
+      assignManager.removeContextMenu();
       browser.tabs.get(info.tabId).then((tab) => {
         tabPageCounter.initTabCounter(tab);
         assignManager.calculateContextMenu(tab);
@@ -483,6 +489,7 @@ const messageHandler = {
     });
 
     browser.windows.onFocusChanged.addListener((windowId) => {
+      assignManager.removeContextMenu();
       browser.tabs.query({active: true, windowId}).then((tabs) => {
         if (tabs && tabs[0]) {
           tabPageCounter.initTabCounter(tabs[0]);
@@ -511,6 +518,7 @@ const messageHandler = {
       if (details.frameId !== 0 || details.tabId === -1) {
         return {};
       }
+      assignManager.removeContextMenu();
 
       browser.tabs.get(details.tabId).then((tab) => {
         tabPageCounter.incrementTabCount(tab);
