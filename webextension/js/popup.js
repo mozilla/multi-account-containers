@@ -18,7 +18,6 @@ const P_CONTAINERS_EDIT  = "containersEdit";
 const P_CONTAINER_INFO   = "containerInfo";
 const P_CONTAINER_EDIT   = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
-const DEFAULT_FAVICON = "moz-icon://goat?size=16";
 
 /**
  * Escapes any occurances of &, ", <, > or / with XML entities.
@@ -119,7 +118,9 @@ const Logic = {
   },
 
   addEnterHandler(element, handler) {
-    element.addEventListener("click", handler);
+    element.addEventListener("click", (e) => {
+      handler(e);
+    });
     element.addEventListener("keydown", (e) => {
       if (e.keyCode === 13) {
         handler(e);
@@ -208,6 +209,11 @@ const Logic = {
     return this._currentIdentity;
   },
 
+  currentUserContextId() {
+    const identity = Logic.currentIdentity();
+    return Logic.userContextId(identity.cookieStoreId);
+  },
+
   sendTelemetryPayload(message = {}) {
     if (!message.event) {
       throw new Error("Missing event name for telemetry");
@@ -234,10 +240,19 @@ const Logic = {
     });
   },
 
-  setOrRemoveAssignment(tab, value) {
+  getAssignmentObjectByContainer(userContextId) {
+    return browser.runtime.sendMessage({
+      method: "getAssignmentObjectByContainer",
+      message: {userContextId}
+    });
+  },
+
+  setOrRemoveAssignment(tabId, url, userContextId, value) {
     return browser.runtime.sendMessage({
       method: "setOrRemoveAssignment",
-      tabId: tab.id,
+      tabId,
+      url,
+      userContextId,
       value
     });
   },
@@ -437,7 +452,8 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     const currentTabElement = document.getElementById("current-tab");
     const assignmentCheckboxElement = document.getElementById("container-page-assigned");
     assignmentCheckboxElement.addEventListener("change", () => {
-      Logic.setOrRemoveAssignment(currentTab, !assignmentCheckboxElement.checked);
+      const userContextId = Logic.userContextId(currentTab.cookieStoreId);
+      Logic.setOrRemoveAssignment(currentTab.id, currentTab.url, userContextId, !assignmentCheckboxElement.checked);
     });
     currentTabElement.hidden = !currentTab;
     this.setupAssignmentCheckbox(false);
@@ -446,29 +462,14 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       const siteSettings = await Logic.getAssignment(currentTab);
       this.setupAssignmentCheckbox(siteSettings);
       const currentPage = document.getElementById("current-page");
-      const favIconUrl = currentTab.favIconUrl || "";
-      currentPage.innerHTML = escaped`
-        <img class="offpage" src="${favIconUrl}" /> ${currentTab.title}
-      `;
-
-      const imageElement = currentPage.querySelector("img");
-      const loadListener = (e) => {
-        e.target.classList.remove("offpage");
-        e.target.removeEventListener("load", loadListener);
-        e.target.removeEventListener("error", errorListener);
-      };
-      const errorListener = (e) => {
-        e.target.src = DEFAULT_FAVICON;
-      };
-      imageElement.addEventListener("error", errorListener);
-      imageElement.addEventListener("load", loadListener);
+      currentPage.innerHTML = escaped`<span class="page-title truncate-text">${currentTab.title}</span>`;
+      const favIconElement = Utils.createFavIconElement(currentTab.favIconUrl || "");
+      currentPage.prepend(favIconElement);
 
       const currentContainer = document.getElementById("current-container");
       currentContainer.innerText = identity.name;
 
-      const currentContainerIcon = document.getElementById("current-container-icon");
-      currentContainerIcon.setAttribute("data-identity-icon", identity.icon);
-      currentContainerIcon.setAttribute("data-identity-color", identity.color);
+      currentContainer.setAttribute("data-identity-color", identity.color);
     }
   },
 
@@ -530,15 +531,21 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       });
     });
 
-    const list = document.querySelector(".identities-list");
+    const list = document.querySelector(".identities-list tbody");
 
     list.innerHTML = "";
     list.appendChild(fragment);
     /* Not sure why extensions require a focus for the doorhanger,
        however it allows us to have a tabindex before the first selected item
      */
-    document.addEventListener("focus", () => {
+    const focusHandler = () => {
       list.querySelector("tr").focus();
+      document.removeEventListener("focus", focusHandler);
+    };
+    document.addEventListener("focus", focusHandler);
+    /* If the user mousedown's first then remove the focus handler */
+    document.addEventListener("mousedown", () => {
+      document.removeEventListener("focus", focusHandler);
     });
 
     return Promise.resolve();
@@ -561,7 +568,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       const identity = Logic.currentIdentity();
       browser.runtime.sendMessage({
         method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
-        userContextId: Logic.userContextId(identity.cookieStoreId)
+        userContextId: Logic.currentUserContextId()
       }).then(() => {
         window.close();
       }).catch(() => {
@@ -633,7 +640,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     // Let's retrieve the list of tabs.
     return browser.runtime.sendMessage({
       method: "getTabs",
-      userContextId: Logic.userContextId(identity.cookieStoreId),
+      userContextId: Logic.currentUserContextId(),
     }).then(this.buildInfoTable);
   },
 
@@ -645,8 +652,9 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       fragment.appendChild(tr);
       tr.classList.add("container-info-tab-row");
       tr.innerHTML = escaped`
-        <td><img class="icon" src="${tab.favicon}" /></td>
+        <td></td>
         <td class="container-info-tab-title truncate-text">${tab.title}</td>`;
+      tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favicon));
 
       // On click, we activate this tab. But only if this tab is active.
       if (tab.active) {
@@ -743,27 +751,19 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     this.initializeRadioButtons();
 
     Logic.addEnterHandler(document.querySelector("#edit-container-panel-back-arrow"), () => {
-      Logic.showPreviousPanel();
+      this._submitForm();
     });
-
-    Logic.addEnterHandler(document.querySelector("#edit-container-cancel-link"), () => {
-      Logic.showPreviousPanel();
-    });
-
     this._editForm = document.getElementById("edit-container-panel-form");
-    const editLink = document.querySelector("#edit-container-ok-link");
-    Logic.addEnterHandler(editLink, this._submitForm.bind(this));
-    editLink.addEventListener("submit", this._submitForm.bind(this));
     this._editForm.addEventListener("submit", this._submitForm.bind(this));
+
   },
 
   _submitForm() {
-    const identity = Logic.currentIdentity();
     const formValues = new FormData(this._editForm);
     return browser.runtime.sendMessage({
       method: "createOrUpdateContainer",
       message: {
-        userContextId: Logic.userContextId(identity.cookieStoreId) || false,
+        userContextId: Logic.currentUserContextId() || false,
         params: {
           name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
           icon: formValues.get("container-icon") || DEFAULT_ICON,
@@ -777,6 +777,50 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     }).catch(() => {
       Logic.showPanel(P_CONTAINERS_LIST);
     });
+  },
+
+  showAssignedContainers(assignments) {
+    const assignmentPanel = document.getElementById("edit-sites-assigned");
+    const assignmentKeys = Object.keys(assignments);
+    assignmentPanel.hidden = !(assignmentKeys.length > 0);
+    if (assignments) {
+      const tableElement = assignmentPanel.querySelector("table > tbody");
+      /* Remove previous assignment list,
+         after removing one we rerender the list */
+      while (tableElement.firstChild) {
+        tableElement.firstChild.remove();
+      }
+      assignmentKeys.forEach((siteKey) => {
+        const site = assignments[siteKey];
+        const trElement = document.createElement("tr");
+        /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
+           This is pending a better solution for favicons from web extensions */
+        const assumedUrl = `https://${site.hostname}`;
+        trElement.innerHTML = escaped`
+        <td><img class="icon" src="${assumedUrl}/favicon.ico"></td>
+        <td title="${site.hostname}" class="truncate-text">${site.hostname}
+          <img
+            class="pop-button-image delete-assignment"
+            src="/img/container-delete.svg"
+          />
+        </td>`;
+        const deleteButton = trElement.querySelector(".delete-assignment");
+        Logic.addEnterHandler(deleteButton, () => {
+          const userContextId = Logic.currentUserContextId();
+          // Lets show the message to the current tab
+          // TODO remove then when firefox supports arrow fn async
+          Logic.currentTab().then((currentTab) => {
+            Logic.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
+            delete assignments[siteKey];
+            this.showAssignedContainers(assignments);
+          }).catch((e) => {
+            throw e;
+          });
+        });
+        trElement.classList.add("container-info-tab-row", "clickable");
+        tableElement.appendChild(trElement);
+      });
+    }
   },
 
   initializeRadioButtons() {
@@ -808,8 +852,13 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   },
 
   // This method is called when the panel is shown.
-  prepare() {
+  async prepare() {
     const identity = Logic.currentIdentity();
+
+    const userContextId = Logic.currentUserContextId();
+    const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
+    this.showAssignedContainers(assignments);
+
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
     [...document.querySelectorAll("[name='container-color']")].forEach(colorInput => {
       colorInput.checked = colorInput.value === identity.color;
