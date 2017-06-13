@@ -3,6 +3,7 @@
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <title>Containers browserAction Popup</title>
   <link rel="stylesheet" href="/css/popup.css">
+
 </head>
 <body>
 
@@ -40,21 +41,21 @@
   <div class="panel container-panel hide" id="container-panel">
     <div id="current-tab">
       <h3>Current Tab</h3>
-      <div id="current-page" class="truncate-text"></div>
+      <div id="current-page"></div>
       <label for="container-page-assigned">
         <input type="checkbox" id="container-page-assigned" />
-        Always open in
-        <div id="current-container-icon" class="usercontext-icon"></div>
-        <span id="current-container" class="truncate-text"></span>
+        <span class="truncate-text">
+          Always open in
+          <span id="current-container"></span>
+        </span>
       </label>
     </div>
-    <div class="panel-header">
-      <h3 class="panel-header-text">Containers</h3>
+    <div class="container-panel-controls">
       <a href="#" class="action-link" id="sort-containers-link">Sort Tabs</a>
     </div>
     <div class="scrollable panel-content" tabindex="-1">
-      <table>
-        <tbody class="identities-list"></tbody>
+      <table class="identities-list">
+        <tbody></tbody>
       </table>
     </div>
     <div class="panel-footer edit-identities">
@@ -125,9 +126,16 @@
             <legend>Choose an icon</legend>
           </fieldset>
         </form>
-        <div class="panel-footer">
-          <a href="#" class="button secondary expanded footer-button cancel-button" id="edit-container-cancel-link">Cancel</a>
-          <a class="button primary expanded footer-button" id="edit-container-ok-link">OK</a>
+        <div id="edit-sites-assigned" class="scrollable" hidden>
+          <table id="container-assignement-table" class="container-info-list">
+            <thead>
+              <th colspan="3">
+                <h3>Sites assigned to this container</h3>
+              </th>
+            </thead>
+            <tbody>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -148,7 +156,7 @@
     </div>
   </div>
 
-
+  <script src="js/utils.js"></script>
   <script src="js/popup.js"></script>
 </body>
 </html>

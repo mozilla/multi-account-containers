@@ -5,7 +5,7 @@ async function load() {
   const currentCookieStoreId = searchParams.get("currentCookieStoreId");
   const redirectUrlElement = document.getElementById("redirect-url");
   redirectUrlElement.textContent = redirectUrl;
-  createFavicon(redirectUrl, redirectUrlElement);
+  appendFavicon(redirectUrl, redirectUrlElement);
 
   const container = await browser.contextualIdentities.get(cookieStoreId);
   [...document.querySelectorAll(".container-name")].forEach((containerNameElement) => {
@@ -32,12 +32,11 @@ async function load() {
   });
 }
 
-function createFavicon(pageUrl, redirectUrlElement) {
+function appendFavicon(pageUrl, redirectUrlElement) {
   const origin = new URL(pageUrl).origin;
-  const imageElement = document.createElement("img");
-  imageElement.src = `${origin}/favicon.ico`;
+  const favIconElement = Utils.createFavIconElement(`${origin}/favicon.ico`);
 
-  redirectUrlElement.prepend(imageElement);
+  redirectUrlElement.prepend(favIconElement);
 }
 
 function confirmSubmit(redirectUrl, cookieStoreId) {
