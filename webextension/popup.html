@@ -41,21 +41,21 @@
   <div class="panel container-panel hide" id="container-panel">
     <div id="current-tab">
       <h3>Current Tab</h3>
-      <div id="current-page" class="truncate-text"></div>
+      <div id="current-page"></div>
       <label for="container-page-assigned">
         <input type="checkbox" id="container-page-assigned" />
-        Always open in
-        <div id="current-container-icon" class="usercontext-icon"></div>
-        <span id="current-container" class="truncate-text"></span>
+        <span class="truncate-text">
+          Always open in
+          <span id="current-container"></span>
+        </span>
       </label>
     </div>
-    <div class="panel-header">
-      <h3 class="panel-header-text">Containers</h3>
+    <div class="container-panel-controls">
       <a href="#" class="action-link" id="sort-containers-link">Sort Tabs</a>
     </div>
     <div class="scrollable panel-content" tabindex="-1">
-      <table>
-        <tbody class="identities-list"></tbody>
+      <table class="identities-list">
+        <tbody></tbody>
       </table>
     </div>
     <div class="panel-footer edit-identities">
@@ -156,7 +156,7 @@
     </div>
   </div>
 
-
+  <script src="js/utils.js"></script>
   <script src="js/popup.js"></script>
 </body>
 </html>

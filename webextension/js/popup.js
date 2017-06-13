@@ -18,7 +18,6 @@ const P_CONTAINERS_EDIT  = "containersEdit";
 const P_CONTAINER_INFO   = "containerInfo";
 const P_CONTAINER_EDIT   = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
-const DEFAULT_FAVICON = "moz-icon://goat?size=16";
 
 /**
  * Escapes any occurances of &, ", <, > or / with XML entities.
@@ -462,29 +461,14 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       const siteSettings = await Logic.getAssignment(currentTab);
       this.setupAssignmentCheckbox(siteSettings);
       const currentPage = document.getElementById("current-page");
-      const favIconUrl = currentTab.favIconUrl || "";
-      currentPage.innerHTML = escaped`
-        <img class="offpage" src="${favIconUrl}" /> ${currentTab.title}
-      `;
-
-      const imageElement = currentPage.querySelector("img");
-      const loadListener = (e) => {
-        e.target.classList.remove("offpage");
-        e.target.removeEventListener("load", loadListener);
-        e.target.removeEventListener("error", errorListener);
-      };
-      const errorListener = (e) => {
-        e.target.src = DEFAULT_FAVICON;
-      };
-      imageElement.addEventListener("error", errorListener);
-      imageElement.addEventListener("load", loadListener);
+      currentPage.innerHTML = escaped`<span class="page-title truncate-text">${currentTab.title}</span>`;
+      const favIconElement = Utils.createFavIconElement(currentTab.favIconUrl || "");
+      currentPage.prepend(favIconElement);
 
       const currentContainer = document.getElementById("current-container");
       currentContainer.innerText = identity.name;
 
-      const currentContainerIcon = document.getElementById("current-container-icon");
-      currentContainerIcon.setAttribute("data-identity-icon", identity.icon);
-      currentContainerIcon.setAttribute("data-identity-color", identity.color);
+      currentContainer.setAttribute("data-identity-color", identity.color);
     }
   },
 
@@ -546,15 +530,21 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       });
     });
 
-    const list = document.querySelector(".identities-list");
+    const list = document.querySelector(".identities-list tbody");
 
     list.innerHTML = "";
     list.appendChild(fragment);
     /* Not sure why extensions require a focus for the doorhanger,
        however it allows us to have a tabindex before the first selected item
      */
-    document.addEventListener("focus", () => {
+    const focusHandler = () => {
       list.querySelector("tr").focus();
+      document.removeEventListener("focus", focusHandler);
+    };
+    document.addEventListener("focus", focusHandler);
+    /* If the user mousedown's first then remove the focus handler */
+    document.addEventListener("mousedown", () => {
+      document.removeEventListener("focus", focusHandler);
     });
 
     return Promise.resolve();
@@ -661,8 +651,9 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       fragment.appendChild(tr);
       tr.classList.add("container-info-tab-row");
       tr.innerHTML = escaped`
-        <td><img class="icon" src="${tab.favicon}" /></td>
+        <td></td>
         <td class="container-info-tab-title truncate-text">${tab.title}</td>`;
+      tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favicon));
 
       // On click, we activate this tab. But only if this tab is active.
       if (tab.active) {
