@@ -36,7 +36,7 @@
   "commands": {
     "_execute_browser_action": {
       "suggested_key": {
-        "default": "Ctrl+Y"
+        "default": "Ctrl+Period"
       },
       "description": "Open containers panel"
     }
