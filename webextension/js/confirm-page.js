@@ -63,6 +63,10 @@ async function denySubmit(redirectUrl) {
     tabId: tab[0].id,
     pageUrl: redirectUrl
   });
+  browser.runtime.sendMessage({
+    method: "sendTelemetryPayload",
+    event: "click-to-reload-page-in-same-container",
+  });
   document.location.replace(redirectUrl);
 }
 
