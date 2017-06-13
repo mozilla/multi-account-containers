@@ -813,6 +813,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
             Logic.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
             delete assignments[siteKey];
             this.showAssignedContainers(assignments);
+          }).catch((e) => {
+            throw e;
           });
         });
         trElement.classList.add("container-info-tab-row", "clickable");
