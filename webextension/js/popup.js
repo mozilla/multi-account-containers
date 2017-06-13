@@ -247,9 +247,10 @@ const Logic = {
     });
   },
 
-  setOrRemoveAssignment(url, userContextId, value) {
+  setOrRemoveAssignment(tabId, url, userContextId, value) {
     return browser.runtime.sendMessage({
       method: "setOrRemoveAssignment",
+      tabId,
       url,
       userContextId,
       value
@@ -452,7 +453,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     const assignmentCheckboxElement = document.getElementById("container-page-assigned");
     assignmentCheckboxElement.addEventListener("change", () => {
       const userContextId = Logic.userContextId(currentTab.cookieStoreId);
-      Logic.setOrRemoveAssignment(currentTab.url, userContextId, !assignmentCheckboxElement.checked);
+      Logic.setOrRemoveAssignment(currentTab.id, currentTab.url, userContextId, !assignmentCheckboxElement.checked);
     });
     currentTabElement.hidden = !currentTab;
     this.setupAssignmentCheckbox(false);
@@ -806,9 +807,13 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         const deleteButton = trElement.querySelector(".delete-assignment");
         Logic.addEnterHandler(deleteButton, () => {
           const userContextId = Logic.currentUserContextId();
-          Logic.setOrRemoveAssignment(assumedUrl, userContextId, true);
-          delete assignments[siteKey];
-          this.showAssignedContainers(assignments);
+          // Lets show the message to the current tab
+          // TODO remove then when firefox supports arrow fn async
+          Logic.currentTab().then((currentTab) => {
+            Logic.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
+            delete assignments[siteKey];
+            this.showAssignedContainers(assignments);
+          });
         });
         trElement.classList.add("container-info-tab-row", "clickable");
         tableElement.appendChild(trElement);
