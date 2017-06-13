@@ -9,6 +9,7 @@ module.exports = {
     "webextensions": true
   },
   "globals": {
+    "Utils": true,
     "CustomizableUI": true,
     "CustomizableWidgets": true,
     "SessionStore": true,
