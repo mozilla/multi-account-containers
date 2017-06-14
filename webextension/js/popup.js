@@ -69,15 +69,19 @@ const Logic = {
   _currentPanel: null,
   _previousPanel: null,
   _panels: {},
+  _onboardingVariation: null,
 
   init() {
     // Remove browserAction "upgraded" badge when opening panel
     this.clearBrowserActionBadge();
 
     // Retrieve the list of identities.
-    this.refreshIdentities()
+    const identitiesPromise = this.refreshIdentities();
+    // Get the onboarding variation
+    const variationPromise = this.getShieldStudyVariation();
 
     // Routing to the correct panel.
+    Promise.all([identitiesPromise, variationPromise])
     .then(() => {
       // If localStorage is disabled, we don't show the onboarding.
       if (!localStorage || localStorage.getItem("onboarded4")) {
@@ -159,6 +163,15 @@ const Logic = {
     }).catch((e) => {throw e;});
   },
 
+  getPanelSelector(panel) {
+    if (this._onboardingVariation === "securityOnboarding" &&
+        panel.hasOwnProperty("securityPanelSelector")) {
+      return panel.securityPanelSelector;
+    } else {
+      return panel.panelSelector;
+    }
+  },
+
   async showPanel(panel, currentIdentity = null) {
     // Invalid panel... ?!?
     if (!(panel in this._panels)) {
@@ -174,7 +187,7 @@ const Logic = {
     await this._panels[panel].prepare();
     Object.keys(this._panels).forEach((panelKey) => {
       const panelItem = this._panels[panelKey];
-      const panelElement = document.querySelector(panelItem.panelSelector);
+      const panelElement = document.querySelector(this.getPanelSelector(panelItem));
       if (!panelElement.classList.contains("hide")) {
         panelElement.classList.add("hide");
         if ("unregister" in panelItem) {
@@ -182,7 +195,7 @@ const Logic = {
         }
       }
     });
-    document.querySelector(this._panels[panel].panelSelector).classList.remove("hide");
+    document.querySelector(this.getPanelSelector(this._panels[panel])).classList.remove("hide");
   },
 
   showPreviousPanel() {
@@ -257,6 +270,14 @@ const Logic = {
     });
   },
 
+  getShieldStudyVariation() {
+    return browser.runtime.sendMessage({
+      method: "getShieldStudyVariation"
+    }).then(variation => {
+      this._onboardingVariation = variation;
+    });
+  },
+
   generateIdentityName() {
     const defaultName = "Container #";
     const ids = [];
@@ -285,13 +306,16 @@ const Logic = {
 
 Logic.registerPanel(P_ONBOARDING_1, {
   panelSelector: ".onboarding-panel-1",
+  securityPanelSelector: ".security-onboarding-panel-1",
 
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the next panel.
-    Logic.addEnterHandler(document.querySelector("#onboarding-start-button"), () => {
-      localStorage.setItem("onboarded1", true);
-      Logic.showPanel(P_ONBOARDING_2);
+    [...document.querySelectorAll(".onboarding-start-button")].forEach(startElement => {
+      Logic.addEnterHandler(startElement, () => {
+        localStorage.setItem("onboarded1", true);
+        Logic.showPanel(P_ONBOARDING_2);
+      });
     });
   },
 
@@ -306,13 +330,16 @@ Logic.registerPanel(P_ONBOARDING_1, {
 
 Logic.registerPanel(P_ONBOARDING_2, {
   panelSelector: ".onboarding-panel-2",
+  securityPanelSelector: ".security-onboarding-panel-2",
 
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    Logic.addEnterHandler(document.querySelector("#onboarding-next-button"), () => {
-      localStorage.setItem("onboarded2", true);
-      Logic.showPanel(P_ONBOARDING_3);
+    [...document.querySelectorAll(".onboarding-next-button")].forEach(nextElement => {
+      Logic.addEnterHandler(nextElement, () => {
+        localStorage.setItem("onboarded2", true);
+        Logic.showPanel(P_ONBOARDING_3);
+      });
     });
   },
 
@@ -327,13 +354,16 @@ Logic.registerPanel(P_ONBOARDING_2, {
 
 Logic.registerPanel(P_ONBOARDING_3, {
   panelSelector: ".onboarding-panel-3",
+  securityPanelSelector: ".security-onboarding-panel-3",
 
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    Logic.addEnterHandler(document.querySelector("#onboarding-almost-done-button"), () => {
-      localStorage.setItem("onboarded3", true);
-      Logic.showPanel(P_ONBOARDING_4);
+    [...document.querySelectorAll(".onboarding-almost-done-button")].forEach(almostElement => {
+      Logic.addEnterHandler(almostElement, () => {
+        localStorage.setItem("onboarded3", true);
+        Logic.showPanel(P_ONBOARDING_4);
+      });
     });
   },
 

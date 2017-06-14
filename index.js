@@ -222,6 +222,7 @@ const ContainerService = {
       "getPreference",
       "sendTelemetryPayload",
       "getTheme",
+      "getShieldStudyVariation",
       "refreshNeeded",
       "forgetIdentityAndRefresh",
       "checkIncompatibleAddons"
@@ -332,6 +333,7 @@ const ContainerService = {
 
     if (self.id === "@shield-study-containers") {
       study.startup(reason);
+      this.shieldStudyVariation = study.variation;
     }
   },
 
@@ -373,6 +375,10 @@ const ContainerService = {
       }
       resolve(theme);
     });
+  },
+
+  getShieldStudyVariation() {
+    return this.shieldStudyVariation;
   },
 
   // utility methods
