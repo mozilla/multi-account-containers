@@ -63,6 +63,10 @@ async function denySubmit(redirectUrl) {
     tabId: tab[0].id,
     pageUrl: redirectUrl
   });
+  browser.runtime.sendMessage({
+    method: "sendTelemetryPayload",
+    event: "click-to-reload-page-in-same-container",
+  });
   document.location.replace(redirectUrl);
 }
 
@@ -70,10 +74,6 @@ load();
 
 async function openInContainer(redirectUrl, cookieStoreId) {
   const tabs = await browser.tabs.query({active: true});
-  browser.runtime.sendMessage({
-    method: "sendTelemetryPayload",
-    event: "click-to-reload-page-in-same-container",
-  });
   await browser.tabs.create({
     cookieStoreId,
     url: redirectUrl
