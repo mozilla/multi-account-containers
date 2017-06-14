@@ -189,6 +189,7 @@ const assignManager = {
     // Ensure we are not in incognito mode
     const url = new URL(tab.url);
     if (url.protocol === "about:"
+        || url.protocol === "moz-extension:"
         || tab.incognito) {
       return false;
     }
@@ -244,6 +245,11 @@ const assignManager = {
   async calculateContextMenu(tab) {
     this.removeContextMenu();
     const siteSettings = await this._getAssignment(tab);
+    // Return early and not add an item if we have false
+    // False represents assignment is not permitted
+    if (siteSettings === false) {
+      return false;
+    }
     // ✓ This is to mitigate https://bugzilla.mozilla.org/show_bug.cgi?id=1351418
     let prefix = "   "; // Alignment of non breaking space, unknown why this requires so many spaces to align with the tick
     let menuId = this.MENU_ASSIGN_ID;
@@ -262,6 +268,7 @@ const assignManager = {
   reloadPageInContainer(url, currentUserContextId, userContextId, index, neverAsk = false) {
     const cookieStoreId = backgroundLogic.cookieStoreId(userContextId);
     const loadPage = browser.extension.getURL("confirm-page.html");
+    // False represents assignment is not permitted
     // If the user has explicitly checked "Never Ask Again" on the warning page we will send them straight there
     if (neverAsk) {
       browser.tabs.create({url, cookieStoreId, index});
