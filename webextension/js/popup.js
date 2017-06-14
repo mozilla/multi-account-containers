@@ -134,7 +134,7 @@ const Logic = {
   },
 
   async currentTab() {
-    const activeTabs = await browser.tabs.query({active: true});
+    const activeTabs = await browser.tabs.query({active: true, windowId: browser.windows.WINDOW_ID_CURRENT});
     if (activeTabs.length > 0) {
       return activeTabs[0];
     }
