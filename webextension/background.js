@@ -448,9 +448,10 @@ const messageHandler = {
         response = assignManager._getByContainer(m.message.userContextId);
         break;
       case "setOrRemoveAssignment":
+        // m.tabId is used for where to place the in content message
+        // m.url is the assignment to be removed/added
         response = browser.tabs.get(m.tabId).then((tab) => {
-          const userContextId = assignManager.getUserContextIdFromCookieStore(tab);
-          return assignManager._setOrRemoveAssignment(tab.id, tab.url, userContextId, m.value);
+          return assignManager._setOrRemoveAssignment(tab.id, m.url, m.userContextId, m.value);
         });
         break;
       case "exemptContainerAssignment":
