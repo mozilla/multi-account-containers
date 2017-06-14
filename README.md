@@ -53,8 +53,9 @@ Check out the [Browser Toolbox](https://developer.mozilla.org/en-US/docs/Tools/B
 
 1. `git clone git@github.com:mozilla/testpilot-containers.git`
 2. `cd testpilot-containers`
-3. `npm install -g shield-study-cli`
-4. `shield run . -- --binary Nightly`
+3. `npm install`
+4. `npm install -g shield-study-cli`
+5. `shield run . -- --binary Nightly`
 
 
 ### Building .xpi
