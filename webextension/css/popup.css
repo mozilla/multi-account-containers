@@ -597,7 +597,8 @@ span ~ .panel-header-text {
 }
 
 .container-panel-row:hover .clickable .usercontext-icon,
-.container-panel-row:focus .clickable .usercontext-icon {
+.container-panel-row:focus .clickable .usercontext-icon,
+.container-panel-row .clickable:focus .usercontext-icon {
   background-image: url('/img/container-newtab.svg');
   fill: #979797;
   filter: url('/img/filters.svg#fill');
