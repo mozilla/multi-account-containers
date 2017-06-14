@@ -398,13 +398,13 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       function next() {
         const nextElement = element.nextElementSibling;
         if (nextElement) {
-          nextElement.focus();
+          nextElement.querySelector("td[tabindex=0]").focus();
         }
       }
       function previous() {
         const previousElement = element.previousElementSibling;
         if (previousElement) {
-          previousElement.focus();
+          previousElement.querySelector("td[tabindex=0]").focus();
         }
       }
       switch (e.keyCode) {
@@ -487,10 +487,9 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
       tr.classList.add("container-panel-row");
 
-      tr.setAttribute("tabindex", "0");
-
       context.classList.add("userContext-wrapper", "open-newtab", "clickable");
       manage.classList.add("show-tabs", "pop-button");
+      context.setAttribute("tabindex", "0");
       context.innerHTML = escaped`
         <div class="userContext-icon-wrapper open-newtab">
           <div class="usercontext-icon"
@@ -539,7 +538,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
        however it allows us to have a tabindex before the first selected item
      */
     const focusHandler = () => {
-      list.querySelector("tr").focus();
+      list.querySelector("tr .clickable").focus();
       document.removeEventListener("focus", focusHandler);
     };
     document.addEventListener("focus", focusHandler);
