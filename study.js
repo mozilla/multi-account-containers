@@ -15,9 +15,7 @@ const studyConfig = {
   },
   variations: {
     "control": () => {},
-    "privacyOnboarding": () => {},
-    "onlineAccountsOnboarding": () => {},
-    "tabManagementOnboarding": () => {}
+    "securityOnboarding": () => {}
   }
 };
 
