@@ -76,7 +76,7 @@ of a `testpilottest` telemetry ping for each scenario.
     "userContextId": <userContextId>,
     "clickedContainerTabCount": <number-of-tabs-in-the-container>,
     "event": "open-tab",
-    "eventSource": ["tab-bar"|"pop-up"|"file-menu"]
+    "eventSource": ["tab-bar"|"pop-up"|"file-menu"|"alltabs-menu"]
   }
 ```
 
