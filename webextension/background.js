@@ -163,7 +163,6 @@ const assignManager = {
         remove = true;
       }
       await this._setOrRemoveAssignment(tab.id, info.pageUrl, userContextId, remove);
-      this.calculateContextMenu(tab);
     }
   },
 
@@ -216,6 +215,8 @@ const assignManager = {
       event: `${actionName}-container-assignment`,
       userContextId: userContextId,
     });
+    const tab = await browser.tabs.get(tabId);
+    this.calculateContextMenu(tab);
   },
 
   async _getAssignment(tab) {
