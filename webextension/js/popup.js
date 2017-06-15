@@ -72,7 +72,7 @@ const Logic = {
   _panels: {},
   _onboardingVariation: null,
 
-  init() {
+  async init() {
     // Remove browserAction "upgraded" badge when opening panel
     this.clearBrowserActionBadge();
 
@@ -81,26 +81,26 @@ const Logic = {
     // Get the onboarding variation
     const variationPromise = this.getShieldStudyVariation();
 
-    // Routing to the correct panel.
-    Promise.all([identitiesPromise, variationPromise])
-    .then(() => {
-      // If localStorage is disabled, we don't show the onboarding.
-      if (!localStorage || localStorage.getItem("onboarded4")) {
-        this.showPanel(P_CONTAINERS_LIST);
-      } else if (localStorage.getItem("onboarded3")) {
-        this.showPanel(P_ONBOARDING_4);
-      } else if (localStorage.getItem("onboarded2")) {
-        this.showPanel(P_ONBOARDING_3);
-      } else if (localStorage.getItem("onboarded1")) {
-        this.showPanel(P_ONBOARDING_2);
-      } else {
-        this.showPanel(P_ONBOARDING_1);
-      }
-    })
+    try {
+      await Promise.all([identitiesPromise, variationPromise]);
+    } catch(e) {
+      throw new Error("Failed to retrieve the identities or variation. We cannot continue. ", e.message);
+    }
 
-    .catch(() => {
-      throw new Error("Failed to retrieve the identities. We cannot continue.");
-    });
+    // Routing to the correct panel.
+    // If localStorage is disabled, we don't show the onboarding.
+    if (!localStorage || localStorage.getItem("onboarded4")) {
+      this.showPanel(P_CONTAINERS_LIST);
+    } else if (localStorage.getItem("onboarded3")) {
+      this.showPanel(P_ONBOARDING_4);
+    } else if (localStorage.getItem("onboarded2")) {
+      this.showPanel(P_ONBOARDING_3);
+    } else if (localStorage.getItem("onboarded1")) {
+      this.showPanel(P_ONBOARDING_2);
+    } else {
+      this.showPanel(P_ONBOARDING_1);
+    }
+
   },
 
   async clearBrowserActionBadge() {
