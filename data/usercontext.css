@@ -52,55 +52,55 @@ value, or chrome url path as an alternate selector mitiages this bug.*/
 
 [data-identity-icon="fingerprint"],
 [data-identity-icon="chrome://browser/skin/usercontext/personal.svg"] {
-  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#fingerprint");
+  --identity-icon: url("/data/usercontext.svg#fingerprint");
 }
 
 [data-identity-icon="briefcase"],
 [data-identity-icon="chrome://browser/skin/usercontext/work.svg"] {
-  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#briefcase");
+  --identity-icon: url("/data/usercontext.svg#briefcase");
 }
 
 [data-identity-icon="dollar"],
 [data-identity-icon="chrome://browser/skin/usercontext/banking.svg"] {
-  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#dollar");
+  --identity-icon: url("/data/usercontext.svg#dollar");
 }
 
 [data-identity-icon="cart"],
 [data-identity-icon="chrome://browser/skin/usercontext/cart.svg"],
 [data-identity-icon="chrome://browser/skin/usercontext/shopping.svg"] {
-  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#cart");
+  --identity-icon: url("/data/usercontext.svg#cart");
 }
 
 [data-identity-icon="circle"] {
-  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#circle");
+  --identity-icon: url("/data/usercontext.svg#circle");
 }
 
 [data-identity-icon="gift"] {
-  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#gift");
+  --identity-icon: url("/data/usercontext.svg#gift");
 }
 
 [data-identity-icon="vacation"] {
-  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#vacation");
+  --identity-icon: url("/data/usercontext.svg#vacation");
 }
 
 [data-identity-icon="food"] {
-  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#food");
+  --identity-icon: url("/data/usercontext.svg#food");
 }
 
 [data-identity-icon="fruit"] {
-  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#fruit");
+  --identity-icon: url("/data/usercontext.svg#fruit");
 }
 
 [data-identity-icon="pet"] {
-  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#pet");
+  --identity-icon: url("/data/usercontext.svg#pet");
 }
 
 [data-identity-icon="tree"] {
-  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#tree");
+  --identity-icon: url("/data/usercontext.svg#tree");
 }
 
 [data-identity-icon="chill"] {
-  --identity-icon: url("resource://testpilot-containers/data/usercontext.svg#chill");
+  --identity-icon: url("/data/usercontext.svg#chill");
 }
 
 #userContext-indicator {
@@ -139,7 +139,7 @@ value, or chrome url path as an alternate selector mitiages this bug.*/
   background-size: contain;
   fill: var(--identity-icon-color) !important;
   filter: url(/img/filters.svg#fill);
-  filter: url(resource://testpilot-containers/data/filters.svg#fill);
+  filter: url(/data/filters.svg#fill);
 }
 
 /* containers experiment */
@@ -200,7 +200,7 @@ special cases are addressed below */
 }
 
 #new-tab-overlay {
-  --icon-size: 26px;
+  --icon-size: 16px;
   -moz-appearance: none;
   background: transparent;
   font-style: -moz-use-system-font;
@@ -252,8 +252,8 @@ special cases are addressed below */
 }
 
 #new-tab-overlay .menuitem-iconic[data-usercontextid] > .menu-iconic-left > .menu-iconic-icon {
-  block-height: var(--icon-size);
-  block-width: var(--icon-size);
+  block-size: var(--icon-size);
+  inline-size: var(--icon-size);
 }
 
 .menuitem-iconic[data-usercontextid] > .menu-iconic-left {
