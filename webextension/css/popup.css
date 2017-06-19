@@ -762,23 +762,32 @@ span ~ .panel-header-text {
 #edit-sites-assigned h3 {
   font-size: 14px;
   font-weight: normal;
-  padding-block-end: 5px;
+  padding-block-end: 6px;
+  padding-block-start: 6px;
   padding-inline-end: 16px;
   padding-inline-start: 16px;
 }
 
-#edit-sites-assigned table td {
+.assigned-sites-list > div {
   display: flex;
-  padding-inline-end: 16px;
-  padding-inline-start: 16px;
+  padding-block-end: 6px;
+  padding-block-start: 6px;
 }
 
-#edit-sites-assigned .delete-assignment {
+.assigned-sites-list > div > .icon {
+  margin-inline-end: 10px;
+}
+
+.assigned-sites-list > div > .delete-assignment {
   display: none;
 }
 
-#edit-sites-assigned tr:hover > td > .delete-assignment {
+.assigned-sites-list > div:hover > .delete-assignment {
   display: block;
+}
+
+.assigned-sites-list > div > .hostname {
+  flex: 1;
 }
 
 .radio-choice > .radio-container {

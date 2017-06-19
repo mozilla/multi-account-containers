@@ -783,7 +783,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const assignmentKeys = Object.keys(assignments);
     assignmentPanel.hidden = !(assignmentKeys.length > 0);
     if (assignments) {
-      const tableElement = assignmentPanel.querySelector("table > tbody");
+      const tableElement = assignmentPanel.querySelector(".assigned-sites-list");
       /* Remove previous assignment list,
          after removing one we rerender the list */
       while (tableElement.firstChild) {
@@ -791,18 +791,19 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       }
       assignmentKeys.forEach((siteKey) => {
         const site = assignments[siteKey];
-        const trElement = document.createElement("tr");
+        const trElement = document.createElement("div");
         /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
            This is pending a better solution for favicons from web extensions */
         const assumedUrl = `https://${site.hostname}`;
         trElement.innerHTML = escaped`
-        <td><img class="icon" src="${assumedUrl}/favicon.ico"></td>
-        <td title="${site.hostname}" class="truncate-text">${site.hostname}
-          <img
-            class="pop-button-image delete-assignment"
-            src="/img/container-delete.svg"
-          />
-        </td>`;
+        <img class="icon" src="${assumedUrl}/favicon.ico">
+        <div title="${site.hostname}" class="truncate-text hostname">
+          ${site.hostname}
+        </div>
+        <img
+          class="pop-button-image delete-assignment"
+          src="/img/container-delete.svg"
+        />`;
         const deleteButton = trElement.querySelector(".delete-assignment");
         Logic.addEnterHandler(deleteButton, () => {
           const userContextId = Logic.currentUserContextId();
