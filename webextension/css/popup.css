@@ -91,6 +91,10 @@ table {
   opacity: 0;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 /* Effect borrowed from tabs in Firefox, ensure that the element flexes to the full width */
 .truncate-text {
   mask-image: linear-gradient(to left, transparent, black 1em);
@@ -803,8 +807,14 @@ span ~ .panel-header-text {
   border: 0;
   filter: none;
   inline-size: 23px;
-  margin: 0;
-  padding: 0;
+  margin-block-end: 0;
+  margin-block-start: 0;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 0;
+  padding-inline-start: 0;
 }
 
 .radio-choice > .radio-container > label::before {
@@ -814,18 +824,18 @@ span ~ .panel-header-text {
   background-repeat: no-repeat;
   background-size: 16px;
   block-size: 23px;
-  fill: var(--identity-icon-color);
-  filter: url('/img/filters.svg#fill');
-  position: relative;
+  border: none;
   content: "";
   display: block;
-  border: none;
+  fill: var(--identity-icon-color);
+  filter: url('/img/filters.svg#fill');
   inline-size: 23px;
+  position: relative;
 }
 
 .radio-choice > .radio-container > [type="radio"] {
-  display: inline;
   -moz-appearance: none;
+  display: inline;
   opacity: 0;
 }
 

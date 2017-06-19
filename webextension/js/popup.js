@@ -7,6 +7,7 @@ const CONTAINER_UNHIDE_SRC = "/img/container-unhide.svg";
 
 const DEFAULT_COLOR = "blue";
 const DEFAULT_ICON = "circle";
+const NEW_CONTAINER_ID = "new";
 
 // List of panels
 const P_ONBOARDING_1     = "onboarding1";
@@ -750,10 +751,30 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     this.initializeRadioButtons();
 
     Logic.addEnterHandler(document.querySelector("#edit-container-panel-back-arrow"), () => {
+      const formValues = new FormData(this._editForm);
+      if (formValues.get("container-id") !== NEW_CONTAINER_ID) {
+        this._submitForm();
+      } else {
+        Logic.showPreviousPanel();
+      }
+    });
+
+    Logic.addEnterHandler(document.querySelector("#edit-container-cancel-link"), () => {
+      Logic.showPreviousPanel();
+    });
+
+    this._editForm = document.getElementById("edit-container-panel-form");
+    const editLink = document.querySelector("#edit-container-ok-link");
+    Logic.addEnterHandler(editLink, () => {
       this._submitForm();
     });
-    this._editForm = document.getElementById("edit-container-panel-form");
-    this._editForm.addEventListener("submit", this._submitForm.bind(this));
+    editLink.addEventListener("submit", () => {
+      this._submitForm();
+    });
+    this._editForm.addEventListener("submit", () => {
+      this._submitForm();
+    });
+
 
   },
 
@@ -762,7 +783,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     return browser.runtime.sendMessage({
       method: "createOrUpdateContainer",
       message: {
-        userContextId: Logic.currentUserContextId() || false,
+        userContextId: formValues.get("container-id") || NEW_CONTAINER_ID,
         params: {
           name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
           icon: formValues.get("container-icon") || DEFAULT_ICON,
@@ -860,8 +881,10 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const userContextId = Logic.currentUserContextId();
     const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
     this.showAssignedContainers(assignments);
+    document.querySelector("#edit-container-panel .panel-footer").hidden = !!userContextId;
 
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
+    document.querySelector("#edit-container-panel-usercontext-input").value = userContextId || NEW_CONTAINER_ID;
     [...document.querySelectorAll("[name='container-color']")].forEach(colorInput => {
       colorInput.checked = colorInput.value === identity.color;
     });
