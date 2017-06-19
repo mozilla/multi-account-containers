@@ -776,34 +776,37 @@ span ~ .panel-header-text {
   display: block;
 }
 
-.column-panel-content form span {
+.radio-choice > .radio-container {
   align-items: center;
-  block-size: 44px;
+  block-size: 29px;
   display: flex;
-  flex: 0 0 25%;
-  justify-content: center;
+  flex: 0 0 calc(100% / 8);
 }
 
-.edit-container-panel label {
+.radio-choice > .radio-container > label {
   background-image: var(--identity-icon);
-  background-size: 26px 26px;
-  block-size: 34px;
+  background-size: 16px;
+  block-size: 22px;
   fill: var(--identity-icon-color);
   filter: url('/img/filters.svg#fill');
-  flex: 0 0 34px;
+  flex: 0 0 22px;
+  margin-inline-start: 2px;
   position: relative;
 }
 
-.edit-container-panel label::before {
+.radio-choice > .radio-container > label::before {
+  block-size: 0;
+  inline-size: 0;
   opacity: 0 !important;
 }
 
-.edit-container-panel [type="radio"] {
+.radio-choice > .radio-container > [type="radio"] {
   display: inline;
+  -moz-appearance: none;
   opacity: 0;
 }
 
-.edit-container-panel [type="radio"]:checked + label {
+.radio-choice > .radio-container > [type="radio"]:checked + label {
   outline: 2px solid grey;
   -moz-outline-radius: 50px;
 }
@@ -842,5 +845,5 @@ span ~ .panel-header-text {
 .edit-container-panel legend {
   flex: 1 0;
   font-size: 14px !important;
-  padding-block-end: 5px;
+  padding-block-end: 6px;
 }

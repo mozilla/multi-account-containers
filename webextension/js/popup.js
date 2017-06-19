@@ -830,7 +830,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple" ];
     const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
     colors.forEach((containerColor) => {
-      const templateInstance = document.createElement("span");
+      const templateInstance = document.createElement("div");
+      templateInstance.classList.add("radio-container");
       // eslint-disable-next-line no-unsanitized/property
       templateInstance.innerHTML = colorRadioTemplate(containerColor);
       colorRadioFieldset.appendChild(templateInstance);
@@ -843,7 +844,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const icons = ["fingerprint", "briefcase", "dollar", "cart", "vacation", "gift", "food", "fruit", "pet", "tree", "chill", "circle"];
     const iconRadioFieldset = document.getElementById("edit-container-panel-choose-icon");
     icons.forEach((containerIcon) => {
-      const templateInstance = document.createElement("span");
+      const templateInstance = document.createElement("div");
+      templateInstance.classList.add("radio-container");
       // eslint-disable-next-line no-unsanitized/property
       templateInstance.innerHTML = iconRadioTemplate(containerIcon);
       iconRadioFieldset.appendChild(templateInstance);
