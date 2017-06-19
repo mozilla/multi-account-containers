@@ -4,7 +4,6 @@
 
 const self = require("sdk/self");
 const { when: unload } = require("sdk/system/unload");
-const tabs = require("sdk/tabs");
 
 const shield = require("./lib/shield/index");
 
@@ -24,16 +23,6 @@ class ContainersStudy extends shield.Study {
     // If the user already has testpilot-containers extension, they are in the
     // Test Pilot experiment, so exclude them.
     return super.isEligible();
-  }
-
-  whenEligible () {
-  }
-
-  whenInstalled () {
-    tabs.open(`data:text/html, Thank you for helping us study Containers in Firefox. You are in the ${this.variation} variation.`);
-  }
-
-  cleanup() {
   }
 }
 
