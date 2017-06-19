@@ -114,6 +114,11 @@ table {
   --identity-icon-color: #51cd00;
 }
 
+[data-identity-color="grey"] {
+  /* Only used for the edit panel */
+  --identity-icon-color: #616161;
+}
+
 [data-identity-color="yellow"] {
   --identity-tab-color: #ffcb00;
   --identity-icon-color: #ffcb00;
@@ -784,20 +789,29 @@ span ~ .panel-header-text {
 }
 
 .radio-choice > .radio-container > label {
-  background-image: var(--identity-icon);
-  background-size: 16px;
-  block-size: 22px;
-  fill: var(--identity-icon-color);
-  filter: url('/img/filters.svg#fill');
-  flex: 0 0 22px;
-  margin-inline-start: 2px;
-  position: relative;
+  background: none;
+  block-size: 23px;
+  border: 0;
+  filter: none;
+  inline-size: 23px;
+  margin: 0;
+  padding: 0;
 }
 
 .radio-choice > .radio-container > label::before {
-  block-size: 0;
-  inline-size: 0;
-  opacity: 0 !important;
+  background-color: unset;
+  background-image: var(--identity-icon);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  block-size: 23px;
+  fill: var(--identity-icon-color);
+  filter: url('/img/filters.svg#fill');
+  position: relative;
+  content: "";
+  display: block;
+  border: none;
+  inline-size: 23px;
 }
 
 .radio-choice > .radio-container > [type="radio"] {
@@ -807,8 +821,14 @@ span ~ .panel-header-text {
 }
 
 .radio-choice > .radio-container > [type="radio"]:checked + label {
-  outline: 2px solid grey;
-  -moz-outline-radius: 50px;
+  background: #d3d3d3;
+  border-radius: 100%;
+}
+
+/* When focusing the element add a thin blue highlight to match input fields. This gives a distinction to other selected radio items */
+.radio-choice > .radio-container > [type="radio"]:focus + label {
+  outline: 1px solid #1f9ffc;
+  -moz-outline-radius: 100%;
 }
 
 .edit-container-panel fieldset {
