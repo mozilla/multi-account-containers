@@ -115,6 +115,7 @@
       </div>
       <div class="column-panel-content">
         <form id="edit-container-panel-form">
+          <input type="hidden" name="container-id" id="edit-container-panel-usercontext-input" />
           <fieldset>
             <legend>Name</legend>
             <input type="text" name="container-name" id="edit-container-panel-name-input" maxlength="25"/>
@@ -130,6 +131,10 @@
           <h3>Sites assigned to this container</h3>
           <div class="assigned-sites-list">
           </div>
+        </div>
+        <div class="panel-footer">
+          <a href="#" class="button secondary expanded footer-button cancel-button" id="edit-container-cancel-link">Cancel</a>
+          <a class="button primary expanded footer-button" id="edit-container-ok-link">OK</a>
         </div>
       </div>
     </div>
