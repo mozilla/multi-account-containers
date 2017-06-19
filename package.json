@@ -51,7 +51,7 @@
     "lint:html": "htmllint webextension/*.html",
     "lint:js": "eslint .",
     "package": "npm run build && mv testpilot-containers.xpi addon.xpi",
-    "package-shield": "json -I -f package.json -e 'this.name=\"shield-study-containers\"' && jpm xpi && json -I -f package.json -e 'this.name=\"testpilot-containers\"'",
+    "package-shield": "./node_modules/.bin/json -I -f package.json -e 'this.name=\"shield-study-containers\"' && jpm xpi && ./node_modules/.bin/json -I -f package.json -e 'this.name=\"testpilot-containers\"'",
     "test": "npm run lint"
   },
   "updateURL": "https://testpilot.firefox.com/files/@testpilot-containers/updates.json"
