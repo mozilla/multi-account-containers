@@ -265,6 +265,11 @@ const Logic = {
     return Logic.userContextId(identity.cookieStoreId);
   },
 
+  currentCookieStoreId() {
+    const identity = Logic.currentIdentity();
+    return identity.cookieStoreId;
+  },
+
   sendTelemetryPayload(message = {}) {
     if (!message.event) {
       throw new Error("Missing event name for telemetry");
@@ -661,7 +666,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       const identity = Logic.currentIdentity();
       browser.runtime.sendMessage({
         method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
-        userContextId: Logic.currentUserContextId()
+        cookieStoreId: Logic.currentCookieStoreId()
       }).then(() => {
         window.close();
       }).catch(() => {
@@ -753,12 +758,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       if (tab.active) {
         tr.classList.add("clickable");
         Logic.addEnterHandler(tr, () => {
-          browser.runtime.sendMessage({
-            method: "showTab",
-            tabId: tab.id,
-          }).then(() => {
-            window.close();
-          }).catch(() => {
+          browser.tabs.update(tab.id, {selected: true}).then(() => {
             window.close();
           });
         });
