@@ -7,6 +7,7 @@ const CONTAINER_UNHIDE_SRC = "/img/container-unhide.svg";
 
 const DEFAULT_COLOR = "blue";
 const DEFAULT_ICON = "circle";
+const NEW_CONTAINER_ID = "new";
 
 // List of panels
 const P_ONBOARDING_1     = "onboarding1";
@@ -750,10 +751,30 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     this.initializeRadioButtons();
 
     Logic.addEnterHandler(document.querySelector("#edit-container-panel-back-arrow"), () => {
+      const formValues = new FormData(this._editForm);
+      if (formValues.get("container-id") !== NEW_CONTAINER_ID) {
+        this._submitForm();
+      } else {
+        Logic.showPreviousPanel();
+      }
+    });
+
+    Logic.addEnterHandler(document.querySelector("#edit-container-cancel-link"), () => {
+      Logic.showPreviousPanel();
+    });
+
+    this._editForm = document.getElementById("edit-container-panel-form");
+    const editLink = document.querySelector("#edit-container-ok-link");
+    Logic.addEnterHandler(editLink, () => {
       this._submitForm();
     });
-    this._editForm = document.getElementById("edit-container-panel-form");
-    this._editForm.addEventListener("submit", this._submitForm.bind(this));
+    editLink.addEventListener("submit", () => {
+      this._submitForm();
+    });
+    this._editForm.addEventListener("submit", () => {
+      this._submitForm();
+    });
+
 
   },
 
@@ -762,7 +783,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     return browser.runtime.sendMessage({
       method: "createOrUpdateContainer",
       message: {
-        userContextId: Logic.currentUserContextId() || false,
+        userContextId: formValues.get("container-id") || NEW_CONTAINER_ID,
         params: {
           name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
           icon: formValues.get("container-icon") || DEFAULT_ICON,
@@ -783,7 +804,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const assignmentKeys = Object.keys(assignments);
     assignmentPanel.hidden = !(assignmentKeys.length > 0);
     if (assignments) {
-      const tableElement = assignmentPanel.querySelector("table > tbody");
+      const tableElement = assignmentPanel.querySelector(".assigned-sites-list");
       /* Remove previous assignment list,
          after removing one we rerender the list */
       while (tableElement.firstChild) {
@@ -791,18 +812,19 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       }
       assignmentKeys.forEach((siteKey) => {
         const site = assignments[siteKey];
-        const trElement = document.createElement("tr");
+        const trElement = document.createElement("div");
         /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
            This is pending a better solution for favicons from web extensions */
         const assumedUrl = `https://${site.hostname}`;
         trElement.innerHTML = escaped`
-        <td><img class="icon" src="${assumedUrl}/favicon.ico"></td>
-        <td title="${site.hostname}" class="truncate-text">${site.hostname}
-          <img
-            class="pop-button-image delete-assignment"
-            src="/img/container-delete.svg"
-          />
-        </td>`;
+        <img class="icon" src="${assumedUrl}/favicon.ico">
+        <div title="${site.hostname}" class="truncate-text hostname">
+          ${site.hostname}
+        </div>
+        <img
+          class="pop-button-image delete-assignment"
+          src="/img/container-delete.svg"
+        />`;
         const deleteButton = trElement.querySelector(".delete-assignment");
         Logic.addEnterHandler(deleteButton, () => {
           const userContextId = Logic.currentUserContextId();
@@ -830,7 +852,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple" ];
     const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
     colors.forEach((containerColor) => {
-      const templateInstance = document.createElement("span");
+      const templateInstance = document.createElement("div");
+      templateInstance.classList.add("radio-container");
       // eslint-disable-next-line no-unsanitized/property
       templateInstance.innerHTML = colorRadioTemplate(containerColor);
       colorRadioFieldset.appendChild(templateInstance);
@@ -843,7 +866,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const icons = ["fingerprint", "briefcase", "dollar", "cart", "vacation", "gift", "food", "fruit", "pet", "tree", "chill", "circle"];
     const iconRadioFieldset = document.getElementById("edit-container-panel-choose-icon");
     icons.forEach((containerIcon) => {
-      const templateInstance = document.createElement("span");
+      const templateInstance = document.createElement("div");
+      templateInstance.classList.add("radio-container");
       // eslint-disable-next-line no-unsanitized/property
       templateInstance.innerHTML = iconRadioTemplate(containerIcon);
       iconRadioFieldset.appendChild(templateInstance);
@@ -857,8 +881,10 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const userContextId = Logic.currentUserContextId();
     const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
     this.showAssignedContainers(assignments);
+    document.querySelector("#edit-container-panel .panel-footer").hidden = !!userContextId;
 
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
+    document.querySelector("#edit-container-panel-usercontext-input").value = userContextId || NEW_CONTAINER_ID;
     [...document.querySelectorAll("[name='container-color']")].forEach(colorInput => {
       colorInput.checked = colorInput.value === identity.color;
     });
