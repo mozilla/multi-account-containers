@@ -339,7 +339,7 @@ const backgroundLogic = {
 
   createOrUpdateContainer(options) {
     let donePromise;
-    if (options.userContextId) {
+    if (options.userContextId !== "new") {
       donePromise = browser.contextualIdentities.update(
         this.cookieStoreId(options.userContextId),
         options.params
