@@ -1,6 +1,6 @@
 const MAJOR_VERSIONS = ["2.3.0", "2.4.0"];
-const LOOKUP_KEY = "$ref";
 const THEME_BUILD_DATE = 20170630;
+const DEFAULT_TAB = "about:newtab";
 
 const assignManager = {
   MENU_ASSIGN_ID: "open-in-this-container",
@@ -188,12 +188,7 @@ const assignManager = {
     if (!("cookieStoreId" in tab)) {
       return false;
     }
-    const cookieStore = tab.cookieStoreId;
-    const container = cookieStore.replace("firefox-container-", "");
-    if (container !== cookieStore) {
-      return container;
-    }
-    return false;
+    return backgroundLogic.getUserContextIdFromCookieStoreId(tab.cookieStoreId);
   },
 
   isTabPermittedAssign(tab) {
@@ -336,6 +331,126 @@ const assignManager = {
   }
 };
 
+const identityState = {
+  storageArea: {
+    area: browser.storage.local,
+
+    getContainerStoreKey(cookieStoreId) {
+      const storagePrefix = "identitiesState@@_";
+      return `${storagePrefix}${cookieStoreId}`;
+    },
+
+    get(cookieStoreId) {
+      const storeKey = this.getContainerStoreKey(cookieStoreId);
+      return new Promise((resolve, reject) => {
+        this.area.get([storeKey]).then((storageResponse) => {
+          if (storageResponse && storeKey in storageResponse) {
+            resolve(storageResponse[storeKey]);
+          }
+          resolve(null);
+        }).catch((e) => {
+          reject(e);
+        });
+      });
+    },
+
+    set(cookieStoreId, data) {
+      const storeKey = this.getContainerStoreKey(cookieStoreId);
+      return this.area.set({
+        [storeKey]: data
+      });
+    },
+
+    remove(cookieStoreId) {
+      const storeKey = this.getContainerStoreKey(cookieStoreId);
+      return this.area.remove([storeKey]);
+    }
+  },
+
+  _createTabObject(tab) {
+    return Object.assign({}, tab);
+  },
+
+  async containersCounts() {
+    let containersCounts = { // eslint-disable-line prefer-const
+      "shown": 0,
+      "hidden": 0,
+      "total": 0
+    };
+    const containers = await browser.contextualIdentities.query({});
+    for (const container in containers) {
+      const containerState = await this.storageArea.get(container.cookieStoreId);
+      if (containerState.openTabs > 0) {
+        ++containersCounts.shown;
+        ++containersCounts.total;
+        continue;
+      } else if (containerState.hiddenTabs.length > 0) {
+        ++containersCounts.hidden;
+        ++containersCounts.total;
+        continue;
+      }
+    }
+    return containersCounts;
+  },
+
+  containerTabCount(userContextId) {
+    // Returns the total of open and hidden tabs with this userContextId
+    let containerTabsCount = 0;
+    containerTabsCount += this._identitiesState[userContextId].openTabs;
+    containerTabsCount += this._identitiesState[userContextId].hiddenTabs.length;
+    return containerTabsCount;
+  },
+
+  totalContainerTabsCount() {
+    // Returns the number of total open tabs across ALL containers
+    let totalContainerTabsCount = 0;
+    for (const userContextId in this._identitiesState) {
+      totalContainerTabsCount += this._identitiesState[userContextId].openTabs;
+    }
+    return totalContainerTabsCount;
+  },
+
+  async totalNonContainerTabsCount() {
+    // Returns the number of open tabs NOT IN a container
+    let totalNonContainerTabsCount = 0;
+    const tabs = await browser.tabs.query({});
+    for (const tab of tabs) {
+      if (this._getUserContextIdFromTab(tab) === 0) {
+        ++totalNonContainerTabsCount;
+      }
+    }
+    return totalNonContainerTabsCount;
+  },
+
+  remapTabsIfMissing(userContextId) {
+    // We already know this userContextId.
+    if (userContextId in this._identitiesState) {
+      return;
+    }
+
+    this._identitiesState[userContextId] = this._createIdentityState();
+    this.remapTabsFromUserContextId(userContextId);
+  },
+
+  remapTabsFromUserContextId(userContextId) {
+    this._identitiesState[userContextId].openTabs = this._matchTabsByContainer(userContextId).length;
+  },
+/*TODO check if used
+  remapTab(tab) {
+    const userContextId = this._getUserContextIdFromTab(tab);
+    if (userContextId) {
+      this.remapTabsFromUserContextId(userContextId);
+    }
+  },
+*/
+
+  _createIdentityState() {
+    return {
+      hiddenTabs: [],
+      openTabs: 0
+    };
+  },
+};
 
 const backgroundLogic = {
   NEW_TAB_PAGES: new Set([
@@ -345,16 +460,24 @@ const backgroundLogic = {
     "about:blank"
   ]),
 
+  getUserContextIdFromCookieStoreId(cookieStoreId) {
+    if (!cookieStoreId) {
+      return false;
+    }
+    const container = cookieStoreId.replace("firefox-container-", "");
+    if (container !== cookieStoreId) {
+      return container;
+    }
+    return false;
+  },
+
   deleteContainer(userContextId) {
     this.sendTelemetryPayload({
       event: "delete-container",
       userContextId
     });
 
-    const removeTabsPromise = this._containerTabs(userContextId).then((tabs) => {
-      const tabIds = tabs.map((tab) => tab.id);
-      return browser.tabs.remove(tabIds);
-    });
+    const removeTabsPromise = this._closeTabs(userContextId); 
 
     return new Promise((resolve) => {
       removeTabsPromise.then(() => {
@@ -401,13 +524,14 @@ const backgroundLogic = {
     const active = ("nofocus" in options) ? options.nofocus : true;
     const source = ("source" in options) ? options.source : null;
 
+    const cookieStoreId = backgroundLogic.cookieStoreId(options.userContextId);
     // Only send telemetry for tabs opened by UI - i.e., not via showTabs
     if (source && userContextId) {
       this.sendTelemetryPayload({
         "event": "open-tab",
         "eventSource": source,
         "userContextId": userContextId,
-        "clickedContainerTabCount": LOOKUP_KEY
+        "clickedContainerTabCount": identityState.containerTabCount(cookieStoreId)
       });
     }
     // Autofocus url bar will happen in 54: https://bugzilla.mozilla.org/show_bug.cgi?id=1295072
@@ -418,17 +542,258 @@ const backgroundLogic = {
     }
 
     // Unhide all hidden tabs
-    browser.runtime.sendMessage({
-      method: "showTabs",
-      userContextId: options.userContextId
+    this.showTabs({
+      cookieStoreId
     });
     return browser.tabs.create({
       url,
       active,
       pinned: options.pinned || false,
-      cookieStoreId: backgroundLogic.cookieStoreId(options.userContextId)
+      cookieStoreId
     });
   },
+
+  async getTabs(options) {
+    if (!("cookieStoreId" in options)) {
+      return new Error("getTabs must be called with cookieStoreId argument.");
+    }
+
+    const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(options.cookieStoreId);
+    this._remapTabsIfMissing(userContextId);
+    if (!this._isKnownContainer(userContextId)) {
+      return [];
+    }
+
+    const list = [];
+    await this._containerTabs(userContextId).then((tabs) => {
+      tabs.forEach((tab) => {
+        list.push(this._createTabObject(tab));
+      });
+    });
+
+    const containerState = await identityState.storageArea.get(options.cookieStoreId);
+    return list.concat(containerState.hiddenTabs);
+  },
+
+  async moveTabsToWindow(options) {
+    if (!("cookieStoreId" in options)) {
+      return new Error("moveTabsToWindow must be called with cookieStoreId argument.");
+    }
+
+    const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(options.cookieStoreId);
+    identityState.remapTabsIfMissing(userContextId);
+    if (!identityState.isKnownContainer(userContextId)) {
+      return null;
+    }
+
+    this.sendTelemetryPayload({
+      "event": "move-tabs-to-window",
+      "userContextId": userContextId,
+      "clickedContainerTabCount": this._containerTabCount(userContextId),
+    });
+
+    const list = this._matchTabsByContainer(userContextId);
+
+    // Nothing to do
+    if (list.length === 0 &&
+        this._identitiesState[userContextId].hiddenTabs.length === 0) {
+      return;
+    }
+//TODO check list returns ids
+    const window = await browser.windows.create({
+      tabId: list.shift()
+    });
+    browser.tabs.move(list, {
+      windowId: window.id,
+      index: -1
+    });
+
+    const containerState = await identityState.storageArea.get(options.cookieStoreId);
+    // Let's show the hidden tabs.
+    for (let object of containerState.hiddenTabs) { // eslint-disable-line prefer-const
+      browser.tabs.create(object.url || DEFAULT_TAB, {
+        cookieStoreId: options.cookieStoreId
+      });
+    }
+
+    containerState.hiddenTabs = [];
+
+    // Let's close all the normal tab in the new window. In theory it
+    // should be only the first tab, but maybe there are addons doing
+    // crazy stuff.
+    const tabs = browser.tabs.query({windowId: window.id});
+    for (let tab of tabs) { // eslint-disable-line prefer-const
+      if (tabs.cookieStoreId !== options.cookieStoreId) {
+        browser.tabs.remove(tab.id);
+      }
+    }
+  },
+
+  _closeTabs(userContextId) {
+    return this._containerTabs(userContextId).then((tabs) => {
+      const tabIds = tabs.map((tab) => tab.id);
+      return browser.tabs.remove(tabIds);
+    });
+  },
+
+  async queryIdentitiesState() {
+    const identities = await browser.contextualIdentities.query({});
+    const identitiesMap = await Promise.all(identities.map(async function (identity) {
+      identityState.remapTabsIfMissing(identity.userContextId);
+      const containerState = await identityState.get(identity.cookieStoreId);
+      return {
+        hasHiddenTabs: !!containerState.hiddenTabs.length,
+        hasOpenTabs: !!containerState.openTabs
+      };
+    }));
+
+    return identitiesMap;
+  },
+
+  _isKnownContainer(userContextId) {
+    return userContextId in this._identitiesState;
+  },
+
+
+
+  async sortTabs() {
+    const containersCounts = identityState.containersCounts();
+    this.sendTelemetryPayload({
+      "event": "sort-tabs",
+      "shownContainersCount": containersCounts.shown,
+      "totalContainerTabsCount": identityState.totalContainerTabsCount(),
+      "totalNonContainerTabsCount": await identityState.totalNonContainerTabsCount()
+    });
+    return new Promise(resolve => {
+//TODO fix this
+/*
+      for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
+        // First the pinned tabs, then the normal ones.
+        this._sortTabsInternal(window, true);
+        this._sortTabsInternal(window, false);
+      }
+*/
+      resolve(null);
+    });
+  },
+
+  _sortTabsInternal(window, pinnedTabs) {
+    // From model to XUL window.
+    const xulWindow = viewFor(window);
+
+    const tabs = browser.tabs.query({windowId: browser.windows.WINDOW_ID_CURRENT});
+    let pos = 0;
+
+    // Let's collect UCIs/tabs for this window.
+    const map = new Map;
+    for (const tab of tabs) {
+      if (pinnedTabs && !tabsUtils.isPinned(tab)) {
+        // We don't have, or we already handled all the pinned tabs.
+        break;
+      }
+
+      if (!pinnedTabs && tabsUtils.isPinned(tab)) {
+        // pinned tabs must be consider as taken positions.
+        ++pos;
+        continue;
+      }
+
+      const userContextId = this._getUserContextIdFromTab(tab);
+      if (!map.has(userContextId)) {
+        map.set(userContextId, []);
+      }
+      map.get(userContextId).push(tab);
+    }
+
+    // Let's sort the map.
+    const sortMap = new Map([...map.entries()].sort((a, b) => a[0] > b[0]));
+
+    // Let's move tabs.
+    sortMap.forEach(tabs => {
+      for (const tab of tabs) {
+        xulWindow.gBrowser.moveTabTo(tab, pos++);
+      }
+    });
+  },
+
+  async hideTabs(options) {
+    if (!("cookieStoreId" in options)) {
+      return new Error("hideTabs must be called with cookieStoreId option.");
+    }
+
+    const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(options.cookieStoreId);
+    this._remapTabsIfMissing(userContextId);
+    if (!this._isKnownContainer(userContextId)) {
+      return null;
+    }
+
+    const containersCounts = identityState.containersCounts();
+    this.sendTelemetryPayload({
+      "event": "hide-tabs",
+      "userContextId": userContextId,
+      "clickedContainerTabCount": this._containerTabCount(options.userContextId),
+      "shownContainersCount": containersCounts.shown,
+      "hiddenContainersCount": containersCounts.hidden,
+      "totalContainersCount": containersCounts.total
+    });
+
+    const containerState = await identityState.storageArea.get(options.cookieStoreId);
+
+    await this._containerTabs(userContextId).then((tabs) => {
+      tabs.forEach((tab) => {
+        const tabObject = this._createTabObject(tab);
+        // This tab is going to be closed. Let's mark this tabObject as
+        // non-active.
+        tabObject.active = false;
+        containerState.hiddenTabs.push(tabObject);
+      });
+    });
+
+    await this._closeTabs(userContextId); 
+
+    return identityState.storageArea.set(options.cookieStoreId, containerState);
+  },
+
+  async showTabs(options) {
+    if (!("cookieStoreId" in options)) {
+      return Promise.reject("showTabs must be called with cookieStoreId argument.");
+    }
+
+    const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(options.cookieStoreId);
+    identityState.remapTabsIfMissing(options.cookieStoreId);
+    if (!identityState.isKnownContainer(userContextId)) {
+      return null;
+    }
+
+    const containersCounts = identityState.containersCounts();
+    this.sendTelemetryPayload({
+      "event": "show-tabs",
+      "userContextId": userContextId,
+      "clickedContainerTabCount": identityState.containerTabCount(options.userContextId),
+      "shownContainersCount": containersCounts.shown,
+      "hiddenContainersCount": containersCounts.hidden,
+      "totalContainersCount": containersCounts.total
+    });
+
+    const promises = [];
+
+    const containerState = await identityState.storageArea.get(options.cookieStoreId);
+
+    for (let object of containerState.hiddenTabs) { // eslint-disable-line prefer-const
+      promises.push(this.openTab({
+        userContextId: userContextId,
+        url: object.url,
+        nofocus: options.nofocus || false,
+        pinned: object.pinned,
+      }));
+    }
+
+    containerState.hiddenTabs = [];
+
+    await Promise.all(promises);
+    return await identityState.storageArea.set(options.cookieStoreId, containerState);
+  },
+
 
   sendTelemetryPayload(message = {}) {
     if (!message.event) {
@@ -701,6 +1066,8 @@ const tabPageCounter = {
     this.counters[tab.id].activity.pageRequests++;
   }
 };
+
+console.log("aaa, startting");
 
 assignManager.init();
 themeManager.init();
