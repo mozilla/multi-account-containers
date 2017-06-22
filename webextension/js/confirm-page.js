@@ -56,8 +56,15 @@ function confirmSubmit(redirectUrl, cookieStoreId) {
   openInContainer(redirectUrl, cookieStoreId);
 }
 
+function getCurrentTab() {
+  return browser.tabs.query({
+    active: true,
+    windowId: browser.windows.WINDOW_ID_CURRENT
+  });
+}
+
 async function denySubmit(redirectUrl) {
-  const tab = await browser.tabs.query({active: true});
+  const tab = await getCurrentTab();
   await browser.runtime.sendMessage({
     method: "exemptContainerAssignment",
     tabId: tab[0].id,
@@ -73,12 +80,12 @@ async function denySubmit(redirectUrl) {
 load();
 
 async function openInContainer(redirectUrl, cookieStoreId) {
-  const tabs = await browser.tabs.query({active: true});
+  const tab = await getCurrentTab();
   await browser.tabs.create({
     cookieStoreId,
     url: redirectUrl
   });
-  if (tabs.length > 0) {
-    browser.tabs.remove(tabs[0].id);
+  if (tab.length > 0) {
+    browser.tabs.remove(tab[0].id);
   }
 }
