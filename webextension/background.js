@@ -254,7 +254,9 @@ const assignManager = {
     // ✓ This is to mitigate https://bugzilla.mozilla.org/show_bug.cgi?id=1351418
     let prefix = "   "; // Alignment of non breaking space, unknown why this requires so many spaces to align with the tick
     let menuId = this.MENU_ASSIGN_ID;
-    if (siteSettings) {
+    const tabUserContextId = this.getUserContextIdFromCookieStore(tab);
+    if (siteSettings &&
+        Number(siteSettings.userContextId) === Number(tabUserContextId)) {
       prefix = "✓";
       menuId = this.MENU_REMOVE_ID;
     }
