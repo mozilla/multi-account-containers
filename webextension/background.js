@@ -505,6 +505,11 @@ const messageHandler = {
 
     browser.windows.onFocusChanged.addListener((windowId) => {
       assignManager.removeContextMenu();
+      // browserAction loses background color in new windows ...
+      // https://bugzil.la/1314674
+      // https://github.com/mozilla/testpilot-containers/issues/608
+      // ... so re-call displayBrowserActionBadge on window changes
+      displayBrowserActionBadge();
       browser.tabs.query({active: true, windowId}).then((tabs) => {
         if (tabs && tabs[0]) {
           tabPageCounter.initTabCounter(tabs[0]);
