@@ -467,10 +467,13 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     browser.tabs.onUpdated.removeListener(this.tabUpdateHandler);
   },
 
-  setupAssignmentCheckbox(siteSettings) {
+  setupAssignmentCheckbox(siteSettings, currentUserContextId) {
     const assignmentCheckboxElement = document.getElementById("container-page-assigned");
-    // Cater for null and false
-    assignmentCheckboxElement.checked = !!siteSettings;
+    let checked = false;
+    if (siteSettings && Number(siteSettings.userContextId) === currentUserContextId) {
+      checked = true;
+    }
+    assignmentCheckboxElement.checked = checked;
     let disabled = false;
     if (siteSettings === false) {
       disabled = true;
@@ -482,16 +485,16 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     const currentTab = await Logic.currentTab();
     const currentTabElement = document.getElementById("current-tab");
     const assignmentCheckboxElement = document.getElementById("container-page-assigned");
+    const currentTabUserContextId = Logic.userContextId(currentTab.cookieStoreId);
     assignmentCheckboxElement.addEventListener("change", () => {
-      const userContextId = Logic.userContextId(currentTab.cookieStoreId);
-      Logic.setOrRemoveAssignment(currentTab.id, currentTab.url, userContextId, !assignmentCheckboxElement.checked);
+      Logic.setOrRemoveAssignment(currentTab.id, currentTab.url, currentTabUserContextId, !assignmentCheckboxElement.checked);
     });
     currentTabElement.hidden = !currentTab;
-    this.setupAssignmentCheckbox(false);
+    this.setupAssignmentCheckbox(false, currentTabUserContextId);
     if (currentTab) {
       const identity = await Logic.identity(currentTab.cookieStoreId);
       const siteSettings = await Logic.getAssignment(currentTab);
-      this.setupAssignmentCheckbox(siteSettings);
+      this.setupAssignmentCheckbox(siteSettings, currentTabUserContextId);
       const currentPage = document.getElementById("current-page");
       currentPage.innerHTML = escaped`<span class="page-title truncate-text">${currentTab.title}</span>`;
       const favIconElement = Utils.createFavIconElement(currentTab.favIconUrl || "");
