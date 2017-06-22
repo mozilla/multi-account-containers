@@ -1,4 +1,5 @@
 .container-notification {
+  align-items: center;
   background: #33f70c;
   color: #003f07;
   display: flex;
