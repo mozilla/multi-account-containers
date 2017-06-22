@@ -1213,6 +1213,7 @@ ContainerWindow.prototype = {
         const menuItemElement = this._window.document.createElementNS(XUL_NS, "menuitem");
         this._panelElement.appendChild(menuItemElement);
         menuItemElement.className = "menuitem-iconic";
+        menuItemElement.setAttribute("tooltiptext", identity.name);
         menuItemElement.setAttribute("label", identity.name);
         menuItemElement.setAttribute("data-usercontextid", identity.userContextId);
         menuItemElement.setAttribute("data-identity-icon", identity.icon);
