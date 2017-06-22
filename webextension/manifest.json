@@ -59,7 +59,8 @@
     {
       "matches": ["<all_urls>"],
       "js": ["js/content-script.js"],
-      "css": ["css/content.css"]
+      "css": ["css/content.css"],
+      "run_at": "document_start"
     }
   ],
 

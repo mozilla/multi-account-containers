@@ -16,17 +16,6 @@ async function doAnimation(element, property, value) {
     });
   });
 }
-/*
-async function awaitEvent(eventName) {
-  return new Promise((resolve) => {
-    const handler = () => {
-      resolve();
-      divElement.removeEventListener(eventName, handler);
-    };
-    divElement.addEventListener(eventName, handler);
-  });
-}
-*/
 
 async function addMessage(message) {
   const divElement = document.createElement("div");
