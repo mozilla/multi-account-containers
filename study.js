@@ -28,6 +28,8 @@ class ContainersStudy extends shield.Study {
 
 const thisStudy = new ContainersStudy(studyConfig);
 
-unload((reason) => thisStudy.shutdown(reason));
+if (self.id === "@shield-study-containers") {
+  unload((reason) => thisStudy.shutdown(reason));
+}
 
 exports.study = thisStudy;
