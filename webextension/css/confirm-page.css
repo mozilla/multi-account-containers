@@ -71,3 +71,8 @@ dfn {
 .button-container > button {
   min-inline-size: 240px;
 }
+
+.check-label {
+  align-items: center;
+  display: flex;
+}
