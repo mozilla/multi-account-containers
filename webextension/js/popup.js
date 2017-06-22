@@ -520,7 +520,9 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
       context.classList.add("userContext-wrapper", "open-newtab", "clickable");
       manage.classList.add("show-tabs", "pop-button");
+      manage.title = escaped`View ${identity.name} container`;
       context.setAttribute("tabindex", "0");
+      context.title = escaped`Create ${identity.name} tab`;
       context.innerHTML = escaped`
         <div class="userContext-icon-wrapper open-newtab">
           <div class="usercontext-icon"
@@ -683,7 +685,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       tr.classList.add("container-info-tab-row");
       tr.innerHTML = escaped`
         <td></td>
-        <td class="container-info-tab-title truncate-text">${tab.title}</td>`;
+        <td class="container-info-tab-title truncate-text" title="${tab.url}" >${tab.title}</td>`;
       tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favicon));
 
       // On click, we activate this tab. But only if this tab is active.
@@ -741,15 +743,15 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
             src="/img/container-edit.svg"
             class="pop-button-image" />
         </td>
-        <td class="remove-container pop-button delete-container-icon" >
+        <td class="remove-container pop-button delete-container-icon">
           <img
             class="pop-button-image"
             src="/img/container-delete.svg"
           />
         </td>`;
       tr.querySelector(".container-name").textContent = identity.name;
-      tr.querySelector(".edit-container .pop-button-image").setAttribute("title", `Edit ${identity.name} container`);
-      tr.querySelector(".remove-container .pop-button-image").setAttribute("title", `Edit ${identity.name} container`);
+      tr.querySelector(".edit-container").setAttribute("title", `Edit ${identity.name} container`);
+      tr.querySelector(".remove-container").setAttribute("title", `Delete ${identity.name} container`);
 
 
       Logic.addEnterHandler(tr, e => {
