@@ -15,19 +15,24 @@ const assignManager = {
     },
 
     setExempted(pageUrl, tabId) {
-      if (!(tabId in this.exemptedTabs)) {
-        this.exemptedTabs[tabId] = [];
-      }
       const siteStoreKey = this.getSiteStoreKey(pageUrl);
-      this.exemptedTabs[tabId].push(siteStoreKey);
+      if (!(siteStoreKey in this.exemptedTabs)) {
+        this.exemptedTabs[siteStoreKey] = [];
+      }
+      this.exemptedTabs[siteStoreKey].push(tabId);
+    },
+
+    removeExempted(pageUrl) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+      this.exemptedTabs[siteStoreKey] = [];
     },
 
     isExempted(pageUrl, tabId) {
-      if (!(tabId in this.exemptedTabs)) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+      if (!(siteStoreKey in this.exemptedTabs)) {
         return false;
       }
-      const siteStoreKey = this.getSiteStoreKey(pageUrl);
-      return this.exemptedTabs[tabId].includes(siteStoreKey);
+      return this.exemptedTabs[siteStoreKey].includes(tabId);
     },
 
     get(pageUrl) {
@@ -44,8 +49,13 @@ const assignManager = {
       });
     },
 
-    set(pageUrl, data) {
+    set(pageUrl, data, exemptedTabIds) {
       const siteStoreKey = this.getSiteStoreKey(pageUrl);
+      if (exemptedTabIds) {
+        exemptedTabIds.forEach((tabId) => {
+          this.setExempted(pageUrl, tabId);
+        });
+      }
       return this.area.set({
         [siteStoreKey]: data
       });
@@ -53,6 +63,8 @@ const assignManager = {
 
     remove(pageUrl) {
       const siteStoreKey = this.getSiteStoreKey(pageUrl);
+      // When we remove an assignment we should clear all the exemptions
+      this.removeExempted(pageUrl);
       return this.area.remove([siteStoreKey]);
     },
 
@@ -204,11 +216,24 @@ const assignManager = {
     userContextId = String(userContextId);
 
     if (!remove) {
+      const tabs = await browser.tabs.query({});
+      const assignmentStoreKey = this.storageArea.getSiteStoreKey(pageUrl);
+      const exemptedTabIds = tabs.filter((tab) => {
+        const tabStoreKey = this.storageArea.getSiteStoreKey(tab.url);
+        /* Auto exempt all tabs that exist for this hostname that are not in the same container */
+        if (tabStoreKey === assignmentStoreKey &&
+            this.getUserContextIdFromCookieStore(tab) !== userContextId) {
+          return true;
+        }
+        return false;
+      }).map((tab) => {
+        return tab.id;
+      });
+
       await this.storageArea.set(pageUrl, {
         userContextId,
-        neverAsk: false,
-        exempted: []
-      });
+        neverAsk: false
+      }, exemptedTabIds);
       actionName = "added";
     } else {
       await this.storageArea.remove(pageUrl);
