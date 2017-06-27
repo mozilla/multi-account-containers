@@ -57,7 +57,6 @@ Check out the [Browser Toolbox](https://developer.mozilla.org/en-US/docs/Tools/B
 4. `npm install -g shield-study-cli`
 5. `shield run . -- --binary Nightly`
 
-
 ### Building .xpi
 
 To build a local testpilot-containers.xpi, use the plain [`jpm
@@ -79,6 +78,11 @@ add-on](https://addons.mozilla.org/en-US/developers/addon/containers-experiment/
 ### Testing
 TBD
 
-
 ### Distributing
 TBD
+
+### Links
+
+- [Licence](./LICENSE.txt)
+- [Contributing](./CONTRIBUTING.md)
+- [Code Of Conduct](./CODE_OF_CONDUCT.md)
