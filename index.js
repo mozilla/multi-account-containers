@@ -243,18 +243,15 @@ const ContainerService = {
     }
 
     tabs.on("open", tab => {
-      this._hideAllPanels();
       this._restyleTab(tab);
       this._remapTab(tab);
     });
 
     tabs.on("close", tab => {
-      this._hideAllPanels();
       this._remapTab(tab);
     });
 
     tabs.on("activate", tab => {
-      this._hideAllPanels();
       this._restyleActiveTab(tab).catch(() => {});
       this._configureActiveWindows();
       this._remapTab(tab);
@@ -1102,7 +1099,40 @@ ContainerWindow.prototype = {
     this._window = window;
     this._tabsElement = this._window.document.getElementById("tabbrowser-tabs");
     this._style = Style({ uri: self.data.url("usercontext.css") });
+    this._plusButton = this._window.document.getAnonymousElementByAttribute(this._tabsElement, "anonid", "tabs-newtab-button");
+    this._overflowPlusButton = this._window.document.getElementById("new-tab-button");
+
+    // Only hack the normal plus button as the alltabs is done elsewhere
+    this.attachMenuEvent("plus-button", this._plusButton);
+
     attachTo(this._style, this._window);
+  },
+
+  attachMenuEvent(source, button) {
+    const popup = button.querySelector(".new-tab-popup");
+    popup.addEventListener("popupshown", () => {
+      ContainerService.sendTelemetryPayload({
+        "event": "show-plus-button-menu",
+        "eventSource": source
+      });
+      popup.querySelector("menuseparator").remove();
+      const popupMenuItems = [...popup.querySelectorAll("menuitem")];
+      popupMenuItems.forEach((item) => {
+        const userContextId = item.getAttribute("data-usercontextid");
+        if (!userContextId) {
+          item.remove();
+        }
+        item.setAttribute("command", "");
+        item.addEventListener("command", (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          ContainerService.openTab({
+            userContextId: userContextId,
+            source: source
+          });
+        });
+      });
+    });
   },
 
   configure() {
