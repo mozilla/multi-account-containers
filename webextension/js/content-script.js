@@ -31,7 +31,7 @@ async function addMessage(message) {
 
   await delayAnimation(100);
   await doAnimation(divElement, "transform", "translateY(0)");
-  await delayAnimation(2000);
+  await delayAnimation(3000);
   await doAnimation(divElement, "transform", "translateY(-100%)");
 
   divElement.remove();
