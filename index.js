@@ -6,9 +6,6 @@ const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
 const DEFAULT_TAB = "about:newtab";
 const LOOKUP_KEY = "$ref";
 
-const SHOW_MENU_TIMEOUT = 100;
-const HIDE_MENU_TIMEOUT = 300;
-
 const INCOMPATIBLE_ADDON_IDS = [
   "pulse@mozilla.com",
   "snoozetabs@mozilla.com",
@@ -246,18 +243,15 @@ const ContainerService = {
     }
 
     tabs.on("open", tab => {
-      this._hideAllPanels();
       this._restyleTab(tab);
       this._remapTab(tab);
     });
 
     tabs.on("close", tab => {
-      this._hideAllPanels();
       this._remapTab(tab);
     });
 
     tabs.on("activate", tab => {
-      this._hideAllPanels();
       this._restyleActiveTab(tab).catch(() => {});
       this._configureActiveWindows();
       this._remapTab(tab);
@@ -941,12 +935,6 @@ const ContainerService = {
     return this._configureWindows();
   },
 
-  _hideAllPanels() {
-    for (let windowObject of this._windowMap.values()) { // eslint-disable-line prefer-const
-      windowObject.hidePanel();
-    }
-  },
-
   _restyleActiveTab(tab) {
     if (!tab) {
       return Promise.resolve(null);
@@ -1105,22 +1093,50 @@ ContainerWindow.prototype = {
   _timeoutStore: new Map(),
   _elementCache: new Map(),
   _tooltipCache: new Map(),
-  _plusButton: null,
-  _overflowPlusButton: null,
   _tabsElement: null,
 
   _init(window) {
     this._window = window;
     this._tabsElement = this._window.document.getElementById("tabbrowser-tabs");
+    this._style = Style({ uri: self.data.url("usercontext.css") });
     this._plusButton = this._window.document.getAnonymousElementByAttribute(this._tabsElement, "anonid", "tabs-newtab-button");
     this._overflowPlusButton = this._window.document.getElementById("new-tab-button");
-    this._style = Style({ uri: self.data.url("usercontext.css") });
+
+    // Only hack the normal plus button as the alltabs is done elsewhere
+    this.attachMenuEvent("plus-button", this._plusButton);
+
     attachTo(this._style, this._window);
+  },
+
+  attachMenuEvent(source, button) {
+    const popup = button.querySelector(".new-tab-popup");
+    popup.addEventListener("popupshown", () => {
+      ContainerService.sendTelemetryPayload({
+        "event": "show-plus-button-menu",
+        "eventSource": source
+      });
+      popup.querySelector("menuseparator").remove();
+      const popupMenuItems = [...popup.querySelectorAll("menuitem")];
+      popupMenuItems.forEach((item) => {
+        const userContextId = item.getAttribute("data-usercontextid");
+        if (!userContextId) {
+          item.remove();
+        }
+        item.setAttribute("command", "");
+        item.addEventListener("command", (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          ContainerService.openTab({
+            userContextId: userContextId,
+            source: source
+          });
+        });
+      });
+    });
   },
 
   configure() {
     return Promise.all([
-      this._configurePlusButtonMenu(),
       this._configureActiveTab(),
       this._configureFileMenu(),
       this._configureAllTabsMenu(),
@@ -1131,113 +1147,6 @@ ContainerWindow.prototype = {
 
   configureActive() {
     return this._configureContextMenu();
-  },
-
-  handleEvent(e) {
-    let el = e.target;
-    switch (e.type) {
-    case "mouseover":
-      this._createTimeout("show", () => {
-        this.showPopup(el);
-      }, SHOW_MENU_TIMEOUT);
-      break;
-    case "click":
-      this.hidePanel();
-      break;
-    case "mouseout":
-      while(el) {
-        if (el === this._panelElement ||
-            el === this._plusButton ||
-            el === this._overflowPlusButton) {
-          // Clear show timeout so we don't hide and reshow
-          this._cleanTimeout("show");
-          this._createTimeout("hidden", () => {
-            this.hidePanel();
-          }, HIDE_MENU_TIMEOUT);
-          return;
-        }
-        el = el.parentElement;
-      }
-      break;
-    }
-  },
-
-  showPopup(buttonElement) {
-    this._cleanAllTimeouts();
-    this._panelElement.openPopup(buttonElement);
-  },
-
-  _configurePlusButtonMenuElement(buttonElement) {
-    if (buttonElement) {
-      // Let's remove the tooltip because it can go over our panel.
-      this._tooltipCache.set(buttonElement, buttonElement.getAttribute("tooltip"));
-      buttonElement.setAttribute("tooltip", "");
-      this._disableElement(buttonElement);
-
-      buttonElement.addEventListener("mouseover", this);
-      buttonElement.addEventListener("click", this);
-      buttonElement.addEventListener("mouseout", this);
-    }
-  },
-
-  async _configurePlusButtonMenu() {
-    const mainPopupSetElement = this._window.document.getElementById("mainPopupSet");
-
-    // Let's remove all the previous panels.
-    if (this._panelElement) {
-      this._panelElement.remove();
-    }
-
-    this._panelElement = this._window.document.createElementNS(XUL_NS, "panel");
-    this._panelElement.setAttribute("id", "new-tab-overlay");
-    this._panelElement.setAttribute("position", "bottomcenter topleft");
-    this._panelElement.setAttribute("side", "top");
-    this._panelElement.setAttribute("flip", "side");
-    this._panelElement.setAttribute("type", "arrow");
-    this._panelElement.setAttribute("animate", "open");
-    this._panelElement.setAttribute("consumeoutsideclicks", "never");
-    mainPopupSetElement.appendChild(this._panelElement);
-
-    this._configurePlusButtonMenuElement(this._plusButton);
-    this._configurePlusButtonMenuElement(this._overflowPlusButton);
-
-    this._panelElement.addEventListener("mouseout", this);
-
-    this._panelElement.addEventListener("mouseover", () => {
-      this._cleanAllTimeouts();
-    });
-
-    try {
-      const identities = await ContainerService.queryIdentities();
-      identities.forEach(identity => {
-        const menuItemElement = this._window.document.createElementNS(XUL_NS, "menuitem");
-        this._panelElement.appendChild(menuItemElement);
-        menuItemElement.className = "menuitem-iconic";
-        menuItemElement.setAttribute("tooltiptext", identity.name);
-        menuItemElement.setAttribute("label", identity.name);
-        menuItemElement.setAttribute("data-usercontextid", identity.userContextId);
-        menuItemElement.setAttribute("data-identity-icon", identity.icon);
-        menuItemElement.setAttribute("data-identity-color", identity.color);
-
-        menuItemElement.addEventListener("command", (e) => {
-          ContainerService.openTab({
-            userContextId: identity.userContextId,
-            source: "tab-bar"
-          });
-          e.stopPropagation();
-        });
-
-        menuItemElement.addEventListener("mouseover", () => {
-          this._cleanAllTimeouts();
-        });
-
-        menuItemElement.addEventListener("mouseout", this);
-
-        this._panelElement.appendChild(menuItemElement);
-      });
-    } catch (e) {
-      this.hidePanel();
-    }
   },
 
   _configureTabStyle() {
@@ -1409,11 +1318,6 @@ ContainerWindow.prototype = {
     }
   },
 
-  hidePanel() {
-    this._cleanAllTimeouts();
-    this._panelElement.hidePopup();
-  },
-
   shutdown() {
     // CSS must be removed.
     detachFrom(this._style, this._window);
@@ -1435,11 +1339,6 @@ ContainerWindow.prototype = {
       buttonElement.removeEventListener("click", this);
       buttonElement.removeEventListener("mouseout", this);
     }
-  },
-
-  _shutdownPlusButtonMenu() {
-    this._shutDownPlusButtonMenuElement(this._plusButton);
-    this._shutDownPlusButtonMenuElement(this._overflowPlusButton);
   },
 
   _shutdownFileMenu() {
