@@ -1,5 +1,6 @@
 const MAJOR_VERSIONS = ["2.3.0"];
 const LOOKUP_KEY = "$ref";
+const THEME_BUILD_DATE = 20170630;
 
 const assignManager = {
   MENU_ASSIGN_ID: "open-in-this-container",
@@ -594,10 +595,18 @@ const messageHandler = {
 
 const themeManager = {
   existingTheme: null,
-  init() {
+  disabled: false,
+  async init() {
+    const browserInfo = await browser.runtime.getBrowserInfo();
+    if (Number(browserInfo.buildID.substring(0, 8)) >= THEME_BUILD_DATE) {
+      this.disabled = true;
+    }
     this.check();
   },
   setPopupIcon(theme) {
+    if (this.disabled) {
+      return;
+    }
     let icons = {
       16: "img/container-site-d-24.png",
       32: "img/container-site-d-48.png"

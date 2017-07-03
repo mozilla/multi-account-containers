@@ -47,6 +47,38 @@
       "16": "img/container-site-d-24.png",
       "32": "img/container-site-d-48.png"
     },
+    "theme_icons": [
+      {
+        "size": 16,
+        "dark": "img/container-site-d-24.png",
+        "light": "img/container-site-w-24.png"
+      },
+      {
+        "size": 24,
+        "dark": "img/container-site-d-24.png",
+        "light": "img/container-site-w-24.png"
+      },
+      {
+        "size": 32,
+        "dark": "img/container-site-d-48.png",
+        "light": "img/container-site-w-48.png"
+      },
+      {
+        "size": 48,
+        "dark": "img/container-site-d-48.png",
+        "light": "img/container-site-w-48.png"
+      },
+      {
+        "size": 96,
+        "dark": "img/container-site-d-96.png",
+        "light": "img/container-site-w-96.png"
+      },
+      {
+        "size": 192,
+        "dark": "img/container-site-d-192.png",
+        "light": "img/container-site-w-192.png"
+      }
+    ],
     "default_title": "Containers",
     "default_popup": "popup.html"
   },
