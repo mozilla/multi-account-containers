@@ -14,6 +14,7 @@ const P_ONBOARDING_1     = "onboarding1";
 const P_ONBOARDING_2     = "onboarding2";
 const P_ONBOARDING_3     = "onboarding3";
 const P_ONBOARDING_4     = "onboarding4";
+const P_ONBOARDING_5     = "onboarding5";
 const P_CONTAINERS_LIST  = "containersList";
 const P_CONTAINERS_EDIT  = "containersEdit";
 const P_CONTAINER_INFO   = "containerInfo";
@@ -89,8 +90,10 @@ const Logic = {
 
     // Routing to the correct panel.
     // If localStorage is disabled, we don't show the onboarding.
-    if (!localStorage || localStorage.getItem("onboarded4")) {
+    if (!localStorage || localStorage.getItem("onboarded5")) {
       this.showPanel(P_CONTAINERS_LIST);
+    } else if (localStorage.getItem("onboarded4")) {
+      this.showPanel(P_ONBOARDING_5);
     } else if (localStorage.getItem("onboarded3")) {
       this.showPanel(P_ONBOARDING_4);
     } else if (localStorage.getItem("onboarded2")) {
@@ -385,6 +388,27 @@ Logic.registerPanel(P_ONBOARDING_4, {
     // Let's move to the containers list panel.
     document.querySelector("#onboarding-done-button").addEventListener("click", () => {
       localStorage.setItem("onboarded4", true);
+      Logic.showPanel(P_ONBOARDING_5);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    return Promise.resolve(null);
+  },
+});
+
+// P_ONBOARDING_5: Fifth page for Onboarding: new tab long-press behavior
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_ONBOARDING_5, {
+  panelSelector: ".onboarding-panel-5",
+
+  // This method is called when the object is registered.
+  initialize() {
+    // Let's move to the containers list panel.
+    document.querySelector("#onboarding-longpress-button").addEventListener("click", () => {
+      localStorage.setItem("onboarded5", true);
       Logic.showPanel(P_CONTAINERS_LIST);
     });
   },
