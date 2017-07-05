@@ -9,6 +9,8 @@ const DEFAULT_COLOR = "blue";
 const DEFAULT_ICON = "circle";
 const NEW_CONTAINER_ID = "new";
 
+const ONBOARDING_STORAGE_KEY = "onboarding-stage";
+
 // List of panels
 const P_ONBOARDING_1     = "onboarding1";
 const P_ONBOARDING_2     = "onboarding2";
@@ -90,20 +92,52 @@ const Logic = {
 
     // Routing to the correct panel.
     // If localStorage is disabled, we don't show the onboarding.
-    if (!localStorage || localStorage.getItem("onboarded5")) {
-      this.showPanel(P_CONTAINERS_LIST);
-    } else if (localStorage.getItem("onboarded4")) {
-      this.showPanel(P_ONBOARDING_5);
-    } else if (localStorage.getItem("onboarded3")) {
-      this.showPanel(P_ONBOARDING_4);
-    } else if (localStorage.getItem("onboarded2")) {
-      this.showPanel(P_ONBOARDING_3);
-    } else if (localStorage.getItem("onboarded1")) {
-      this.showPanel(P_ONBOARDING_2);
-    } else {
-      this.showPanel(P_ONBOARDING_1);
+    const data = await browser.storage.local.get([ONBOARDING_STORAGE_KEY]);
+    let onboarded = data[ONBOARDING_STORAGE_KEY];
+    if (!onboarded) {
+      // Legacy local storage used before panel 5
+      if (localStorage.getItem("onboarded4")) {
+        onboarded = 4;
+      } else if (localStorage.getItem("onboarded3")) {
+        onboarded = 3;
+      } else if (localStorage.getItem("onboarded2")) {
+        onboarded = 2;
+      } else if (localStorage.getItem("onboarded1")) {
+        onboarded = 1;
+      } else {
+        onboarded = 0;
+      }
+      this.setOnboardingStage(onboarded);
     }
 
+    switch (onboarded) {
+    case 5:
+      this.showPanel(P_CONTAINERS_LIST);
+      break;
+    case 4:
+      this.showPanel(P_ONBOARDING_5);
+      break;
+    case 3:
+      this.showPanel(P_ONBOARDING_4);
+      break;
+    case 2:
+      this.showPanel(P_ONBOARDING_3);
+      break;
+    case 1:
+      this.showPanel(P_ONBOARDING_2);
+      break;
+    case 0:
+    default:
+      this.showPanel(P_ONBOARDING_1);
+      break;
+    }
+
+  },
+
+  setOnboardingStage(stage) {
+    return browser.storage.local.set({
+      [ONBOARDING_STORAGE_KEY]: stage
+    });
   },
 
   async clearBrowserActionBadge() {
@@ -316,8 +350,8 @@ Logic.registerPanel(P_ONBOARDING_1, {
   initialize() {
     // Let's move to the next panel.
     [...document.querySelectorAll(".onboarding-start-button")].forEach(startElement => {
-      Logic.addEnterHandler(startElement, () => {
-        localStorage.setItem("onboarded1", true);
+      Logic.addEnterHandler(startElement, async function () {
+        await Logic.setOnboardingStage(1);
         Logic.showPanel(P_ONBOARDING_2);
       });
     });
@@ -340,8 +374,8 @@ Logic.registerPanel(P_ONBOARDING_2, {
   initialize() {
     // Let's move to the containers list panel.
     [...document.querySelectorAll(".onboarding-next-button")].forEach(nextElement => {
-      Logic.addEnterHandler(nextElement, () => {
-        localStorage.setItem("onboarded2", true);
+      Logic.addEnterHandler(nextElement, async function () {
+        await Logic.setOnboardingStage(2);
         Logic.showPanel(P_ONBOARDING_3);
       });
     });
@@ -364,8 +398,8 @@ Logic.registerPanel(P_ONBOARDING_3, {
   initialize() {
     // Let's move to the containers list panel.
     [...document.querySelectorAll(".onboarding-almost-done-button")].forEach(almostElement => {
-      Logic.addEnterHandler(almostElement, () => {
-        localStorage.setItem("onboarded3", true);
+      Logic.addEnterHandler(almostElement, async function () {
+        await Logic.setOnboardingStage(3);
         Logic.showPanel(P_ONBOARDING_4);
       });
     });
@@ -386,8 +420,8 @@ Logic.registerPanel(P_ONBOARDING_4, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    document.querySelector("#onboarding-done-button").addEventListener("click", () => {
-      localStorage.setItem("onboarded4", true);
+    Logic.addEnterHandler(document.querySelector("#onboarding-done-button"), async function () {
+      await Logic.setOnboardingStage(4);
       Logic.showPanel(P_ONBOARDING_5);
     });
   },
@@ -407,8 +441,8 @@ Logic.registerPanel(P_ONBOARDING_5, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    document.querySelector("#onboarding-longpress-button").addEventListener("click", () => {
-      localStorage.setItem("onboarded5", true);
+    Logic.addEnterHandler(document.querySelector("#onboarding-longpress-button"), async function () {
+      await Logic.setOnboardingStage(5);
       Logic.showPanel(P_CONTAINERS_LIST);
     });
   },
