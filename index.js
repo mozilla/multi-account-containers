@@ -49,6 +49,7 @@ const IDENTITY_ICONS_STANDARD = [
 
 const PREFS = [
   [ "privacy.userContext.enabled", true ],
+  [ "privacy.userContext.longPressBehavior", 2 ],
   [ "privacy.userContext.ui.enabled", false ],
   [ "privacy.usercontext.about_newtab_segregation.enabled", true ],
 ];
@@ -1322,7 +1323,6 @@ ContainerWindow.prototype = {
     // CSS must be removed.
     detachFrom(this._style, this._window);
 
-    this._shutdownPlusButtonMenu();
     this._shutdownFileMenu();
     this._shutdownAllTabsMenu();
     this._shutdownContextMenu();
