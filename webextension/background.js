@@ -1,4 +1,4 @@
-const MAJOR_VERSIONS = ["2.3.0"];
+const MAJOR_VERSIONS = ["2.3.0", "2.4.0"];
 const LOOKUP_KEY = "$ref";
 
 const assignManager = {
