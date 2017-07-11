@@ -7,10 +7,15 @@ const { when: unload } = require("sdk/system/unload");
 
 const shield = require("./lib/shield/index");
 
+const surveyUrl = "https://www.surveygizmo.com/s3/3621810/shield-txp-containers";
+
 const studyConfig = {
   name: self.addonId,
   days: 28,
   surveyUrls: {
+    "end-of-study": surveyUrl,
+    "user-ended-study": surveyUrl,
+    ineligible: null,
   },
   variations: {
     "control": () => {},
