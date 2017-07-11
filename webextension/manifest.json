@@ -85,7 +85,7 @@
   },
 
   "background": {
-    "scripts": ["background.js"]
+    "page": "js/background/index.html"
   },
 
   "content_scripts": [
