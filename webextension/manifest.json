@@ -35,7 +35,8 @@
   "commands": {
     "_execute_browser_action": {
       "suggested_key": {
-        "default": "Ctrl+Period"
+        "default": "Ctrl+Period",
+        "mac": "MacCtrl+Period"
       },
       "description": "Open containers panel"
     }
