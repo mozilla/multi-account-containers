@@ -1,25 +1,22 @@
-# Containers: Test Pilot Experiment
+# Containers Add-on
 
 [![Available on Test Pilot](https://img.shields.io/badge/available_on-Test_Pilot-0996F8.svg)](https://testpilot.firefox.com/experiments/containers)
 
-[Embedded Web Extension](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Embedded_WebExtensions) to experiment with [Containers](https://blog.mozilla.org/tanvi/2016/06/16/contextual-identities-on-the-web/) in [Firefox Test Pilot](https://testpilot.firefox.com/) to learn:
+[Embedded Web Extension](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Embedded_WebExtensions) to build [Containers](https://blog.mozilla.org/tanvi/2016/06/16/contextual-identities-on-the-web/) as a Firefox [Test Pilot](https://testpilot.firefox.com/) Experiment and [Shield Study](https://wiki.mozilla.org/Firefox/Shield/Shield_Studies) to learn:
 
 * Will a general Firefox audience understand the Containers feature?
 * Is the UI as currently implemented in Nightly clear or discoverable?
 
-See [the Product Hypothesis Document for more
-details](https://docs.google.com/document/d/1WQdHTVXROk7dYkSFluc6_hS44tqZjIrG9I-uPyzevE8/edit?ts=5824ba12#).
+For more info, see: 
+
+* [Test Pilot Product Hypothesis Document](https://docs.google.com/document/d/1WQdHTVXROk7dYkSFluc6_hS44tqZjIrG9I-uPyzevE8/edit#)
+* [Shield Product Hypothesis Document](https://docs.google.com/document/d/1vMD-fH_5hGDDqNvpRZk12_RhCN2WAe4_yaBamaNdtik/edit#)
 
 
 ## Requirements
 
 * node 7+ (for jpm)
-* Firefox 51+
-
-
-## Run it
-
-See Development
+* Firefox 53+
 
 
 ## Development
@@ -27,28 +24,23 @@ See Development
 
 Add-on development is better with [a particular  environment](https://developer.mozilla.org/en-US/Add-ons/Setting_up_extension_development_environment). One simple way to get that environment set up is to install the [DevPrefs add-on](https://addons.mozilla.org/en-US/firefox/addon/devprefs/). You can make a custom Firefox profile that includes the DevPrefs add-on, and use that profile when you run the code in this repository. 
 
-
 1. Make a new profile by running `/path/to/firefox -P`, which launches the profile editor. "Create Profile" -- name it whatever you wish (e.g. 'addon_dev') and store it in the default location. It's probably best to deselect the option to "Use without asking," since you probably don't want to use this as your default profile.
 
 2. Once you've created your profile, click "Start Firefox". A new instance of Firefox should launch. Go to Tools->Add-ons and search for "DevPrefs". Install it. Quit Firefox.
 
 3. Now you have a new, vanilla Firefox profile with the DevPrefs add-on installed. You can use your new profile with the code in _this_ repository like so:
 
-**Beta building**
+#### Run the `.xpi` file in an unbranded build
+Release & Beta channels do not allow un-signed add-ons, even with the DevPrefs. So, you must run the add-on in an [unbranded build](https://wiki.mozilla.org/Add-ons/Extension_Signing#Unbranded_Builds):
 
-To build this for 51 beta just using the downloaded version of beta will not work as XPI signature checking is disabled fully.
+1. Download and install an un-branded build of Firefox
+2. Download the latest `.xpi` from this repository's releases
+3. Run the un-branded build of Firefox with your DevPrefs profile
+4. Go to `about:addons`
+5. Click the gear, and select "Install Add-on From File..."
+6. Select the `.xpi` file
 
-The only way to run the experiment is using an [unbranded version build](https://wiki.mozilla.org/Add-ons/Extension_Signing#Unbranded_Builds) or to build beta yourself:
-
-1. [Download the mozilla-beta repo](https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/Source_Code/Mercurial#mozilla-beta_(prerelease_development_tree))
-2. [Create a mozconfig file](https://developer.mozilla.org/en-US/docs/Mozilla/Developer_guide/Build_Instructions/Configuring_Build_Options) - probably optional
-3. `cd <reponame>`
-3. `./mach bootstrap`
-4. `./mach build`
-5. Follow the above instructions by creating the new profile via: `~/<reponame>/obj-x86_64-pc-linux-gnu/dist/bin/firefox -P` (Where "obj-x86_64-pc-linux-gnu" may be different depending on platform obj-...)
-
-
-### Run with jpm
+#### Run the TxP experiment with `jpm`
 
 1. `git clone git@github.com:mozilla/testpilot-containers.git`
 2. `cd testpilot-containers`
@@ -57,11 +49,22 @@ The only way to run the experiment is using an [unbranded version build](https:/
 
 Check out the [Browser Toolbox](https://developer.mozilla.org/en-US/docs/Tools/Browser_Toolbox) for more information about debugging add-on code.
 
+#### Run the shield study with `shield`
+
+1. `git clone git@github.com:mozilla/testpilot-containers.git`
+2. `cd testpilot-containers`
+3. `npm install`
+4. `npm install -g shield-study-cli`
+5. `shield run . -- --binary Nightly`
 
 ### Building .xpi
 
-To build a local .xpi, use the plain [`jpm
-xpi`](https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_xpi) command.
+To build a local testpilot-containers.xpi, use the plain [`jpm
+xpi`](https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_xpi) command,
+or run `npm run build`.
+
+#### Building a shield .xpi
+To build a local shield-study-containers.xpi, run `npm run build-shield`.
 
 ### Signing an .xpi
 
@@ -75,6 +78,11 @@ add-on](https://addons.mozilla.org/en-US/developers/addon/containers-experiment/
 ### Testing
 TBD
 
-
 ### Distributing
 TBD
+
+### Links
+
+- [Licence](./LICENSE.txt)
+- [Contributing](./CONTRIBUTING.md)
+- [Code Of Conduct](./CODE_OF_CONDUCT.md)

@@ -68,6 +68,16 @@ Containers will use Test Pilot Telemetry with no batching of data.  Details
 of when pings are sent are below, along with examples of the `payload` portion
 of a `testpilottest` telemetry ping for each scenario.
 
+* The user shows the new tab menu
+
+```js
+  {
+    "uuid": <uuid>,
+    "event": "show-plus-button-menu",
+    "eventSource": ["plus-button"]
+  }
+```
+
 * The user clicks on a container name to open a tab in that container
 
 ```js
@@ -76,7 +86,7 @@ of a `testpilottest` telemetry ping for each scenario.
     "userContextId": <userContextId>,
     "clickedContainerTabCount": <number-of-tabs-in-the-container>,
     "event": "open-tab",
-    "eventSource": ["tab-bar"|"pop-up"|"file-menu"]
+    "eventSource": ["tab-bar"|"pop-up"|"file-menu"|"alltabs-menu"|"plus-button"]
   }
 ```
 
@@ -220,12 +230,21 @@ of a `testpilottest` telemetry ping for each scenario.
   }
 ```
 
-* The user clicks "Take me there" to reload a site into a container after the user picked "Always Open in this Container".
+* The user clicks "Open in *assigned* container" to reload a site into a container after the user picked "Always Open in this Container".
 
 ```js
   {
     "uuid": <uuid>,
     "event": "click-to-reload-page-in-container"
+  }
+```
+
+* The user clicks "Open in *Current* container" to reload a site into a container after the user picked "Always Open in this Container".
+
+```js
+  {
+    "uuid": <uuid>,
+    "event": "click-to-reload-page-in-same-container"
   }
 ```
 
@@ -260,7 +279,7 @@ local schema = {
 
 ### Valid data should be enforced on the server side:
 
-* `eventSource` should be one of `tab-bar`, `pop-up`, or `file-menu`.
+* `eventSource` should be one of `tab-bar`, `pop-up`, `file-menu`, "alltabs-nmenu" or "plus-button".
 
 All Mozilla data is kept by default for 180 days and in accordance with our
 privacy policies.

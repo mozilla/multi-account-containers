@@ -7,12 +7,16 @@ const CONTAINER_UNHIDE_SRC = "/img/container-unhide.svg";
 
 const DEFAULT_COLOR = "blue";
 const DEFAULT_ICON = "circle";
+const NEW_CONTAINER_ID = "new";
+
+const ONBOARDING_STORAGE_KEY = "onboarding-stage";
 
 // List of panels
 const P_ONBOARDING_1     = "onboarding1";
 const P_ONBOARDING_2     = "onboarding2";
 const P_ONBOARDING_3     = "onboarding3";
 const P_ONBOARDING_4     = "onboarding4";
+const P_ONBOARDING_5     = "onboarding5";
 const P_CONTAINERS_LIST  = "containersList";
 const P_CONTAINERS_EDIT  = "containersEdit";
 const P_CONTAINER_INFO   = "containerInfo";
@@ -69,32 +73,70 @@ const Logic = {
   _currentPanel: null,
   _previousPanel: null,
   _panels: {},
+  _onboardingVariation: null,
 
-  init() {
+  async init() {
     // Remove browserAction "upgraded" badge when opening panel
     this.clearBrowserActionBadge();
 
     // Retrieve the list of identities.
-    this.refreshIdentities()
+    const identitiesPromise = this.refreshIdentities();
+    // Get the onboarding variation
+    const variationPromise = this.getShieldStudyVariation();
+
+    try {
+      await Promise.all([identitiesPromise, variationPromise]);
+    } catch(e) {
+      throw new Error("Failed to retrieve the identities or variation. We cannot continue. ", e.message);
+    }
 
     // Routing to the correct panel.
-    .then(() => {
-      // If localStorage is disabled, we don't show the onboarding.
-      if (!localStorage || localStorage.getItem("onboarded4")) {
-        this.showPanel(P_CONTAINERS_LIST);
+    // If localStorage is disabled, we don't show the onboarding.
+    const data = await browser.storage.local.get([ONBOARDING_STORAGE_KEY]);
+    let onboarded = data[ONBOARDING_STORAGE_KEY];
+    if (!onboarded) {
+      // Legacy local storage used before panel 5
+      if (localStorage.getItem("onboarded4")) {
+        onboarded = 4;
       } else if (localStorage.getItem("onboarded3")) {
-        this.showPanel(P_ONBOARDING_4);
+        onboarded = 3;
       } else if (localStorage.getItem("onboarded2")) {
-        this.showPanel(P_ONBOARDING_3);
+        onboarded = 2;
       } else if (localStorage.getItem("onboarded1")) {
-        this.showPanel(P_ONBOARDING_2);
+        onboarded = 1;
       } else {
-        this.showPanel(P_ONBOARDING_1);
+        onboarded = 0;
       }
-    })
+      this.setOnboardingStage(onboarded);
+    }
 
-    .catch(() => {
-      throw new Error("Failed to retrieve the identities. We cannot continue.");
+    switch (onboarded) {
+    case 5:
+      this.showPanel(P_CONTAINERS_LIST);
+      break;
+    case 4:
+      this.showPanel(P_ONBOARDING_5);
+      break;
+    case 3:
+      this.showPanel(P_ONBOARDING_4);
+      break;
+    case 2:
+      this.showPanel(P_ONBOARDING_3);
+      break;
+    case 1:
+      this.showPanel(P_ONBOARDING_2);
+      break;
+    case 0:
+    default:
+      this.showPanel(P_ONBOARDING_1);
+      break;
+    }
+
+  },
+
+  setOnboardingStage(stage) {
+    return browser.storage.local.set({
+      [ONBOARDING_STORAGE_KEY]: stage
     });
   },
 
@@ -107,8 +149,20 @@ const Logic = {
     browser.storage.local.set({browserActionBadgesClicked: storage.browserActionBadgesClicked});
   },
 
+  async identity(cookieStoreId) {
+    const identity = await browser.contextualIdentities.get(cookieStoreId);
+    return identity || {
+      name: "Default",
+      cookieStoreId,
+      icon: "default-tab",
+      color: "default-tab"
+    };
+  },
+
   addEnterHandler(element, handler) {
-    element.addEventListener("click", handler);
+    element.addEventListener("click", (e) => {
+      handler(e);
+    });
     element.addEventListener("keydown", (e) => {
       if (e.keyCode === 13) {
         handler(e);
@@ -119,6 +173,14 @@ const Logic = {
   userContextId(cookieStoreId = "") {
     const userContextId = cookieStoreId.replace("firefox-container-", "");
     return (userContextId !== cookieStoreId) ? Number(userContextId) : false;
+  },
+
+  async currentTab() {
+    const activeTabs = await browser.tabs.query({active: true, windowId: browser.windows.WINDOW_ID_CURRENT});
+    if (activeTabs.length > 0) {
+      return activeTabs[0];
+    }
+    return false;
   },
 
   refreshIdentities() {
@@ -139,7 +201,16 @@ const Logic = {
     }).catch((e) => {throw e;});
   },
 
-  showPanel(panel, currentIdentity = null) {
+  getPanelSelector(panel) {
+    if (this._onboardingVariation === "securityOnboarding" &&
+        panel.hasOwnProperty("securityPanelSelector")) {
+      return panel.securityPanelSelector;
+    } else {
+      return panel.panelSelector;
+    }
+  },
+
+  async showPanel(panel, currentIdentity = null) {
     // Invalid panel... ?!?
     if (!(panel in this._panels)) {
       throw new Error("Something really bad happened. Unknown panel: " + panel);
@@ -151,15 +222,18 @@ const Logic = {
     this._currentIdentity = currentIdentity;
 
     // Initialize the panel before showing it.
-    this._panels[panel].prepare().then(() => {
-      for (let panelElement of document.querySelectorAll(".panel")) { // eslint-disable-line prefer-const
+    await this._panels[panel].prepare();
+    Object.keys(this._panels).forEach((panelKey) => {
+      const panelItem = this._panels[panelKey];
+      const panelElement = document.querySelector(this.getPanelSelector(panelItem));
+      if (!panelElement.classList.contains("hide")) {
         panelElement.classList.add("hide");
+        if ("unregister" in panelItem) {
+          panelItem.unregister();
+        }
       }
-      document.querySelector(this._panels[panel].panelSelector).classList.remove("hide");
-    })
-    .catch(() => {
-      throw new Error("Failed to show panel " + panel);
     });
+    document.querySelector(this.getPanelSelector(this._panels[panel])).classList.remove("hide");
   },
 
   showPreviousPanel() {
@@ -186,6 +260,11 @@ const Logic = {
     return this._currentIdentity;
   },
 
+  currentUserContextId() {
+    const identity = Logic.currentIdentity();
+    return Logic.userContextId(identity.cookieStoreId);
+  },
+
   sendTelemetryPayload(message = {}) {
     if (!message.event) {
       throw new Error("Missing event name for telemetry");
@@ -202,6 +281,38 @@ const Logic = {
     return browser.runtime.sendMessage({
       method: "deleteContainer",
       message: {userContextId}
+    });
+  },
+
+  getAssignment(tab) {
+    return browser.runtime.sendMessage({
+      method: "getAssignment",
+      tabId: tab.id
+    });
+  },
+
+  getAssignmentObjectByContainer(userContextId) {
+    return browser.runtime.sendMessage({
+      method: "getAssignmentObjectByContainer",
+      message: {userContextId}
+    });
+  },
+
+  setOrRemoveAssignment(tabId, url, userContextId, value) {
+    return browser.runtime.sendMessage({
+      method: "setOrRemoveAssignment",
+      tabId,
+      url,
+      userContextId,
+      value
+    });
+  },
+
+  getShieldStudyVariation() {
+    return browser.runtime.sendMessage({
+      method: "getShieldStudyVariation"
+    }).then(variation => {
+      this._onboardingVariation = variation;
     });
   },
 
@@ -233,13 +344,16 @@ const Logic = {
 
 Logic.registerPanel(P_ONBOARDING_1, {
   panelSelector: ".onboarding-panel-1",
+  securityPanelSelector: ".security-onboarding-panel-1",
 
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the next panel.
-    Logic.addEnterHandler(document.querySelector("#onboarding-start-button"), () => {
-      localStorage.setItem("onboarded1", true);
-      Logic.showPanel(P_ONBOARDING_2);
+    [...document.querySelectorAll(".onboarding-start-button")].forEach(startElement => {
+      Logic.addEnterHandler(startElement, async function () {
+        await Logic.setOnboardingStage(1);
+        Logic.showPanel(P_ONBOARDING_2);
+      });
     });
   },
 
@@ -254,13 +368,16 @@ Logic.registerPanel(P_ONBOARDING_1, {
 
 Logic.registerPanel(P_ONBOARDING_2, {
   panelSelector: ".onboarding-panel-2",
+  securityPanelSelector: ".security-onboarding-panel-2",
 
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    Logic.addEnterHandler(document.querySelector("#onboarding-next-button"), () => {
-      localStorage.setItem("onboarded2", true);
-      Logic.showPanel(P_ONBOARDING_3);
+    [...document.querySelectorAll(".onboarding-next-button")].forEach(nextElement => {
+      Logic.addEnterHandler(nextElement, async function () {
+        await Logic.setOnboardingStage(2);
+        Logic.showPanel(P_ONBOARDING_3);
+      });
     });
   },
 
@@ -275,13 +392,16 @@ Logic.registerPanel(P_ONBOARDING_2, {
 
 Logic.registerPanel(P_ONBOARDING_3, {
   panelSelector: ".onboarding-panel-3",
+  securityPanelSelector: ".security-onboarding-panel-3",
 
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    Logic.addEnterHandler(document.querySelector("#onboarding-almost-done-button"), () => {
-      localStorage.setItem("onboarded3", true);
-      Logic.showPanel(P_ONBOARDING_4);
+    [...document.querySelectorAll(".onboarding-almost-done-button")].forEach(almostElement => {
+      Logic.addEnterHandler(almostElement, async function () {
+        await Logic.setOnboardingStage(3);
+        Logic.showPanel(P_ONBOARDING_4);
+      });
     });
   },
 
@@ -300,8 +420,29 @@ Logic.registerPanel(P_ONBOARDING_4, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    document.querySelector("#onboarding-done-button").addEventListener("click", () => {
-      localStorage.setItem("onboarded4", true);
+    Logic.addEnterHandler(document.querySelector("#onboarding-done-button"), async function () {
+      await Logic.setOnboardingStage(4);
+      Logic.showPanel(P_ONBOARDING_5);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    return Promise.resolve(null);
+  },
+});
+
+// P_ONBOARDING_5: Fifth page for Onboarding: new tab long-press behavior
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_ONBOARDING_5, {
+  panelSelector: ".onboarding-panel-5",
+
+  // This method is called when the object is registered.
+  initialize() {
+    // Let's move to the containers list panel.
+    Logic.addEnterHandler(document.querySelector("#onboarding-longpress-button"), async function () {
+      await Logic.setOnboardingStage(5);
       Logic.showPanel(P_CONTAINERS_LIST);
     });
   },
@@ -346,13 +487,13 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       function next() {
         const nextElement = element.nextElementSibling;
         if (nextElement) {
-          nextElement.focus();
+          nextElement.querySelector("td[tabindex=0]").focus();
         }
       }
       function previous() {
         const previousElement = element.previousElementSibling;
         if (previousElement) {
-          previousElement.focus();
+          previousElement.querySelector("td[tabindex=0]").focus();
         }
       }
       switch (e.keyCode) {
@@ -364,11 +505,71 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         break;
       }
     });
+
+    // When the popup is open sometimes the tab will still be updating it's state
+    this.tabUpdateHandler = (tabId, changeInfo) => {
+      const propertiesToUpdate = ["title", "favIconUrl"];
+      const hasChanged = Object.keys(changeInfo).find((changeInfoKey) => {
+        if (propertiesToUpdate.includes(changeInfoKey)) {
+          return true;
+        }
+      });
+      if (hasChanged) {
+        this.prepareCurrentTabHeader();
+      }
+    };
+    browser.tabs.onUpdated.addListener(this.tabUpdateHandler);
+  },
+
+  unregister() {
+    browser.tabs.onUpdated.removeListener(this.tabUpdateHandler);
+  },
+
+  setupAssignmentCheckbox(siteSettings, currentUserContextId) {
+    const assignmentCheckboxElement = document.getElementById("container-page-assigned");
+    let checked = false;
+    if (siteSettings && Number(siteSettings.userContextId) === currentUserContextId) {
+      checked = true;
+    }
+    assignmentCheckboxElement.checked = checked;
+    let disabled = false;
+    if (siteSettings === false) {
+      disabled = true;
+    }
+    assignmentCheckboxElement.disabled = disabled;
+  },
+
+  async prepareCurrentTabHeader() {
+    const currentTab = await Logic.currentTab();
+    const currentTabElement = document.getElementById("current-tab");
+    const assignmentCheckboxElement = document.getElementById("container-page-assigned");
+    const currentTabUserContextId = Logic.userContextId(currentTab.cookieStoreId);
+    assignmentCheckboxElement.addEventListener("change", () => {
+      Logic.setOrRemoveAssignment(currentTab.id, currentTab.url, currentTabUserContextId, !assignmentCheckboxElement.checked);
+    });
+    currentTabElement.hidden = !currentTab;
+    this.setupAssignmentCheckbox(false, currentTabUserContextId);
+    if (currentTab) {
+      const identity = await Logic.identity(currentTab.cookieStoreId);
+      const siteSettings = await Logic.getAssignment(currentTab);
+      this.setupAssignmentCheckbox(siteSettings, currentTabUserContextId);
+      const currentPage = document.getElementById("current-page");
+      currentPage.innerHTML = escaped`<span class="page-title truncate-text">${currentTab.title}</span>`;
+      const favIconElement = Utils.createFavIconElement(currentTab.favIconUrl || "");
+      currentPage.prepend(favIconElement);
+
+      const currentContainer = document.getElementById("current-container");
+      currentContainer.innerText = identity.name;
+
+      currentContainer.setAttribute("data-identity-color", identity.color);
+    }
   },
 
   // This method is called when the panel is shown.
-  prepare() {
+  async prepare() {
     const fragment = document.createDocumentFragment();
+
+    this.prepareCurrentTabHeader();
 
     Logic.identities().forEach(identity => {
       const hasTabs = (identity.hasHiddenTabs || identity.hasOpenTabs);
@@ -378,10 +579,11 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
       tr.classList.add("container-panel-row");
 
-      tr.setAttribute("tabindex", "0");
-
       context.classList.add("userContext-wrapper", "open-newtab", "clickable");
       manage.classList.add("show-tabs", "pop-button");
+      manage.title = escaped`View ${identity.name} container`;
+      context.setAttribute("tabindex", "0");
+      context.title = escaped`Create ${identity.name} tab`;
       context.innerHTML = escaped`
         <div class="userContext-icon-wrapper open-newtab">
           <div class="usercontext-icon"
@@ -389,7 +591,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             data-identity-color="${identity.color}">
           </div>
         </div>
-        <div class="container-name"></div>`;
+        <div class="container-name truncate-text"></div>`;
       context.querySelector(".container-name").textContent = identity.name;
       manage.innerHTML = "<img src='/img/container-arrow.svg' class='show-tabs pop-button-image-small' />";
 
@@ -422,15 +624,21 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       });
     });
 
-    const list = document.querySelector(".identities-list");
+    const list = document.querySelector(".identities-list tbody");
 
     list.innerHTML = "";
     list.appendChild(fragment);
     /* Not sure why extensions require a focus for the doorhanger,
        however it allows us to have a tabindex before the first selected item
      */
-    document.addEventListener("focus", () => {
-      list.querySelector("tr").focus();
+    const focusHandler = () => {
+      list.querySelector("tr .clickable").focus();
+      document.removeEventListener("focus", focusHandler);
+    };
+    document.addEventListener("focus", focusHandler);
+    /* If the user mousedown's first then remove the focus handler */
+    document.addEventListener("mousedown", () => {
+      document.removeEventListener("focus", focusHandler);
     });
 
     return Promise.resolve();
@@ -453,7 +661,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       const identity = Logic.currentIdentity();
       browser.runtime.sendMessage({
         method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
-        userContextId: Logic.userContextId(identity.cookieStoreId)
+        userContextId: Logic.currentUserContextId()
       }).then(() => {
         window.close();
       }).catch(() => {
@@ -525,7 +733,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     // Let's retrieve the list of tabs.
     return browser.runtime.sendMessage({
       method: "getTabs",
-      userContextId: Logic.userContextId(identity.cookieStoreId),
+      userContextId: Logic.currentUserContextId(),
     }).then(this.buildInfoTable);
   },
 
@@ -537,8 +745,9 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       fragment.appendChild(tr);
       tr.classList.add("container-info-tab-row");
       tr.innerHTML = escaped`
-        <td><img class="icon" src="${tab.favicon}" /></td>
-        <td class="container-info-tab-title">${tab.title}</td>`;
+        <td></td>
+        <td class="container-info-tab-title truncate-text" title="${tab.url}" >${tab.title}</td>`;
+      tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favicon));
 
       // On click, we activate this tab. But only if this tab is active.
       if (tab.active) {
@@ -588,22 +797,22 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
               data-identity-color="${identity.color}">
             </div>
           </div>
-          <div class="container-name"></div>
+          <div class="container-name truncate-text"></div>
         </td>
         <td class="edit-container pop-button edit-container-icon">
           <img
             src="/img/container-edit.svg"
             class="pop-button-image" />
         </td>
-        <td class="remove-container pop-button delete-container-icon" >
+        <td class="remove-container pop-button delete-container-icon">
           <img
             class="pop-button-image"
             src="/img/container-delete.svg"
           />
         </td>`;
       tr.querySelector(".container-name").textContent = identity.name;
-      tr.querySelector(".edit-container .pop-button-image").setAttribute("title", `Edit ${identity.name} container`);
-      tr.querySelector(".remove-container .pop-button-image").setAttribute("title", `Edit ${identity.name} container`);
+      tr.querySelector(".edit-container").setAttribute("title", `Edit ${identity.name} container`);
+      tr.querySelector(".remove-container").setAttribute("title", `Delete ${identity.name} container`);
 
 
       Logic.addEnterHandler(tr, e => {
@@ -635,7 +844,12 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     this.initializeRadioButtons();
 
     Logic.addEnterHandler(document.querySelector("#edit-container-panel-back-arrow"), () => {
-      Logic.showPreviousPanel();
+      const formValues = new FormData(this._editForm);
+      if (formValues.get("container-id") !== NEW_CONTAINER_ID) {
+        this._submitForm();
+      } else {
+        Logic.showPreviousPanel();
+      }
     });
 
     Logic.addEnterHandler(document.querySelector("#edit-container-cancel-link"), () => {
@@ -644,18 +858,25 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
     this._editForm = document.getElementById("edit-container-panel-form");
     const editLink = document.querySelector("#edit-container-ok-link");
-    Logic.addEnterHandler(editLink, this._submitForm.bind(this));
-    editLink.addEventListener("submit", this._submitForm.bind(this));
-    this._editForm.addEventListener("submit", this._submitForm.bind(this));
+    Logic.addEnterHandler(editLink, () => {
+      this._submitForm();
+    });
+    editLink.addEventListener("submit", () => {
+      this._submitForm();
+    });
+    this._editForm.addEventListener("submit", () => {
+      this._submitForm();
+    });
+
+
   },
 
   _submitForm() {
-    const identity = Logic.currentIdentity();
     const formValues = new FormData(this._editForm);
     return browser.runtime.sendMessage({
       method: "createOrUpdateContainer",
       message: {
-        userContextId: Logic.userContextId(identity.cookieStoreId) || false,
+        userContextId: formValues.get("container-id") || NEW_CONTAINER_ID,
         params: {
           name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
           icon: formValues.get("container-icon") || DEFAULT_ICON,
@@ -671,6 +892,51 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     });
   },
 
+  showAssignedContainers(assignments) {
+    const assignmentPanel = document.getElementById("edit-sites-assigned");
+    const assignmentKeys = Object.keys(assignments);
+    assignmentPanel.hidden = !(assignmentKeys.length > 0);
+    if (assignments) {
+      const tableElement = assignmentPanel.querySelector(".assigned-sites-list");
+      /* Remove previous assignment list,
+         after removing one we rerender the list */
+      while (tableElement.firstChild) {
+        tableElement.firstChild.remove();
+      }
+      assignmentKeys.forEach((siteKey) => {
+        const site = assignments[siteKey];
+        const trElement = document.createElement("div");
+        /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
+           This is pending a better solution for favicons from web extensions */
+        const assumedUrl = `https://${site.hostname}`;
+        trElement.innerHTML = escaped`
+        <img class="icon" src="${assumedUrl}/favicon.ico">
+        <div title="${site.hostname}" class="truncate-text hostname">
+          ${site.hostname}
+        </div>
+        <img
+          class="pop-button-image delete-assignment"
+          src="/img/container-delete.svg"
+        />`;
+        const deleteButton = trElement.querySelector(".delete-assignment");
+        Logic.addEnterHandler(deleteButton, () => {
+          const userContextId = Logic.currentUserContextId();
+          // Lets show the message to the current tab
+          // TODO remove then when firefox supports arrow fn async
+          Logic.currentTab().then((currentTab) => {
+            Logic.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
+            delete assignments[siteKey];
+            this.showAssignedContainers(assignments);
+          }).catch((e) => {
+            throw e;
+          });
+        });
+        trElement.classList.add("container-info-tab-row", "clickable");
+        tableElement.appendChild(trElement);
+      });
+    }
+  },
+
   initializeRadioButtons() {
     const colorRadioTemplate = (containerColor) => {
       return escaped`<input type="radio" value="${containerColor}" name="container-color" id="edit-container-panel-choose-color-${containerColor}" />
@@ -679,7 +945,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple" ];
     const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
     colors.forEach((containerColor) => {
-      const templateInstance = document.createElement("span");
+      const templateInstance = document.createElement("div");
+      templateInstance.classList.add("radio-container");
       // eslint-disable-next-line no-unsanitized/property
       templateInstance.innerHTML = colorRadioTemplate(containerColor);
       colorRadioFieldset.appendChild(templateInstance);
@@ -692,7 +959,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const icons = ["fingerprint", "briefcase", "dollar", "cart", "vacation", "gift", "food", "fruit", "pet", "tree", "chill", "circle"];
     const iconRadioFieldset = document.getElementById("edit-container-panel-choose-icon");
     icons.forEach((containerIcon) => {
-      const templateInstance = document.createElement("span");
+      const templateInstance = document.createElement("div");
+      templateInstance.classList.add("radio-container");
       // eslint-disable-next-line no-unsanitized/property
       templateInstance.innerHTML = iconRadioTemplate(containerIcon);
       iconRadioFieldset.appendChild(templateInstance);
@@ -700,9 +968,16 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   },
 
   // This method is called when the panel is shown.
-  prepare() {
+  async prepare() {
     const identity = Logic.currentIdentity();
+
+    const userContextId = Logic.currentUserContextId();
+    const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
+    this.showAssignedContainers(assignments);
+    document.querySelector("#edit-container-panel .panel-footer").hidden = !!userContextId;
+
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
+    document.querySelector("#edit-container-panel-usercontext-input").value = userContextId || NEW_CONTAINER_ID;
     [...document.querySelectorAll("[name='container-color']")].forEach(colorInput => {
       colorInput.checked = colorInput.value === identity.color;
     });

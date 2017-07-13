@@ -1,4 +1,4 @@
-const MAJOR_VERSIONS = ["2.3.0"];
+const MAJOR_VERSIONS = ["2.3.0", "2.4.0"];
 const LOOKUP_KEY = "$ref";
 
 const assignManager = {
@@ -6,11 +6,33 @@ const assignManager = {
   MENU_REMOVE_ID: "remove-open-in-this-container",
   storageArea: {
     area: browser.storage.local,
+    exemptedTabs: {},
 
     getSiteStoreKey(pageUrl) {
       const url = new window.URL(pageUrl);
       const storagePrefix = "siteContainerMap@@_";
       return `${storagePrefix}${url.hostname}`;
+    },
+
+    setExempted(pageUrl, tabId) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+      if (!(siteStoreKey in this.exemptedTabs)) {
+        this.exemptedTabs[siteStoreKey] = [];
+      }
+      this.exemptedTabs[siteStoreKey].push(tabId);
+    },
+
+    removeExempted(pageUrl) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+      this.exemptedTabs[siteStoreKey] = [];
+    },
+
+    isExempted(pageUrl, tabId) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+      if (!(siteStoreKey in this.exemptedTabs)) {
+        return false;
+      }
+      return this.exemptedTabs[siteStoreKey].includes(tabId);
     },
 
     get(pageUrl) {
@@ -27,8 +49,13 @@ const assignManager = {
       });
     },
 
-    set(pageUrl, data) {
+    set(pageUrl, data, exemptedTabIds) {
       const siteStoreKey = this.getSiteStoreKey(pageUrl);
+      if (exemptedTabIds) {
+        exemptedTabIds.forEach((tabId) => {
+          this.setExempted(pageUrl, tabId);
+        });
+      }
       return this.area.set({
         [siteStoreKey]: data
       });
@@ -36,22 +63,30 @@ const assignManager = {
 
     remove(pageUrl) {
       const siteStoreKey = this.getSiteStoreKey(pageUrl);
+      // When we remove an assignment we should clear all the exemptions
+      this.removeExempted(pageUrl);
       return this.area.remove([siteStoreKey]);
     },
 
-    deleteContainer(userContextId) {
-      const removeKeys = [];
-      this.area.get().then((siteConfigs) => {
-        Object.keys(siteConfigs).forEach((key) => {
-          // For some reason this is stored as string... lets check them both as that
-          if (String(siteConfigs[key].userContextId) === String(userContextId)) {
-            removeKeys.push(key);
-          }
-        });
-        this.area.remove(removeKeys);
-      }).catch((e) => {
-        throw e;
+    async deleteContainer(userContextId) {
+      const sitesByContainer = await this.getByContainer(userContextId);
+      this.area.remove(Object.keys(sitesByContainer));
+    },
+
+    async getByContainer(userContextId) {
+      const sites = {};
+      const siteConfigs = await this.area.get();
+      Object.keys(siteConfigs).forEach((key) => {
+        // For some reason this is stored as string... lets check them both as that
+        if (String(siteConfigs[key].userContextId) === String(userContextId)) {
+          const site = siteConfigs[key];
+          // In hindsight we should have stored this
+          // TODO file a follow up to clean the storage onLoad
+          site.hostname = key.replace(/^siteContainerMap@@_/, "");
+          sites[key] = site;
+        }
       });
+      return sites;
     }
   },
 
@@ -70,39 +105,16 @@ const assignManager = {
     }
   },
 
+  // We return here so the confirm page can load the tab when exempted
+  async _exemptTab(m) {
+    const pageUrl = m.pageUrl;
+    this.storageArea.setExempted(pageUrl, m.tabId);
+    return true;
+  },
+
   init() {
     browser.contextMenus.onClicked.addListener((info, tab) => {
-      const userContextId = this.getUserContextIdFromCookieStore(tab);
-      // Mapping ${URL(info.pageUrl).hostname} to ${userContextId}
-      if (userContextId) {
-        let actionName;
-        let storageAction;
-        if (info.menuItemId === this.MENU_ASSIGN_ID) {
-          actionName = "added";
-          storageAction = this.storageArea.set(info.pageUrl, {
-            userContextId,
-            neverAsk: false
-          });
-        } else {
-          actionName = "removed";
-          storageAction = this.storageArea.remove(info.pageUrl);
-        }
-        storageAction.then(() => {
-          browser.notifications.create({
-            type: "basic",
-            title: "Containers",
-            message: `Successfully ${actionName} site to always open in this container`,
-            iconUrl: browser.extension.getURL("/img/onboarding-1.png")
-          });
-          backgroundLogic.sendTelemetryPayload({
-            event: `${actionName}-container-assignment`,
-            userContextId: userContextId,
-          });
-          this.calculateContextMenu(tab);
-        }).catch((e) => {
-          throw e;
-        });
-      }
+      this._onClickedHandler(info, tab);
     });
 
     // Before a request is handled by the browser we decide if we should route through a different container
@@ -110,6 +122,7 @@ const assignManager = {
       if (options.frameId !== 0 || options.tabId === -1) {
         return {};
       }
+      this.removeContextMenu();
       return Promise.all([
         browser.tabs.get(options.tabId),
         this.storageArea.get(options.url)
@@ -117,11 +130,12 @@ const assignManager = {
         const userContextId = this.getUserContextIdFromCookieStore(tab);
         if (!siteSettings
             || userContextId === siteSettings.userContextId
-            || tab.incognito) {
+            || tab.incognito
+            || this.storageArea.isExempted(options.url, tab.id)) {
           return {};
         }
 
-        this.reloadPageInContainer(options.url, siteSettings.userContextId, tab.index + 1, siteSettings.neverAsk);
+        this.reloadPageInContainer(options.url, userContextId, siteSettings.userContextId, tab.index + 1, siteSettings.neverAsk);
         this.calculateContextMenu(tab);
 
         /* Removal of existing tabs:
@@ -149,6 +163,21 @@ const assignManager = {
     },{urls: ["<all_urls>"], types: ["main_frame"]}, ["blocking"]);
   },
 
+  async _onClickedHandler(info, tab) {
+    const userContextId = this.getUserContextIdFromCookieStore(tab);
+    // Mapping ${URL(info.pageUrl).hostname} to ${userContextId}
+    if (userContextId) {
+     // let actionName;
+      let remove;
+      if (info.menuItemId === this.MENU_ASSIGN_ID) {
+        remove = false;
+      } else {
+        remove = true;
+      }
+      await this._setOrRemoveAssignment(tab.id, info.pageUrl, userContextId, remove);
+    }
+  },
+
 
   deleteContainer(userContextId) {
     this.storageArea.deleteContainer(userContextId);
@@ -171,49 +200,112 @@ const assignManager = {
     // Ensure we are not in incognito mode
     const url = new URL(tab.url);
     if (url.protocol === "about:"
+        || url.protocol === "moz-extension:"
         || tab.incognito) {
       return false;
     }
     return true;
   },
 
-  calculateContextMenu(tab) {
+  async _setOrRemoveAssignment(tabId, pageUrl, userContextId, remove) {
+    let actionName;
+
+    // https://github.com/mozilla/testpilot-containers/issues/626
+    // Context menu has stored context IDs as strings, so we need to coerce
+    // the value to a string for accurate checking
+    userContextId = String(userContextId);
+
+    if (!remove) {
+      const tabs = await browser.tabs.query({});
+      const assignmentStoreKey = this.storageArea.getSiteStoreKey(pageUrl);
+      const exemptedTabIds = tabs.filter((tab) => {
+        const tabStoreKey = this.storageArea.getSiteStoreKey(tab.url);
+        /* Auto exempt all tabs that exist for this hostname that are not in the same container */
+        if (tabStoreKey === assignmentStoreKey &&
+            this.getUserContextIdFromCookieStore(tab) !== userContextId) {
+          return true;
+        }
+        return false;
+      }).map((tab) => {
+        return tab.id;
+      });
+
+      await this.storageArea.set(pageUrl, {
+        userContextId,
+        neverAsk: false
+      }, exemptedTabIds);
+      actionName = "added";
+    } else {
+      await this.storageArea.remove(pageUrl);
+      actionName = "removed";
+    }
+    browser.tabs.sendMessage(tabId, {
+      text: `Successfully ${actionName} site to always open in this container`
+    });
+    backgroundLogic.sendTelemetryPayload({
+      event: `${actionName}-container-assignment`,
+      userContextId: userContextId,
+    });
+    const tab = await browser.tabs.get(tabId);
+    this.calculateContextMenu(tab);
+  },
+
+  async _getAssignment(tab) {
+    const cookieStore = this.getUserContextIdFromCookieStore(tab);
+    // Ensure we have a cookieStore to assign to
+    if (cookieStore
+        && this.isTabPermittedAssign(tab)) {
+      return await this.storageArea.get(tab.url);
+    }
+    return false;
+  },
+
+  _getByContainer(userContextId) {
+    return this.storageArea.getByContainer(userContextId);
+  },
+
+  removeContextMenu() {
     // There is a focus issue in this menu where if you change window with a context menu click
     // you get the wrong menu display because of async
     // See: https://bugzilla.mozilla.org/show_bug.cgi?id=1215376#c16
     // We also can't change for always private mode
     // See: https://bugzilla.mozilla.org/show_bug.cgi?id=1352102
-    const cookieStore = this.getUserContextIdFromCookieStore(tab);
     browser.contextMenus.remove(this.MENU_ASSIGN_ID);
     browser.contextMenus.remove(this.MENU_REMOVE_ID);
-    // Ensure we have a cookieStore to assign to
-    if (cookieStore
-        && this.isTabPermittedAssign(tab)) {
-      this.storageArea.get(tab.url).then((siteSettings) => {
-        // ✓ This is to mitigate https://bugzilla.mozilla.org/show_bug.cgi?id=1351418
-        let prefix = "   "; // Alignment of non breaking space, unknown why this requires so many spaces to align with the tick
-        let menuId = this.MENU_ASSIGN_ID;
-        if (siteSettings) {
-          prefix = "✓";
-          menuId = this.MENU_REMOVE_ID;
-        }
-        browser.contextMenus.create({
-          id: menuId,
-          title: `${prefix} Always Open in This Container`,
-          checked: true,
-          contexts: ["all"],
-        });
-      }).catch((e) => {
-        throw e;
-      });
-    }
   },
 
-  reloadPageInContainer(url, userContextId, index, neverAsk = false) {
+  async calculateContextMenu(tab) {
+    this.removeContextMenu();
+    const siteSettings = await this._getAssignment(tab);
+    // Return early and not add an item if we have false
+    // False represents assignment is not permitted
+    if (siteSettings === false) {
+      return false;
+    }
+    // ✓ This is to mitigate https://bugzilla.mozilla.org/show_bug.cgi?id=1351418
+    let prefix = "   "; // Alignment of non breaking space, unknown why this requires so many spaces to align with the tick
+    let menuId = this.MENU_ASSIGN_ID;
+    const tabUserContextId = this.getUserContextIdFromCookieStore(tab);
+    if (siteSettings &&
+        Number(siteSettings.userContextId) === Number(tabUserContextId)) {
+      prefix = "✓";
+      menuId = this.MENU_REMOVE_ID;
+    }
+    browser.contextMenus.create({
+      id: menuId,
+      title: `${prefix} Always Open in This Container`,
+      checked: true,
+      contexts: ["all"],
+    });
+  },
+
+  reloadPageInContainer(url, currentUserContextId, userContextId, index, neverAsk = false) {
+    const cookieStoreId = backgroundLogic.cookieStoreId(userContextId);
     const loadPage = browser.extension.getURL("confirm-page.html");
+    // False represents assignment is not permitted
     // If the user has explicitly checked "Never Ask Again" on the warning page we will send them straight there
     if (neverAsk) {
-      browser.tabs.create({url, cookieStoreId: backgroundLogic.cookieStoreId(userContextId), index});
+      browser.tabs.create({url, cookieStoreId, index});
       backgroundLogic.sendTelemetryPayload({
         event: "auto-reload-page-in-container",
         userContextId: userContextId,
@@ -223,8 +315,17 @@ const assignManager = {
         event: "prompt-to-reload-page-in-container",
         userContextId: userContextId,
       });
-      const confirmUrl = `${loadPage}?url=${url}`;
-      browser.tabs.create({url: confirmUrl, cookieStoreId: backgroundLogic.cookieStoreId(userContextId), index}).then(() => {
+      let confirmUrl = `${loadPage}?url=${encodeURIComponent(url)}&cookieStoreId=${cookieStoreId}`;
+      let currentCookieStoreId;
+      if (currentUserContextId) {
+        currentCookieStoreId = backgroundLogic.cookieStoreId(currentUserContextId);
+        confirmUrl += `&currentCookieStoreId=${currentCookieStoreId}`;
+      }
+      browser.tabs.create({
+        url: confirmUrl,
+        cookieStoreId: currentCookieStoreId,
+        index
+      }).then(() => {
         // We don't want to sync this URL ever nor clutter the users history
         browser.history.deleteUrl({url: confirmUrl});
       }).catch((e) => {
@@ -271,7 +372,7 @@ const backgroundLogic = {
 
   createOrUpdateContainer(options) {
     let donePromise;
-    if (options.userContextId) {
+    if (options.userContextId !== "new") {
       donePromise = browser.contextualIdentities.update(
         this.cookieStoreId(options.userContextId),
         options.params
@@ -354,7 +455,7 @@ const messageHandler = {
   LAST_CREATED_TAB_TIMER: 2000,
 
   init() {
-    // Handles messages from webextension/js/popup.js
+    // Handles messages from webextension code
     browser.runtime.onMessage.addListener((m) => {
       let response;
 
@@ -372,11 +473,29 @@ const messageHandler = {
       case "neverAsk":
         assignManager._neverAsk(m);
         break;
+      case "getAssignment":
+        response = browser.tabs.get(m.tabId).then((tab) => {
+          return assignManager._getAssignment(tab);
+        });
+        break;
+      case "getAssignmentObjectByContainer":
+        response = assignManager._getByContainer(m.message.userContextId);
+        break;
+      case "setOrRemoveAssignment":
+        // m.tabId is used for where to place the in content message
+        // m.url is the assignment to be removed/added
+        response = browser.tabs.get(m.tabId).then((tab) => {
+          return assignManager._setOrRemoveAssignment(tab.id, m.url, m.userContextId, m.value);
+        });
+        break;
+      case "exemptContainerAssignment":
+        response = assignManager._exemptTab(m);
+        break;
       }
       return response;
     });
 
-    // Handles messages from index.js
+    // Handles messages from sdk code
     const port = browser.runtime.connect();
     port.onMessage.addListener(m => {
       switch (m.type) {
@@ -408,6 +527,7 @@ const messageHandler = {
     });
 
     browser.tabs.onActivated.addListener((info) => {
+      assignManager.removeContextMenu();
       browser.tabs.get(info.tabId).then((tab) => {
         tabPageCounter.initTabCounter(tab);
         assignManager.calculateContextMenu(tab);
@@ -417,6 +537,12 @@ const messageHandler = {
     });
 
     browser.windows.onFocusChanged.addListener((windowId) => {
+      assignManager.removeContextMenu();
+      // browserAction loses background color in new windows ...
+      // https://bugzil.la/1314674
+      // https://github.com/mozilla/testpilot-containers/issues/608
+      // ... so re-call displayBrowserActionBadge on window changes
+      displayBrowserActionBadge();
       browser.tabs.query({active: true, windowId}).then((tabs) => {
         if (tabs && tabs[0]) {
           tabPageCounter.initTabCounter(tabs[0]);
@@ -445,6 +571,7 @@ const messageHandler = {
       if (details.frameId !== 0 || details.tabId === -1) {
         return {};
       }
+      assignManager.removeContextMenu();
 
       browser.tabs.get(details.tabId).then((tab) => {
         tabPageCounter.incrementTabCount(tab);
