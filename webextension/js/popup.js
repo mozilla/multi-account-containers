@@ -83,6 +83,14 @@ const Logic = {
     const identitiesPromise = this.refreshIdentities();
     // Get the onboarding variation
     const variationPromise = this.getShieldStudyVariation();
+    browser.runtime.onMessage.addListener((m) => {
+      if (m.method === "async-popup-response" && m.uuid) {
+        const uuid = m.uuid;
+        if (uuid in this.asyncMessageQueue) {
+          this.asyncMessageQueue[uuid].response = m.message;
+        }
+      }
+    });
 
     try {
       await Promise.all([identitiesPromise, variationPromise]);
@@ -183,12 +191,58 @@ const Logic = {
     return false;
   },
 
+  asyncTimeout: 2000,
+  asyncRefresh: 20,
+  asyncMessageQueue: {},
+
+  asyncId() {
+    // UUID SO result, as you do
+    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    );
+  },
+  asyncNotResponded: "@@_not_responded_@@",
+
+  asyncCreateMessage() {
+    const guid = this.asyncId();
+    this.asyncMessageQueue[guid] = {
+      time: Date.now(),
+      response: this.asyncNotResponded
+    };
+    return guid;
+  },
+
+  awaitMessage(methodName, message) {
+    return new Promise((resolve, reject) => {
+      const messageId = this.asyncCreateMessage();
+      browser.runtime.sendMessage({
+        method: methodName,
+        uuid: messageId,
+        message
+      });
+      const checkState = () => {
+        const messageState = this.asyncMessageQueue[messageId];
+        if (messageState.response !== this.asyncNotResponded) {
+          resolve(messageState.response);
+          delete this.asyncMessageQueue[messageId];
+          return;
+        }
+        if (Date.now() - this.asyncTimeout > messageState.time) {
+          reject(null);
+          delete this.asyncMessageQueue[messageId];
+          return;
+        } else {
+          setTimeout(checkState, this.asyncRefresh);
+        }
+      };
+      checkState();
+    });
+  },
+
   refreshIdentities() {
     return Promise.all([
       browser.contextualIdentities.query({}),
-      browser.runtime.sendMessage({
-        method: "queryIdentitiesState"
-      })
+      this.awaitMessage("queryIdentitiesState")
     ]).then(([identities, state]) => {
       this._identities = identities.map((identity) => {
         const stateObject = state[Logic.userContextId(identity.cookieStoreId)];
@@ -278,28 +332,25 @@ const Logic = {
       return Promise.reject("removeIdentity must be called with userContextId argument.");
     }
 
-    return browser.runtime.sendMessage({
-      method: "deleteContainer",
-      message: {userContextId}
+    return Logic.awaitMessage("deleteContainer", {
+      userContextId
     });
   },
 
   getAssignment(tab) {
-    return browser.runtime.sendMessage({
-      method: "getAssignment",
+    return Logic.awaitMessage("getAssignment", {
       tabId: tab.id
     });
   },
 
   getAssignmentObjectByContainer(userContextId) {
-    return browser.runtime.sendMessage({
-      method: "getAssignmentObjectByContainer",
-      message: {userContextId}
+    return Logic.awaitMessage("getAssignmentObjectByContainer", {
+      userContextId
     });
   },
 
   setOrRemoveAssignment(tabId, url, userContextId, value) {
-    return browser.runtime.sendMessage({
+    return Logic.awaitMessage("setOrRemoveAssignment", {
       method: "setOrRemoveAssignment",
       tabId,
       url,
@@ -473,9 +524,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     });
 
     Logic.addEnterHandler(document.querySelector("#sort-containers-link"), () => {
-      browser.runtime.sendMessage({
-        method: "sortTabs"
-      }).then(() => {
+      Logic.awaitMessage("sortTabs").then(() => {
         window.close();
       }).catch(() => {
         window.close();
@@ -607,12 +656,9 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         if (e.target.matches(".open-newtab")
             || e.target.parentNode.matches(".open-newtab")
             || e.type === "keydown") {
-          browser.runtime.sendMessage({
-            method: "openTab",
-            message: {
-              userContextId: Logic.userContextId(identity.cookieStoreId),
-              source: "pop-up"
-            }
+          Logic.awaitMessage("openTab", {
+            userContextId: Logic.userContextId(identity.cookieStoreId),
+            source: "pop-up"
           }).then(() => {
             window.close();
           }).catch(() => {
@@ -659,8 +705,8 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
     Logic.addEnterHandler(document.querySelector("#container-info-hideorshow"), () => {
       const identity = Logic.currentIdentity();
-      browser.runtime.sendMessage({
-        method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
+      const method = identity.hasHiddenTabs ? "showTabs" : "hideTabs";
+      Logic.awaitMessage(method, {
         userContextId: Logic.currentUserContextId()
       }).then(() => {
         window.close();
@@ -670,9 +716,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     });
 
     // Check if the user has incompatible add-ons installed
-    browser.runtime.sendMessage({
-      method: "checkIncompatibleAddons"
-    }).then(incompatible => {
+    Logic.awaitMessage("checkIncompatibleAddons").then(incompatible => {
       const moveTabsEl = document.querySelector("#container-info-movetabs");
       if (incompatible) {
         const fragment = document.createDocumentFragment();
@@ -689,8 +733,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
         moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
       } else {
         Logic.addEnterHandler(moveTabsEl, () => {
-          browser.runtime.sendMessage({
-            method: "moveTabsToWindow",
+          Logic.awaitMessage("moveTabsToWindow", {
             userContextId: Logic.userContextId(Logic.currentIdentity().cookieStoreId),
           }).then(() => {
             window.close();
@@ -731,9 +774,8 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     }
 
     // Let's retrieve the list of tabs.
-    return browser.runtime.sendMessage({
-      method: "getTabs",
-      userContextId: Logic.currentUserContextId(),
+    return Logic.awaitMessage("getTabs", {
+      userContextId: Logic.currentUserContextId()
     }).then(this.buildInfoTable);
   },
 
@@ -753,9 +795,8 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       if (tab.active) {
         tr.classList.add("clickable");
         Logic.addEnterHandler(tr, () => {
-          browser.runtime.sendMessage({
-            method: "showTab",
-            tabId: tab.id,
+          Logic.awaitMessage("showTab", {
+            tabId: tab.id
           }).then(() => {
             window.close();
           }).catch(() => {
@@ -873,15 +914,12 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
   _submitForm() {
     const formValues = new FormData(this._editForm);
-    return browser.runtime.sendMessage({
-      method: "createOrUpdateContainer",
-      message: {
-        userContextId: formValues.get("container-id") || NEW_CONTAINER_ID,
-        params: {
-          name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
-          icon: formValues.get("container-icon") || DEFAULT_ICON,
-          color: formValues.get("container-color") || DEFAULT_COLOR,
-        }
+    return Logic.awaitMessage("createOrUpdateContainer", {
+      userContextId: formValues.get("container-id") || NEW_CONTAINER_ID,
+      params: {
+        name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
+        icon: formValues.get("container-icon") || DEFAULT_ICON,
+        color: formValues.get("container-color") || DEFAULT_COLOR,
       }
     }).then(() => {
       return Logic.refreshIdentities();
