@@ -82,6 +82,7 @@ load();
 async function openInContainer(redirectUrl, cookieStoreId) {
   const tab = await getCurrentTab();
   await browser.tabs.create({
+    index: tab[0].index + 1,
     cookieStoreId,
     url: redirectUrl
   });
