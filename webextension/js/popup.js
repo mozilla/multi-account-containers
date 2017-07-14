@@ -83,6 +83,14 @@ const Logic = {
     const identitiesPromise = this.refreshIdentities();
     // Get the onboarding variation
     const variationPromise = this.getShieldStudyVariation();
+    browser.runtime.onMessage.addListener((m) => {
+       if (m.method === "async-popup-response" && m.uuid) {
+         const uuid = m.uuid;
+         if (uuid in this.asyncMessageQueue) {
+           this.asyncMessageQueue[uuid].response = m.message;
+         }
+       }
+    });
 
     try {
       await Promise.all([identitiesPromise, variationPromise]);
@@ -183,12 +191,56 @@ const Logic = {
     return false;
   },
 
+  asyncTimeout: 2000,
+  asyncRefresh: 20,
+  asyncMessageQueue: {},
+
+  asyncId() {
+    // UUID SO result, as you do
+    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+    )
+  },
+
+  asyncCreateMessage() {
+    const guid = this.asyncId();
+    this.asyncMessageQueue[guid] = {
+      time: Date.now(),
+      response: null
+    };
+    return guid;
+  },
+
+  awaitMessage(methodName) {
+    return new Promise((resolve, reject) => {
+      const messageId = this.asyncCreateMessage();
+      browser.runtime.sendMessage({
+        method: methodName,
+        uuid: messageId
+      });
+      const checkState = () => {
+        const messageState = this.asyncMessageQueue[messageId];
+        if (messageState.response !== null) {
+          resolve(messageState.response);
+          delete this.asyncMessageQueue[messageId];
+          return;
+        }
+        if (Date.now() - this.asyncTimeout > messageState.time) {
+          reject(null);
+          delete this.asyncMessageQueue[messageId];
+          return;
+        } else {
+          setTimeout(checkState, this.asyncRefresh);
+        }
+      };
+      checkState();
+    });
+  },
+
   refreshIdentities() {
     return Promise.all([
       browser.contextualIdentities.query({}),
-      browser.runtime.sendMessage({
-        method: "queryIdentitiesState"
-      })
+      this.awaitMessage("queryIdentitiesState")
     ]).then(([identities, state]) => {
       this._identities = identities.map((identity) => {
         const stateObject = state[Logic.userContextId(identity.cookieStoreId)];

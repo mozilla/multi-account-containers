@@ -274,9 +274,19 @@ const ContainerService = {
 
     try {
       const api = await webExtension.startup();
-      api.browser.runtime.onMessage.addListener((message, sender, sendReply) => {
+      api.browser.runtime.onMessage.addListener(async function (message, sender, sendReply) {
         if ("method" in message && methods.indexOf(message.method) !== -1) {
-          sendReply(this[message.method](message));
+          const response = ContainerService[message.method](message);
+          if (response instanceof Promise) {
+            const responseValue = await response;
+            ContainerService.triggerBackgroundCallback({
+              response: responseValue,
+              method: message.method,
+              uuid: message.uuid
+            }, "async-background-response");
+          } else {
+            sendReply(response);
+          }
         }
       });
 

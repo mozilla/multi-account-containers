@@ -499,6 +499,13 @@ const messageHandler = {
     const port = browser.runtime.connect();
     port.onMessage.addListener(m => {
       switch (m.type) {
+      case "async-background-response":
+         browser.runtime.sendMessage({
+           method: "async-popup-response",
+           message: m.message.response,
+           uuid: m.message.uuid
+         });
+        break;
       case "lightweight-theme-changed":
         themeManager.update(m.message);
         break;
