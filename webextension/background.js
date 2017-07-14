@@ -419,7 +419,9 @@ const backgroundLogic = {
     // Unhide all hidden tabs
     browser.runtime.sendMessage({
       method: "showTabs",
-      userContextId: options.userContextId
+      message: {
+        userContextId: options.userContextId
+      }
     });
     return browser.tabs.create({
       url,
@@ -456,7 +458,7 @@ const messageHandler = {
 
   init() {
     // Handles messages from webextension code
-    browser.runtime.onMessage.addListener((m) => {
+    browser.runtime.onMessage.addListener(async function (m) {
       let response;
 
       switch (m.method) {
@@ -474,7 +476,7 @@ const messageHandler = {
         assignManager._neverAsk(m);
         break;
       case "getAssignment":
-        response = browser.tabs.get(m.tabId).then((tab) => {
+        response = browser.tabs.get(m.message.tabId).then((tab) => {
           return assignManager._getAssignment(tab);
         });
         break;
@@ -485,12 +487,21 @@ const messageHandler = {
         // m.tabId is used for where to place the in content message
         // m.url is the assignment to be removed/added
         response = browser.tabs.get(m.tabId).then((tab) => {
-          return assignManager._setOrRemoveAssignment(tab.id, m.url, m.userContextId, m.value);
+          return assignManager._setOrRemoveAssignment(tab.id, m.message.url, m.message.userContextId, m.message.value);
         });
         break;
       case "exemptContainerAssignment":
         response = assignManager._exemptTab(m);
         break;
+      }
+      if (response instanceof Promise) {
+        const resolvedResponse = await response;
+        browser.runtime.sendMessage({
+          method: "async-popup-response",
+          message: resolvedResponse,
+          uuid: m.uuid
+        });
+        return true;
       }
       return response;
     });
@@ -500,11 +511,11 @@ const messageHandler = {
     port.onMessage.addListener(m => {
       switch (m.type) {
       case "async-background-response":
-         browser.runtime.sendMessage({
-           method: "async-popup-response",
-           message: m.message.response,
-           uuid: m.message.uuid
-         });
+        browser.runtime.sendMessage({
+          method: "async-popup-response",
+          message: m.message.response,
+          uuid: m.message.uuid
+        });
         break;
       case "lightweight-theme-changed":
         themeManager.update(m.message);
@@ -707,7 +718,9 @@ messageHandler.init();
 
 browser.runtime.sendMessage({
   method: "getPreference",
-  pref: "browser.privatebrowsing.autostart"
+  message: {
+    pref: "browser.privatebrowsing.autostart"
+  }
 }).then(pbAutoStart => {
 
   // We don't want to disable the addon if we are in auto private-browsing.

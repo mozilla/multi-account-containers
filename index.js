@@ -276,7 +276,7 @@ const ContainerService = {
       const api = await webExtension.startup();
       api.browser.runtime.onMessage.addListener(async function (message, sender, sendReply) {
         if ("method" in message && methods.indexOf(message.method) !== -1) {
-          const response = ContainerService[message.method](message);
+          const response = ContainerService[message.method](message.message);
           if (response instanceof Promise) {
             const responseValue = await response;
             ContainerService.triggerBackgroundCallback({
