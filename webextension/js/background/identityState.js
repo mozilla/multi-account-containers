@@ -63,7 +63,6 @@ const identityState = {
     const containers = await browser.contextualIdentities.query({});
     for (const id in containers) {
       const container = containers[id];
-      const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(container.cookieStoreId);
       await this.remapTabsIfMissing(container.cookieStoreId);
       const containerState = await this.storageArea.get(container.cookieStoreId);
       if (containerState.openTabs > 0) {
@@ -118,14 +117,6 @@ const identityState = {
   async remapTabsIfMissing(cookieStoreId) {
     // We already know this cookieStoreId.
     const containerState = await this.storageArea.get(cookieStoreId) || this._createIdentityState();
-//REINSTATE THIS TODO, currently buggy
-/*
-    if (containerState !== null) {
-      return;
-    }
-*/
-const hiddenTabs = containerState.hiddenTabs;
-//END REINSTATE
 
     await this.storageArea.set(cookieStoreId, containerState);
     await this.remapTabsFromUserContextId(cookieStoreId);
@@ -141,14 +132,6 @@ const hiddenTabs = containerState.hiddenTabs;
     containerState.openTabs = tabsByContainer.length;
     await this.storageArea.set(cookieStoreId, containerState);
   },
-/*TODO check if used
-  remapTab(tab) {
-    const userContextId = this._getUserContextIdFromTab(tab);
-    if (userContextId) {
-      this.remapTabsFromUserContextId(userContextId);
-    }
-  },
-*/
 
   _createIdentityState() {
     return {
