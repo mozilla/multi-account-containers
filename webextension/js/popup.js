@@ -487,19 +487,19 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     });
 
     document.addEventListener("keydown", (e) => {
+      const selectables = [...document.querySelectorAll("[tabindex='0'], [tabindex='-1']")];
       const element = document.activeElement;
+      const index = selectables.indexOf(element) || 0;
       function next() {
-        const nextElement = element.nextElementSibling;
+        const nextElement = selectables[index + 1];
         if (nextElement) {
-//TOFIX, dunno when this broke
-          nextElement.querySelector(`td[tabindex="0"]`).focus();
+          nextElement.focus();
         }
       }
       function previous() {
-        const previousElement = element.previousElementSibling;
+        const previousElement = selectables[index - 1];
         if (previousElement) {
-//TOFIX, dunno when this broke
-          previousElement.querySelector(`td[tabindex="0"]`).focus();
+          previousElement.focus();
         }
       }
       switch (e.keyCode) {
