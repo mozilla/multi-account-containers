@@ -1028,6 +1028,8 @@ const ContainerService = {
       // Let's forget all the previous closed tabs.
       this._forgetIdentity();
 
+      this._resetContainerToCentralIcons();
+
       const preInstalledIdentities = data.preInstalledIdentities;
       ContextualIdentityProxy.getIdentities().forEach(identity => {
         if (!preInstalledIdentities.includes(identity.userContextId)) {
@@ -1326,8 +1328,6 @@ ContainerWindow.prototype = {
     this._shutdownFileMenu();
     this._shutdownAllTabsMenu();
     this._shutdownContextMenu();
-
-    this._shutdownContainers();
   },
 
   _shutDownPlusButtonMenuElement(buttonElement) {
@@ -1390,7 +1390,7 @@ ContainerWindow.prototype = {
     return true;
   },
 
-  _shutdownContainers() {
+  _resetContainerToCentralIcons() {
     ContextualIdentityProxy.getIdentities().forEach(identity => {
       if (IDENTITY_ICONS_STANDARD.indexOf(identity.icon) !== -1 &&
           IDENTITY_COLORS_STANDARD.indexOf(identity.color) !== -1) {
