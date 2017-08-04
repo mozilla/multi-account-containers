@@ -183,22 +183,21 @@ const Logic = {
     return false;
   },
 
-  refreshIdentities() {
-    return Promise.all([
+  async refreshIdentities() {
+    const [identities, state] = await Promise.all([
       browser.contextualIdentities.query({}),
       browser.runtime.sendMessage({
         method: "queryIdentitiesState"
       })
-    ]).then(([identities, state]) => {
-      this._identities = identities.map((identity) => {
-        const stateObject = state[Logic.userContextId(identity.cookieStoreId)];
-        if (stateObject) {
-          identity.hasOpenTabs = stateObject.hasOpenTabs;
-          identity.hasHiddenTabs = stateObject.hasHiddenTabs;
-        }
-        return identity;
-      });
-    }).catch((e) => {throw e;});
+    ]);
+    this._identities = identities.map((identity) => {
+      const stateObject = state[identity.cookieStoreId];
+      if (stateObject) {
+        identity.hasOpenTabs = stateObject.hasOpenTabs;
+        identity.hasHiddenTabs = stateObject.hasHiddenTabs;
+      }
+      return identity;
+    });
   },
 
   getPanelSelector(panel) {
@@ -265,6 +264,11 @@ const Logic = {
     return Logic.userContextId(identity.cookieStoreId);
   },
 
+  currentCookieStoreId() {
+    const identity = Logic.currentIdentity();
+    return identity.cookieStoreId;
+  },
+
   sendTelemetryPayload(message = {}) {
     if (!message.event) {
       throw new Error("Missing event name for telemetry");
@@ -308,12 +312,11 @@ const Logic = {
     });
   },
 
-  getShieldStudyVariation() {
-    return browser.runtime.sendMessage({
+  async getShieldStudyVariation() {
+    const variation = await browser.runtime.sendMessage({
       method: "getShieldStudyVariation"
-    }).then(variation => {
-      this._onboardingVariation = variation;
     });
+    this._onboardingVariation = variation;
   },
 
   generateIdentityName() {
@@ -472,28 +475,31 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       Logic.showPanel(P_CONTAINERS_EDIT);
     });
 
-    Logic.addEnterHandler(document.querySelector("#sort-containers-link"), () => {
-      browser.runtime.sendMessage({
-        method: "sortTabs"
-      }).then(() => {
+    Logic.addEnterHandler(document.querySelector("#sort-containers-link"), async function () {
+      try {
+        await browser.runtime.sendMessage({
+          method: "sortTabs"
+        });
         window.close();
-      }).catch(() => {
+      } catch (e) {
         window.close();
-      });
+      }
     });
 
     document.addEventListener("keydown", (e) => {
+      const selectables = [...document.querySelectorAll("[tabindex='0'], [tabindex='-1']")];
       const element = document.activeElement;
+      const index = selectables.indexOf(element) || 0;
       function next() {
-        const nextElement = element.nextElementSibling;
+        const nextElement = selectables[index + 1];
         if (nextElement) {
-          nextElement.querySelector("td[tabindex=0]").focus();
+          nextElement.focus();
         }
       }
       function previous() {
-        const previousElement = element.previousElementSibling;
+        const previousElement = selectables[index - 1];
         if (previousElement) {
-          previousElement.querySelector("td[tabindex=0]").focus();
+          previousElement.focus();
         }
       }
       switch (e.keyCode) {
@@ -603,21 +609,22 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         tr.appendChild(manage);
       }
 
-      Logic.addEnterHandler(tr, e => {
+      Logic.addEnterHandler(tr, async function (e) {
         if (e.target.matches(".open-newtab")
             || e.target.parentNode.matches(".open-newtab")
             || e.type === "keydown") {
-          browser.runtime.sendMessage({
-            method: "openTab",
-            message: {
-              userContextId: Logic.userContextId(identity.cookieStoreId),
-              source: "pop-up"
-            }
-          }).then(() => {
+          try {
+            await browser.runtime.sendMessage({
+              method: "openTab",
+              message: {
+                userContextId: Logic.userContextId(identity.cookieStoreId),
+                source: "pop-up"
+              }
+            });
             window.close();
-          }).catch(() => {
+          } catch (e) {
             window.close();
-          });
+          }
         } else if (hasTabs) {
           Logic.showPanel(P_CONTAINER_INFO, identity);
         }
@@ -652,27 +659,29 @@ Logic.registerPanel(P_CONTAINER_INFO, {
   panelSelector: "#container-info-panel",
 
   // This method is called when the object is registered.
-  initialize() {
+  async initialize() {
     Logic.addEnterHandler(document.querySelector("#close-container-info-panel"), () => {
       Logic.showPreviousPanel();
     });
 
-    Logic.addEnterHandler(document.querySelector("#container-info-hideorshow"), () => {
+    Logic.addEnterHandler(document.querySelector("#container-info-hideorshow"), async function () {
       const identity = Logic.currentIdentity();
-      browser.runtime.sendMessage({
-        method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
-        userContextId: Logic.currentUserContextId()
-      }).then(() => {
+      try {
+        browser.runtime.sendMessage({
+          method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
+          cookieStoreId: Logic.currentCookieStoreId()
+        });
         window.close();
-      }).catch(() => {
+      } catch (e) {
         window.close();
-      });
+      }
     });
 
     // Check if the user has incompatible add-ons installed
-    browser.runtime.sendMessage({
-      method: "checkIncompatibleAddons"
-    }).then(incompatible => {
+    try {
+      const incompatible = await browser.runtime.sendMessage({
+        method: "checkIncompatibleAddons"
+      });
       const moveTabsEl = document.querySelector("#container-info-movetabs");
       if (incompatible) {
         const fragment = document.createDocumentFragment();
@@ -688,22 +697,21 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
         moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
       } else {
-        Logic.addEnterHandler(moveTabsEl, () => {
-          browser.runtime.sendMessage({
+        Logic.addEnterHandler(moveTabsEl, async function () {
+          await browser.runtime.sendMessage({
             method: "moveTabsToWindow",
-            userContextId: Logic.userContextId(Logic.currentIdentity().cookieStoreId),
-          }).then(() => {
-            window.close();
-          }).catch((e) => { throw e; });
+            cookieStoreId: Logic.currentIdentity().cookieStoreId,
+          });
+          window.close();
         });
       }
-    }).catch(() => {
+    } catch (e) {
       throw new Error("Could not check for incompatible add-ons.");
-    });
+    }
   },
 
   // This method is called when the panel is shown.
-  prepare() {
+  async prepare() {
     const identity = Logic.currentIdentity();
 
     // Populating the panel: name and icon
@@ -731,10 +739,11 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     }
 
     // Let's retrieve the list of tabs.
-    return browser.runtime.sendMessage({
+    const tabs = await browser.runtime.sendMessage({
       method: "getTabs",
-      userContextId: Logic.currentUserContextId(),
-    }).then(this.buildInfoTable);
+      cookieStoreId: Logic.currentIdentity().cookieStoreId
+    });
+    return this.buildInfoTable(tabs);
   },
 
   buildInfoTable(tabs) {
@@ -747,20 +756,14 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       tr.innerHTML = escaped`
         <td></td>
         <td class="container-info-tab-title truncate-text" title="${tab.url}" >${tab.title}</td>`;
-      tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favicon));
+      tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favIconUrl));
 
       // On click, we activate this tab. But only if this tab is active.
-      if (tab.active) {
+      if (!tab.hiddenState) {
         tr.classList.add("clickable");
-        Logic.addEnterHandler(tr, () => {
-          browser.runtime.sendMessage({
-            method: "showTab",
-            tabId: tab.id,
-          }).then(() => {
-            window.close();
-          }).catch(() => {
-            window.close();
-          });
+        Logic.addEnterHandler(tr, async function () {
+          await browser.tabs.update(tab.id, {active: true});
+          window.close();
         });
       }
     }
@@ -871,25 +874,25 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
   },
 
-  _submitForm() {
+  async _submitForm() {
     const formValues = new FormData(this._editForm);
-    return browser.runtime.sendMessage({
-      method: "createOrUpdateContainer",
-      message: {
-        userContextId: formValues.get("container-id") || NEW_CONTAINER_ID,
-        params: {
-          name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
-          icon: formValues.get("container-icon") || DEFAULT_ICON,
-          color: formValues.get("container-color") || DEFAULT_COLOR,
+    try {
+      await browser.runtime.sendMessage({
+        method: "createOrUpdateContainer",
+        message: {
+          userContextId: formValues.get("container-id") || NEW_CONTAINER_ID,
+          params: {
+            name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
+            icon: formValues.get("container-icon") || DEFAULT_ICON,
+            color: formValues.get("container-color") || DEFAULT_COLOR,
+          }
         }
-      }
-    }).then(() => {
-      return Logic.refreshIdentities();
-    }).then(() => {
+      });
+      await Logic.refreshIdentities();
       Logic.showPreviousPanel();
-    }).catch(() => {
+    } catch (e) {
       Logic.showPanel(P_CONTAINERS_LIST);
-    });
+    }
   },
 
   showAssignedContainers(assignments) {
@@ -919,17 +922,15 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
           src="/img/container-delete.svg"
         />`;
         const deleteButton = trElement.querySelector(".delete-assignment");
-        Logic.addEnterHandler(deleteButton, () => {
+        const that = this;
+        Logic.addEnterHandler(deleteButton, async function () {
           const userContextId = Logic.currentUserContextId();
           // Lets show the message to the current tab
           // TODO remove then when firefox supports arrow fn async
-          Logic.currentTab().then((currentTab) => {
-            Logic.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
-            delete assignments[siteKey];
-            this.showAssignedContainers(assignments);
-          }).catch((e) => {
-            throw e;
-          });
+          const currentTab = await Logic.currentTab();
+          Logic.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
+          delete assignments[siteKey];
+          that.showAssignedContainers(assignments);
         });
         trElement.classList.add("container-info-tab-row", "clickable");
         tableElement.appendChild(trElement);
@@ -1002,19 +1003,19 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
       Logic.showPreviousPanel();
     });
 
-    Logic.addEnterHandler(document.querySelector("#delete-container-ok-link"), () => {
+    Logic.addEnterHandler(document.querySelector("#delete-container-ok-link"), async function () {
       /* This promise wont resolve if the last tab was removed from the window.
           as the message async callback stops listening, this isn't an issue for us however it might be in future
           if you want to do anything post delete do it in the background script.
           Browser console currently warns about not listening also.
       */
-      Logic.removeIdentity(Logic.userContextId(Logic.currentIdentity().cookieStoreId)).then(() => {
-        return Logic.refreshIdentities();
-      }).then(() => {
+      try {
+        await Logic.removeIdentity(Logic.userContextId(Logic.currentIdentity().cookieStoreId));
+        await Logic.refreshIdentities();
         Logic.showPreviousPanel();
-      }).catch(() => {
+      } catch(e) {
         Logic.showPanel(P_CONTAINERS_LIST);
-      });
+      }
     });
   },
 

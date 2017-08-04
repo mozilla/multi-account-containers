@@ -3,14 +3,6 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const XUL_NS = "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul";
-const DEFAULT_TAB = "about:newtab";
-const LOOKUP_KEY = "$ref";
-
-const INCOMPATIBLE_ADDON_IDS = [
-  "pulse@mozilla.com",
-  "snoozetabs@mozilla.com",
-  "jid1-NeEaf3sAHdKHPA@jetpack" // PageShot
-];
 
 const IDENTITY_COLORS = [
  { name: "blue", color: "#00a7e0" },
@@ -54,12 +46,9 @@ const PREFS = [
   [ "privacy.usercontext.about_newtab_segregation.enabled", true ],
 ];
 
-const { AddonManager } = require("resource://gre/modules/AddonManager.jsm");
 const { attachTo, detachFrom } = require("sdk/content/mod");
 const { Cu } = require("chrome");
 const { ContextualIdentityService } = require("resource://gre/modules/ContextualIdentityService.jsm");
-const { getFavicon } = require("sdk/places/favicon");
-const { LightweightThemeManager } = Cu.import("resource://gre/modules/LightweightThemeManager.jsm", {});
 const Metrics = require("./testpilot-metrics");
 const { modelFor } = require("sdk/model/core");
 const prefService = require("sdk/preferences/service");
@@ -69,7 +58,6 @@ const ss = require("sdk/simple-storage");
 const { study } = require("./study");
 const { Style } = require("sdk/stylesheet/style");
 const tabs = require("sdk/tabs");
-const tabsUtils = require("sdk/tabs/utils");
 const uuid = require("sdk/util/uuid");
 const { viewFor } = require("sdk/view/core");
 const webExtension = require("sdk/webextension");
@@ -81,8 +69,8 @@ Cu.import("resource:///modules/CustomizableWidgets.jsm");
 Cu.import("resource:///modules/sessionstore/SessionStore.jsm");
 Cu.import("resource://gre/modules/Services.jsm");
 
-// ContextualIdentityProxy
 
+// ContextualIdentityProxy
 const ContextualIdentityProxy = {
   getIdentities() {
     let response;
@@ -124,7 +112,6 @@ const ContextualIdentityProxy = {
 // ContainerService
 
 const ContainerService = {
-  _identitiesState: {},
   _windowMap: new Map(),
   _containerWasEnabled: false,
   _onBackgroundConnectCallback: null,
@@ -204,58 +191,13 @@ const ContainerService = {
     // Disabling the customizable container panel.
     CustomizableUI.destroyWidget("containers-panelmenu");
 
-    // Message routing
-
-    // only these methods are allowed. We have a 1:1 mapping between messages
-    // and methods. These methods must return a promise.
-    const methods = [
-      "hideTabs",
-      "showTabs",
-      "sortTabs",
-      "getTabs",
-      "showTab",
-      "moveTabsToWindow",
-      "queryIdentitiesState",
-      "getIdentity",
-      "getPreference",
-      "sendTelemetryPayload",
-      "getTheme",
-      "getShieldStudyVariation",
-      "refreshNeeded",
-      "forgetIdentityAndRefresh",
-      "checkIncompatibleAddons"
-    ];
-
-    // Map of identities.
-    ContextualIdentityProxy.getIdentities().forEach(identity => {
-      this._remapTabsIfMissing(identity.userContextId);
-    });
-
-    // Let's restore the hidden tabs from the previous session.
-    if (prefService.get("browser.startup.page") === 3 &&
-        "identitiesData" in ss.storage) {
-      ContextualIdentityProxy.getIdentities().forEach(identity => {
-        if (identity.userContextId in ss.storage.identitiesData &&
-            "hiddenTabs" in ss.storage.identitiesData[identity.userContextId]) {
-          this._identitiesState[identity.userContextId].hiddenTabs =
-            ss.storage.identitiesData[identity.userContextId].hiddenTabs;
-        }
-      });
-    }
-
     tabs.on("open", tab => {
       this._restyleTab(tab);
-      this._remapTab(tab);
-    });
-
-    tabs.on("close", tab => {
-      this._remapTab(tab);
     });
 
     tabs.on("activate", tab => {
       this._restyleActiveTab(tab).catch(() => {});
       this._configureActiveWindows();
-      this._remapTab(tab);
     });
 
     // Modify CSS and other stuff for each window.
@@ -274,12 +216,6 @@ const ContainerService = {
 
     try {
       const api = await webExtension.startup();
-      api.browser.runtime.onMessage.addListener((message, sender, sendReply) => {
-        if ("method" in message && methods.indexOf(message.method) !== -1) {
-          sendReply(this[message.method](message));
-        }
-      });
-
       this.registerBackgroundConnection(api);
     } catch (e) {
       throw new Error("WebExtension startup failed. Unable to continue.");
@@ -324,8 +260,6 @@ const ContainerService = {
     }
     // End-Of-Hack
 
-    Services.obs.addObserver(this, "lightweight-theme-changed", false);
-
     if (self.id === "@shield-study-containers") {
       study.startup(reason);
       this.shieldStudyVariation = study.variation;
@@ -348,82 +282,6 @@ const ContainerService = {
     if (this._onBackgroundConnectCallback) {
       this._onBackgroundConnectCallback(message, topic);
     }
-  },
-
-  async observe(subject, topic) {
-    if (topic === "lightweight-theme-changed") {
-      try {
-        const theme = await this.getTheme();
-        this.triggerBackgroundCallback(theme, topic);
-      } catch (e) {
-        throw new Error("Unable to get theme");
-      }
-    }
-  },
-
-  getTheme() {
-    const defaultTheme = "firefox-compact-light@mozilla.org";
-    return new Promise(function (resolve) {
-      let theme = defaultTheme;
-      if (LightweightThemeManager.currentTheme && LightweightThemeManager.currentTheme.id) {
-        theme = LightweightThemeManager.currentTheme.id;
-      }
-      resolve(theme);
-    });
-  },
-
-  getShieldStudyVariation() {
-    return this.shieldStudyVariation;
-  },
-
-  // utility methods
-
-  _containerTabCount(userContextId) {
-    // Returns the total of open and hidden tabs with this userContextId
-    let containerTabsCount = 0;
-    containerTabsCount += this._identitiesState[userContextId].openTabs;
-    containerTabsCount += this._identitiesState[userContextId].hiddenTabs.length;
-    return containerTabsCount;
-  },
-
-  _totalContainerTabsCount() {
-    // Returns the number of total open tabs across ALL containers
-    let totalContainerTabsCount = 0;
-    for (const userContextId in this._identitiesState) {
-      totalContainerTabsCount += this._identitiesState[userContextId].openTabs;
-    }
-    return totalContainerTabsCount;
-  },
-
-  _totalNonContainerTabsCount() {
-    // Returns the number of open tabs NOT IN a container
-    let totalNonContainerTabsCount = 0;
-    for (const tab of tabs) {
-      if (this._getUserContextIdFromTab(tab) === 0) {
-        ++totalNonContainerTabsCount;
-      }
-    }
-    return totalNonContainerTabsCount;
-  },
-
-  _containersCounts() {
-    let containersCounts = { // eslint-disable-line prefer-const
-      "shown": 0,
-      "hidden": 0,
-      "total": 0
-    };
-    for (const userContextId in this._identitiesState) {
-      if (this._identitiesState[userContextId].openTabs > 0) {
-        ++containersCounts.shown;
-        ++containersCounts.total;
-        continue;
-      } else if (this._identitiesState[userContextId].hiddenTabs.length > 0) {
-        ++containersCounts.hidden;
-        ++containersCounts.total;
-        continue;
-      }
-    }
-    return containersCounts;
   },
 
   // In FF 50-51, the icon is the full path, in 52 and following
@@ -470,23 +328,6 @@ const ContainerService = {
     return parseInt(viewFor(tab).getAttribute("usercontextid") || 0, 10);
   },
 
-  async _createTabObject(tab) {
-    let url;
-    try {
-      url = await getFavicon(tab.url);
-    } catch (e) {
-      url = "";
-    }
-    return {
-      title: tab.title,
-      url: tab.url,
-      favicon: url,
-      id: tab.id,
-      active: true,
-      pinned: tabsUtils.isPinned(viewFor(tab))
-    };
-  },
-
   _matchTabsByContainer(userContextId) {
     const matchedTabs = [];
     for (const tab of tabs) {
@@ -495,38 +336,6 @@ const ContainerService = {
       }
     }
     return matchedTabs;
-  },
-
-  _createIdentityState() {
-    return {
-      hiddenTabs: [],
-      openTabs: 0
-    };
-  },
-
-  _remapTabsIfMissing(userContextId) {
-    // We already know this userContextId.
-    if (userContextId in this._identitiesState) {
-      return;
-    }
-
-    this._identitiesState[userContextId] = this._createIdentityState();
-    this._remapTabsFromUserContextId(userContextId);
-  },
-
-  _remapTabsFromUserContextId(userContextId) {
-    this._identitiesState[userContextId].openTabs = this._matchTabsByContainer(userContextId).length;
-  },
-
-  _remapTab(tab) {
-    const userContextId = this._getUserContextIdFromTab(tab);
-    if (userContextId) {
-      this._remapTabsFromUserContextId(userContextId);
-    }
-  },
-
-  _isKnownContainer(userContextId) {
-    return userContextId in this._identitiesState;
   },
 
   async _closeTabs(tabsToClose) {
@@ -561,337 +370,19 @@ const ContainerService = {
     return Promise.resolve(browserWin);
   },
 
-  _syncTabs() {
-    // Let's store all what we have.
-    ss.storage.identitiesData = this._identitiesState;
-  },
-
-  sendTelemetryPayload(args = {}) {
-    // when pings come from popup, delete "method" prop
-    delete args.method;
-    let payload = { // eslint-disable-line prefer-const
-      "uuid": this._metricsUUID
-    };
-    Object.assign(payload, args);
-
-    /* This is to masage the data whilst it is still active in the SDK side */
-    const containersCounts = this._containersCounts();
-    Object.keys(payload).forEach((keyName) => {
-      let value = payload[keyName];
-      if (value === LOOKUP_KEY) {
-        switch (keyName) {
-        case "clickedContainerTabCount":
-          value = this._containerTabCount(payload.userContextId);
-          break;
-        case "shownContainersCount":
-          value = containersCounts.shown;
-          break;
-        case "hiddenContainersCount":
-          value = containersCounts.hidden;
-          break;
-        case "totalContainersCount":
-          value = containersCounts.total;
-          break;
-        }
-      }
-      payload[keyName] = value;
-    });
-
-    this._sendEvent(payload);
-  },
-
-  checkIncompatibleAddons() {
-    return new Promise(resolve => {
-      AddonManager.getAddonsByIDs(INCOMPATIBLE_ADDON_IDS, (addons) => {
-        addons = addons.filter((a) => a && a.isActive);
-        const incompatibleAddons = addons.length !== 0;
-        if (incompatibleAddons) {
-          this.sendTelemetryPayload({
-            "event": "incompatible-addons-detected"
-          });
-        }
-        resolve(incompatibleAddons);
-      });
-    });
-  },
-
   // Tabs management
-
-  async hideTabs(args) {
-    if (!("userContextId" in args)) {
-      return new Error("hideTabs must be called with userContextId argument.");
-    }
-
-    this._remapTabsIfMissing(args.userContextId);
-    if (!this._isKnownContainer(args.userContextId)) {
-      return null;
-    }
-
-    this.sendTelemetryPayload({
-      "event": "hide-tabs",
-      "userContextId": args.userContextId,
-      "clickedContainerTabCount": LOOKUP_KEY,
-      "shownContainersCount": LOOKUP_KEY,
-      "hiddenContainersCount": LOOKUP_KEY,
-      "totalContainersCount": LOOKUP_KEY
-    });
-
-    const tabsToClose = [];
-
-    const tabObjects = await Promise.all(this._matchTabsByContainer(args.userContextId).map((tab) => {
-      tabsToClose.push(tab);
-      return this._createTabObject(tab);
-    }));
-
-    tabObjects.forEach((object) => {
-      // This tab is going to be closed. Let's mark this tabObject as
-      // non-active.
-      object.active = false;
-
-      this._identitiesState[args.userContextId].hiddenTabs.push(object);
-    });
-
-    await this._closeTabs(tabsToClose);
-
-    return this._syncTabs();
-  },
-
-  async showTabs(args) {
-    if (!("userContextId" in args)) {
-      return Promise.reject("showTabs must be called with userContextId argument.");
-    }
-
-    this._remapTabsIfMissing(args.userContextId);
-    if (!this._isKnownContainer(args.userContextId)) {
-      return Promise.resolve(null);
-    }
-
-    this.sendTelemetryPayload({
-      "event": "show-tabs",
-      "userContextId": args.userContextId,
-      "clickedContainerTabCount": LOOKUP_KEY,
-      "shownContainersCount": LOOKUP_KEY,
-      "hiddenContainersCount": LOOKUP_KEY,
-      "totalContainersCount": LOOKUP_KEY
-    });
-
-    const promises = [];
-
-    const hiddenTabs = this._identitiesState[args.userContextId].hiddenTabs;
-    this._identitiesState[args.userContextId].hiddenTabs = [];
-
-    for (let object of hiddenTabs) { // eslint-disable-line prefer-const
-      promises.push(this.openTab({
-        userContextId: args.userContextId,
-        url: object.url,
-        nofocus: args.nofocus || false,
-        pinned: object.pinned,
-      }));
-    }
-
-    this._identitiesState[args.userContextId].hiddenTabs = [];
-
-    await Promise.all(promises);
-    return this._syncTabs();
-  },
-
-  sortTabs() {
-    const containersCounts = this._containersCounts();
-    this.sendTelemetryPayload({
-      "event": "sort-tabs",
-      "shownContainersCount": containersCounts.shown,
-      "totalContainerTabsCount": this._totalContainerTabsCount(),
-      "totalNonContainerTabsCount": this._totalNonContainerTabsCount()
-    });
-    return new Promise(resolve => {
-      for (let window of windows.browserWindows) { // eslint-disable-line prefer-const
-        // First the pinned tabs, then the normal ones.
-        this._sortTabsInternal(window, true);
-        this._sortTabsInternal(window, false);
-      }
-      resolve(null);
-    });
-  },
-
-  _sortTabsInternal(window, pinnedTabs) {
-    // From model to XUL window.
-    const xulWindow = viewFor(window);
-
-    const tabs = tabsUtils.getTabs(xulWindow);
-    let pos = 0;
-
-    // Let's collect UCIs/tabs for this window.
-    const map = new Map;
-    for (const tab of tabs) {
-      if (pinnedTabs && !tabsUtils.isPinned(tab)) {
-        // We don't have, or we already handled all the pinned tabs.
-        break;
-      }
-
-      if (!pinnedTabs && tabsUtils.isPinned(tab)) {
-        // pinned tabs must be consider as taken positions.
-        ++pos;
-        continue;
-      }
-
-      const userContextId = this._getUserContextIdFromTab(tab);
-      if (!map.has(userContextId)) {
-        map.set(userContextId, []);
-      }
-      map.get(userContextId).push(tab);
-    }
-
-    // Let's sort the map.
-    const sortMap = new Map([...map.entries()].sort((a, b) => a[0] > b[0]));
-
-    // Let's move tabs.
-    sortMap.forEach(tabs => {
-      for (const tab of tabs) {
-        xulWindow.gBrowser.moveTabTo(tab, pos++);
-      }
-    });
-  },
-
-  async getTabs(args) {
-    if (!("userContextId" in args)) {
-      return new Error("getTabs must be called with userContextId argument.");
-    }
-
-    this._remapTabsIfMissing(args.userContextId);
-    if (!this._isKnownContainer(args.userContextId)) {
-      return [];
-    }
-
-    const promises = [];
-    this._matchTabsByContainer(args.userContextId).forEach((tab) => {
-      promises.push(this._createTabObject(tab));
-    });
-
-    const list = await Promise.all(promises);
-    return list.concat(this._identitiesState[args.userContextId].hiddenTabs);
-  },
-
-  showTab(args) {
-    return new Promise((resolve, reject) => {
-      if (!("tabId" in args)) {
-        reject("showTab must be called with tabId argument.");
-        return;
-      }
-
-      for (const tab of tabs) {
-        if (tab.id === args.tabId) {
-          tab.window.activate();
-          tab.activate();
-          break;
-        }
-      }
-
-      resolve(null);
-    });
-  },
-
-  moveTabsToWindow(args) {
-    return new Promise((resolve, reject) => {
-      if (!("userContextId" in args)) {
-        reject("moveTabsToWindow must be called with userContextId argument.");
-        return;
-      }
-
-      this._remapTabsIfMissing(args.userContextId);
-      if (!this._isKnownContainer(args.userContextId)) {
-        return Promise.resolve(null);
-      }
-
-      this.sendTelemetryPayload({
-        "event": "move-tabs-to-window",
-        "userContextId": args.userContextId,
-        "clickedContainerTabCount": this._containerTabCount(args.userContextId),
-      });
-
-      const list = this._matchTabsByContainer(args.userContextId);
-
-      // Nothing to do
-      if (list.length === 0 &&
-          this._identitiesState[args.userContextId].hiddenTabs.length === 0) {
-        resolve(null);
-        return;
-      }
-
-      windows.browserWindows.open({
-        url: "about:blank",
-        onOpen: window => {
-          const newBrowserWindow = viewFor(window);
-          let pos = 0;
-
-          // Let's move the tab to the new window.
-          for (let tab of list) { // eslint-disable-line prefer-const
-            newBrowserWindow.gBrowser.adoptTab(viewFor(tab), pos++, false);
-          }
-
-          // Let's show the hidden tabs.
-          for (let object of this._identitiesState[args.userContextId].hiddenTabs) { // eslint-disable-line prefer-const
-            newBrowserWindow.gBrowser.addTab(object.url || DEFAULT_TAB, { userContextId: args.userContextId });
-          }
-
-          this._identitiesState[args.userContextId].hiddenTabs = [];
-
-          // Let's close all the normal tab in the new window. In theory it
-          // should be only the first tab, but maybe there are addons doing
-          // crazy stuff.
-          for (let tab of window.tabs) { // eslint-disable-line prefer-const
-            const userContextId = this._getUserContextIdFromTab(tab);
-            if (args.userContextId !== userContextId) {
-              newBrowserWindow.gBrowser.removeTab(viewFor(tab));
-            }
-          }
-          resolve(null);
-        },
-      });
-    });
-  },
 
   openTab(args) {
     return this.triggerBackgroundCallback(args, "open-tab");
   },
 
   // Identities management
-  queryIdentitiesState() {
-    return new Promise(resolve => {
-      const identities = {};
-
-      ContextualIdentityProxy.getIdentities().forEach(identity => {
-        this._remapTabsIfMissing(identity.userContextId);
-        const convertedIdentity = {
-          hasHiddenTabs: !!this._identitiesState[identity.userContextId].hiddenTabs.length,
-          hasOpenTabs: !!this._identitiesState[identity.userContextId].openTabs
-        };
-
-        identities[identity.userContextId] = convertedIdentity;
-      });
-
-      resolve(identities);
-    });
-  },
 
   queryIdentities() {
     return new Promise(resolve => {
       const identities = ContextualIdentityProxy.getIdentities();
-      identities.forEach(identity => {
-        this._remapTabsIfMissing(identity.userContextId);
-      });
-
       resolve(identities);
     });
-  },
-
-  // Preferences
-
-  getPreference(args) {
-    if (!("pref" in args)) {
-      return Promise.reject("getPreference must be called with pref argument.");
-    }
-
-    return Promise.resolve(prefService.get(args.pref));
   },
 
   // Styling the window
@@ -1114,10 +605,6 @@ ContainerWindow.prototype = {
   attachMenuEvent(source, button) {
     const popup = button.querySelector(".new-tab-popup");
     popup.addEventListener("popupshown", () => {
-      ContainerService.sendTelemetryPayload({
-        "event": "show-plus-button-menu",
-        "eventSource": source
-      });
       popup.querySelector("menuseparator").remove();
       const popupMenuItems = [...popup.querySelectorAll("menuitem")];
       popupMenuItems.forEach((item) => {
