@@ -592,6 +592,11 @@ ContainerWindow.prototype = {
   _init(window) {
     this._window = window;
     this._tabsElement = this._window.document.getElementById("tabbrowser-tabs");
+    const NATIVE_CSS_BUILD_DATE = 20170806;
+    const NATIVE_CSS_VERSION = 57;
+
+    const buildID = Services.appinfo.appBuildID;
+    const version = Services.appinfo.version.match(/^[0-9]+\./)[1];
     this._style = Style({ uri: self.data.url("usercontext.css") });
     this._plusButton = this._window.document.getAnonymousElementByAttribute(this._tabsElement, "anonid", "tabs-newtab-button");
     this._overflowPlusButton = this._window.document.getElementById("new-tab-button");
@@ -599,7 +604,10 @@ ContainerWindow.prototype = {
     // Only hack the normal plus button as the alltabs is done elsewhere
     this.attachMenuEvent("plus-button", this._plusButton);
 
-    attachTo(this._style, this._window);
+    if (Number(buildID.substring(0, 8)) < NATIVE_CSS_BUILD_DATE
+        || version < NATIVE_CSS_VERSION) {
+      attachTo(this._style, this._window);
+    }
   },
 
   attachMenuEvent(source, button) {
