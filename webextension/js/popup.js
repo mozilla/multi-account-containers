@@ -150,13 +150,18 @@ const Logic = {
   },
 
   async identity(cookieStoreId) {
-    const identity = await browser.contextualIdentities.get(cookieStoreId);
-    return identity || {
+    const defaultContainer = {
       name: "Default",
       cookieStoreId,
       icon: "default-tab",
       color: "default-tab"
     };
+    // Handle old style rejection with null and also Promise.reject new style
+    try {
+     return await browser.contextualIdentities.get(cookieStoreId) || defaultContainer;
+    } catch(e) {
+      return defaultContainer;
+    }
   },
 
   addEnterHandler(element, handler) {

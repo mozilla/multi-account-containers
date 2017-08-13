@@ -80,9 +80,6 @@ const messageHandler = {
     const port = browser.runtime.connect();
     port.onMessage.addListener(m => {
       switch (m.type) {
-      case "lightweight-theme-changed":
-        themeManager.update(m.message);
-        break;
       case "open-tab":
         backgroundLogic.openTab(m.message);
         break;
