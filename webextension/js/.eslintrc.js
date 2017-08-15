@@ -8,7 +8,6 @@ module.exports = {
     "backgroundLogic": true,
     "identityState": true,
     "messageHandler": true,
-    "tabPageCounter": true,
-    "themeManager": true
+    "tabPageCounter": true
   }
 };
