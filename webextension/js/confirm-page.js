@@ -49,10 +49,6 @@ function confirmSubmit(redirectUrl, cookieStoreId) {
       pageUrl: redirectUrl
     });
   }
-  browser.runtime.sendMessage({
-    method: "sendTelemetryPayload",
-    event: "click-to-reload-page-in-container",
-  });
   openInContainer(redirectUrl, cookieStoreId);
 }
 
@@ -69,10 +65,6 @@ async function denySubmit(redirectUrl) {
     method: "exemptContainerAssignment",
     tabId: tab[0].id,
     pageUrl: redirectUrl
-  });
-  browser.runtime.sendMessage({
-    method: "sendTelemetryPayload",
-    event: "click-to-reload-page-in-same-container",
   });
   document.location.replace(redirectUrl);
 }

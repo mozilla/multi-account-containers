@@ -234,10 +234,6 @@ const assignManager = {
     browser.tabs.sendMessage(tabId, {
       text: `Successfully ${actionName} site to always open in this container`
     });
-    backgroundLogic.sendTelemetryPayload({
-      event: `${actionName}-container-assignment`,
-      userContextId: userContextId,
-    });
     const tab = await browser.tabs.get(tabId);
     this.calculateContextMenu(tab);
   },
@@ -298,15 +294,7 @@ const assignManager = {
     // If the user has explicitly checked "Never Ask Again" on the warning page we will send them straight there
     if (neverAsk) {
       browser.tabs.create({url, cookieStoreId, index});
-      backgroundLogic.sendTelemetryPayload({
-        event: "auto-reload-page-in-container",
-        userContextId: userContextId,
-      });
     } else {
-      backgroundLogic.sendTelemetryPayload({
-        event: "prompt-to-reload-page-in-container",
-        userContextId: userContextId,
-      });
       let confirmUrl = `${loadPage}?url=${encodeURIComponent(url)}&cookieStoreId=${cookieStoreId}`;
       let currentCookieStoreId;
       if (currentUserContextId) {

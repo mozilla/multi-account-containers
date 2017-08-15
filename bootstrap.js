@@ -22,12 +22,11 @@ const PREFS = [
     type: "bool"
   },
 ];
-const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cu = Components.utils;
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
-const { TextDecoder, TextEncoder } = Cu.import('resource://gre/modules/commonjs/toolkit/loader.js', {});
+const { TextDecoder, TextEncoder } = Cu.import("resource://gre/modules/commonjs/toolkit/loader.js", {});
 
 XPCOMUtils.defineLazyModuleGetter(this, "OS",
                                   "resource://gre/modules/osfile.jsm");
@@ -36,7 +35,7 @@ const JETPACK_DIR_BASENAME = "jetpack";
 const EXTENSION_ID = "@testpilot-containers";
 
 function filename() {
-  let storeFile = Services.dirsvc.get("ProfD", Ci.nsIFile);
+  const storeFile = Services.dirsvc.get("ProfD", Ci.nsIFile);
   storeFile.append(JETPACK_DIR_BASENAME);
   storeFile.append(EXTENSION_ID);
   storeFile.append("simple-storage");
@@ -46,7 +45,7 @@ function filename() {
 
 async function getConfig() {
   const bytes = await OS.File.read(filename());
-  let raw = new TextDecoder().decode(bytes) || "";
+  const raw = new TextDecoder().decode(bytes) || "";
   let savedConfig = {savedConfiguration: {}};
   if (raw) {
     savedConfig = JSON.parse(raw);
@@ -69,7 +68,7 @@ async function initConfig() {
     });
   }
   const serialized = JSON.stringify(savedConfig);
-  let bytes = new TextEncoder().encode(serialized) || "";
+  const bytes = new TextEncoder().encode(serialized) || "";
   await OS.File.writeAtomic(filename(), bytes, { });
 }
 
@@ -83,14 +82,16 @@ function setPrefs() {
   });
 }
 
+// eslint-disable-next-line no-unused-vars
 async function install() {
   await initConfig();
   setPrefs();
 }
 
+// eslint-disable-next-line no-unused-vars
 async function uninstall(aData, aReason) {
-  if (aReason == ADDON_UNINSTALL
-      || aReason == ADDON_DISABLE) {
+  if (aReason === ADDON_UNINSTALL
+      || aReason === ADDON_DISABLE) {
     const config = await getConfig();
     const storedPrefs = config.savedConfiguration.prefs;
     PREFS.forEach((pref) => {
@@ -105,14 +106,15 @@ async function uninstall(aData, aReason) {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 function startup({webExtension}) {
   // Reset prefs that may have changed, or are legacy
   setPrefs();
   // Start the embedded webextension.
-  webExtension.startup().then(api => {
-  });
+  webExtension.startup();
 }
 
-function shutdown(data) {
+// eslint-disable-next-line no-unused-vars
+function shutdown() {
 }
 
