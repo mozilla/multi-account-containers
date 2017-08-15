@@ -38,9 +38,6 @@ const messageHandler = {
           return assignManager._setOrRemoveAssignment(tab.id, m.url, m.userContextId, m.value);
         });
         break;
-      case "sendTelemetryPayload":
-        // TODO
-        break;
       case "sortTabs":
         backgroundLogic.sortTabs();
         break;
@@ -51,9 +48,6 @@ const messageHandler = {
         backgroundLogic.hideTabs({cookieStoreId: m.cookieStoreId});
         break;
       case "checkIncompatibleAddons":
-        // TODO
-        break;
-      case "getShieldStudyVariation":
         // TODO
         break;
       case "moveTabsToWindow":

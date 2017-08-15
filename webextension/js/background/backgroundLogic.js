@@ -26,11 +26,6 @@ const backgroundLogic = {
   },
 
   async deleteContainer(userContextId) {
-    this.sendTelemetryPayload({
-      event: "delete-container",
-      userContextId
-    });
-
     await this._closeTabs(userContextId);
     await browser.contextualIdentities.remove(this.cookieStoreId(userContextId));
     assignManager.deleteContainer(userContextId);
@@ -47,15 +42,8 @@ const backgroundLogic = {
         this.cookieStoreId(options.userContextId),
         options.params
       );
-      this.sendTelemetryPayload({
-        event: "edit-container",
-        userContextId: options.userContextId
-      });
     } else {
       donePromise = browser.contextualIdentities.create(options.params);
-      this.sendTelemetryPayload({
-        event: "add-container"
-      });
     }
     await donePromise;
     browser.runtime.sendMessage({
@@ -67,18 +55,8 @@ const backgroundLogic = {
     let url = options.url || undefined;
     const userContextId = ("userContextId" in options) ? options.userContextId : 0;
     const active = ("nofocus" in options) ? options.nofocus : true;
-    const source = ("source" in options) ? options.source : null;
 
     const cookieStoreId = backgroundLogic.cookieStoreId(userContextId);
-    // Only send telemetry for tabs opened by UI - i.e., not via showTabs
-    if (source && userContextId) {
-      this.sendTelemetryPayload({
-        "event": "open-tab",
-        "eventSource": source,
-        "userContextId": userContextId,
-        "clickedContainerTabCount": await identityState.containerTabCount(cookieStoreId)
-      });
-    }
     // Autofocus url bar will happen in 54: https://bugzilla.mozilla.org/show_bug.cgi?id=1295072
 
     // We can't open new tab pages, so open a blank tab. Used in tab un-hide
@@ -130,12 +108,6 @@ const backgroundLogic = {
     if (!identityState._isKnownContainer(userContextId)) {
       return null;
     }
-
-    this.sendTelemetryPayload({
-      "event": "move-tabs-to-window",
-      "userContextId": userContextId,
-      "clickedContainerTabCount": identityState.containerTabCount(userContextId),
-    });
 
     const list = await identityState._matchTabsByContainer(options.cookieStoreId);
 
@@ -199,13 +171,6 @@ const backgroundLogic = {
   },
 
   async sortTabs() {
-    const containersCounts = identityState.containersCounts();
-    this.sendTelemetryPayload({
-      "event": "sort-tabs",
-      "shownContainersCount": containersCounts.shown,
-      "totalContainerTabsCount": await identityState.totalContainerTabsCount(),
-      "totalNonContainerTabsCount": await identityState.totalNonContainerTabsCount()
-    });
     const windows = await browser.windows.getAll();
     for (let window of windows) { // eslint-disable-line prefer-const
       // First the pinned tabs, then the normal ones.
@@ -267,16 +232,6 @@ const backgroundLogic = {
       return null;
     }
 
-    const containersCounts = identityState.containersCounts();
-    this.sendTelemetryPayload({
-      "event": "hide-tabs",
-      "userContextId": userContextId,
-      "clickedContainerTabCount": identityState.containerTabCount(userContextId),
-      "shownContainersCount": containersCounts.shown,
-      "hiddenContainersCount": containersCounts.hidden,
-      "totalContainersCount": containersCounts.total
-    });
-
     const containerState = await identityState.storeHidden(options.cookieStoreId);
     await this._closeTabs(userContextId); 
     return containerState;
@@ -292,16 +247,6 @@ const backgroundLogic = {
     if (!identityState._isKnownContainer(userContextId)) {
       return null;
     }
-
-    const containersCounts = identityState.containersCounts();
-    this.sendTelemetryPayload({
-      "event": "show-tabs",
-      "userContextId": userContextId,
-      "clickedContainerTabCount": await identityState.containerTabCount(options.cookieStoreId),
-      "shownContainersCount": containersCounts.shown,
-      "hiddenContainersCount": containersCounts.hidden,
-      "totalContainersCount": containersCounts.total
-    });
 
     const promises = [];
 
@@ -320,16 +265,6 @@ const backgroundLogic = {
 
     await Promise.all(promises);
     return await identityState.storageArea.set(options.cookieStoreId, containerState);
-  },
-
-
-  sendTelemetryPayload(message = {}) {
-    if (!message.event) {
-      throw new Error("Missing event name for telemetry");
-    }
-    message.method = "sendTelemetryPayload";
-  //TODO decide where this goes
-  //  browser.runtime.sendMessage(message);
   },
 
   cookieStoreId(userContextId) {

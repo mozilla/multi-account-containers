@@ -13,7 +13,12 @@ module.exports = {
     "CustomizableUI": true,
     "CustomizableWidgets": true,
     "SessionStore": true,
-    "Services": true
+    "Services": true,
+    "Components": true,
+    "XPCOMUtils": true,
+    "OS": true,
+    "ADDON_UNINSTALL": true,
+    "ADDON_DISABLE": true
   },
   "plugins": [
     "promise",
