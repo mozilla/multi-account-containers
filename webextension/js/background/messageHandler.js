@@ -38,9 +38,6 @@ const messageHandler = {
           return assignManager._setOrRemoveAssignment(tab.id, m.url, m.userContextId, m.value);
         });
         break;
-      case "sendTelemetryPayload":
-        // TODO
-        break;
       case "sortTabs":
         backgroundLogic.sortTabs();
         break;
@@ -51,9 +48,6 @@ const messageHandler = {
         backgroundLogic.hideTabs({cookieStoreId: m.cookieStoreId});
         break;
       case "checkIncompatibleAddons":
-        // TODO
-        break;
-      case "getShieldStudyVariation":
         // TODO
         break;
       case "moveTabsToWindow":
@@ -80,9 +74,6 @@ const messageHandler = {
     const port = browser.runtime.connect();
     port.onMessage.addListener(m => {
       switch (m.type) {
-      case "lightweight-theme-changed":
-        themeManager.update(m.message);
-        break;
       case "open-tab":
         backgroundLogic.openTab(m.message);
         break;

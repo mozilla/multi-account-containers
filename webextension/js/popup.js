@@ -81,11 +81,9 @@ const Logic = {
 
     // Retrieve the list of identities.
     const identitiesPromise = this.refreshIdentities();
-    // Get the onboarding variation
-    const variationPromise = this.getShieldStudyVariation();
 
     try {
-      await Promise.all([identitiesPromise, variationPromise]);
+      await identitiesPromise;
     } catch(e) {
       throw new Error("Failed to retrieve the identities or variation. We cannot continue. ", e.message);
     }
@@ -150,13 +148,18 @@ const Logic = {
   },
 
   async identity(cookieStoreId) {
-    const identity = await browser.contextualIdentities.get(cookieStoreId);
-    return identity || {
+    const defaultContainer = {
       name: "Default",
       cookieStoreId,
       icon: "default-tab",
       color: "default-tab"
     };
+    // Handle old style rejection with null and also Promise.reject new style
+    try {
+      return await browser.contextualIdentities.get(cookieStoreId) || defaultContainer;
+    } catch(e) {
+      return defaultContainer;
+    }
   },
 
   addEnterHandler(element, handler) {
@@ -269,14 +272,6 @@ const Logic = {
     return identity.cookieStoreId;
   },
 
-  sendTelemetryPayload(message = {}) {
-    if (!message.event) {
-      throw new Error("Missing event name for telemetry");
-    }
-    message.method = "sendTelemetryPayload";
-    browser.runtime.sendMessage(message);
-  },
-
   removeIdentity(userContextId) {
     if (!userContextId) {
       return Promise.reject("removeIdentity must be called with userContextId argument.");
@@ -310,13 +305,6 @@ const Logic = {
       userContextId,
       value
     });
-  },
-
-  async getShieldStudyVariation() {
-    const variation = await browser.runtime.sendMessage({
-      method: "getShieldStudyVariation"
-    });
-    this._onboardingVariation = variation;
   },
 
   generateIdentityName() {
@@ -469,9 +457,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     });
 
     Logic.addEnterHandler(document.querySelector("#edit-containers-link"), () => {
-      Logic.sendTelemetryPayload({
-        event: "edit-containers"
-      });
       Logic.showPanel(P_CONTAINERS_EDIT);
     });
 

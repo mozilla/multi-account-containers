@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>@testpilot-containers</em:id>
+    <em:type>2</em:type>
+    <em:bootstrap>true</em:bootstrap>
+    <em:multiprocessCompatible>true</em:multiprocessCompatible>
+    <em:hasEmbeddedWebExtension>true</em:hasEmbeddedWebExtension>
+    <em:name>Testpilot containers</em:name>
+    <em:targetApplication>
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!--Firefox-->
+        <em:minVersion>51.0a1</em:minVersion>
+        <em:maxVersion>*</em:maxVersion>
+      </Description>
+    </em:targetApplication>
+    <em:version>3.1.0</em:version>
+    <em:unpack>false</em:unpack>
+  </Description>
+</RDF>
+

@@ -40,6 +40,17 @@ Release & Beta channels do not allow un-signed add-ons, even with the DevPrefs. 
 5. Click the gear, and select "Install Add-on From File..."
 6. Select the `.xpi` file
 
+#### Correct prefs
+
+Whilst this is still using legacy code to test you will need the following in your profile:
+
+
+Change the following prefs in about:config:
+
+- extensions.legacy.enabled = true
+- xpinstall.signatures.required = false
+
+
 #### Run the TxP experiment with `jpm`
 
 1. `git clone git@github.com:mozilla/testpilot-containers.git`
@@ -49,22 +60,11 @@ Release & Beta channels do not allow un-signed add-ons, even with the DevPrefs. 
 
 Check out the [Browser Toolbox](https://developer.mozilla.org/en-US/docs/Tools/Browser_Toolbox) for more information about debugging add-on code.
 
-#### Run the shield study with `shield`
-
-1. `git clone git@github.com:mozilla/testpilot-containers.git`
-2. `cd testpilot-containers`
-3. `npm install`
-4. `npm install -g shield-study-cli`
-5. `shield run . -- --binary Nightly`
-
 ### Building .xpi
 
 To build a local testpilot-containers.xpi, use the plain [`jpm
 xpi`](https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_xpi) command,
 or run `npm run build`.
-
-#### Building a shield .xpi
-To build a local shield-study-containers.xpi, run `npm run build-shield`.
 
 ### Signing an .xpi
 
