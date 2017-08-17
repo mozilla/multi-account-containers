@@ -510,6 +510,7 @@ span ~ .panel-header-text {
 #current-tab .page-title {
   font-size: var(--font-size-heading);
   grid-column: 2 / 4;
+  max-inline-size: 100%;
 }
 
 #current-tab > label {
