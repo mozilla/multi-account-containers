@@ -120,7 +120,7 @@ const backgroundLogic = {
     const window = await browser.windows.create({
       tabId: list.shift().id
     });
-    browser.tabs.move(list, {
+    browser.tabs.move(list.map((tab) => tab.id), {
       windowId: window.id,
       index: -1
     });
