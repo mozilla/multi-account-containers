@@ -1,8 +1,8 @@
 {
   "name": "testpilot-containers",
-  "title": "Containers Experiment",
-  "description": "Containers works by isolating cookie jars using separate origin-attributes defined visually by colored ‘Container Tabs’. This add-on is a modified version of the containers feature for Firefox Test Pilot.",
-  "version": "3.1.0",
+  "title": "Mozilla Containers",
+  "description": "Containers helps you keep all the parts of your online life contained in different tabs. Custom labels and color-coded tabs help keep different activities — like online shopping, travel planning, or checking work email — separate.",
+  "version": "3.1.1",
   "author": "Andrea Marchesini, Luke Crouch and Jonathan Kingston",
   "bugs": {
     "url": "https://github.com/mozilla/testpilot-containers/issues"
@@ -39,6 +39,5 @@
     "lint:js": "eslint .",
     "package": "npm run build && mv testpilot-containers.xpi addon.xpi",
     "test": "npm run lint"
-  },
-  "updateURL": "https://testpilot.firefox.com/files/@testpilot-containers/updates.json"
+  }
 }
