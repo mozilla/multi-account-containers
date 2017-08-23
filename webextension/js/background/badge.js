@@ -1,9 +1,15 @@
 const MAJOR_VERSIONS = ["2.3.0", "2.4.0"];
 const badge = {
-  init() {
-    this.displayBrowserActionBadge();
+  async init() {
+    const currentWindow = await browser.windows.getCurrent();
+    this.displayBrowserActionBadge(currentWindow.incognito);
   },
-  async displayBrowserActionBadge() {
+  async displayBrowserActionBadge(disable) {
+    if (disable) {
+      browser.browserAction.disable();
+    } else {
+      browser.browserAction.enable();
+    }
     const extensionInfo = await backgroundLogic.getExtensionInfo();
     const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
 

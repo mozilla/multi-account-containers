@@ -451,7 +451,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
   panelSelector: "#container-panel",
 
   // This method is called when the object is registered.
-  initialize() {
+  async initialize() {
     Logic.addEnterHandler(document.querySelector("#container-add-link"), () => {
       Logic.showPanel(P_CONTAINER_EDIT, { name: Logic.generateIdentityName() });
     });
