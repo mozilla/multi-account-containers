@@ -7,7 +7,6 @@ module.exports = {
     "badge": true,
     "backgroundLogic": true,
     "identityState": true,
-    "messageHandler": true,
-    "tabPageCounter": true
+    "messageHandler": true
   }
 };
