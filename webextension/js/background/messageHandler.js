@@ -88,20 +88,17 @@ const messageHandler = {
       if (tab.id === -1) {
         return {};
       }
-      tabPageCounter.initTabCounter(tab);
     });
 
     browser.tabs.onRemoved.addListener((tabId) => {
       if (tabId === -1) {
         return {};
       }
-      tabPageCounter.sendTabCountAndDelete(tabId);
     });
 
     browser.tabs.onActivated.addListener((info) => {
       assignManager.removeContextMenu();
       browser.tabs.get(info.tabId).then((tab) => {
-        tabPageCounter.initTabCounter(tab);
         assignManager.calculateContextMenu(tab);
       }).catch((e) => {
         throw e;
@@ -112,20 +109,6 @@ const messageHandler = {
       this.onFocusChangedCallback(windowId);
     });
 
-    browser.idle.onStateChanged.addListener((newState) => {
-      browser.tabs.query({}).then(tabs => {
-        for (let tab of tabs) { // eslint-disable-line prefer-const
-          if (newState === "idle") {
-            tabPageCounter.sendTabCountAndDelete(tab.id, "user-went-idle");
-          } else if (newState === "active" && tab.active) {
-            tabPageCounter.initTabCounter(tab);
-          }
-        }
-      }).catch(e => {
-        throw e;
-      });
-    });
-
     browser.webRequest.onCompleted.addListener((details) => {
       if (details.frameId !== 0 || details.tabId === -1) {
         return {};
@@ -133,7 +116,6 @@ const messageHandler = {
       assignManager.removeContextMenu();
 
       browser.tabs.get(details.tabId).then((tab) => {
-        tabPageCounter.incrementTabCount(tab);
         assignManager.calculateContextMenu(tab);
       }).catch((e) => {
         throw e;
@@ -160,7 +142,6 @@ const messageHandler = {
     badge.displayBrowserActionBadge(currentWindow.incognito);
     browser.tabs.query({active: true, windowId}).then((tabs) => {
       if (tabs && tabs[0]) {
-        tabPageCounter.initTabCounter(tabs[0]);
         assignManager.calculateContextMenu(tabs[0]);
       }
     }).catch((e) => {
