@@ -52,6 +52,16 @@ const backgroundLogic = {
   },
 
   async openTab(options) {
+    const userContextId = ("userContextId" in options) ? options.userContextId : 0;
+    const cookieStoreId = backgroundLogic.cookieStoreId(userContextId);
+    // Unhide all hidden tabs
+    this.showTabs({
+      cookieStoreId
+    });
+    return this.openNewTab(options);
+  },
+
+  async openNewTab(options) {
     let url = options.url || undefined;
     const userContextId = ("userContextId" in options) ? options.userContextId : 0;
     const active = ("nofocus" in options) ? options.nofocus : true;
@@ -64,10 +74,6 @@ const backgroundLogic = {
       url = undefined;
     }
 
-    // Unhide all hidden tabs
-    this.showTabs({
-      cookieStoreId
-    });
     return browser.tabs.create({
       url,
       active,
@@ -76,60 +82,61 @@ const backgroundLogic = {
     });
   },
 
-  async getTabs(options) {
-    if (!("cookieStoreId" in options)) {
-      return new Error("getTabs must be called with cookieStoreId argument.");
-    }
+  checkArgs(requiredArguments, options, methodName) {
+    requiredArguments.forEach((argument) => {
+      if (!(argument in options)) {
+        return new Error(`${methodName} must be called with ${argument} argument.`);
+      }
+    });
+  },
 
-    const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(options.cookieStoreId);
-    await identityState.remapTabsIfMissing(options.cookieStoreId);
-    const isKnownContainer = await identityState._isKnownContainer(userContextId);
-    if (!isKnownContainer) {
-      return [];
-    }
+  async getTabs(options) {
+    const requiredArguments = ["cookieStoreId", "windowId"];
+    this.checkArgs(requiredArguments, options, "getTabs");
+    const { cookieStoreId, windowId } = options;
 
     const list = [];
-    const tabs = await this._containerTabs(options.cookieStoreId);
+    const tabs = await browser.tabs.query({
+      cookieStoreId,
+      windowId
+    });
     tabs.forEach((tab) => {
       list.push(identityState._createTabObject(tab));
     });
 
-    const containerState = await identityState.storageArea.get(options.cookieStoreId);
+    const containerState = await identityState.storageArea.get(cookieStoreId);
     return list.concat(containerState.hiddenTabs);
   },
 
   async moveTabsToWindow(options) {
-    if (!("cookieStoreId" in options)) {
-      return new Error("moveTabsToWindow must be called with cookieStoreId argument.");
-    }
+    const requiredArguments = ["cookieStoreId", "windowId"];
+    this.checkArgs(requiredArguments, options, "moveTabsToWindow");
+    const { cookieStoreId, windowId } = options;
 
-    const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(options.cookieStoreId);
-    await identityState.remapTabsIfMissing(options.cookieStoreId);
-    if (!identityState._isKnownContainer(userContextId)) {
-      return null;
-    }
+    const list = await browser.tabs.query({
+      cookieStoreId,
+      windowId
+    });
 
-    const list = await identityState._matchTabsByContainer(options.cookieStoreId);
-
-    const containerState = await identityState.storageArea.get(options.cookieStoreId);
+    const containerState = await identityState.storageArea.get(cookieStoreId);
     // Nothing to do
     if (list.length === 0 &&
         containerState.hiddenTabs.length === 0) {
       return;
     }
-    const window = await browser.windows.create({
+    const newWindowObj = await browser.windows.create({
       tabId: list.shift().id
     });
     browser.tabs.move(list.map((tab) => tab.id), {
-      windowId: window.id,
+      windowId: newWindowObj.id,
       index: -1
     });
 
     // Let's show the hidden tabs.
     for (let object of containerState.hiddenTabs) { // eslint-disable-line prefer-const
       browser.tabs.create(object.url || DEFAULT_TAB, {
-        windowId: window.id,
-        cookieStoreId: options.cookieStoreId
+        windowId: newWindowObj.id,
+        cookieStoreId
       });
     }
 
@@ -138,31 +145,46 @@ const backgroundLogic = {
     // Let's close all the normal tab in the new window. In theory it
     // should be only the first tab, but maybe there are addons doing
     // crazy stuff.
-    const tabs = browser.tabs.query({windowId: window.id});
+    const tabs = browser.tabs.query({windowId: newWindowObj.id});
     for (let tab of tabs) { // eslint-disable-line prefer-const
-      if (tabs.cookieStoreId !== options.cookieStoreId) {
+      if (tabs.cookieStoreId !== cookieStoreId) {
         browser.tabs.remove(tab.id);
       }
     }
-    return await identityState.storageArea.set(options.cookieStoreId, containerState);
+    return await identityState.storageArea.set(cookieStoreId, containerState);
   },
 
-  async _closeTabs(userContextId) {
+  async _closeTabs(userContextId, windowId = false) {
     const cookieStoreId = this.cookieStoreId(userContextId);
-    const tabs = await this._containerTabs(cookieStoreId);
+    let tabs;
+    /* if we have no windowId we are going to close all this container (used for deleting) */
+    if (windowId) {
+      tabs = await browser.tabs.query({
+        cookieStoreId,
+        windowId
+      });
+    } else {
+      await browser.tabs.query({
+        cookieStoreId
+      });
+    }
     const tabIds = tabs.map((tab) => tab.id);
     return browser.tabs.remove(tabIds);
   },
 
-  async queryIdentitiesState() {
+  async queryIdentitiesState(windowId) {
     const identities = await browser.contextualIdentities.query({});
     const identitiesOutput = {};
     const identitiesPromise = identities.map(async function (identity) {
-      await identityState.remapTabsIfMissing(identity.cookieStoreId);
-      const containerState = await identityState.storageArea.get(identity.cookieStoreId);
-      identitiesOutput[identity.cookieStoreId] = {
+      const { cookieStoreId } = identity;
+      const containerState = await identityState.storageArea.get(cookieStoreId);
+      const openTabs = await browser.tabs.query({
+        cookieStoreId,
+        windowId
+      });
+      identitiesOutput[cookieStoreId] = {
         hasHiddenTabs: !!containerState.hiddenTabs.length,
-        hasOpenTabs: !!containerState.openTabs
+        hasOpenTabs: !!openTabs.length
       };
       return;
     });
@@ -172,15 +194,15 @@ const backgroundLogic = {
 
   async sortTabs() {
     const windows = await browser.windows.getAll();
-    for (let window of windows) { // eslint-disable-line prefer-const
+    for (let windowObj of windows) { // eslint-disable-line prefer-const
       // First the pinned tabs, then the normal ones.
-      await this._sortTabsInternal(window, true);
-      await this._sortTabsInternal(window, false);
+      await this._sortTabsInternal(windowObj, true);
+      await this._sortTabsInternal(windowObj, false);
     }
   },
 
-  async _sortTabsInternal(window, pinnedTabs) {
-    const tabs = await browser.tabs.query({windowId: window.id});
+  async _sortTabsInternal(windowObj, pinnedTabs) {
+    const tabs = await browser.tabs.query({windowId: windowObj.id});
     let pos = 0;
 
     // Let's collect UCIs/tabs for this window.
@@ -212,28 +234,22 @@ const backgroundLogic = {
       for (const tab of tabs) {
         ++pos;
         browser.tabs.move(tab.id, {
-          windowId: window.id,
+          windowId: windowObj.id,
           index: pos
         });
-        //xulWindow.gBrowser.moveTabTo(tab, pos++);
       }
     });
   },
 
   async hideTabs(options) {
-    if (!("cookieStoreId" in options)) {
-      return new Error("hideTabs must be called with cookieStoreId option.");
-    }
+    const requiredArguments = ["cookieStoreId", "windowId"];
+    this.checkArgs(requiredArguments, options, "hideTabs");
+    const { cookieStoreId, windowId } = options;
 
-    const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(options.cookieStoreId);
-    await identityState.remapTabsIfMissing(options.cookieStoreId);
-    const isKnownContainer = await identityState._isKnownContainer(userContextId);
-    if (!isKnownContainer) {
-      return null;
-    }
+    const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(cookieStoreId);
 
-    const containerState = await identityState.storeHidden(options.cookieStoreId);
-    await this._closeTabs(userContextId); 
+    const containerState = await identityState.storeHidden(cookieStoreId, windowId);
+    await this._closeTabs(userContextId, windowId);
     return containerState;
   },
 
@@ -243,17 +259,12 @@ const backgroundLogic = {
     }
 
     const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(options.cookieStoreId);
-    await identityState.remapTabsIfMissing(options.cookieStoreId);
-    if (!identityState._isKnownContainer(userContextId)) {
-      return null;
-    }
-
     const promises = [];
 
     const containerState = await identityState.storageArea.get(options.cookieStoreId);
 
     for (let object of containerState.hiddenTabs) { // eslint-disable-line prefer-const
-      promises.push(this.openTab({
+      promises.push(this.openNewTab({
         userContextId: userContextId,
         url: object.url,
         nofocus: options.nofocus || false,
@@ -269,12 +280,6 @@ const backgroundLogic = {
 
   cookieStoreId(userContextId) {
     return `firefox-container-${userContextId}`;
-  },
-
-  _containerTabs(cookieStoreId) {
-    return browser.tabs.query({
-      cookieStoreId
-    }).catch((e) => {throw e;});
-  },
+  }
 };
 
