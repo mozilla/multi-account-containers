@@ -45,23 +45,28 @@ const messageHandler = {
         backgroundLogic.showTabs({cookieStoreId: m.cookieStoreId});
         break;
       case "hideTabs":
-        backgroundLogic.hideTabs({cookieStoreId: m.cookieStoreId});
+        backgroundLogic.hideTabs({
+          cookieStoreId: m.cookieStoreId,
+          windowId: m.windowId
+        });
         break;
       case "checkIncompatibleAddons":
         // TODO
         break;
       case "moveTabsToWindow":
         response = backgroundLogic.moveTabsToWindow({
-          cookieStoreId: m.cookieStoreId
+          cookieStoreId: m.cookieStoreId,
+          windowId: m.windowId
         });
         break;
       case "getTabs":
         response = backgroundLogic.getTabs({
-          cookieStoreId: m.cookieStoreId
+          cookieStoreId: m.cookieStoreId,
+          windowId: m.windowId
         });
         break;
       case "queryIdentitiesState":
-        response = backgroundLogic.queryIdentitiesState();
+        response = backgroundLogic.queryIdentitiesState(m.message.windowId);
         break;
       case "exemptContainerAssignment":
         response = assignManager._exemptTab(m);

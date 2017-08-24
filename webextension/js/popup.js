@@ -190,7 +190,10 @@ const Logic = {
     const [identities, state] = await Promise.all([
       browser.contextualIdentities.query({}),
       browser.runtime.sendMessage({
-        method: "queryIdentitiesState"
+        method: "queryIdentitiesState",
+        message: {
+          windowId: browser.windows.WINDOW_ID_CURRENT
+        }
       })
     ]);
     this._identities = identities.map((identity) => {
@@ -654,6 +657,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       try {
         browser.runtime.sendMessage({
           method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
+          windowId: browser.windows.WINDOW_ID_CURRENT,
           cookieStoreId: Logic.currentCookieStoreId()
         });
         window.close();
@@ -685,6 +689,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
         Logic.addEnterHandler(moveTabsEl, async function () {
           await browser.runtime.sendMessage({
             method: "moveTabsToWindow",
+            windowId: browser.windows.WINDOW_ID_CURRENT,
             cookieStoreId: Logic.currentIdentity().cookieStoreId,
           });
           window.close();
@@ -726,6 +731,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     // Let's retrieve the list of tabs.
     const tabs = await browser.runtime.sendMessage({
       method: "getTabs",
+      windowId: browser.windows.WINDOW_ID_CURRENT,
       cookieStoreId: Logic.currentIdentity().cookieStoreId
     });
     return this.buildInfoTable(tabs);
