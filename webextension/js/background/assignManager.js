@@ -1,6 +1,10 @@
 const assignManager = {
   MENU_ASSIGN_ID: "open-in-this-container",
   MENU_REMOVE_ID: "remove-open-in-this-container",
+  MENU_SEPARATOR_ID: "separator",
+  MENU_HIDE_ID: "hide-container",
+  MENU_MOVE_ID: "move-to-new-window-container",
+
   storageArea: {
     area: browser.storage.local,
     exemptedTabs: {},
@@ -163,15 +167,31 @@ const assignManager = {
   async _onClickedHandler(info, tab) {
     const userContextId = this.getUserContextIdFromCookieStore(tab);
     // Mapping ${URL(info.pageUrl).hostname} to ${userContextId}
+    let remove;
     if (userContextId) {
-     // let actionName;
-      let remove;
-      if (info.menuItemId === this.MENU_ASSIGN_ID) {
-        remove = false;
-      } else {
-        remove = true;
+      switch (info.menuItemId) {
+      case this.MENU_ASSIGN_ID:
+      case this.MENU_REMOVE_ID:
+        if (info.menuItemId === this.MENU_ASSIGN_ID) {
+          remove = false;
+        } else {
+          remove = true;
+        }
+        await this._setOrRemoveAssignment(tab.id, info.pageUrl, userContextId, remove);
+        break;
+      case this.MENU_MOVE_ID:
+        backgroundLogic.moveTabsToWindow({
+          cookieStoreId: tab.cookieStoreId,
+          windowId: tab.windowId,
+        });
+        break;
+      case this.MENU_HIDE_ID:
+        backgroundLogic.hideTabs({
+          cookieStoreId: tab.cookieStoreId,
+          windowId: tab.windowId,
+        });
+        break;
       }
-      await this._setOrRemoveAssignment(tab.id, info.pageUrl, userContextId, remove);
     }
   },
 
@@ -260,6 +280,9 @@ const assignManager = {
     // See: https://bugzilla.mozilla.org/show_bug.cgi?id=1352102
     browser.contextMenus.remove(this.MENU_ASSIGN_ID);
     browser.contextMenus.remove(this.MENU_REMOVE_ID);
+    browser.contextMenus.remove(this.MENU_SEPARATOR_ID);
+    browser.contextMenus.remove(this.MENU_HIDE_ID);
+    browser.contextMenus.remove(this.MENU_MOVE_ID);
   },
 
   async calculateContextMenu(tab) {
@@ -270,19 +293,37 @@ const assignManager = {
     if (siteSettings === false) {
       return false;
     }
-    // ✓ This is to mitigate https://bugzilla.mozilla.org/show_bug.cgi?id=1351418
-    let prefix = "   "; // Alignment of non breaking space, unknown why this requires so many spaces to align with the tick
+    let checked = false;
     let menuId = this.MENU_ASSIGN_ID;
     const tabUserContextId = this.getUserContextIdFromCookieStore(tab);
     if (siteSettings &&
         Number(siteSettings.userContextId) === Number(tabUserContextId)) {
-      prefix = "✓";
+      checked = true;
       menuId = this.MENU_REMOVE_ID;
     }
     browser.contextMenus.create({
       id: menuId,
-      title: `${prefix} Always Open in This Container`,
-      checked: true,
+      title: "Always Open in This Container",
+      checked,
+      type: "checkbox",
+      contexts: ["all"],
+    });
+
+    browser.contextMenus.create({
+      id: this.MENU_SEPARATOR_ID,
+      type: "separator",
+      contexts: ["all"],
+    });
+
+    browser.contextMenus.create({
+      id: this.MENU_HIDE_ID,
+      title: "Hide This Container",
+      contexts: ["all"],
+    });
+
+    browser.contextMenus.create({
+      id: this.MENU_MOVE_ID,
+      title: "Move Tabs to a New Window",
       contexts: ["all"],
     });
   },
