@@ -25,13 +25,12 @@ const backgroundLogic = {
     return false;
   },
 
-  async deleteContainer(userContextId) {
+  async deleteContainer(userContextId, removed = false) {
     await this._closeTabs(userContextId);
-    await browser.contextualIdentities.remove(this.cookieStoreId(userContextId));
+    if (!removed) {
+      await browser.contextualIdentities.remove(this.cookieStoreId(userContextId));
+    }
     assignManager.deleteContainer(userContextId);
-    await browser.runtime.sendMessage({
-      method: "forgetIdentityAndRefresh"
-    });
     return {done: true, userContextId};
   },
 
@@ -157,13 +156,13 @@ const backgroundLogic = {
     const cookieStoreId = this.cookieStoreId(userContextId);
     let tabs;
     /* if we have no windowId we are going to close all this container (used for deleting) */
-    if (windowId) {
+    if (windowId !== false) {
       tabs = await browser.tabs.query({
         cookieStoreId,
         windowId
       });
     } else {
-      await browser.tabs.query({
+      tabs = await browser.tabs.query({
         cookieStoreId
       });
     }

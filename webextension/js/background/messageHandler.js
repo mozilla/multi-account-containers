@@ -76,6 +76,13 @@ const messageHandler = {
       return response;
     });
 
+    if (browser.contextualIdentities.onRemoved) {
+      browser.contextualIdentities.onRemoved.addListener(({contextualIdentity}) => {
+        const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(contextualIdentity.cookieStoreId);
+        backgroundLogic.deleteContainer(userContextId, true);
+      });
+    }
+
     // Handles messages from sdk code
     const port = browser.runtime.connect();
     port.onMessage.addListener(m => {
