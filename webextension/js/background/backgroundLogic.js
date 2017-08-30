@@ -68,6 +68,11 @@ const backgroundLogic = {
       url = undefined;
     }
 
+    // We can't open these we just have to throw them away
+    if (new URL(url).protocol === "about:") {
+      return;
+    }
+
     return browser.tabs.create({
       url,
       active,
