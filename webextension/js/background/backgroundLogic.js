@@ -52,12 +52,6 @@ const backgroundLogic = {
   },
 
   async openTab(options) {
-    const userContextId = ("userContextId" in options) ? options.userContextId : 0;
-    const cookieStoreId = backgroundLogic.cookieStoreId(userContextId);
-    // Unhide all hidden tabs
-    this.showTabs({
-      cookieStoreId
-    });
     return this.openNewTab(options);
   },
 

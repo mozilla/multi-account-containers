@@ -3,6 +3,7 @@ const messageHandler = {
   // We use this to catch redirected tabs that have just opened
   // If this were in platform we would change how the tab opens based on "new tab" link navigations such as ctrl+click
   LAST_CREATED_TAB_TIMER: 2000,
+  unhideQueue: [],
 
   init() {
     // Handles messages from webextension code
@@ -87,20 +88,6 @@ const messageHandler = {
       }
     });
 
-    browser.tabs.onCreated.addListener((tab) => {
-      // This works at capturing the tabs as they are created
-      // However we need onFocusChanged and onActivated to capture the initial tab
-      if (tab.id === -1) {
-        return {};
-      }
-    });
-
-    browser.tabs.onRemoved.addListener((tabId) => {
-      if (tabId === -1) {
-        return {};
-      }
-    });
-
     browser.tabs.onActivated.addListener((info) => {
       assignManager.removeContextMenu();
       browser.tabs.get(info.tabId).then((tab) => {
@@ -127,14 +114,27 @@ const messageHandler = {
       });
     }, {urls: ["<all_urls>"], types: ["main_frame"]});
 
-    // lets remember the last tab created so we can close it if it looks like a redirect
-    browser.tabs.onCreated.addListener((details) => {
-      this.lastCreatedTab = details;
+    browser.tabs.onCreated.addListener((tab) => {
+      // lets remember the last tab created so we can close it if it looks like a redirect
+      this.lastCreatedTab = tab;
+      if (tab.cookieStoreId) {
+        this.unhideContainer(tab.cookieStoreId);
+      }
       setTimeout(() => {
         this.lastCreatedTab = null;
       }, this.LAST_CREATED_TAB_TIMER);
     });
+  },
 
+  async unhideContainer(cookieStoreId) {
+    if (!this.unhideQueue.includes(cookieStoreId)) {
+      this.unhideQueue.push(cookieStoreId);
+      // Unhide all hidden tabs
+      await backgroundLogic.showTabs({
+        cookieStoreId
+      });
+      this.unhideQueue.splice(this.unhideQueue.indexOf(cookieStoreId), 1);
+    }
   },
 
   async onFocusChangedCallback(windowId) {
