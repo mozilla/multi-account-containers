@@ -20,6 +20,19 @@ For more info, see:
 
 
 ## Development
+
+### Web Extension Development
+
+Since Firefox 57, this extension can now be run without any of the legacy components that were previously needed.
+
+1. Install web-ext with npm
+2. cd webextension; web-ext run -f Nightly
+
+This will work in other builds of Firefox however certain features won't work and you will need to manually flip preferences to enable containers. All other sections of this guide talk about using the legacy setup with jpm.
+
+
+## Legacy Development
+
 ### Development Environment
 
 Add-on development is better with [a particular  environment](https://developer.mozilla.org/en-US/Add-ons/Setting_up_extension_development_environment). One simple way to get that environment set up is to install the [DevPrefs add-on](https://addons.mozilla.org/en-US/firefox/addon/devprefs/). You can make a custom Firefox profile that includes the DevPrefs add-on, and use that profile when you run the code in this repository. 
@@ -43,7 +56,6 @@ Release & Beta channels do not allow un-signed add-ons, even with the DevPrefs. 
 #### Correct prefs
 
 Whilst this is still using legacy code to test you will need the following in your profile:
-
 
 Change the following prefs in about:config:
 
