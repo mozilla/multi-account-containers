@@ -4,22 +4,26 @@ const PREFS = [
   {
     name: "privacy.userContext.enabled",
     value: true,
-    type: "bool"
+    type: "bool",
+    default: false
   },
   {
     name: "privacy.userContext.longPressBehavior",
     value: 2,
-    type: "int"
+    type: "int",
+    default: 0
   },
   {
     name: "privacy.userContext.ui.enabled",
     value: true, // Post web ext we will be setting this true
-    type: "bool"
+    type: "bool",
+    default: true
   },
   {
     name: "privacy.usercontext.about_newtab_segregation.enabled",
     value: true,
-    type: "bool"
+    type: "bool",
+    default: false
   },
 ];
 const Ci = Components.interfaces;
@@ -66,14 +70,27 @@ function filename() {
   return storeFile.path;
 }
 
-async function getConfig() {
-  const bytes = await OS.File.read(filename());
-  const raw = new TextDecoder().decode(bytes) || "";
-  let savedConfig = {savedConfiguration: {}};
-  if (raw) {
-    savedConfig = JSON.parse(raw);
-  }
+async function makeFilepath() {
+  const storeFile = Services.dirsvc.get("ProfD", Ci.nsIFile);
+  storeFile.append(JETPACK_DIR_BASENAME);
+  await OS.File.makeDir(storeFile.path, { ignoreExisting: true });
+  storeFile.append(EXTENSION_ID);
+  await OS.File.makeDir(storeFile.path, { ignoreExisting: true });
+  storeFile.append("simple-storage");
+  await OS.File.makeDir(storeFile.path, { ignoreExisting: true });
+}
 
+async function getConfig() {
+  let savedConfig = {savedConfiguration: {}};
+  try {
+    const bytes = await OS.File.read(filename());
+    const raw = new TextDecoder().decode(bytes) || "";
+    if (raw) {
+      savedConfig = JSON.parse(raw);
+    }
+  } catch (e) {
+    // ignore file read errors, sometimes they happen and I'm not sure if we can fix
+  }
   return savedConfig;
 }
 
@@ -84,14 +101,15 @@ async function initConfig() {
     savedConfig.savedConfiguration.prefs = {};
     PREFS.forEach((pref) => {
       if ("int" === pref.type) {
-        savedConfig.savedConfiguration.prefs[pref.name] = Services.prefs.getIntPref(pref.name, pref.name);
+        savedConfig.savedConfiguration.prefs[pref.name] = Services.prefs.getIntPref(pref.name);
       } else {
-        savedConfig.savedConfiguration.prefs[pref.name] = Services.prefs.getBoolPref(pref.name, pref.value);
+        savedConfig.savedConfiguration.prefs[pref.name] = Services.prefs.getBoolPref(pref.name);
       }
     });
   }
   const serialized = JSON.stringify(savedConfig);
   const bytes = new TextEncoder().encode(serialized) || "";
+  await makeFilepath();
   await OS.File.writeAtomic(filename(), bytes, { });
 }
 
@@ -116,14 +134,16 @@ async function uninstall(aData, aReason) {
   if (aReason === ADDON_UNINSTALL
       || aReason === ADDON_DISABLE) {
     const config = await getConfig();
-    const storedPrefs = config.savedConfiguration.prefs;
+    const storedPrefs = config.savedConfiguration.prefs || {};
     PREFS.forEach((pref) => {
+      let value = pref.default;
       if (pref.name in storedPrefs) {
-        if ("int" === pref.type) {
-          Services.prefs.setIntPref(pref.name, storedPrefs[pref.name]);
-        } else {
-          Services.prefs.setBoolPref(pref.name, storedPrefs[pref.name]);
-        }
+        value = storedPrefs[pref.name];
+      }
+      if ("int" === pref.type) {
+        Services.prefs.setIntPref(pref.name, value);
+      } else {
+        Services.prefs.setBoolPref(pref.name, value);
       }
     });
   }
@@ -138,7 +158,7 @@ function startup({webExtension, resourceURI}) {
     loadStyles(resourceURI);
   }
   // Reset prefs that may have changed, or are legacy
-  setPrefs();
+  install();
   // Start the embedded webextension.
   webExtension.startup();
 }
