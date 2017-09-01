@@ -24,6 +24,7 @@ const PREFS = [
 ];
 const Ci = Components.interfaces;
 const Cu = Components.utils;
+const Cc = Components.classes;
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
 const { TextDecoder, TextEncoder } = Cu.import("resource://gre/modules/commonjs/toolkit/loader.js", {});
@@ -33,6 +34,28 @@ XPCOMUtils.defineLazyModuleGetter(this, "OS",
 
 const JETPACK_DIR_BASENAME = "jetpack";
 const EXTENSION_ID = "@testpilot-containers";
+
+function loadStyles(resourceURI) {
+  const styleSheetService = Cc["@mozilla.org/content/style-sheet-service;1"]
+                            .getService(Ci.nsIStyleSheetService);
+  const styleURI = styleSheet(resourceURI);
+  const sheetType = styleSheetService.AGENT_SHEET;
+  styleSheetService.loadAndRegisterSheet(styleURI, sheetType);
+}
+
+function styleSheet(resourceURI) {
+  return Services.io.newURI("data/usercontext.css", null, resourceURI);
+}
+
+function unloadStyles(resourceURI) {
+  const styleURI = styleSheet(resourceURI);
+  const styleSheetService = Cc["@mozilla.org/content/style-sheet-service;1"]
+                  .getService(Ci.nsIStyleSheetService);
+  const sheetType = styleSheetService.AGENT_SHEET;
+  if (styleSheetService.sheetRegistered(styleURI, sheetType)) {
+    styleSheetService.unregisterSheet(styleURI, sheetType);
+  }
+}
 
 function filename() {
   const storeFile = Services.dirsvc.get("ProfD", Ci.nsIFile);
@@ -107,7 +130,13 @@ async function uninstall(aData, aReason) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function startup({webExtension}) {
+function startup({webExtension, resourceURI}) {
+  const version = Services.appinfo.version;
+  const versionMatch = version.match(/^([0-9]+)\./)[1];
+  if (versionMatch === "55"
+      || versionMatch === "56") {
+    loadStyles(resourceURI);
+  }
   // Reset prefs that may have changed, or are legacy
   setPrefs();
   // Start the embedded webextension.
@@ -115,6 +144,7 @@ function startup({webExtension}) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function shutdown() {
+function shutdown({resourceURI}) {
+  unloadStyles(resourceURI);
 }
 
