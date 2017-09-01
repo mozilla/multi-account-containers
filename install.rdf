@@ -7,7 +7,7 @@
     <em:bootstrap>true</em:bootstrap>
     <em:multiprocessCompatible>true</em:multiprocessCompatible>
     <em:hasEmbeddedWebExtension>true</em:hasEmbeddedWebExtension>
-    <em:name>Mozilla Containers</em:name>
+    <em:name>Firefox Multi-Account Containers</em:name>
     <em:description>Containers helps you keep all the parts of your online life contained in different tabs. Custom labels and color-coded tabs help keep different activities — like online shopping, travel planning, or checking work email — separate.</em:description>
     <em:targetApplication>
       <Description>

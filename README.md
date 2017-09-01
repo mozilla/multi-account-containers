@@ -1,4 +1,4 @@
-# Containers Add-on
+# Firefox Multi-Account Containers
 
 [![Available on Test Pilot](https://img.shields.io/badge/available_on-Test_Pilot-0996F8.svg)](https://testpilot.firefox.com/experiments/containers)
 
