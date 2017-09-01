@@ -17,10 +17,6 @@ const messageHandler = {
       case "createOrUpdateContainer":
         response = backgroundLogic.createOrUpdateContainer(m.message);
         break;
-      case "openTab":
-        // Same as open-tab for index.js
-        response = backgroundLogic.openTab(m.message);
-        break;
       case "neverAsk":
         assignManager._neverAsk(m);
         break;
@@ -82,18 +78,6 @@ const messageHandler = {
         backgroundLogic.deleteContainer(userContextId, true);
       });
     }
-
-    // Handles messages from sdk code
-    const port = browser.runtime.connect();
-    port.onMessage.addListener(m => {
-      switch (m.type) {
-      case "open-tab":
-        backgroundLogic.openTab(m.message);
-        break;
-      default:
-        throw new Error(`Unhandled message type: ${m.message}`);
-      }
-    });
 
     browser.tabs.onActivated.addListener((info) => {
       assignManager.removeContextMenu();

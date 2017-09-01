@@ -50,10 +50,6 @@ const backgroundLogic = {
     });
   },
 
-  async openTab(options) {
-    return this.openNewTab(options);
-  },
-
   async openNewTab(options) {
     let url = options.url || undefined;
     const userContextId = ("userContextId" in options) ? options.userContextId : 0;
