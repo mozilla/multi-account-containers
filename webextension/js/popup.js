@@ -602,12 +602,8 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             || e.target.parentNode.matches(".open-newtab")
             || e.type === "keydown") {
           try {
-            await browser.runtime.sendMessage({
-              method: "openTab",
-              message: {
-                userContextId: Logic.userContextId(identity.cookieStoreId),
-                source: "pop-up"
-              }
+            browser.tabs.create({
+              cookieStoreId: identity.cookieStoreId
             });
             window.close();
           } catch (e) {
