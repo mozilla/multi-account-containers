@@ -328,6 +328,13 @@ const assignManager = {
     });
   },
 
+  encodeURLProperty(url) {
+    return encodeURIComponent(url).replace(/[!'()*]/g, (c) => {
+      const charCode = c.charCodeAt(0).toString(16);
+      return `%${charCode}`;
+    });
+  },
+
   reloadPageInContainer(url, currentUserContextId, userContextId, index, neverAsk = false) {
     const cookieStoreId = backgroundLogic.cookieStoreId(userContextId);
     const loadPage = browser.extension.getURL("confirm-page.html");
@@ -336,7 +343,7 @@ const assignManager = {
     if (neverAsk) {
       browser.tabs.create({url, cookieStoreId, index});
     } else {
-      let confirmUrl = `${loadPage}?url=${encodeURIComponent(url)}&cookieStoreId=${cookieStoreId}`;
+      let confirmUrl = `${loadPage}?url=${this.encodeURLProperty(url)}&cookieStoreId=${cookieStoreId}`;
       let currentCookieStoreId;
       if (currentUserContextId) {
         currentCookieStoreId = backgroundLogic.cookieStoreId(currentUserContextId);
