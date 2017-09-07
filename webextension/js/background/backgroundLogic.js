@@ -63,8 +63,7 @@ const backgroundLogic = {
       url = undefined;
     }
 
-    // We can't open these we just have to throw them away
-    if (new URL(url).protocol === "about:") {
+    if (!this.isPermissibleURL(url)) {
       return;
     }
 
@@ -74,6 +73,17 @@ const backgroundLogic = {
       pinned: options.pinned || false,
       cookieStoreId
     });
+  },
+
+  isPermissibleURL(url) {
+    const protocol = new URL(url).protocol;
+    // We can't open these we just have to throw them away
+    if (protocol === "about:"
+        || protocol === "chrome:"
+        || protocol === "moz-extension:") {
+      return false;
+    }
+    return true;
   },
 
   checkArgs(requiredArguments, options, methodName) {

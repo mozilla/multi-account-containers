@@ -41,6 +41,9 @@ const identityState = {
     const tabsByContainer = await browser.tabs.query({cookieStoreId, windowId});
     tabsByContainer.forEach((tab) => {
       const tabObject = this._createTabObject(tab);
+      if (!backgroundLogic.isPermissibleURL(tab.url)) {
+        return;
+      }
       // This tab is going to be closed. Let's mark this tabObject as
       // non-active.
       tabObject.active = false;
