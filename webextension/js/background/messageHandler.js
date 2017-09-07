@@ -39,7 +39,7 @@ const messageHandler = {
         backgroundLogic.sortTabs();
         break;
       case "showTabs":
-        backgroundLogic.showTabs({cookieStoreId: m.cookieStoreId});
+        this.unhideContainer(m.cookieStoreId);
         break;
       case "hideTabs":
         backgroundLogic.hideTabs({

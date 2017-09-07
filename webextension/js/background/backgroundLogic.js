@@ -63,8 +63,7 @@ const backgroundLogic = {
       url = undefined;
     }
 
-    // We can't open these we just have to throw them away
-    if (new URL(url).protocol === "about:") {
+    if (!this.isPermissibleURL(url)) {
       return;
     }
 
@@ -74,6 +73,17 @@ const backgroundLogic = {
       pinned: options.pinned || false,
       cookieStoreId
     });
+  },
+
+  isPermissibleURL(url) {
+    const protocol = new URL(url).protocol;
+    // We can't open these we just have to throw them away
+    if (protocol === "about:"
+        || protocol === "chrome:"
+        || protocol === "moz-extension:") {
+      return false;
+    }
+    return true;
   },
 
   checkArgs(requiredArguments, options, methodName) {
@@ -118,20 +128,37 @@ const backgroundLogic = {
         containerState.hiddenTabs.length === 0) {
       return;
     }
-    const newWindowObj = await browser.windows.create({
-      tabId: list.shift().id
-    });
-    browser.tabs.move(list.map((tab) => tab.id), {
-      windowId: newWindowObj.id,
-      index: -1
-    });
+    let newWindowObj;
+    let hiddenDefaultTabToClose;
+    if (list.length) {
+      newWindowObj = await browser.windows.create({
+        tabId: list.shift().id
+      });
+      browser.tabs.move(list.map((tab) => tab.id), {
+        windowId: newWindowObj.id,
+        index: -1
+      });
+    } else {
+      //As we get a blank tab here we will need to await the tabs creation
+      newWindowObj = await browser.windows.create({
+      });
+      hiddenDefaultTabToClose = true;
+    }
+
+    const showHiddenPromises = [];
 
     // Let's show the hidden tabs.
     for (let object of containerState.hiddenTabs) { // eslint-disable-line prefer-const
-      browser.tabs.create(object.url || DEFAULT_TAB, {
+      showHiddenPromises.push(browser.tabs.create({
+        url: object.url || DEFAULT_TAB,
         windowId: newWindowObj.id,
         cookieStoreId
-      });
+      }));
+    }
+
+    if (hiddenDefaultTabToClose) {
+      // Lets wait for hidden tabs to show before closing the others
+      await showHiddenPromises;
     }
 
     containerState.hiddenTabs = [];
@@ -139,9 +166,9 @@ const backgroundLogic = {
     // Let's close all the normal tab in the new window. In theory it
     // should be only the first tab, but maybe there are addons doing
     // crazy stuff.
-    const tabs = browser.tabs.query({windowId: newWindowObj.id});
+    const tabs = await browser.tabs.query({windowId: newWindowObj.id});
     for (let tab of tabs) { // eslint-disable-line prefer-const
-      if (tabs.cookieStoreId !== cookieStoreId) {
+      if (tab.cookieStoreId !== cookieStoreId) {
         browser.tabs.remove(tab.id);
       }
     }
