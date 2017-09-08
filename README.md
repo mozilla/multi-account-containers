@@ -5,7 +5,7 @@ The Firefox Multi-Account Containers extension lets you carve out a separate box
 
 [Available on addons.mozilla.org](https://addons.mozilla.org/en-GB/firefox/addon/multi-account-containers/)
 
-**Note:** Firefox 57 users should Install from our [latest GitHub Release](https://github.com/mozilla/testpilot-containers/releases/latest)
+**Note:** Firefox 57 + 58 users should Install from our [latest GitHub Release](https://github.com/mozilla/testpilot-containers/releases/latest)
 
 For more info, see: 
 
