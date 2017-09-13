@@ -1,9 +1,9 @@
 {
   "manifest_version": 2,
-  "name": "Firefox Multi-Account Containers",
-  "version": "4.0.1",
+  "name": "Multi-Account Containers",
+  "version": "4.0.2",
 
-  "description": "Firefox Multi-Account Containers helps you keep all the parts of your online life contained in different tabs. Custom labels and color-coded tabs help keep different activities — like online shopping, travel planning, or checking work email — separate.",
+  "description": "Multi-Account Containers helps you keep all the parts of your online life contained in different tabs. Custom labels and color-coded tabs help keep different activities — like online shopping, travel planning, or checking work email — separate.",
   "icons": {
     "48": "img/container-site-d-48.png",
     "96": "img/container-site-d-96.png"
@@ -45,7 +45,7 @@
   "browser_action": {
     "browser_style": true,
     "default_icon": "img/container-site.svg",
-    "default_title": "Firefox Multi-Account Containers",
+    "default_title": "Multi-Account Containers",
     "default_popup": "popup.html"
   },
 
