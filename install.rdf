@@ -16,7 +16,7 @@
         <em:maxVersion>*</em:maxVersion>
       </Description>
     </em:targetApplication>
-    <em:version>4.0.1</em:version>
+    <em:version>4.0.2</em:version>
     <em:unpack>false</em:unpack>
   </Description>
 </RDF>
