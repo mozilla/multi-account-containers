@@ -20,11 +20,15 @@ async function doAnimation(element, property, value) {
 async function addMessage(message) {
   const divElement = document.createElement("div");
   divElement.classList.add("container-notification");
-  // For the eager eyed, this is an experiment. It is however likely that a website will know it is "contained" anyway
+  // Ideally we would use https://bugzilla.mozilla.org/show_bug.cgi?id=1340930 when this is available
   divElement.innerText = message.text;
 
   const imageElement = document.createElement("img");
-  imageElement.src = browser.extension.getURL("/img/container-site-d-24.png");
+  const imagePath = browser.extension.getURL("/img/container-site-d-24.png");
+  const response = await fetch(imagePath);
+  const blob = await response.blob();
+  const objectUrl = URL.createObjectURL(blob);
+  imageElement.src = objectUrl;
   divElement.prepend(imageElement);
 
   document.body.appendChild(divElement);
