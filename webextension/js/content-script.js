@@ -24,7 +24,7 @@ async function addMessage(message) {
   divElement.innerText = message.text;
 
   const imageElement = document.createElement("img");
-  imageElement.src = browser.extension.getURL("/img/container-site-d-24.png");
+  imageElement.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAXCAYAAAARIY8tAAABHUlEQVRIx+2TTUoDQRCFv2nGGIKIR/AQLly48AJv4TEUFPwBceHCGCS6ET2FS6GO4DVceABBFILjZBA3I7Qx09MzkGz0QdPd9arqdRXViaQR0KMeH2bWnUZIegA2gKGZnfici0wOsBjp9wOuTVATpE0DJCXA6UTlq+W+KWno2V8bCwDLwFkFt16u9hUAI+AeWPJsa8AK8AQ8evaXxgJmVgBbE237nqK7aVM0Uzggj/Qt2gpcRojkwFWAfy73t1l35BeStoGSeoR/d2Zm74mkC+AIWAg4j4FrMzsuk98AuzUP/AQGDjisSU7JH3j3nYjqHbDtgE5kV9KKcwidufyDf4E/IJBF+uYV5xCyFOgD+4RnuwBuvfs5sFcTMwYGXytuPJJNdvDpAAAAAElFTkSuQmCC';
   divElement.prepend(imageElement);
 
   document.body.appendChild(divElement);
