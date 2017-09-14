@@ -1,11 +1,12 @@
 # Multi-Account Containers
 
-[![Available on Test Pilot](https://img.shields.io/badge/available_on-Test_Pilot-0996F8.svg)](https://testpilot.firefox.com/experiments/containers)
+[What is Multi-Account Containers?](https://blog.mozilla.org/firefox/introducing-firefox-multi-account-containers/)
 
-[Embedded Web Extension](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Embedded_WebExtensions) to build [Containers](https://blog.mozilla.org/tanvi/2016/06/16/contextual-identities-on-the-web/) as a Firefox [Test Pilot](https://testpilot.firefox.com/) Experiment and [Shield Study](https://wiki.mozilla.org/Firefox/Shield/Shield_Studies) to learn:
+The Firefox Multi-Account Containers extension lets you carve out a separate box for each of your online lives – no more opening a different browser just to check your work email!
 
-* Will a general Firefox audience understand the Containers feature?
-* Is the UI as currently implemented in Nightly clear or discoverable?
+[Available on addons.mozilla.org](https://addons.mozilla.org/en-GB/firefox/addon/multi-account-containers/)
+
+**Note:** Firefox 57 users should Install from our [latest GitHub Release](https://github.com/mozilla/testpilot-containers/releases/latest)
 
 For more info, see: 
 
