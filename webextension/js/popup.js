@@ -93,18 +93,7 @@ const Logic = {
     const data = await browser.storage.local.get([ONBOARDING_STORAGE_KEY]);
     let onboarded = data[ONBOARDING_STORAGE_KEY];
     if (!onboarded) {
-      // Legacy local storage used before panel 5
-      if (localStorage.getItem("onboarded4")) {
-        onboarded = 4;
-      } else if (localStorage.getItem("onboarded3")) {
-        onboarded = 3;
-      } else if (localStorage.getItem("onboarded2")) {
-        onboarded = 2;
-      } else if (localStorage.getItem("onboarded1")) {
-        onboarded = 1;
-      } else {
-        onboarded = 0;
-      }
+      onboarded = 0;
       this.setOnboardingStage(onboarded);
     }
 
@@ -144,7 +133,11 @@ const Logic = {
     browser.browserAction.setBadgeBackgroundColor({color: ""});
     browser.browserAction.setBadgeText({text: ""});
     storage.browserActionBadgesClicked.push(extensionInfo.version);
-    browser.storage.local.set({browserActionBadgesClicked: storage.browserActionBadgesClicked});
+    // use set and spread to create a unique array
+    const browserActionBadgesClicked = [...new Set(storage.browserActionBadgesClicked)];
+    browser.storage.local.set({
+      browserActionBadgesClicked
+    });
   },
 
   async identity(cookieStoreId) {
