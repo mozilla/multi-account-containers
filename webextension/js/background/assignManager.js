@@ -113,6 +113,61 @@ const assignManager = {
     return true;
   },
 
+  // Before a request is handled by the browser we decide if we should route through a different container
+  async onBeforeRequest(options) {
+    if (options.frameId !== 0 || options.tabId === -1) {
+      return {};
+    }
+    this.removeContextMenu();
+    const [tab, siteSettings] = await Promise.all([
+      browser.tabs.get(options.tabId),
+      this.storageArea.get(options.url)
+    ]);
+    let container;
+    try {
+      container = await browser.contextualIdentities.get(backgroundLogic.cookieStoreId(siteSettings.userContextId));
+    } catch (e) {
+      container = false;
+    }
+
+    // The container we have in the assignment map isn't present any more so lets remove it
+    //   then continue the existing load
+    if (!container) {
+      this.deleteContainer(siteSettings.userContextId);
+      return {};
+    }
+    const userContextId = this.getUserContextIdFromCookieStore(tab);
+    if (!siteSettings
+        || userContextId === siteSettings.userContextId
+        || tab.incognito
+        || this.storageArea.isExempted(options.url, tab.id)) {
+      return {};
+    }
+
+    this.reloadPageInContainer(options.url, userContextId, siteSettings.userContextId, tab.index + 1, siteSettings.neverAsk);
+    this.calculateContextMenu(tab);
+
+    /* Removal of existing tabs:
+        We aim to open the new assigned container tab / warning prompt in it's own tab:
+          - As the history won't span from one container to another it seems most sane to not try and reopen a tab on history.back()
+          - When users open a new tab themselves we want to make sure we don't end up with three tabs as per: https://github.com/mozilla/testpilot-containers/issues/421
+        If we are coming from an internal url that are used for the new tab page (NEW_TAB_PAGES), we can safely close as user is unlikely losing history
+        Detecting redirects on "new tab" opening actions is pretty hard as we don't get tab history:
+        - Redirects happen from Short URLs and tracking links that act as a gateway
+        - Extensions don't provide a way to history crawl for tabs, we could inject content scripts to do this
+            however they don't run on about:blank so this would likely be just as hacky.
+        We capture the time the tab was created and close if it was within the timeout to try to capture pages which haven't had user interaction or history.
+    */
+    if (backgroundLogic.NEW_TAB_PAGES.has(tab.url)
+        || (messageHandler.lastCreatedTab
+        && messageHandler.lastCreatedTab.id === tab.id)) {
+      browser.tabs.remove(tab.id);
+    }
+    return {
+      cancel: true,
+    };
+  },
+
   init() {
     browser.contextMenus.onClicked.addListener((info, tab) => {
       this._onClickedHandler(info, tab);
@@ -120,47 +175,7 @@ const assignManager = {
 
     // Before a request is handled by the browser we decide if we should route through a different container
     browser.webRequest.onBeforeRequest.addListener((options) => {
-      if (options.frameId !== 0 || options.tabId === -1) {
-        return {};
-      }
-      this.removeContextMenu();
-      return Promise.all([
-        browser.tabs.get(options.tabId),
-        this.storageArea.get(options.url)
-      ]).then(([tab, siteSettings]) => {
-        const userContextId = this.getUserContextIdFromCookieStore(tab);
-        if (!siteSettings
-            || userContextId === siteSettings.userContextId
-            || tab.incognito
-            || this.storageArea.isExempted(options.url, tab.id)) {
-          return {};
-        }
-
-        this.reloadPageInContainer(options.url, userContextId, siteSettings.userContextId, tab.index + 1, siteSettings.neverAsk);
-        this.calculateContextMenu(tab);
-
-        /* Removal of existing tabs:
-           We aim to open the new assigned container tab / warning prompt in it's own tab:
-             - As the history won't span from one container to another it seems most sane to not try and reopen a tab on history.back()
-             - When users open a new tab themselves we want to make sure we don't end up with three tabs as per: https://github.com/mozilla/testpilot-containers/issues/421
-           If we are coming from an internal url that are used for the new tab page (NEW_TAB_PAGES), we can safely close as user is unlikely losing history
-           Detecting redirects on "new tab" opening actions is pretty hard as we don't get tab history:
-           - Redirects happen from Short URLs and tracking links that act as a gateway
-           - Extensions don't provide a way to history crawl for tabs, we could inject content scripts to do this
-               however they don't run on about:blank so this would likely be just as hacky.
-           We capture the time the tab was created and close if it was within the timeout to try to capture pages which haven't had user interaction or history.
-        */
-        if (backgroundLogic.NEW_TAB_PAGES.has(tab.url)
-            || (messageHandler.lastCreatedTab
-            && messageHandler.lastCreatedTab.id === tab.id)) {
-          browser.tabs.remove(tab.id);
-        }
-        return {
-          cancel: true,
-        };
-      }).catch((e) => {
-        throw e;
-      });
+      return this.onBeforeRequest(options);
     },{urls: ["<all_urls>"], types: ["main_frame"]}, ["blocking"]);
   },
 
