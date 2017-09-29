@@ -106,6 +106,9 @@ const messageHandler = {
     }, {urls: ["<all_urls>"], types: ["main_frame"]});
 
     browser.tabs.onCreated.addListener((tab) => {
+      if (tab.incognito) {
+        badge.disableAddon(tab.id);
+      }
       // lets remember the last tab created so we can close it if it looks like a redirect
       this.lastCreatedTab = tab;
       if (tab.cookieStoreId) {
@@ -130,12 +133,11 @@ const messageHandler = {
 
   async onFocusChangedCallback(windowId) {
     assignManager.removeContextMenu();
-    const currentWindow = await browser.windows.getCurrent();
     // browserAction loses background color in new windows ...
     // https://bugzil.la/1314674
     // https://github.com/mozilla/testpilot-containers/issues/608
     // ... so re-call displayBrowserActionBadge on window changes
-    badge.displayBrowserActionBadge(currentWindow.incognito);
+    badge.displayBrowserActionBadge();
     browser.tabs.query({active: true, windowId}).then((tabs) => {
       if (tabs && tabs[0]) {
         assignManager.calculateContextMenu(tabs[0]);
