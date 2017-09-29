@@ -78,20 +78,38 @@ To build a local testpilot-containers.xpi, use the plain [`jpm
 xpi`](https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_xpi) command,
 or run `npm run build`.
 
-### Signing an .xpi
-
-To sign an .xpi, use [`jpm
-sign`](https://developer.mozilla.org/en-US/Add-ons/SDK/Tools/jpm#jpm_sign)
-command.
-
-Note: You will need to be [an author on the AMO
-add-on](https://addons.mozilla.org/en-US/developers/addon/containers-experiment/ownership).
-
 ### Testing
 TBD
 
 ### Distributing
-TBD
+#### Make the new version
+
+1. Bump the version number in `package.json`, `install.rdf`, and
+   `manifest.json`
+2. Create a git tag for the version: `git tag <version>`
+3. Push the tag up to GitHub: `git push --tags`
+
+#### Publish to AMO
+While the add-on is an Embedded Web Extension, we have to use the [Mozilla
+Internal Signing
+Service](https://mana.mozilla.org/wiki/display/FIREFOX/Internal+Extension+Signing)
+to sign it as a Mozilla extension exempt from AMO's Web Extension restrictions.
+
+So, to distribute the add-on to AMO:
+
+1. Use `jpm xpi` to build the `.xpi` file
+2. [Submit the `.xpi` to the Internal Signing Service and download the signed `.xpi`](https://mana.mozilla.org/wiki/display/SVCOPS/Sign+a+Mozilla+Internal+Extension)
+3. [Upload the signed `.xpi` file to
+   AMO](https://addons.mozilla.org/en-US/developers/addon/multi-account-containers/versions/submit/)
+
+#### Publish to GitHub
+Finally, we also publish the release to GitHub for those followers.
+
+1. [Make the new release on
+   GitHub](https://github.com/mozilla/multi-account-containers/releases/new)
+   * Use the version number for "Tag version" and "Release title"
+   * Release notes: copy the output of `git log --no-merges --pretty=format:"%h %s" <previous-version>..<new-version>`
+   * Attach binaries: select the signed `.xpi` file
 
 ### Links
 
