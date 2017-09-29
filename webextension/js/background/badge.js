@@ -4,12 +4,13 @@ const badge = {
     const currentWindow = await browser.windows.getCurrent();
     this.displayBrowserActionBadge(currentWindow.incognito);
   },
-  async displayBrowserActionBadge(disable) {
-    if (disable) {
-      browser.browserAction.disable();
-    } else {
-      browser.browserAction.enable();
-    }
+
+  disableAddon(tabId) {
+    browser.browserAction.disable(tabId);
+    browser.browserAction.setTitle({ tabId, title: "Containers disabled in Private Browsing Mode" });
+  },
+
+  async displayBrowserActionBadge() {
     const extensionInfo = await backgroundLogic.getExtensionInfo();
     const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
 
