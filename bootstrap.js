@@ -130,41 +130,58 @@ async function install() {
 }
 
 // eslint-disable-next-line no-unused-vars
-async function uninstall(aData, aReason) {
-  if (aReason === ADDON_UNINSTALL
-      || aReason === ADDON_DISABLE) {
-    const config = await getConfig();
-    const storedPrefs = config.savedConfiguration.prefs || {};
-    PREFS.forEach((pref) => {
-      let value = pref.default;
-      if (pref.name in storedPrefs) {
-        value = storedPrefs[pref.name];
-      }
-      if ("int" === pref.type) {
-        Services.prefs.setIntPref(pref.name, value);
-      } else {
-        Services.prefs.setBoolPref(pref.name, value);
-      }
-    });
+async function uninstall({resourceURI}, aReason) {
+  if (checkLegacyFirefox()) {
+    if (aReason === ADDON_UNINSTALL) {
+      unloadStyles(resourceURI);
+      await removeChanges();
+    }
   }
+}
+
+async function removeChanges() {
+  const config = await getConfig();
+  const storedPrefs = config.savedConfiguration.prefs || {};
+  PREFS.forEach((pref) => {
+    let value = pref.default;
+    if (pref.name in storedPrefs) {
+      value = storedPrefs[pref.name];
+    }
+    if ("int" === pref.type) {
+      Services.prefs.setIntPref(pref.name, value);
+    } else {
+      Services.prefs.setBoolPref(pref.name, value);
+    }
+  });
+}
+
+function checkLegacyFirefox() {
+  const version = Services.appinfo.version;
+  const versionMatch = version.match(/^([0-9]+)\./)[1];
+  if (Number(versionMatch) <= 56) {
+    return true;
+  }
+  return false;
 }
 
 // eslint-disable-next-line no-unused-vars
 function startup({webExtension, resourceURI}) {
-  const version = Services.appinfo.version;
-  const versionMatch = version.match(/^([0-9]+)\./)[1];
-  if (versionMatch === "55"
-      || versionMatch === "56") {
+  if (checkLegacyFirefox()) {
     loadStyles(resourceURI);
+    // Reset prefs that may have changed, or are legacy
+    install();
   }
-  // Reset prefs that may have changed, or are legacy
-  install();
   // Start the embedded webextension.
   webExtension.startup();
 }
 
 // eslint-disable-next-line no-unused-vars
-function shutdown({resourceURI}) {
-  unloadStyles(resourceURI);
+function shutdown({resourceURI}, aReason) {
+  if (checkLegacyFirefox()) {
+    unloadStyles(resourceURI);
+    if (aReason === ADDON_DISABLE) {
+      removeChanges();
+    }
+  }
 }
 
