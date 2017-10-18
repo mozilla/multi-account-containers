@@ -840,6 +840,21 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       Logic.showPreviousPanel();
     });
 
+    Logic.addEnterHandler(document.querySelector("#delete-numbered-link"), async function () {
+      try {
+        const promises = Logic.identities().map(identity => {
+          if (identity.name.match(/^Container #\d+$/)) {
+            return Logic.removeIdentity(Logic.userContextId(identity.cookieStoreId));
+          }
+        });
+        await Promise.all(promises);
+        await Logic.refreshIdentities();
+        Logic.showPreviousPanel();
+      } catch (e) {
+        Logic.showPanel(P_CONTAINERS_LIST);
+      }
+    });
+
     this._editForm = document.getElementById("edit-container-panel-form");
     const editLink = document.querySelector("#edit-container-ok-link");
     Logic.addEnterHandler(editLink, () => {
