@@ -467,6 +467,24 @@ manage things like container crud */
   background: #f2f2f2;
 }
 
+#edit-containers-panel #delete-numbered-link {
+  align-items: center;
+  block-size: var(--block-url-label-size);
+  border: 1px solid #d8d8d8;
+  border-radius: var(--small-radius);
+  color: var(--title-text-color);
+  display: flex;
+  font-size: var(--small-text-size);
+  inline-size: var(--inline-button-size);
+  justify-content: center;
+  text-decoration: none;
+}
+
+#edit-containers-panel #delete-numbered-link:hover,
+#edit-containers-panel #delete-numbered-link:focus {
+  background: #f2f2f2;
+}
+
 span ~ .panel-header-text {
   padding-block-end: 0;
   padding-block-start: 0;
