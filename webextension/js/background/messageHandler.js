@@ -112,12 +112,32 @@ const messageHandler = {
       // lets remember the last tab created so we can close it if it looks like a redirect
       this.lastCreatedTab = tab;
       if (tab.cookieStoreId) {
+        // Don't count firefox-default, firefox-private, nor our own confirm page loads
+        if (tab.cookieStoreId !== "firefox-default" &&
+            tab.cookieStoreId !== "firefox-private" &&
+            tab.url.indexOf("confirm-page.html") === -1) {
+          // increment the counter of container tabs opened
+          this.incrementCountOfContainerTabsOpened();
+        }
+
         this.unhideContainer(tab.cookieStoreId);
       }
       setTimeout(() => {
         this.lastCreatedTab = null;
       }, this.LAST_CREATED_TAB_TIMER);
     });
+  },
+
+  async incrementCountOfContainerTabsOpened() {
+    const key = "containerTabsOpened";
+    const count = await browser.storage.local.get(key);
+    let countOfContainerTabsOpened = count[key];
+    if (countOfContainerTabsOpened === null) {
+      countOfContainerTabsOpened = 1;
+    } else {
+      countOfContainerTabsOpened += 1;
+    }
+    browser.storage.local.set({[key]: countOfContainerTabsOpened});
   },
 
   async unhideContainer(cookieStoreId) {
