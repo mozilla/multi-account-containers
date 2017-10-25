@@ -115,7 +115,7 @@ const messageHandler = {
         // Don't count firefox-default, firefox-private, nor our own confirm page loads
         if (tab.cookieStoreId !== "firefox-default" &&
             tab.cookieStoreId !== "firefox-private" &&
-            tab.url.indexOf("confirm-page.html") === -1) {
+            !tab.url.startsWith("moz-extension")) {
           // increment the counter of container tabs opened
           this.incrementCountOfContainerTabsOpened();
         }
@@ -130,14 +130,20 @@ const messageHandler = {
 
   async incrementCountOfContainerTabsOpened() {
     const key = "containerTabsOpened";
-    const count = await browser.storage.local.get(key);
-    let countOfContainerTabsOpened = count[key];
-    if (countOfContainerTabsOpened === null) {
-      countOfContainerTabsOpened = 1;
-    } else {
-      countOfContainerTabsOpened += 1;
-    }
+    const count = await browser.storage.local.get({[key]: 0});
+    const countOfContainerTabsOpened = ++count[key];
     browser.storage.local.set({[key]: countOfContainerTabsOpened});
+
+    // When the user opens their _ tab, give them the achievement
+    if (countOfContainerTabsOpened === 100) {
+      const storage = await browser.storage.local.get({achievements: []});
+      storage.achievements.push({"name": "manyContainersOpened", "done": false});
+      // use set and spread to create a unique array
+      const achievements = [...new Set(storage.achievements)];
+      browser.storage.local.set({achievements});
+      browser.browserAction.setBadgeBackgroundColor({color: "rgba(0,217,0,255)"});
+      browser.browserAction.setBadgeText({text: "NEW"});
+    }
   },
 
   async unhideContainer(cookieStoreId) {

@@ -22,6 +22,7 @@ const P_CONTAINERS_EDIT  = "containersEdit";
 const P_CONTAINER_INFO   = "containerInfo";
 const P_CONTAINER_EDIT   = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
+const P_CONTAINERS_ACHIEVEMENT = "containersAchievement";
 
 /**
  * Escapes any occurances of &, ", <, > or / with XML entities.
@@ -90,8 +91,8 @@ const Logic = {
 
     // Routing to the correct panel.
     // If localStorage is disabled, we don't show the onboarding.
-    const data = await browser.storage.local.get([ONBOARDING_STORAGE_KEY]);
-    let onboarded = data[ONBOARDING_STORAGE_KEY];
+    const onboardingData = await browser.storage.local.get([ONBOARDING_STORAGE_KEY]);
+    let onboarded = onboardingData[ONBOARDING_STORAGE_KEY];
     if (!onboarded) {
       onboarded = 0;
       this.setOnboardingStage(onboarded);
@@ -99,7 +100,7 @@ const Logic = {
 
     switch (onboarded) {
     case 5:
-      this.showPanel(P_CONTAINERS_LIST);
+      this.showAchievementOrContainersListPanel();
       break;
     case 4:
       this.showPanel(P_ONBOARDING_5);
@@ -119,6 +120,37 @@ const Logic = {
       break;
     }
 
+  },
+
+  async showAchievementOrContainersListPanel() {
+    // Do we need to show an achievement panel?
+    let showAchievements = false;
+    const achievementsStorage = await browser.storage.local.get({achievements: []});
+    for (const achievement of achievementsStorage.achievements) {
+      if (!achievement.done) {
+        showAchievements = true;
+      }
+    }
+    if (showAchievements) {
+      this.showPanel(P_CONTAINERS_ACHIEVEMENT);
+    } else {
+      this.showPanel(P_CONTAINERS_LIST);
+    }
+  },
+
+  // In case the user wants to click multiple actions,
+  // they have to click the "Done" button to stop the panel
+  // from showing
+  async setAchievementDone(achievementName) {
+    const achievementsStorage = await browser.storage.local.get({achievements: []});
+    const achievements = achievementsStorage.achievements;
+    achievements.forEach((achievement, index, achievementsArray) => {
+      if (achievement.name === achievementName) {
+        achievement.done = true;
+        achievementsArray[index] = achievement;
+      }
+    });
+    browser.storage.local.set({achievements});
   },
 
   setOnboardingStage(stage) {
@@ -1011,6 +1043,27 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     icon.setAttribute("data-identity-icon", identity.icon);
     icon.setAttribute("data-identity-color", identity.color);
 
+    return Promise.resolve(null);
+  },
+});
+
+// P_CONTAINERS_ACHIEVEMENT: Page for achievement.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_CONTAINERS_ACHIEVEMENT, {
+  panelSelector: ".achievement-panel",
+
+  // This method is called when the object is registered.
+  initialize() {
+    // Set done and move to the containers list panel.
+    Logic.addEnterHandler(document.querySelector("#achievement-done-button"), async function () {
+      await Logic.setAchievementDone("manyContainersOpened");
+      Logic.showPanel(P_CONTAINERS_LIST);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
     return Promise.resolve(null);
   },
 });
