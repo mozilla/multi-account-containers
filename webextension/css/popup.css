@@ -242,7 +242,8 @@ table {
   min-block-size: 400px;
 }
 
-.panel.onboarding {
+.panel.onboarding,
+.achievement-panel {
   align-items: center;
   block-size: 360px;
   margin-block-end: 16px;
@@ -886,4 +887,54 @@ span ~ .panel-header-text {
   flex: 1 0;
   font-size: 14px !important;
   padding-block-end: 6px;
+}
+
+/* Achievement panel elements */
+.share-ctas {
+  padding-block-end: 0.5em;
+  padding-block-start: 0.5em;
+  padding-inline-end: 0.5em;
+  padding-inline-start: 0.5em;
+  text-align: center;
+}
+
+.cta-link {
+  text-decoration: none;
+}
+
+.cta {
+  color: #fff;
+  font-size: 0.7em;
+  font-weight: bold;
+  margin-block-end: 0.4em;
+  margin-block-start: 0.4em;
+  margin-inline-end: 0.4em;
+  margin-inline-start: 0.4em;
+  padding-block-end: 0.5em;
+  padding-block-start: 0.5em;
+  padding-inline-end: 0.5em;
+  padding-inline-start: 0.5em;
+  text-transform: uppercase;
+}
+
+.cta-icon {
+  height: 18px;
+  padding-right: 0.5em;
+  vertical-align: middle;
+}
+
+.fb-share-cta {
+  background: #375496;
+}
+
+.fb-share-cta .cta-icon {
+  margin-block-start: -5px;
+}
+
+.tweet-cta {
+  background: #37bae7;
+}
+
+.amo-rate-cta {
+  background: #0f1126;
 }
