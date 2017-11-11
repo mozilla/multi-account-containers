@@ -31,7 +31,7 @@ const Cu = Components.utils;
 const Cc = Components.classes;
 Cu.import("resource://gre/modules/Services.jsm");
 Cu.import("resource://gre/modules/XPCOMUtils.jsm");
-const { TextDecoder, TextEncoder } = Cu.import("resource://gre/modules/commonjs/toolkit/loader.js", {});
+Cu.importGlobalProperties(["TextEncoder", "TextDecoder"]);
 
 XPCOMUtils.defineLazyModuleGetter(this, "OS",
                                   "resource://gre/modules/osfile.jsm");
