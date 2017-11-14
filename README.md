@@ -12,12 +12,34 @@ For more info, see:
 * [Test Pilot Product Hypothesis Document](https://docs.google.com/document/d/1WQdHTVXROk7dYkSFluc6_hS44tqZjIrG9I-uPyzevE8/edit#)
 * [Shield Product Hypothesis Document](https://docs.google.com/document/d/1vMD-fH_5hGDDqNvpRZk12_RhCN2WAe4_yaBamaNdtik/edit#)
 
+---
+
+## Table of Contents (ToC)
+
+* [Requirements](#requirements)
+* [Development](#development)
+* [Development](#web-extension-development)
+* [Legacy Development](#legacy-development)
+* [Development Environment](#development-environment)
+* [Run the `.xpi` file in an unbranded build](#run-the-xpi-file-in-an-unbranded-build)
+* [Correct prefs](#correct-prefs)
+* [Run the TxP experiment with `jpm`](#run-the-txp-experiment-with-jpm)
+* [Building .xpi](#building-xpi)
+* [Testing](#testing)
+* [Distributing](#distributing)
+* [Make the new verion](#make-the-new-version)
+* [Publish the AMO](#publish-the-amo)
+* [Publish to GitHub](#publish-to-github)
+* [Links](#links)
+
+---
 
 ## Requirements
 
 * node 7+ (for jpm)
 * Firefox 53+
 
+---
 
 ## Development
 
@@ -30,6 +52,7 @@ Since Firefox 57, this extension can now be run without any of the legacy compon
 
 This will work in other builds of Firefox however certain features won't work and you will need to manually flip preferences to enable containers. All other sections of this guide talk about using the legacy setup with jpm.
 
+---
 
 ## Legacy Development
 
@@ -72,6 +95,8 @@ Change the following prefs in about:config:
 
 Check out the [Browser Toolbox](https://developer.mozilla.org/en-US/docs/Tools/Browser_Toolbox) for more information about debugging add-on code.
 
+---
+
 ### Building .xpi
 
 To build a local testpilot-containers.xpi, use the plain [`jpm
@@ -111,8 +136,14 @@ Finally, we also publish the release to GitHub for those followers.
    * Release notes: copy the output of `git log --no-merges --pretty=format:"%h %s" <previous-version>..<new-version>`
    * Attach binaries: select the signed `.xpi` file
 
+---
+
 ### Links
 
 - [Licence](./LICENSE.txt)
 - [Contributing](./CONTRIBUTING.md)
 - [Code Of Conduct](./CODE_OF_CONDUCT.md)
+
+---
+
+<img src="https://avatars2.githubusercontent.com/u/131524?s=200&v=4" width="50"></img>
