@@ -8,3 +8,5 @@ README.html
 .vimrc
 .env
 addon.env
+
+webextension/web-ext-artifacts/*
