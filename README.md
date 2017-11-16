@@ -86,8 +86,9 @@ TBD
 
 1. Bump the version number in `package.json`, `install.rdf`, and
    `manifest.json`
-2. Create a git tag for the version: `git tag <version>`
-3. Push the tag up to GitHub: `git push --tags`
+2. Commit the version number bump
+3. Create a git tag for the version: `git tag <version>`
+4. Push the tag up to GitHub: `git push --tags`
 
 #### Publish to AMO
 While the add-on is an Embedded Web Extension, we have to use the [Mozilla
