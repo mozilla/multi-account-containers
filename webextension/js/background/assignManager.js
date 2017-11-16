@@ -177,6 +177,20 @@ const assignManager = {
     browser.webRequest.onBeforeRequest.addListener((options) => {
       return this.onBeforeRequest(options);
     },{urls: ["<all_urls>"], types: ["main_frame"]}, ["blocking"]);
+
+    browser.commands.onCommand.addListener(command => {
+      return this._onCommandHandler(command);
+    });
+  },
+
+  async _onCommandHandler(command) {
+    if (command === "new-tab-container") {
+      return browser.tabs.query({active: true, lastFocusedWindow: true}).then(tabs => {
+        return tabs[0];
+      }).then(tab => {
+        return browser.tabs.create({cookieStoreId: tab.cookieStoreId});
+      });
+    }
   },
 
   async _onClickedHandler(info, tab) {
