@@ -719,6 +719,19 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       }
     });
 
+    Logic.addEnterHandler(document.querySelector("#container-info-hideothers"), async function () {
+      try {
+        browser.runtime.sendMessage({
+          method: "showOnly",
+          windowId: browser.windows.WINDOW_ID_CURRENT,
+          cookieStoreId: Logic.currentCookieStoreId()
+        });
+        window.close();
+      } catch (e) {
+        window.close();
+      }
+    });
+
     // Check if the user has incompatible add-ons installed
     try {
       const incompatible = await browser.runtime.sendMessage({
@@ -774,6 +787,9 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
     const hideShowLabel = document.getElementById("container-info-hideorshow-label");
     hideShowLabel.textContent = identity.hasHiddenTabs ? "Show this container" : "Hide this container";
+
+    const hideOthersLabel = document.getElementById("container-info-hideothers");
+    hideOthersLabel.textContent = identity.hasHiddenTabs ? "Show only this container" : "Hide other containers";
 
     // Let's remove all the previous tabs.
     const table = document.getElementById("container-info-table");

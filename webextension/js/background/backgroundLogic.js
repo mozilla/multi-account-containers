@@ -318,6 +318,35 @@ const backgroundLogic = {
     return Promise.all(promises);
   },
 
+  async showOnly(options) {
+    if (!("windowId" in options) || !("cookieStoreId" in options)) {
+      return Promise.reject("showOnly needs both a windowId and a cookieStoreId");
+    }
+
+    const [identities, state] = await Promise.all([
+      browser.contextualIdentities.query({}),
+      backgroundLogic.queryIdentitiesState(options.windowId)
+    ]);
+
+    const promises = [];
+    identities
+      .filter(identity => {
+        const stateObject = state[identity.cookieStoreId];
+        const filt = identity.cookieStoreId !== options.cookieStoreId &&
+          stateObject && stateObject.hasOpenTabs;
+        return filt;
+      }).map(identity => identity.cookieStoreId)
+      .forEach(cookieStoreId => {
+        promises.push(backgroundLogic.hideTabs({cookieStoreId, windowId: options.windowId}));
+      });
+
+    // We need to call unhideContainer in messageHandler to prevent it from
+    // unhiding multiple times
+    promises.push(messageHandler.unhideContainer(options.cookieStoreId));
+
+    return Promise.all(promises);
+  },
+
   cookieStoreId(userContextId) {
     return `firefox-container-${userContextId}`;
   }
