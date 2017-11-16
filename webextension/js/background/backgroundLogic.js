@@ -14,6 +14,25 @@ const backgroundLogic = {
     return extensionInfo;
   },
 
+  async getContainers(windowId) {
+    const [identities, state] = await Promise.all([
+      browser.contextualIdentities.query({}),
+      backgroundLogic.queryIdentitiesState(windowId)
+    ]);
+
+    return identities
+      .filter(identity => {
+        return identity.cookieStoreId in state;
+      })
+      .map(identity => {
+        const stateObject = state[identity.cookieStoreId];
+        identity.hasOpenTabs = stateObject.hasOpenTabs;
+        identity.hasHiddenTabs = stateObject.hasHiddenTabs;
+
+        return identity;
+      });
+  },
+
   getUserContextIdFromCookieStoreId(cookieStoreId) {
     if (!cookieStoreId) {
       return false;
@@ -300,21 +319,15 @@ const backgroundLogic = {
   },
 
   async unhideAllTabs(windowId) {
-    const [identities, state] = await Promise.all([
-      browser.contextualIdentities.query({}),
-      backgroundLogic.queryIdentitiesState(windowId)
-    ]);
-
     const promises = [];
-    identities.filter(identity => {
-      const stateObject = state[identity.cookieStoreId];
-      return stateObject && stateObject.hasHiddenTabs;
-    }).map(identity => identity.cookieStoreId)
-    .forEach(cookieStoreId => {
-      // We need to call unhideContainer in messageHandler to prevent it from
-      // unhiding multiple times
-      promises.push(messageHandler.unhideContainer(cookieStoreId));
-    });
+    (await backgroundLogic.getContainers(windowId))
+      .filter(identity => identity.hasHiddenTabs)
+      .map(identity => identity.cookieStoreId)
+      .forEach(cookieStoreId => {
+        // We need to call unhideContainer in messageHandler to prevent it from
+        // unhiding multiple times
+        promises.push(messageHandler.unhideContainer(cookieStoreId));
+      });
     return Promise.all(promises);
   },
 
@@ -323,19 +336,10 @@ const backgroundLogic = {
       return Promise.reject("showOnly needs both a windowId and a cookieStoreId");
     }
 
-    const [identities, state] = await Promise.all([
-      browser.contextualIdentities.query({}),
-      backgroundLogic.queryIdentitiesState(options.windowId)
-    ]);
-
     const promises = [];
-    identities
-      .filter(identity => {
-        const stateObject = state[identity.cookieStoreId];
-        const filt = identity.cookieStoreId !== options.cookieStoreId &&
-          stateObject && stateObject.hasOpenTabs;
-        return filt;
-      }).map(identity => identity.cookieStoreId)
+    (await backgroundLogic.getContainers(options.windowId))
+      .filter(identity => identity.cookieStoreId !== options.cookieStoreId && identity.hasOpenTabs)
+      .map(identity => identity.cookieStoreId)
       .forEach(cookieStoreId => {
         promises.push(backgroundLogic.hideTabs({cookieStoreId, windowId: options.windowId}));
       });
