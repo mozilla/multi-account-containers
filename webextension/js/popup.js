@@ -500,6 +500,20 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       }
     });
 
+    Logic.addEnterHandler(document.querySelector("#unhide-all-containers-link"), async function () {
+      try {
+        await browser.runtime.sendMessage({
+          method: "unhideAllTabs",
+          message: {
+            windowId: browser.windows.WINDOW_ID_CURRENT
+          }
+        });
+        window.close();
+      } catch (e) {
+        window.close();
+      }
+    });
+
     document.addEventListener("keydown", (e) => {
       const selectables = [...document.querySelectorAll("[tabindex='0'], [tabindex='-1']")];
       const element = document.activeElement;

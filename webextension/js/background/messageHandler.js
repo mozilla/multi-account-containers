@@ -68,6 +68,9 @@ const messageHandler = {
       case "exemptContainerAssignment":
         response = assignManager._exemptTab(m);
         break;
+      case "unhideAllTabs":
+        response = backgroundLogic.unhideAllTabs(m.message.windowId);
+        break;
       }
       return response;
     });

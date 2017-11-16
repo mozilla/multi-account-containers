@@ -299,8 +299,26 @@ const backgroundLogic = {
     return await identityState.storageArea.set(options.cookieStoreId, containerState);
   },
 
+  async unhideAllTabs(windowId) {
+    const [identities, state] = await Promise.all([
+      browser.contextualIdentities.query({}),
+      backgroundLogic.queryIdentitiesState(windowId)
+    ]);
+
+    const promises = [];
+    identities.filter(identity => {
+      const stateObject = state[identity.cookieStoreId];
+      return stateObject && stateObject.hasHiddenTabs;
+    }).map(identity => identity.cookieStoreId)
+    .forEach(cookieStoreId => {
+      // We need to call unhideContainer in messageHandler to prevent it from
+      // unhiding multiple times
+      promises.push(messageHandler.unhideContainer(cookieStoreId));
+    });
+    return Promise.all(promises);
+  },
+
   cookieStoreId(userContextId) {
     return `firefox-container-${userContextId}`;
   }
 };
-
