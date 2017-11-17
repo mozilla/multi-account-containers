@@ -38,6 +38,12 @@
         "mac": "MacCtrl+Period"
       },
       "description": "Open containers panel"
+    },
+    "new-tab-container": {
+      "suggested_key": {
+        "default": "Ctrl+Y"
+      },
+      "description": "Open new tab with the same container"
     }
   },
 
