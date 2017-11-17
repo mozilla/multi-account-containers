@@ -3,8 +3,7 @@ package-lock.json
 node_modules
 README.html
 *.xpi
-*.swp
-*.swo
+*.sw*
 .vimrc
 .env
 addon.env
