@@ -559,24 +559,77 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     assignmentCheckboxElement.disabled = disabled;
   },
 
+  setupReopenSelect(currentTab, currentContainer) {
+    const reopenSelectElement = document.getElementById("container-page-reopen");
+    reopenSelectElement.innerHTML = "";
+
+    const identities = Logic.identities();
+    // We have to push the default container, as it is not really an identity
+    if (currentContainer.color === "default-tab") {
+      identities.push(currentContainer);
+    }
+
+    for (const identity of identities) {
+      const option = document.createElement("option");
+      option.text = identity.name;
+      option.value = identity.cookieStoreId;
+      option.setAttribute("data-identity-icon", identity.icon);
+      option.setAttribute("data-identity-color", identity.color);
+
+      // The current container (might be default) should be the default, but
+      // unselectable, as we can not reopen in the same conainer
+      if (identity.cookieStoreId === currentContainer.cookieStoreId) {
+        option.defaultSelected = true;
+        option.disabled = true;
+        option.hidden = true;
+      }
+
+      reopenSelectElement.add(option);
+    }
+
+    reopenSelectElement.removeEventListener("change", this.reopenListener);
+    this.reopenListener = event => {
+      if (event.target.value === currentContainer.cookieStoreId) {
+        return;
+      }
+      browser.tabs.create({
+        active: true,
+        cookieStoreId: event.target.value,
+        index: currentTab.index + 1,
+        openerTabId: currentTab.id,
+        pinned: currentTab.pinned,
+        url: currentTab.url,
+      }).then(() => {
+        browser.tabs.remove(currentTab.id);
+      }).then(window.close).catch(window.close);
+    };
+    reopenSelectElement.addEventListener("change", this.reopenListener);
+  },
+
   async prepareCurrentTabHeader() {
     const currentTab = await Logic.currentTab();
+    const currentTabUserContextId = Logic.userContextId(currentTab.cookieStoreId);
     const currentTabElement = document.getElementById("current-tab");
     const assignmentCheckboxElement = document.getElementById("container-page-assigned");
-    const currentTabUserContextId = Logic.userContextId(currentTab.cookieStoreId);
+
+    currentTabElement.hidden = !currentTab;
     assignmentCheckboxElement.addEventListener("change", () => {
       Logic.setOrRemoveAssignment(currentTab.id, currentTab.url, currentTabUserContextId, !assignmentCheckboxElement.checked);
     });
-    currentTabElement.hidden = !currentTab;
+
     this.setupAssignmentCheckbox(false, currentTabUserContextId);
+
     if (currentTab) {
       const identity = await Logic.identity(currentTab.cookieStoreId);
       const siteSettings = await Logic.getAssignment(currentTab);
       this.setupAssignmentCheckbox(siteSettings, currentTabUserContextId);
+
       const currentPage = document.getElementById("current-page");
       currentPage.innerHTML = escaped`<span class="page-title truncate-text">${currentTab.title}</span>`;
       const favIconElement = Utils.createFavIconElement(currentTab.favIconUrl || "");
       currentPage.prepend(favIconElement);
+
+      this.setupReopenSelect(currentTab, identity);
 
       const currentContainer = document.getElementById("current-container");
       currentContainer.innerText = identity.name;

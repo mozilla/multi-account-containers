@@ -514,8 +514,21 @@ span ~ .panel-header-text {
 }
 
 #current-tab > label {
-  display: contents;
   font-size: var(--small-text-size);
+  grid-column: 2 / 4;
+  grid-column-start: 2;
+}
+
+#current-tab select {
+  color: var(--text-normal-color);
+  font-size: var(--small-text-size);
+  inline-size: var(--inline-button-size);
+  justify-content: center;
+  text-decoration: none;
+}
+
+#current-tab > label[for="container-page-assigned"] {
+  display: contents;
 }
 
 #current-tab > label > input {
