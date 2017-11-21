@@ -544,17 +544,17 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       case 53:
         select(5);
         break;
-      case 53:
+      case 54:
         select(6);
         break;
-      case 53:
+      case 55:
         select(7);
         break;
-      case 53:
+      case 56:
         select(8);
         break;
-      case 53:
-        select(99);
+      case 57:
+        select(9);
         break;
       case 48:
         select(10);
