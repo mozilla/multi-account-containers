@@ -516,12 +516,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
           previousElement.focus();
         }
       }
-      function select(num) {
-        const element = selectables[num];
-        if (element) {
-          element.click();
-        }
-      }
       switch (e.keyCode) {
       case 40:
         next();
@@ -529,12 +523,12 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       case 38:
         previous();
         break;
-      case 48:
-        select(10);
-        break;
       default:
         if (e.keyCode >= 49 && e.keyCode <= 57) {
-          select(e.keyCode - 48);
+          const element = selectables[e.keyCode - 48];
+          if (element) {
+            element.click();
+          }
         }
         break;
       }
