@@ -2,7 +2,7 @@
   "name": "testpilot-containers",
   "title": "Multi-Account Containers",
   "description": "Containers helps you keep all the parts of your online life contained in different tabs. Custom labels and color-coded tabs help keep different activities — like online shopping, travel planning, or checking work email — separate.",
-  "version": "4.1.0",
+  "version": "5.0.0",
   "author": "Andrea Marchesini, Luke Crouch and Jonathan Kingston",
   "bugs": {
     "url": "https://github.com/mozilla/testpilot-containers/issues"
@@ -15,7 +15,6 @@
     "eslint-plugin-no-unsanitized": "^2.0.0",
     "eslint-plugin-promise": "^3.4.0",
     "htmllint-cli": "^0.0.5",
-    "jpm": "^1.2.2",
     "json": "^9.0.6",
     "npm-run-all": "^4.0.0",
     "stylelint": "^7.9.0",
@@ -30,14 +29,14 @@
     "url": "git+https://github.com/mozilla/testpilot-containers.git"
   },
   "scripts": {
-    "build": "npm test && jpm xpi",
+    "build": "npm test && cd src && web-ext build --overwrite-dest",
     "deploy": "deploy-txp",
     "lint": "npm-run-all lint:*",
-    "lint:addon": "addons-linter webextension --self-hosted",
-    "lint:css": "stylelint webextension/css/*.css",
-    "lint:html": "htmllint webextension/*.html",
+    "lint:addon": "addons-linter src --self-hosted",
+    "lint:css": "stylelint src/css/*.css",
+    "lint:html": "htmllint *.html",
     "lint:js": "eslint .",
-    "package": "npm run build && mv testpilot-containers.xpi addon.xpi",
+    "package": "rm -rf src/web-ext-artifacts && npm run build && mv src/web-ext-artifacts/firefox_multi-account_containers-*.zip addon.xpi",
     "test": "npm run lint"
   }
 }
