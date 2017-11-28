@@ -529,35 +529,13 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       case 38:
         previous();
         break;
-      case 49:
-        select(1);
-        break;
-      case 50:
-        select(2);
-        break;
-      case 51:
-        select(3);
-        break;
-      case 52:
-        select(4);
-        break;
-      case 53:
-        select(5);
-        break;
-      case 54:
-        select(6);
-        break;
-      case 55:
-        select(7);
-        break;
-      case 56:
-        select(8);
-        break;
-      case 57:
-        select(9);
-        break;
       case 48:
         select(10);
+        break;
+      default:
+        if (e.keyCode >= 49 && e.keyCode <= 57) {
+          select(e.keyCode - 48);
+        }
         break;
       }
     });
