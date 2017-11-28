@@ -523,6 +523,14 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       case 38:
         previous();
         break;
+      default:
+        if (e.keyCode >= 49 && e.keyCode <= 57) {
+          const element = selectables[e.keyCode - 48];
+          if (element) {
+            element.click();
+          }
+        }
+        break;
       }
     });
 
