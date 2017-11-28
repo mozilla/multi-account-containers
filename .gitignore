@@ -8,4 +8,4 @@ README.html
 .env
 addon.env
 
-webextension/web-ext-artifacts/*
+src/web-ext-artifacts/*
