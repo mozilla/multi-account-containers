@@ -5,7 +5,7 @@
 
   "extends": "stylelint-config-standard",
 
-  "ignoreFiles": ["webextension/css/*.min.css"],
+  "ignoreFiles": ["src/css/*.min.css"],
 
   "rules": {
     "declaration-block-no-duplicate-properties": true,
