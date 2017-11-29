@@ -18,8 +18,8 @@ For more info, see:
 
 ## Development
 
-1. Install web-ext with npm
-2. cd src; web-ext run -f Nightly
+1. `npm install`
+2. `./node_modules/.bin/web-ext run -s src/
 
 ### Testing
 TBD
@@ -33,22 +33,15 @@ TBD
 4. Push the tag up to GitHub: `git push --tags`
 
 #### Publish to AMO
-While the add-on is an Embedded Web Extension, we have to use the [Mozilla
-Internal Signing
-Service](https://mana.mozilla.org/wiki/display/FIREFOX/Internal+Extension+Signing)
-to sign it as a Mozilla extension exempt from AMO's Web Extension restrictions.
 
-So, to distribute the add-on to AMO:
-
-1. Use `jpm xpi` to build the `.xpi` file
-2. [Submit the `.xpi` to the Internal Signing Service and download the signed `.xpi`](https://mana.mozilla.org/wiki/display/SVCOPS/Sign+a+Mozilla+Internal+Extension)
-3. [Upload the signed `.xpi` file to
-   AMO](https://addons.mozilla.org/en-US/developers/addon/multi-account-containers/versions/submit/)
+1. `npm run-script build`
+2. [Upload the `.zip` to AMO](https://addons.mozilla.org/en-US/developers/addon/multi-account-containers/versions/submit/)
 
 #### Publish to GitHub
 Finally, we also publish the release to GitHub for those followers.
 
-1. [Make the new release on
+1. Download the signed `.xpi` from [the addon versions page](https://addons.mozilla.org/en-US/developers/addon/multi-account-containers/versions)
+2. [Make the new release on
    GitHub](https://github.com/mozilla/multi-account-containers/releases/new)
    * Use the version number for "Tag version" and "Release title"
    * Release notes: copy the output of `git log --no-merges --pretty=format:"%h %s" <previous-version>..<new-version>`
