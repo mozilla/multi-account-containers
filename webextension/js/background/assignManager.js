@@ -144,7 +144,7 @@ const assignManager = {
       return {};
     }
 
-    this.reloadPageInContainer(options.url, userContextId, siteSettings.userContextId, tab.index + 1, siteSettings.neverAsk);
+    this.reloadPageInContainer(options.url, userContextId, siteSettings.userContextId, tab.index + 1, tab.active, siteSettings.neverAsk);
     this.calculateContextMenu(tab);
 
     /* Removal of existing tabs:
@@ -350,13 +350,13 @@ const assignManager = {
     });
   },
 
-  reloadPageInContainer(url, currentUserContextId, userContextId, index, neverAsk = false) {
+  reloadPageInContainer(url, currentUserContextId, userContextId, index, active, neverAsk = false) {
     const cookieStoreId = backgroundLogic.cookieStoreId(userContextId);
     const loadPage = browser.extension.getURL("confirm-page.html");
     // False represents assignment is not permitted
     // If the user has explicitly checked "Never Ask Again" on the warning page we will send them straight there
     if (neverAsk) {
-      browser.tabs.create({url, cookieStoreId, index});
+      browser.tabs.create({url, cookieStoreId, index, active});
     } else {
       let confirmUrl = `${loadPage}?url=${this.encodeURLProperty(url)}&cookieStoreId=${cookieStoreId}`;
       let currentCookieStoreId;
@@ -367,7 +367,8 @@ const assignManager = {
       browser.tabs.create({
         url: confirmUrl,
         cookieStoreId: currentCookieStoreId,
-        index
+        index,
+        active
       }).then(() => {
         // We don't want to sync this URL ever nor clutter the users history
         browser.history.deleteUrl({url: confirmUrl});
