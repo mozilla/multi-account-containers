@@ -177,6 +177,93 @@ const assignManager = {
     browser.webRequest.onBeforeRequest.addListener((options) => {
       return this.onBeforeRequest(options);
     },{urls: ["<all_urls>"], types: ["main_frame"]}, ["blocking"]);
+
+    // We need to keep track over the last activated tab, in order to open new
+    // tabs in the correct container. See the comments in _onTabCreated for
+    // more details
+    this.lastActivatedTab = new Map();
+    browser.tabs.onActivated.addListener((info) => {
+      this._onTabActivated(info);
+    });
+    // We need to query for the currently active tabs, to support
+    // hot-reloading of the extensions, and possibly also for functioning on
+    // browser startup
+    browser.tabs.query({active: true}).then(active => {
+      active.forEach(tab => {
+        this.lastActivatedTab.set(tab.windowId, tab.id);
+      });
+    }).catch();
+
+    // Add listener that reopens new tabs without container in the same
+    // container as the last tab.
+    browser.tabs.onCreated.addListener((tab) => {
+      this._onTabCreated(tab);
+    });
+  },
+
+  _onTabActivated(info) {
+    this.lastActivatedTab.set(info.windowId, info.tabId);
+  },
+
+  async _onTabCreated(tab) {
+    // Here we rely on the fact that the new tab is created before it can be
+    // activated, so that the "currently active" tab before this set of event
+    // executions is really the previous tab
+    const previousTabId = this.lastActivatedTab.get(tab.windowId);
+    if (!previousTabId) {
+      return;
+    }
+
+    browser.contextualIdentities.get(tab.cookieStoreId).catch(() => {
+      // We now know that the new tab doesn't have an identity
+      return browser.tabs.get(previousTabId);
+    }).then(previousTab => {
+      if (tab.cookieStoreId === previousTab.cookieStoreId) {
+        return;
+      }
+      // We now know that the previous tab did have an identity (as it is
+      // different from the one the new tab has, which is none) therefore, we
+      // add a listener that will reopen the tab once we know the URL.
+
+      // Here we rely on the fact that about:newtab and the like will get
+      // an update event for setting the favicon, and that other sites will
+      // get their URL in the first update event
+      const updateHandler = (tabId, change, newTab) => {
+        if (tabId !== tab.id) {
+          return;
+        } else {
+          browser.tabs.onUpdated.removeListener(updateHandler);
+        }
+
+        this.reopenIn(newTab, previousTab.cookieStoreId);
+      };
+      browser.tabs.onUpdated.addListener(updateHandler);
+    }).catch();
+  },
+
+  async reopenIn(tab, cookieStoreId) {
+    const createTabObject = (withUrl) => {
+      const obj = {
+        active: tab.active,
+        cookieStoreId: cookieStoreId,
+        index: tab.index,
+        openerTabId: tab.openerTabId,
+        pinned: tab.pinned,
+        windowId: tab.windowId
+      };
+      if (withUrl) {
+        obj.url = tab.url;
+      }
+      return obj;
+    };
+
+    browser.tabs.create(createTabObject(true)).catch(() => {
+      // We are probably going to the new tab page, which is protected, so
+      // instead, we just open a plain new tab, without an URL
+      return browser.tabs.create(createTabObject(false));
+    }).then(() => {
+      browser.tabs.remove(tab.id);
+    }).catch();
   },
 
   async _onClickedHandler(info, tab) {
