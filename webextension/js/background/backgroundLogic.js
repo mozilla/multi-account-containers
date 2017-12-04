@@ -14,6 +14,25 @@ const backgroundLogic = {
     return extensionInfo;
   },
 
+  async getContainers(windowId) {
+    const [identities, state] = await Promise.all([
+      browser.contextualIdentities.query({}),
+      backgroundLogic.queryIdentitiesState(windowId)
+    ]);
+
+    return identities
+      .filter(identity => {
+        return identity.cookieStoreId in state;
+      })
+      .map(identity => {
+        const stateObject = state[identity.cookieStoreId];
+        identity.hasOpenTabs = stateObject.hasOpenTabs;
+        identity.hasHiddenTabs = stateObject.hasHiddenTabs;
+
+        return identity;
+      });
+  },
+
   getUserContextIdFromCookieStoreId(cookieStoreId) {
     if (!cookieStoreId) {
       return false;
@@ -299,8 +318,40 @@ const backgroundLogic = {
     return await identityState.storageArea.set(options.cookieStoreId, containerState);
   },
 
+  async unhideAllTabs(windowId) {
+    const promises = [];
+    (await backgroundLogic.getContainers(windowId))
+      .filter(identity => identity.hasHiddenTabs)
+      .map(identity => identity.cookieStoreId)
+      .forEach(cookieStoreId => {
+        // We need to call unhideContainer in messageHandler to prevent it from
+        // unhiding multiple times
+        promises.push(messageHandler.unhideContainer(cookieStoreId));
+      });
+    return Promise.all(promises);
+  },
+
+  async showOnly(options) {
+    if (!("windowId" in options) || !("cookieStoreId" in options)) {
+      return Promise.reject("showOnly needs both a windowId and a cookieStoreId");
+    }
+
+    const promises = [];
+    (await backgroundLogic.getContainers(options.windowId))
+      .filter(identity => identity.cookieStoreId !== options.cookieStoreId && identity.hasOpenTabs)
+      .map(identity => identity.cookieStoreId)
+      .forEach(cookieStoreId => {
+        promises.push(backgroundLogic.hideTabs({cookieStoreId, windowId: options.windowId}));
+      });
+
+    // We need to call unhideContainer in messageHandler to prevent it from
+    // unhiding multiple times
+    promises.push(messageHandler.unhideContainer(options.cookieStoreId));
+
+    return Promise.all(promises);
+  },
+
   cookieStoreId(userContextId) {
     return `firefox-container-${userContextId}`;
   }
 };
-

@@ -68,6 +68,15 @@ const messageHandler = {
       case "exemptContainerAssignment":
         response = assignManager._exemptTab(m);
         break;
+      case "unhideAllTabs":
+        response = backgroundLogic.unhideAllTabs(m.message.windowId);
+        break;
+      case "showOnly":
+        response = backgroundLogic.showOnly({
+          windowId: m.windowId,
+          cookieStoreId: m.cookieStoreId
+        });
+        break;
       }
       return response;
     });

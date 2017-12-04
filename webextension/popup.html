@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
@@ -108,6 +109,7 @@
       </label>
     </div>
     <div class="container-panel-controls">
+      <a href="#" class="action-link" id="unhide-all-containers-link" title="Show all hidden containers">Show all</a>
       <a href="#" class="action-link" id="sort-containers-link" title="Sort tabs into container order">Sort Tabs</a>
     </div>
     <div class="scrollable panel-content" tabindex="-1">
@@ -140,6 +142,7 @@
           <img id="container-info-hideorshow-icon" alt="Hide Container icon" src="/img/container-hide.svg" class="icon container-info-panel-hideorshow-icon"/>
           <span id="container-info-hideorshow-label">Hide this container</span>
         </div>
+        <div class="select-row clickable container-info-panel-hide-others container-info-has-tabs" id="container-info-hideothers">Hide other containers</div>
         <div class="select-row clickable container-info-panel-movetabs container-info-has-tabs" id="container-info-movetabs">Move tabs to a new window</div>
         <div class="scrollable">
           <table id="container-info-table" class="container-info-list">

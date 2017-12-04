@@ -500,6 +500,20 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       }
     });
 
+    Logic.addEnterHandler(document.querySelector("#unhide-all-containers-link"), async function () {
+      try {
+        await browser.runtime.sendMessage({
+          method: "unhideAllTabs",
+          message: {
+            windowId: browser.windows.WINDOW_ID_CURRENT
+          }
+        });
+        window.close();
+      } catch (e) {
+        window.close();
+      }
+    });
+
     document.addEventListener("keydown", (e) => {
       const selectables = [...document.querySelectorAll("[tabindex='0'], [tabindex='-1']")];
       const element = document.activeElement;
@@ -603,6 +617,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       const hasTabs = (identity.hasHiddenTabs || identity.hasOpenTabs);
       const tr = document.createElement("tr");
       const context = document.createElement("td");
+      const hide = document.createElement("td");
       const manage = document.createElement("td");
 
       tr.classList.add("container-panel-row");
@@ -623,11 +638,24 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       context.querySelector(".container-name").textContent = identity.name;
       manage.innerHTML = "<img src='/img/container-arrow.svg' class='show-tabs pop-button-image-small' />";
 
+      hide.classList.add("hide-or-show-tabs", "pop-button");
+      const img = document.createElement("img");
+      img.classList.add("hide-or-show-tabs", "pop-button-image-small");
+      if (identity.hasHiddenTabs) {
+        hide.title = escaped`Show ${identity.name} container`;
+        img.setAttribute("src", CONTAINER_HIDE_SRC);
+      } else {
+        hide.title = escaped`Hide ${identity.name} container`;
+        img.setAttribute("src", CONTAINER_UNHIDE_SRC);
+      }
+      hide.appendChild(img);
+
       fragment.appendChild(tr);
 
       tr.appendChild(context);
 
       if (hasTabs) {
+        tr.appendChild(hide);
         tr.appendChild(manage);
       }
 
@@ -635,16 +663,19 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         if (e.target.matches(".open-newtab")
             || e.target.parentNode.matches(".open-newtab")
             || e.type === "keydown") {
-          try {
-            browser.tabs.create({
-              cookieStoreId: identity.cookieStoreId
-            });
-            window.close();
-          } catch (e) {
-            window.close();
-          }
-        } else if (hasTabs) {
+          browser.tabs.create({
+            cookieStoreId: identity.cookieStoreId
+          }).then(window.close).catch(window.close);
+        } else if (e.target.matches(".show-tabs")
+                   || e.target.parentNode.matches(".show-tabs")) {
           Logic.showPanel(P_CONTAINER_INFO, identity);
+        } else if (e.target.matches(".hide-or-show-tabs")
+                   || e.target.parentNode.matches(".hide-or-show-tabs")) {
+          browser.runtime.sendMessage({
+            method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
+            windowId: browser.windows.WINDOW_ID_CURRENT,
+            cookieStoreId: identity.cookieStoreId
+          }).then(window.close).catch(window.close);
         }
       });
     });
@@ -687,6 +718,19 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       try {
         browser.runtime.sendMessage({
           method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
+          windowId: browser.windows.WINDOW_ID_CURRENT,
+          cookieStoreId: Logic.currentCookieStoreId()
+        });
+        window.close();
+      } catch (e) {
+        window.close();
+      }
+    });
+
+    Logic.addEnterHandler(document.querySelector("#container-info-hideothers"), async function () {
+      try {
+        browser.runtime.sendMessage({
+          method: "showOnly",
           windowId: browser.windows.WINDOW_ID_CURRENT,
           cookieStoreId: Logic.currentCookieStoreId()
         });
@@ -751,6 +795,9 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
     const hideShowLabel = document.getElementById("container-info-hideorshow-label");
     hideShowLabel.textContent = identity.hasHiddenTabs ? "Show this container" : "Hide this container";
+
+    const hideOthersLabel = document.getElementById("container-info-hideothers");
+    hideOthersLabel.textContent = identity.hasHiddenTabs ? "Show only this container" : "Hide other containers";
 
     // Let's remove all the previous tabs.
     const table = document.getElementById("container-info-table");

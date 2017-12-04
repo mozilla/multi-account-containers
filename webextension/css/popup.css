@@ -450,7 +450,7 @@ manage things like container crud */
   margin-inline-start: var(--inline-item-space-size);
 }
 
-#container-panel #sort-containers-link {
+#container-panel .action-link {
   align-items: center;
   block-size: var(--block-url-label-size);
   border: 1px solid #d8d8d8;
@@ -460,11 +460,12 @@ manage things like container crud */
   font-size: var(--small-text-size);
   inline-size: var(--inline-button-size);
   justify-content: center;
+  margin-left: var(--block-line-space-size);
   text-decoration: none;
 }
 
-#container-panel #sort-containers-link:hover,
-#container-panel #sort-containers-link:focus {
+#container-panel .action-link:hover,
+#container-panel .action-link:focus {
   background: #f2f2f2;
 }
 
