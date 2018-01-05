@@ -143,7 +143,10 @@ const assignManager = {
         || this.storageArea.isExempted(options.url, tab.id)) {
       return {};
     }
-
+    const removeTab = backgroundLogic.NEW_TAB_PAGES.has(tab.url)
+      || (messageHandler.lastCreatedTab
+        && messageHandler.lastCreatedTab.id === tab.id);
+    const openTabId = removeTab ? tab.openerTabId : tab.id;
     this.reloadPageInContainer(
         options.url,
         userContextId,
@@ -151,7 +154,7 @@ const assignManager = {
         tab.index + 1,
         tab.active,
         siteSettings.neverAsk,
-        tab.id
+        openTabId
         );
     this.calculateContextMenu(tab);
 
@@ -166,9 +169,7 @@ const assignManager = {
             however they don't run on about:blank so this would likely be just as hacky.
         We capture the time the tab was created and close if it was within the timeout to try to capture pages which haven't had user interaction or history.
     */
-    if (backgroundLogic.NEW_TAB_PAGES.has(tab.url)
-        || (messageHandler.lastCreatedTab
-        && messageHandler.lastCreatedTab.id === tab.id)) {
+    if (removeTab) {
       browser.tabs.remove(tab.id);
     }
     return {
