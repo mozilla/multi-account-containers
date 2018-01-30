@@ -132,7 +132,7 @@ const assignManager = {
 
     // The container we have in the assignment map isn't present any more so lets remove it
     //   then continue the existing load
-    if (!container) {
+    if (siteSettings && !container) {
       this.deleteContainer(siteSettings.userContextId);
       return {};
     }
