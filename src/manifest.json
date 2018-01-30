@@ -26,6 +26,7 @@
     "contextualIdentities",
     "history",
     "idle",
+    "management",
     "storage",
     "tabs",
     "webRequestBlocking",
