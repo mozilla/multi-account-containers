@@ -62,6 +62,10 @@
     }
   ],
 
+  "options_ui": {
+    "page": "options/options.html"
+  },
+	      
   "web_accessible_resources": [
     "/img/container-site-d-24.png"
   ]
