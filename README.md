@@ -49,7 +49,7 @@ Finally, we also publish the release to GitHub for those followers.
 
 ### Links
 
-Facebook & Twitter icons CC-Attrib http://fairheadcreative.com.
+Facebook & Twitter icons CC-Attrib https://fairheadcreative.com.
 
 - [Licence](./LICENSE.txt)
 - [Contributing](./CONTRIBUTING.md)
