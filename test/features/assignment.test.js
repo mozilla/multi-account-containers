@@ -35,6 +35,7 @@ describe("Assignment Feature", () => {
                `url=${encodeURIComponent(activeTab.url)}` +
                `&cookieStoreId=${activeTab.cookieStoreId}`,
           cookieStoreId: undefined,
+          openerTabId: null,
           index: 2,
           active: true
         });
