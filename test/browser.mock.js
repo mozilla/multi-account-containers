@@ -8,6 +8,9 @@ module.exports = () => {
       onMessage: {
         addListener: sinon.stub(),
       },
+      onMessageExternal: {
+        addListener: sinon.stub(),
+      },
       sendMessage: sinon.stub().resolves(),
     },
     webRequest: {
@@ -64,6 +67,15 @@ module.exports = () => {
     browserAction: {
       setBadgeBackgroundColor: sinon.stub(),
       setBadgeText: sinon.stub()
+    },
+    management: {
+      get: sinon.stub(),
+      onInstalled: {
+        addListener: sinon.stub()
+      },
+      onUninstalled: {
+        addListener: sinon.stub()
+      }
     },
     extension: {
       getURL: sinon.stub().returns("moz-extension://multi-account-containers/confirm-page.html")
