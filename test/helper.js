@@ -18,14 +18,18 @@ module.exports = {
       });
     },
 
-    async openNewTab(tab) {
+    async openNewTab(tab, options = {isAsync: true}) {
       background.browser.tabs.get.resolves(tab);
       background.browser.webRequest.onBeforeRequest.addListener.yield({
         frameId: 0,
         tabId: tab.id,
-        url: tab.url
+        url: tab.url,
+        requestId: options.requestId
       });
       background.browser.tabs.onCreated.addListener.yield(tab);
+      if (!options.isAsync) {
+        return;
+      }
       await nextTick();
     }
   },
