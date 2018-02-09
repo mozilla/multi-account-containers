@@ -143,7 +143,11 @@ const assignManager = {
         || this.storageArea.isExempted(options.url, tab.id)) {
       return {};
     }
-
+    const removeTab = backgroundLogic.NEW_TAB_PAGES.has(tab.url)
+      || (messageHandler.lastCreatedTab
+        && messageHandler.lastCreatedTab.id === tab.id);
+    const openTabId = removeTab ? tab.openerTabId : tab.id;
+    
     // we decided to cancel the request at this point, register it as canceled request as early as possible
     if (!this.canceledRequests[options.requestId]) {
       this.canceledRequests[options.requestId] = true;
@@ -158,8 +162,16 @@ const assignManager = {
         cancel: true
       };
     }
-
-    this.reloadPageInContainer(options.url, userContextId, siteSettings.userContextId, tab.index + 1, tab.active, siteSettings.neverAsk);
+    
+    this.reloadPageInContainer(
+      options.url,
+      userContextId,
+      siteSettings.userContextId,
+      tab.index + 1,
+      tab.active,
+      siteSettings.neverAsk,
+      openTabId
+    );
     this.calculateContextMenu(tab);
 
     /* Removal of existing tabs:
@@ -173,9 +185,7 @@ const assignManager = {
             however they don't run on about:blank so this would likely be just as hacky.
         We capture the time the tab was created and close if it was within the timeout to try to capture pages which haven't had user interaction or history.
     */
-    if (backgroundLogic.NEW_TAB_PAGES.has(tab.url)
-        || (messageHandler.lastCreatedTab
-        && messageHandler.lastCreatedTab.id === tab.id)) {
+    if (removeTab) {
       browser.tabs.remove(tab.id);
     }
     return {
@@ -366,13 +376,13 @@ const assignManager = {
     });
   },
 
-  reloadPageInContainer(url, currentUserContextId, userContextId, index, active, neverAsk = false) {
+  reloadPageInContainer(url, currentUserContextId, userContextId, index, active, neverAsk = false, openerTabId = null) {
     const cookieStoreId = backgroundLogic.cookieStoreId(userContextId);
     const loadPage = browser.extension.getURL("confirm-page.html");
     // False represents assignment is not permitted
     // If the user has explicitly checked "Never Ask Again" on the warning page we will send them straight there
     if (neverAsk) {
-      browser.tabs.create({url, cookieStoreId, index, active});
+      browser.tabs.create({url, cookieStoreId, index, active, openerTabId});
     } else {
       let confirmUrl = `${loadPage}?url=${this.encodeURLProperty(url)}&cookieStoreId=${cookieStoreId}`;
       let currentCookieStoreId;
@@ -383,6 +393,7 @@ const assignManager = {
       browser.tabs.create({
         url: confirmUrl,
         cookieStoreId: currentCookieStoreId,
+        openerTabId,
         index,
         active
       }).then(() => {
