@@ -132,7 +132,7 @@ const assignManager = {
 
     // The container we have in the assignment map isn't present any more so lets remove it
     //   then continue the existing load
-    if (!container) {
+    if (siteSettings && !container) {
       this.deleteContainer(siteSettings.userContextId);
       return {};
     }
@@ -147,15 +147,31 @@ const assignManager = {
       || (messageHandler.lastCreatedTab
         && messageHandler.lastCreatedTab.id === tab.id);
     const openTabId = removeTab ? tab.openerTabId : tab.id;
+    
+    // we decided to cancel the request at this point, register it as canceled request as early as possible
+    if (!this.canceledRequests[options.requestId]) {
+      this.canceledRequests[options.requestId] = true;
+      // register a cleanup for handled requestIds
+      // all relevant requests that come in that timeframe with the same requestId will be canceled
+      setTimeout(() => {
+        delete this.canceledRequests[options.requestId];
+      }, 2000);
+    } else {
+      // if we see a request for the same requestId at this point then this is a redirect that we have to cancel to prevent opening two tabs
+      return {
+        cancel: true
+      };
+    }
+    
     this.reloadPageInContainer(
-        options.url,
-        userContextId,
-        siteSettings.userContextId,
-        tab.index + 1,
-        tab.active,
-        siteSettings.neverAsk,
-        openTabId
-        );
+      options.url,
+      userContextId,
+      siteSettings.userContextId,
+      tab.index + 1,
+      tab.active,
+      siteSettings.neverAsk,
+      openTabId
+    );
     this.calculateContextMenu(tab);
 
     /* Removal of existing tabs:
@@ -183,6 +199,7 @@ const assignManager = {
     });
 
     // Before a request is handled by the browser we decide if we should route through a different container
+    this.canceledRequests = {};
     browser.webRequest.onBeforeRequest.addListener((options) => {
       return this.onBeforeRequest(options);
     },{urls: ["<all_urls>"], types: ["main_frame"]}, ["blocking"]);

@@ -524,7 +524,8 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         previous();
         break;
       default:
-        if (e.keyCode >= 49 && e.keyCode <= 57) {
+        if ((e.keyCode >= 49 && e.keyCode <= 57) &&
+            Logic._currentPanel === "containersList") {
           const element = selectables[e.keyCode - 48];
           if (element) {
             element.click();
