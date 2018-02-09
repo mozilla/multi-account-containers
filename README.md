@@ -19,7 +19,7 @@ For more info, see:
 ## Development
 
 1. `npm install`
-2. `./node_modules/.bin/web-ext run -s src/
+2. `./node_modules/.bin/web-ext run -s src/`
 
 ### Testing
 TBD
