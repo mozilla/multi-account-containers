@@ -91,11 +91,11 @@ global.buildPopupDom = async (options = {}) => {
 global.afterEach(() => {
   if (global.background) {
     global.background.dom.window.close();
-    delete global.background.dom;
+    delete global.background;
   }
 
   if (global.popup) {
     global.popup.dom.window.close();
-    delete global.popup.dom;
+    delete global.popup;
   }
 });
