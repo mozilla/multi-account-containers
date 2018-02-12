@@ -147,22 +147,44 @@ const assignManager = {
       || (messageHandler.lastCreatedTab
         && messageHandler.lastCreatedTab.id === tab.id);
     const openTabId = removeTab ? tab.openerTabId : tab.id;
-    
-    // we decided to cancel the request at this point, register it as canceled request as early as possible
-    if (!this.canceledRequests[options.requestId]) {
-      this.canceledRequests[options.requestId] = true;
-      // register a cleanup for handled requestIds
-      // all relevant requests that come in that timeframe with the same requestId will be canceled
+
+    if (!this.canceledRequests[tab.id]) {
+      // we decided to cancel the request at this point, register canceled request
+      this.canceledRequests[tab.id] = {
+        requestIds: {
+          [options.requestId]: true
+        },
+        urls: {
+          [options.url]: true
+        }
+      };
+
+      // since webRequest onCompleted and onErrorOccurred are not 100% reliable (see #1120)
+      // we register a timer here to cleanup canceled requests, just to make sure we don't
+      // end up in a situation where certain urls in a tab.id stay canceled
       setTimeout(() => {
-        delete this.canceledRequests[options.requestId];
+        if (this.canceledRequests[tab.id]) {
+          delete this.canceledRequests[tab.id];
+        }
       }, 2000);
     } else {
-      // if we see a request for the same requestId at this point then this is a redirect that we have to cancel to prevent opening two tabs
-      return {
-        cancel: true
-      };
+      let cancelEarly = false;
+      if (this.canceledRequests[tab.id].requestIds[options.requestId] ||
+          this.canceledRequests[tab.id].urls[options.url]) {
+        // same requestId or url from the same tab
+        // this is a redirect that we have to cancel early to prevent opening two tabs
+        cancelEarly = true;
+      }
+      // we decided to cancel the request at this point, register canceled request
+      this.canceledRequests[tab.id].requestIds[options.requestId] = true;
+      this.canceledRequests[tab.id].urls[options.url] = true;
+      if (cancelEarly) {
+        return {
+          cancel: true
+        };
+      }
     }
-    
+
     this.reloadPageInContainer(
       options.url,
       userContextId,
@@ -203,6 +225,19 @@ const assignManager = {
     browser.webRequest.onBeforeRequest.addListener((options) => {
       return this.onBeforeRequest(options);
     },{urls: ["<all_urls>"], types: ["main_frame"]}, ["blocking"]);
+
+    // Clean up canceled requests
+    browser.webRequest.onCompleted.addListener((options) => {
+      if (this.canceledRequests[options.tabId]) {
+        delete this.canceledRequests[options.tabId];
+      }
+    },{urls: ["<all_urls>"], types: ["main_frame"]});
+    browser.webRequest.onErrorOccurred.addListener((options) => {
+      if (this.canceledRequests[options.tabId]) {
+        delete this.canceledRequests[options.tabId];
+      }
+    },{urls: ["<all_urls>"], types: ["main_frame"]});
+
   },
 
   async _onClickedHandler(info, tab) {
