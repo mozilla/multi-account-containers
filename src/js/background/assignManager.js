@@ -1,4 +1,5 @@
 const assignManager = {
+  MENU_REOPEN_IN: "reopen-in-container",
   MENU_ASSIGN_ID: "open-in-this-container",
   MENU_REMOVE_ID: "remove-open-in-this-container",
   MENU_SEPARATOR_ID: "separator",
@@ -180,6 +181,22 @@ const assignManager = {
   },
 
   async _onClickedHandler(info, tab) {
+    const reopenCookieStoreId = this.menuId2cookieStoreId(info.menuItemId);
+
+    if (reopenCookieStoreId) {
+      browser.tabs.create({
+        active: info.frameId !== undefined,
+        cookieStoreId: reopenCookieStoreId,
+        index: tab.index + 1,
+        openerTabId: tab.id,
+        pinned: tab.pinned,
+        url: tab.url,
+      }).then(() => {
+        browser.tabs.remove(tab.id);
+      });
+      return;
+    }
+
     const userContextId = this.getUserContextIdFromCookieStore(tab);
     // Mapping ${URL(info.pageUrl).hostname} to ${userContextId}
     let remove;
@@ -220,6 +237,16 @@ const assignManager = {
       return false;
     }
     return backgroundLogic.getUserContextIdFromCookieStoreId(tab.cookieStoreId);
+  },
+
+  cookieStoreId2menuId(cookieStoreId) {
+    return "reopen-in-" + cookieStoreId;
+  },
+
+  menuId2cookieStoreId(contextMenuId) {
+    if (contextMenuId.startsWith("reopen-in-"))
+      return contextMenuId.substring(10);
+    return false;
   },
 
   isTabPermittedAssign(tab) {
@@ -294,6 +321,12 @@ const assignManager = {
     // We also can't change for always private mode
     // See: https://bugzilla.mozilla.org/show_bug.cgi?id=1352102
     browser.contextMenus.remove(this.MENU_ASSIGN_ID);
+    browser.contextualIdentities.query({}).then((identities) => {
+      identities.forEach((identity) => {
+        browser.contextMenus.remove(this.cookieStoreId2menuId(identity.cookieStoreId));
+      });
+    });
+    browser.contextMenus.remove(this.MENU_REOPEN_IN);
     browser.contextMenus.remove(this.MENU_REMOVE_ID);
     browser.contextMenus.remove(this.MENU_SEPARATOR_ID);
     browser.contextMenus.remove(this.MENU_HIDE_ID);
@@ -302,6 +335,29 @@ const assignManager = {
 
   async calculateContextMenu(tab) {
     this.removeContextMenu();
+
+    browser.contextMenus.create({
+      id: this.MENU_REOPEN_IN,
+      title: "Reopen in container",
+      contexts: ["all", "tab"],
+    });
+
+    const identities = await browser.contextualIdentities.query({});
+    identities.forEach((identity) => {
+      browser.contextMenus.create({
+        id: this.cookieStoreId2menuId(identity.cookieStoreId),
+        title: identity.name,
+        // TODO: colorized icons?
+        icons: {
+          "16": identity.iconUrl
+        },
+        // TODO: hide entry for current container in context menu of tabs
+        contexts: (identity.cookieStoreId !== tab.cookieStoreId) ?
+                   ["all", "tab"] : ["tab"],
+        parentId: this.MENU_REOPEN_IN,
+      });
+    });
+
     const siteSettings = await this._getAssignment(tab);
     // Return early and not add an item if we have false
     // False represents assignment is not permitted
