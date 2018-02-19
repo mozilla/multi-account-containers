@@ -193,6 +193,8 @@ const assignManager = {
         url: tab.url,
       }).then(() => {
         browser.tabs.remove(tab.id);
+      }).catch((e) => {
+        throw e;
       });
       return;
     }
@@ -325,7 +327,7 @@ const assignManager = {
       identities.forEach((identity) => {
         browser.contextMenus.remove(this.cookieStoreId2menuId(identity.cookieStoreId));
       });
-    });
+    }).catch(() => {});
     browser.contextMenus.remove(this.MENU_REOPEN_IN);
     browser.contextMenus.remove(this.MENU_REMOVE_ID);
     browser.contextMenus.remove(this.MENU_SEPARATOR_ID);
