@@ -83,7 +83,7 @@ const messageHandler = {
 
     if (browser.contextualIdentities.onCreated) {
       browser.contextualIdentities.onCreated.addListener(({contextualIdentity}) => {
-        assignManager.addContainerMenuEntry(contextualIdentity, ["all", "tab"])
+        assignManager.addContainerMenuEntry(contextualIdentity, ["all", "tab"]);
       });
     }
 
