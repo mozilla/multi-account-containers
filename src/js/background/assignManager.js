@@ -325,7 +325,7 @@ const assignManager = {
     browser.contextMenus.remove(this.MENU_ASSIGN_ID);
     browser.contextualIdentities.query({}).then((identities) => {
       identities.forEach((identity) => {
-        browser.contextMenus.remove(this.cookieStoreId2menuId(identity.cookieStoreId));
+        this.removeContainerMenuEntry(identity);
       });
     }).catch(() => {});
     browser.contextMenus.remove(this.MENU_REOPEN_IN);
@@ -333,6 +333,24 @@ const assignManager = {
     browser.contextMenus.remove(this.MENU_SEPARATOR_ID);
     browser.contextMenus.remove(this.MENU_HIDE_ID);
     browser.contextMenus.remove(this.MENU_MOVE_ID);
+  },
+
+  addContainerMenuEntry(contextualIdentity, contexts) {
+    browser.contextMenus.create({
+      id: this.cookieStoreId2menuId(contextualIdentity.cookieStoreId),
+      title: contextualIdentity.name,
+      // TODO: colorized icons?
+      icons: {
+        "16": contextualIdentity.iconUrl
+      },
+      // TODO: hide entry for current container in context menu of tabs
+      contexts: contexts,
+      parentId: this.MENU_REOPEN_IN,
+    });
+  },
+
+  removeContainerMenuEntry(contextualIdentity) {
+    browser.contextMenus.remove(this.cookieStoreId2menuId(contextualIdentity.cookieStoreId));
   },
 
   async calculateContextMenu(tab) {
@@ -346,18 +364,8 @@ const assignManager = {
 
     const identities = await browser.contextualIdentities.query({});
     identities.forEach((identity) => {
-      browser.contextMenus.create({
-        id: this.cookieStoreId2menuId(identity.cookieStoreId),
-        title: identity.name,
-        // TODO: colorized icons?
-        icons: {
-          "16": identity.iconUrl
-        },
-        // TODO: hide entry for current container in context menu of tabs
-        contexts: (identity.cookieStoreId !== tab.cookieStoreId) ?
-                   ["all", "tab"] : ["tab"],
-        parentId: this.MENU_REOPEN_IN,
-      });
+      this.addContainerMenuEntry(identity, (identity.cookieStoreId !== tab.cookieStoreId) ?
+                                      ["all", "tab"] : ["tab"]);
     });
 
     const siteSettings = await this._getAssignment(tab);

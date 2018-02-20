@@ -76,6 +76,14 @@ const messageHandler = {
       browser.contextualIdentities.onRemoved.addListener(({contextualIdentity}) => {
         const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(contextualIdentity.cookieStoreId);
         backgroundLogic.deleteContainer(userContextId, true);
+
+        assignManager.removeContainerMenuEntry(contextualIdentity);
+      });
+    }
+
+    if (browser.contextualIdentities.onCreated) {
+      browser.contextualIdentities.onCreated.addListener(({contextualIdentity}) => {
+        assignManager.addContainerMenuEntry(contextualIdentity, ["all", "tab"])
       });
     }
 
