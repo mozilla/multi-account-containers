@@ -72,6 +72,42 @@ const messageHandler = {
       return response;
     });
 
+    // Handles external messages from webextensions
+    const externalExtensionAllowed = {};
+    browser.runtime.onMessageExternal.addListener(async (message, sender) => {
+      if (!externalExtensionAllowed[sender.id]) {
+        const extensionInfo = await browser.management.get(sender.id);
+        if (!extensionInfo.permissions.includes("contextualIdentities")) {
+          throw new Error("Missing contextualIdentities permission");
+        }
+        externalExtensionAllowed[sender.id] = true;
+      }
+      let response;
+      switch (message.method) {
+      case "getAssignment":
+        if (typeof message.url === "undefined") {
+          throw new Error("Missing message.url");
+        }
+        response = assignManager.storageArea.get(message.url);
+        break;
+      default:
+        throw new Error("Unknown message.method");
+      }
+      return response;
+    });
+    // Delete externalExtensionAllowed if add-on installs/updates; permissions might change
+    browser.management.onInstalled.addListener(extensionInfo => {
+      if (externalExtensionAllowed[extensionInfo.id]) {
+        delete externalExtensionAllowed[extensionInfo.id];
+      }
+    });
+    // Delete externalExtensionAllowed if add-on uninstalls; not needed anymore
+    browser.management.onUninstalled.addListener(extensionInfo => {
+      if (externalExtensionAllowed[extensionInfo.id]) {
+        delete externalExtensionAllowed[extensionInfo.id];
+      }
+    });
+
     if (browser.contextualIdentities.onRemoved) {
       browser.contextualIdentities.onRemoved.addListener(({contextualIdentity}) => {
         const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(contextualIdentity.cookieStoreId);
