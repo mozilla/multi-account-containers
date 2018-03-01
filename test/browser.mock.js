@@ -19,6 +19,9 @@ module.exports = () => {
       },
       onCompleted: {
         addListener: sinon.stub()
+      },
+      onErrorOccurred: {
+        addListener: sinon.stub()
       }
     },
     windows: {
