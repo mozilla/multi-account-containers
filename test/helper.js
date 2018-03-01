@@ -18,19 +18,21 @@ module.exports = {
       });
     },
 
-    async openNewTab(tab, options = {isAsync: true}) {
+    async openNewTab(tab, options = {}) {
+      if (options.resetHistory) {
+        background.browser.tabs.create.resetHistory();
+        background.browser.tabs.remove.resetHistory();
+      }
       background.browser.tabs.get.resolves(tab);
-      background.browser.webRequest.onBeforeRequest.addListener.yield({
+      background.browser.tabs.onCreated.addListener.yield(tab);
+      const [promise] = background.browser.webRequest.onBeforeRequest.addListener.yield({
         frameId: 0,
         tabId: tab.id,
         url: tab.url,
         requestId: options.requestId
       });
-      background.browser.tabs.onCreated.addListener.yield(tab);
-      if (!options.isAsync) {
-        return;
-      }
-      await nextTick();
+
+      return promise;
     }
   },
 
