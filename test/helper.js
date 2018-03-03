@@ -1,47 +1,45 @@
 module.exports = {
   browser: {
-    async initializeWithTab(tab) {
-      await buildBackgroundDom({
-        beforeParse(window) {
-          window.browser.tabs.get.resolves(tab);
-          window.browser.tabs.query.resolves([tab]);
-          window.browser.contextualIdentities.get.resolves({
-            cookieStoreId: tab.cookieStoreId
-          });
+    async initializeWithTab(details = {
+      cookieStoreId: "firefox-default",
+      url: "about:newtab"
+    }) {
+      let tab;
+      await buildDom({
+        background: {
+          async afterBuild(background) {
+            tab = await background.browser.tabs._create(details);
+          }
+        },
+        popup: {
+          jsdom: {
+            beforeParse(window) {
+              window.browser.storage.local.set({
+                "browserActionBadgesClicked": [],
+                "onboarding-stage": 5,
+                "achievements": []
+              });
+              window.browser.storage.local.set.resetHistory();
+            }
+          }
         }
       });
-      await buildPopupDom({
-        beforeParse(window) {
-          window.browser.tabs.get.resolves(tab);
-          window.browser.tabs.query.resolves([tab]);
-        }
-      });
+
+      return tab;
     },
 
     async openNewTab(tab, options = {}) {
-      if (options.resetHistory) {
-        background.browser.tabs.create.resetHistory();
-        background.browser.tabs.remove.resetHistory();
-      }
-      background.browser.tabs.get.resolves(tab);
-      background.browser.tabs.onCreated.addListener.yield(tab);
-      const [promise] = background.browser.webRequest.onBeforeRequest.addListener.yield({
-        frameId: 0,
-        tabId: tab.id,
-        url: tab.url,
-        requestId: options.requestId
-      });
-
-      return promise;
+      return background.browser.tabs._create(tab, options);
     }
   },
 
   popup: {
     async clickElementById(id) {
-      const clickEvent = popup.document.createEvent("HTMLEvents");
-      clickEvent.initEvent("click");
-      popup.document.getElementById(id).dispatchEvent(clickEvent);
-      await nextTick();
+      await popup.helper.clickElementById(id);
+    },
+
+    async clickLastMatchingElementByQuerySelector(querySelector) {
+      await popup.helper.clickElementByQuerySelectorAll(querySelector, "last");
     }
-  },
+  }
 };
