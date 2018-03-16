@@ -184,18 +184,15 @@ const assignManager = {
     const reopenCookieStoreId = this.menuId2cookieStoreId(info.menuItemId);
 
     if (reopenCookieStoreId) {
-      browser.tabs.create({
+      const newTab = await browser.tabs.create({
         active: info.frameId !== undefined,
         cookieStoreId: reopenCookieStoreId,
         index: tab.index + 1,
         openerTabId: tab.openerTabId,
         pinned: tab.pinned,
         url: tab.url,
-      }).then(() => {
-        browser.tabs.remove(tab.id);
-      }).catch((e) => {
-        throw e;
       });
+      browser.tabs.remove(tab.id);
       return;
     }
 
@@ -376,10 +373,19 @@ const assignManager = {
       parentId: this.MENU_RELOAD_IN,
     });
 
-    const identities = await browser.contextualIdentities.query({});
-    identities.forEach((identity) => {
-      this.addContainerMenuEntry(identity, (identity.cookieStoreId !== tab.cookieStoreId) ?
-                                      ["all", "tab"] : ["tab"]);
+    let identities;
+    try {
+      identities = await browser.contextualIdentities.query({});
+    } catch (e) {
+      identities = [];
+    }
+
+    identities.forEach(async (identity) => {
+      if (identity.cookieStoreId === tab.cookieStoreId) {
+        this.addReloadMenuEntry(identity, ["tab"], false);
+      } else {
+        this.addReloadMenuEntry(identity, ["all", "tab"], false);
+      }
     });
 
     const siteSettings = await this._getAssignment(tab);
