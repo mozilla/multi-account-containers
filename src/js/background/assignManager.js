@@ -188,7 +188,7 @@ const assignManager = {
         active: info.frameId !== undefined,
         cookieStoreId: reopenCookieStoreId,
         index: tab.index + 1,
-        openerTabId: tab.id,
+        openerTabId: tab.openerTabId,
         pinned: tab.pinned,
         url: tab.url,
       }).then(() => {
@@ -360,6 +360,20 @@ const assignManager = {
       id: this.MENU_REOPEN_IN,
       title: "Reopen in container",
       contexts: ["all", "tab"],
+    });
+
+    browser.contextMenus.create({
+      id: this.getCookieStoreIdFromReloadMenuId("firefox-default"),
+      title: "Default",
+      contexts: ["all", "tab"],
+      parentId: this.MENU_RELOAD_IN,
+    });
+
+    browser.contextMenus.create({
+      id: "reopen-separator",
+      contexts: ["all", "tab"],
+      type: "separator",
+      parentId: this.MENU_RELOAD_IN,
     });
 
     const identities = await browser.contextualIdentities.query({});
