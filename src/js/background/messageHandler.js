@@ -78,13 +78,13 @@ const messageHandler = {
         const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(contextualIdentity.cookieStoreId);
         backgroundLogic.deleteContainer(userContextId, true);
 
-        assignManager.removeContainerMenuEntry(contextualIdentity);
+        assignManager.removeReloadMenuEntry(contextualIdentity);
       });
     }
 
     if (browser.contextualIdentities.onCreated) {
       browser.contextualIdentities.onCreated.addListener(({contextualIdentity}) => {
-        assignManager.addContainerMenuEntry(contextualIdentity, ["all", "tab"]);
+        assignManager.addReloadMenuEntry(contextualIdentity, ["all", "tab"]);
       });
     }
 

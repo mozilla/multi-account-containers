@@ -1,5 +1,5 @@
 const assignManager = {
-  MENU_REOPEN_IN: "reopen-in-container",
+  MENU_RELOAD_IN: "reopen-in-container",
   MENU_ASSIGN_ID: "open-in-this-container",
   MENU_REMOVE_ID: "remove-open-in-this-container",
   MENU_SEPARATOR_ID: "separator",
@@ -181,7 +181,7 @@ const assignManager = {
   },
 
   async _onClickedHandler(info, tab) {
-    const reopenCookieStoreId = this.menuId2cookieStoreId(info.menuItemId);
+    const reopenCookieStoreId = this.getReloadMenuIdFromCookieStoreId(info.menuItemId);
 
     if (reopenCookieStoreId) {
       const newTab = await browser.tabs.create({
@@ -238,11 +238,11 @@ const assignManager = {
     return backgroundLogic.getUserContextIdFromCookieStoreId(tab.cookieStoreId);
   },
 
-  cookieStoreId2menuId(cookieStoreId) {
+  getCookieStoreIdFromReloadMenuId(cookieStoreId) {
     return "reopen-in-" + cookieStoreId;
   },
 
-  menuId2cookieStoreId(contextMenuId) {
+  getReloadMenuIdFromCookieStoreId(contextMenuId) {
     if (contextMenuId.startsWith("reopen-in-"))
       return contextMenuId.substring(10);
     return false;
@@ -320,41 +320,35 @@ const assignManager = {
     // We also can't change for always private mode
     // See: https://bugzilla.mozilla.org/show_bug.cgi?id=1352102
     browser.contextMenus.remove(this.MENU_ASSIGN_ID);
-    browser.contextualIdentities.query({}).then((identities) => {
-      identities.forEach((identity) => {
-        this.removeContainerMenuEntry(identity);
-      });
-    }).catch(() => {});
-    browser.contextMenus.remove(this.MENU_REOPEN_IN);
+    browser.contextMenus.remove(this.MENU_RELOAD_IN);
     browser.contextMenus.remove(this.MENU_REMOVE_ID);
     browser.contextMenus.remove(this.MENU_SEPARATOR_ID);
     browser.contextMenus.remove(this.MENU_HIDE_ID);
     browser.contextMenus.remove(this.MENU_MOVE_ID);
   },
 
-  addContainerMenuEntry(contextualIdentity, contexts) {
+  addReloadMenuEntry(contextualIdentity, contexts) {
     browser.contextMenus.create({
-      id: this.cookieStoreId2menuId(contextualIdentity.cookieStoreId),
+      id: this.getCookieStoreIdFromReloadMenuId(contextualIdentity.cookieStoreId),
       title: contextualIdentity.name,
       // TODO: colorized icons?
       icons: {
         "16": contextualIdentity.iconUrl
       },
-      // TODO: hide entry for current container in context menu of tabs
       contexts: contexts,
-      parentId: this.MENU_REOPEN_IN,
+      parentId: this.MENU_RELOAD_IN,
     });
   },
 
-  removeContainerMenuEntry(contextualIdentity) {
-    browser.contextMenus.remove(this.cookieStoreId2menuId(contextualIdentity.cookieStoreId));
+  removeReloadMenuEntry(contextualIdentity) {
+    browser.contextMenus.remove(this.getCookieStoreIdFromReloadMenuId(contextualIdentity.cookieStoreId));
   },
 
   async calculateContextMenu(tab) {
     this.removeContextMenu();
 
     browser.contextMenus.create({
-      id: this.MENU_REOPEN_IN,
+      id: this.MENU_RELOAD_IN,
       title: "Reopen in container",
       contexts: ["all", "tab"],
     });
