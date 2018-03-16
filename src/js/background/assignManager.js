@@ -192,6 +192,7 @@ const assignManager = {
         pinned: tab.pinned,
         url: tab.url,
       });
+      browser.tabs.update(newTab.id, {"muted": tab.mutedInfo.muted});
       browser.tabs.remove(tab.id);
       return;
     }
