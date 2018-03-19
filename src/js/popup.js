@@ -523,12 +523,13 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       case 38:
         previous();
         break;
-      case 39:
+      case 39: {
         const showTabs = element.parentNode.querySelector(".show-tabs");
         if (showTabs) {
           showTabs.click();
         }
         break;
+      }
       default:
         if ((e.keyCode >= 49 && e.keyCode <= 57) &&
             Logic._currentPanel === "containersList") {
