@@ -5,7 +5,7 @@
   "version": "6.0.0",
   "author": "Andrea Marchesini, Luke Crouch and Jonathan Kingston",
   "bugs": {
-    "url": "https://github.com/mozilla/testpilot-containers/issues"
+    "url": "https://github.com/mozilla/multi-account-containers/issues"
   },
   "dependencies": {},
   "devDependencies": {
@@ -27,12 +27,12 @@
     "stylelint-order": "^0.3.0",
     "web-ext": "^2.2.2"
   },
-  "homepage": "https://github.com/mozilla/testpilot-containers#readme",
+  "homepage": "https://github.com/mozilla/multi-account-containers#readme",
   "license": "MPL-2.0",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mozilla/testpilot-containers.git"
+    "url": "git+https://github.com/mozilla/multi-account-containers.git"
   },
   "scripts": {
     "build": "npm test && cd src && web-ext build --overwrite-dest",
