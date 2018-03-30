@@ -16,7 +16,7 @@
     }
   },
 
-  "homepage_url": "https://testpilot.firefox.com/",
+  "homepage_url": "https://github.com/mozilla/multi-account-containers#readme",
 
   "permissions": [
     "<all_urls>",
