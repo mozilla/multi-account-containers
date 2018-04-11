@@ -8,11 +8,23 @@ const assignManager = {
   storageArea: {
     area: browser.storage.local,
     exemptedTabs: {},
+    jailedUrls: [],
 
     getSiteStoreKey(pageUrl) {
       const url = new window.URL(pageUrl);
       const storagePrefix = "siteContainerMap@@_";
       return `${storagePrefix}${url.hostname}`;
+    },
+
+    setJailed(urls) {
+      this.jailedUrls = urls.map((url) => {
+        return this.getSiteStoreKey(url);
+      });
+    },
+
+    isJailed(pageUrl) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+      return this.jailedUrls.includes(siteStoreKey);
     },
 
     setExempted(pageUrl, tabId) {
@@ -271,7 +283,6 @@ const assignManager = {
     }
   },
 
-
   deleteContainer(userContextId) {
     this.storageArea.deleteContainer(userContextId);
   },
@@ -286,12 +297,22 @@ const assignManager = {
   isTabPermittedAssign(tab) {
     // Ensure we are not an important about url
     // Ensure we are not in incognito mode
-    const url = new URL(tab.url);
-    if (url.protocol === "about:"
-        || url.protocol === "moz-extension:"
+    if (!backgroundLogic.isPermissibleURL(tab.url)
         || tab.incognito) {
       return false;
     }
+    if (this.storageArea.isJailed(tab.url)) {
+      return false;
+    }
+    return true;
+  },
+
+  async _jailURLs(urls) {
+    const removePromises = urls.map((url) => {
+      return this.storageArea.remove(url);
+    });
+    this.storageArea.setJailed(urls);
+    await Promise.all(removePromises);
     return true;
   },
 
