@@ -3,6 +3,8 @@ const messageHandler = {
   // We use this to catch redirected tabs that have just opened
   // If this were in platform we would change how the tab opens based on "new tab" link navigations such as ctrl+click
   LAST_CREATED_TAB_TIMER: 2000,
+  CONTAIN_FACEBOOK_ID: "@contain-facebook",
+  unhideQueue: [],
 
   init() {
     // Handles messages from webextension code
@@ -89,23 +91,34 @@ const messageHandler = {
         }
         response = assignManager.storageArea.get(message.url);
         break;
+      case "jailedDomains":
+        if (sender.id !== messageHandler.CONTAIN_FACEBOOK_ID) {
+          throw new Error("Only 'contain-facebook' is permitted this method at this time");
+        }
+        response = assignManager._jailURLs(message.urls);
+        break;
       default:
         throw new Error("Unknown message.method");
       }
       return response;
     });
-    // Delete externalExtensionAllowed if add-on installs/updates; permissions might change
-    browser.management.onInstalled.addListener(extensionInfo => {
+    browser.runtime.sendMessage("@contain-facebook", {
+      method: "MACListening"
+    });
+    function handleExtensionRemoval(extensionInfo) {
+      // Ensure we reset jailed urls
+      if (extensionInfo.id === messageHandler.CONTAIN_FACEBOOK_ID) {
+        assignManager._jailURLs([]);
+      }
+      // Delete externalExtensionAllowed if add-on installs/updates; permissions might change
       if (externalExtensionAllowed[extensionInfo.id]) {
         delete externalExtensionAllowed[extensionInfo.id];
       }
-    });
-    // Delete externalExtensionAllowed if add-on uninstalls; not needed anymore
-    browser.management.onUninstalled.addListener(extensionInfo => {
-      if (externalExtensionAllowed[extensionInfo.id]) {
-        delete externalExtensionAllowed[extensionInfo.id];
-      }
-    });
+    }
+    browser.management.onInstalled.addListener(handleExtensionRemoval);
+    browser.management.onEnabled.addListener(handleExtensionRemoval);
+    browser.management.onDisabled.addListener(handleExtensionRemoval);
+    browser.management.onUninstalled.addListener(handleExtensionRemoval);
 
     if (browser.contextualIdentities.onRemoved) {
       browser.contextualIdentities.onRemoved.addListener(({contextualIdentity}) => {
