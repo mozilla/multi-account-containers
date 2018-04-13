@@ -145,8 +145,12 @@ const assignManager = {
     if(options.originUrl) {
         const originUrl = new window.URL(options.originUrl);
         const newUrl = new window.URL(options.url);
-        if(originUrl.hostname === newUrl.hostname)
+        if(originUrl.hostname === newUrl.hostname) {
+            // in fact, set this URL-tab combo exempted so future manual browsing
+            // within it does also not trigger new prompts
+            this.storageArea.setExempted(options.url, options.tabId);
             return {};
+        }
     }
 
     const userContextId = this.getUserContextIdFromCookieStore(tab);
