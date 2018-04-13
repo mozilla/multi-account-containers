@@ -143,14 +143,14 @@ const assignManager = {
     //   in a new tab will not be subject to this protection.
     // To prevent this, explicitly allow requests that don't change host to go through.
     if(options.originUrl) {
-        const originUrl = new window.URL(options.originUrl);
-        const newUrl = new window.URL(options.url);
-        if(originUrl.hostname === newUrl.hostname) {
-            // in fact, set this URL-tab combo exempted so future manual browsing
-            // within it does also not trigger new prompts
-            this.storageArea.setExempted(options.url, options.tabId);
-            return {};
-        }
+      const originUrl = new window.URL(options.originUrl);
+      const newUrl = new window.URL(options.url);
+      if(originUrl.hostname === newUrl.hostname) {
+        // in fact, set this URL-tab combo exempted so future manual browsing
+        //   within it does also not trigger new prompts
+        this.storageArea.setExempted(options.url, options.tabId);
+        return {};
+      }
     }
 
     const userContextId = this.getUserContextIdFromCookieStore(tab);
