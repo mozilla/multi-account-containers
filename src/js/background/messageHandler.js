@@ -90,6 +90,27 @@ const messageHandler = {
         }
         response = assignManager.storageArea.get(message.url);
         break;
+      case "getAssignmentObjectByContainer":
+        if (typeof message.userContextId === "undefined") {
+          throw new Error("Missing message.userContextId");
+        }
+        response = Object.values(assignManager.storageArea.getByContainer(message.userContextId));
+        break;
+      case "setAssignment":
+        if (typeof message.userContextId === "undefined") {
+          throw new Error("Missing message.userContextId");
+        }
+        if (typeof message.neverAsk === "undefined") {
+          throw new Error("Missing message.neverAsk");
+        }
+        response = assignManager.storageArea.set(message.url, { userContextId: message.userContextId, neverAsk: message.neverAsk});
+        break;
+      case "removeAssignment":
+        if (typeof message.url === "undefined") {
+          throw new Error("Missing message.url");
+        }
+        response = assignManager.storageArea.remove(message.url);
+        break;
       default:
         throw new Error("Unknown message.method");
       }
