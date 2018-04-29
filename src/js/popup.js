@@ -177,7 +177,9 @@ const Logic = {
       name: "Default",
       cookieStoreId,
       icon: "default-tab",
-      color: "default-tab"
+      color: "default-tab",
+      numberOfHiddenTabs: 0,
+      numberOfOpenTabs: 0
     };
     // Handle old style rejection with null and also Promise.reject new style
     try {
@@ -248,6 +250,8 @@ const Logic = {
       if (stateObject) {
         identity.hasOpenTabs = stateObject.hasOpenTabs;
         identity.hasHiddenTabs = stateObject.hasHiddenTabs;
+        identity.numberOfHiddenTabs = stateObject.numberOfHiddenTabs;
+        identity.numberOfOpenTabs = stateObject.numberOfOpenTabs;
       }
       return identity;
     });
@@ -1074,8 +1078,19 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
   prepare() {
     const identity = Logic.currentIdentity();
 
-    // Populating the panel: name and icon
+    // Populating the panel: name, icon, and warning message
     document.getElementById("delete-container-name").textContent = identity.name;
+
+    const totalNumberOfTabs = identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
+    if (totalNumberOfTabs > 0) {
+      let warningMessage = `If you remove this container now, ${totalNumberOfTabs} `;
+      warningMessage += totalNumberOfTabs > 1
+        ? "container tabs will be closed."
+        : "container tab will be closed.";
+      document.getElementById("delete-container-tab-warning").textContent = warningMessage;
+    } else {
+      document.getElementById("delete-container-tab-warning").textContent = "";
+    }
 
     const icon = document.getElementById("delete-container-icon");
     icon.setAttribute("data-identity-icon", identity.icon);
