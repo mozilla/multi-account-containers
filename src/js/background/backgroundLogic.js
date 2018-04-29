@@ -209,7 +209,9 @@ const backgroundLogic = {
       });
       identitiesOutput[cookieStoreId] = {
         hasHiddenTabs: !!containerState.hiddenTabs.length,
-        hasOpenTabs: !!openTabs.length
+        hasOpenTabs: !!openTabs.length,
+        numberOfHiddenTabs: containerState.hiddenTabs.length,
+        numberOfOpenTabs: openTabs.length
       };
       return;
     });
