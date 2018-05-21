@@ -80,6 +80,17 @@ module.exports = () => {
         addListener: sinon.stub()
       }
     },
+    menus: {
+      create: sinon.stub(),
+      onClicked: {
+        addListener: sinon.stub()
+      },
+      onShown: {
+        addListener: sinon.stub()
+      },
+      refresh: sinon.stub(),
+      removeAll: sinon.stub()
+    },
     extension: {
       getURL: sinon.stub().returns("moz-extension://multi-account-containers/confirm-page.html")
     }
