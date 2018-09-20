@@ -69,10 +69,10 @@ const assignManager = {
       return this.area.remove([siteStoreKey]);
     },
 
-    async deleteContainer(userContextId) {
+     deleteContainer(async (userContextId) => {
       const sitesByContainer = await this.getByContainer(userContextId);
       this.area.remove(Object.keys(sitesByContainer));
-    },
+    }),
 
     async getByContainer(userContextId) {
       const sites = {};
