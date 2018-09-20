@@ -212,6 +212,11 @@ const Logic = {
     return false;
   },
 
+  async noOfTabs() {
+    const activeTabs = await browser.tabs.query({windowId: browser.windows.WINDOW_ID_CURRENT});
+    return activeTabs.length;
+  },
+
   async refreshIdentities() {
     const [identities, state] = await Promise.all([
       browser.contextualIdentities.query({}),
@@ -717,13 +722,21 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
         moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
       } else {
-        Logic.addEnterHandler(moveTabsEl, async function () {
-          await browser.runtime.sendMessage({
-            method: "moveTabsToWindow",
-            windowId: browser.windows.WINDOW_ID_CURRENT,
-            cookieStoreId: Logic.currentIdentity().cookieStoreId,
-          });
-          window.close();
+        Logic.noOfTabs().then(result => {
+          if (result === 1) {
+            moveTabsEl.classList.remove("clickable");
+          } else {
+            Logic.addEnterHandler(moveTabsEl, async function () {
+              await browser.runtime.sendMessage({
+                method: "moveTabsToWindow",
+                windowId: browser.windows.WINDOW_ID_CURRENT,
+                cookieStoreId: Logic.currentIdentity().cookieStoreId,
+              });
+              window.close();
+            });
+          }
+        }).catch(error => {
+          throw new Error(error);
         });
       }
     } catch (e) {
