@@ -212,7 +212,7 @@ const Logic = {
     return false;
   },
 
-  async noOfTabs() {
+  async numTabs() {
     const activeTabs = await browser.tabs.query({windowId: browser.windows.WINDOW_ID_CURRENT});
     return activeTabs.length;
   },
@@ -722,8 +722,9 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
         moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
       } else {
-        Logic.noOfTabs().then(result => {
-          if (result === 1) {
+        try  {
+          const numTabs = await Logic.numTabs();
+          if (numTabs === 1) {
             moveTabsEl.classList.remove("clickable");
           } else {
             Logic.addEnterHandler(moveTabsEl, async function () {
@@ -735,9 +736,9 @@ Logic.registerPanel(P_CONTAINER_INFO, {
               window.close();
             });
           }
-        }).catch(error => {
-          throw new Error(error);
-        });
+        } catch (e) {
+          throw new Error("Could not get the number of active tabs.");
+        }
       }
     } catch (e) {
       throw new Error("Could not check for incompatible add-ons.");
