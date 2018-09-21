@@ -1021,6 +1021,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
 // P_CONTAINER_DELETE: Delete a container.
 // ----------------------------------------------------------------------------
+
 Logic.registerPanel(P_CONTAINER_DELETE, {
   panelSelector: "#delete-container-panel",
 
