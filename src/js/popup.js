@@ -1001,6 +1001,12 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
     document.querySelector("#edit-container-panel-usercontext-input").value = userContextId || NEW_CONTAINER_ID;
+    const containerName = document.querySelector("#edit-container-panel-name-input");
+    setTimeout(function()
+    { 
+      containerName.focus(); 
+      containerName.select();  
+    }, 0);
     [...document.querySelectorAll("[name='container-color']")].forEach(colorInput => {
       colorInput.checked = colorInput.value === identity.color;
     });
@@ -1015,7 +1021,6 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
 // P_CONTAINER_DELETE: Delete a container.
 // ----------------------------------------------------------------------------
-
 Logic.registerPanel(P_CONTAINER_DELETE, {
   panelSelector: "#delete-container-panel",
 
