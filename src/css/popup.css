@@ -670,6 +670,26 @@ span ~ .panel-header-text {
   opacity: 0.3;
 }
 
+.container-close-tab {
+  width:50%;
+  opacity: 0;
+}
+
+.container-info-tab-row:hover .container-close-tab {
+  opacity: 0.5;
+}
+.container-info-tab-row .container-close-tab:hover {
+  opacity: 1;
+}
+
+.container-info-tab-row:not(.clickable) .container-close-tab{
+  opacity: 0;
+}
+
+.container-info-tab-row:not(.clickable):hover .container-close-tab {
+  opacity: 0.5;
+}
+
 .container-info-has-tabs,
 .container-info-tab-row {
   align-items: center;
