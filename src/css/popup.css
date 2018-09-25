@@ -671,18 +671,18 @@ span ~ .panel-header-text {
 }
 
 .container-close-tab {
-  width:50%;
   opacity: 0;
 }
 
 .container-info-tab-row:hover .container-close-tab {
   opacity: 0.5;
 }
+
 .container-info-tab-row .container-close-tab:hover {
   opacity: 1;
 }
 
-.container-info-tab-row:not(.clickable) .container-close-tab{
+.container-info-tab-row:not(.clickable) .container-close-tab {
   opacity: 0;
 }
 
