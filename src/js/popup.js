@@ -687,6 +687,13 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     document.addEventListener("mousedown", () => {
       document.removeEventListener("focus", focusHandler);
     });
+    /*  If no container is present disable the Edit Containers button */
+    const editContainer = document.querySelector("#edit-containers");
+    if (Logic.identities().length === 0) {
+      editContainer.classList.add("disable-edit-containers");
+    } else {
+      editContainer.classList.remove("disable-edit-containers");
+    }
 
     return Promise.resolve();
   },
