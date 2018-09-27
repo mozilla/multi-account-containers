@@ -1,4 +1,4 @@
-async function load() {
+const load = async () => {
   const searchParams = new URL(window.location).searchParams;
   const redirectUrl = decodeURIComponent(searchParams.get("url"));
   const cookieStoreId = searchParams.get("cookieStoreId");
@@ -59,7 +59,7 @@ function getCurrentTab() {
   });
 }
 
-async function denySubmit(redirectUrl) {
+const denySubmit = async (redirectUrl) =>{
   const tab = await getCurrentTab();
   await browser.runtime.sendMessage({
     method: "exemptContainerAssignment",
@@ -71,7 +71,7 @@ async function denySubmit(redirectUrl) {
 
 load();
 
-async function openInContainer(redirectUrl, cookieStoreId) {
+const openInContainer = async (redirectUrl, cookieStoreId) => {
   const tab = await getCurrentTab();
   await browser.tabs.create({
     index: tab[0].index + 1,

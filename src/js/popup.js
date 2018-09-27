@@ -60,7 +60,7 @@ function escaped(strings, ...values) {
   return result.join("");
 }
 
-async function getExtensionInfo() {
+const getExtensionInfo = async () => {
   const manifestPath = browser.extension.getURL("manifest.json");
   const response = await fetch(manifestPath);
   const extensionInfo = await response.json();
@@ -76,7 +76,7 @@ const Logic = {
   _panels: {},
   _onboardingVariation: null,
 
-  async init() {
+  const init = async () => {
     // Remove browserAction "upgraded" badge when opening panel
     this.clearBrowserActionBadge();
 
@@ -122,7 +122,7 @@ const Logic = {
 
   },
 
-  async showAchievementOrContainersListPanel() {
+  const showAchievementOrContainersListPanel = async () => {
     // Do we need to show an achievement panel?
     let showAchievements = false;
     const achievementsStorage = await browser.storage.local.get({achievements: []});
@@ -141,7 +141,7 @@ const Logic = {
   // In case the user wants to click multiple actions,
   // they have to click the "Done" button to stop the panel
   // from showing
-  async setAchievementDone(achievementName) {
+  const setAchievementDone = async (achievementName) => {
     const achievementsStorage = await browser.storage.local.get({achievements: []});
     const achievements = achievementsStorage.achievements;
     achievements.forEach((achievement, index, achievementsArray) => {
@@ -159,7 +159,7 @@ const Logic = {
     });
   },
 
-  async clearBrowserActionBadge() {
+  const clearBrowserActionBadge = async () => {
     const extensionInfo = await getExtensionInfo();
     const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
     browser.browserAction.setBadgeBackgroundColor({color: ""});
@@ -172,7 +172,7 @@ const Logic = {
     });
   },
 
-  async identity(cookieStoreId) {
+  const identity = async (cookieStoreId) => {
     const defaultContainer = {
       name: "Default",
       cookieStoreId,
@@ -204,7 +204,7 @@ const Logic = {
     return (userContextId !== cookieStoreId) ? Number(userContextId) : false;
   },
 
-  async currentTab() {
+  const currentTab = async () => {
     const activeTabs = await browser.tabs.query({active: true, windowId: browser.windows.WINDOW_ID_CURRENT});
     if (activeTabs.length > 0) {
       return activeTabs[0];
@@ -212,7 +212,7 @@ const Logic = {
     return false;
   },
 
-  async numTabs() {
+  const numTabs = async () => {
     const activeTabs = await browser.tabs.query({windowId: browser.windows.WINDOW_ID_CURRENT});
     return activeTabs.length;
   },
@@ -233,7 +233,7 @@ const Logic = {
     moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
   },
 
-  async refreshIdentities() {
+  const refreshIdentities = async () => {
     const [identities, state] = await Promise.all([
       browser.contextualIdentities.query({}),
       browser.runtime.sendMessage({
@@ -262,7 +262,7 @@ const Logic = {
     }
   },
 
-  async showPanel(panel, currentIdentity = null) {
+  const showPanel = async (panel, currentIdentity = null) => {
     // Invalid panel... ?!?
     if (!(panel in this._panels)) {
       throw new Error("Something really bad happened. Unknown panel: " + panel);
@@ -501,7 +501,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
   panelSelector: "#container-panel",
 
   // This method is called when the object is registered.
-  async initialize() {
+  const initialize = async () => {
     Logic.addEnterHandler(document.querySelector("#container-add-link"), () => {
       Logic.showPanel(P_CONTAINER_EDIT, { name: Logic.generateIdentityName() });
     });
@@ -589,7 +589,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     assignmentCheckboxElement.disabled = disabled;
   },
 
-  async prepareCurrentTabHeader() {
+  const prepareCurrentTabHeader = async () => {
     const currentTab = await Logic.currentTab();
     const currentTabElement = document.getElementById("current-tab");
     const assignmentCheckboxElement = document.getElementById("container-page-assigned");
@@ -616,7 +616,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
   },
 
   // This method is called when the panel is shown.
-  async prepare() {
+  const prepare = async () => {
     const fragment = document.createDocumentFragment();
 
     this.prepareCurrentTabHeader();
@@ -699,7 +699,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
   panelSelector: "#container-info-panel",
 
   // This method is called when the object is registered.
-  async initialize() {
+  const initialize = async () => {
     Logic.addEnterHandler(document.querySelector("#close-container-info-panel"), () => {
       Logic.showPreviousPanel();
     });
@@ -747,7 +747,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
   },
 
   // This method is called when the panel is shown.
-  async prepare() {
+  const prepare = async () => {
     const identity = Logic.currentIdentity();
 
     // Populating the panel: name and icon
@@ -911,7 +911,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
   },
 
-  async _submitForm() {
+  const _submitForm = async () => {
     const formValues = new FormData(this._editForm);
     try {
       await browser.runtime.sendMessage({
@@ -1006,7 +1006,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   },
 
   // This method is called when the panel is shown.
-  async prepare() {
+  const prepare = () => {
     const identity = Logic.currentIdentity();
 
     const userContextId = Logic.currentUserContextId();

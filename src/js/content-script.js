@@ -1,10 +1,10 @@
-async function delayAnimation(delay = 350) {
+const delayAnimation = async (delay = 350) => {
   return new Promise((resolve) => {
     setTimeout(resolve, delay);
   });
 }
 
-async function doAnimation(element, property, value) {
+const doAnimation = async (element, property, value) => {
   return new Promise((resolve) => {
     const handler = () => {
       resolve();
@@ -17,7 +17,7 @@ async function doAnimation(element, property, value) {
   });
 }
 
-async function addMessage(message) {
+const addMessage = async (message) => {
   const divElement = document.createElement("div");
   divElement.classList.add("container-notification");
   // Ideally we would use https://bugzilla.mozilla.org/show_bug.cgi?id=1340930 when this is available

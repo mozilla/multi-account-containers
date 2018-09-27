@@ -1,6 +1,6 @@
 const MAJOR_VERSIONS = ["2.3.0", "2.4.0"];
 const badge = {
-  async init() {
+  const init = async () => {
     const currentWindow = await browser.windows.getCurrent();
     this.displayBrowserActionBadge(currentWindow.incognito);
   },
@@ -10,7 +10,7 @@ const badge = {
     browser.browserAction.setTitle({ tabId, title: "Containers disabled in Private Browsing Mode" });
   },
 
-  async displayBrowserActionBadge() {
+  const displayBrowserActionBadge = async () => {
     const extensionInfo = await backgroundLogic.getExtensionInfo();
     const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
 

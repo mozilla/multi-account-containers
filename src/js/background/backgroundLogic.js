@@ -7,7 +7,7 @@ const backgroundLogic = {
     "about:blank"
   ]),
 
-  async getExtensionInfo() {
+  const getExtensionInfo = async () => {
     const manifestPath = browser.extension.getURL("manifest.json");
     const response = await fetch(manifestPath);
     const extensionInfo = await response.json();
@@ -25,7 +25,7 @@ const backgroundLogic = {
     return false;
   },
 
-  async deleteContainer(userContextId, removed = false) {
+  const deleteContainer = async (userContextId, removed = false) => {
     await this._closeTabs(userContextId);
     if (!removed) {
       await browser.contextualIdentities.remove(this.cookieStoreId(userContextId));
@@ -34,7 +34,7 @@ const backgroundLogic = {
     return {done: true, userContextId};
   },
 
-  async createOrUpdateContainer(options) {
+  const createOrUpdateContainer = async (options) => {
     let donePromise;
     if (options.userContextId !== "new") {
       donePromise = browser.contextualIdentities.update(
@@ -50,7 +50,7 @@ const backgroundLogic = {
     });
   },
 
-  async openNewTab(options) {
+  const openNewTab = async (options) => {
     let url = options.url || undefined;
     const userContextId = ("userContextId" in options) ? options.userContextId : 0;
     const active = ("nofocus" in options) ? options.nofocus : true;
@@ -94,7 +94,7 @@ const backgroundLogic = {
     });
   },
 
-  async getTabs(options) {
+  const getTabs = async (options) => {
     const requiredArguments = ["cookieStoreId", "windowId"];
     this.checkArgs(requiredArguments, options, "getTabs");
     const { cookieStoreId, windowId } = options;
@@ -112,7 +112,7 @@ const backgroundLogic = {
     return list.concat(containerState.hiddenTabs);
   },
 
-  async moveTabsToWindow(options) {
+  const moveTabsToWindow = async (options) => {
     const requiredArguments = ["cookieStoreId", "windowId"];
     this.checkArgs(requiredArguments, options, "moveTabsToWindow");
     const { cookieStoreId, windowId } = options;
@@ -179,7 +179,7 @@ const backgroundLogic = {
     return await identityState.storageArea.set(cookieStoreId, containerState);
   },
 
-  async _closeTabs(userContextId, windowId = false) {
+  const _closeTabs = async (userContextId, windowId = false) => {
     const cookieStoreId = this.cookieStoreId(userContextId);
     let tabs;
     /* if we have no windowId we are going to close all this container (used for deleting) */
@@ -197,7 +197,7 @@ const backgroundLogic = {
     return browser.tabs.remove(tabIds);
   },
 
-  async queryIdentitiesState(windowId) {
+  const queryIdentitiesState = async (windowId) => {
     const identities = await browser.contextualIdentities.query({});
     const identitiesOutput = {};
     const identitiesPromise = identities.map(async function (identity) {
@@ -217,7 +217,7 @@ const backgroundLogic = {
     return identitiesOutput;
   },
 
-  async sortTabs() {
+  const sortTabs = async () => {
     const windows = await browser.windows.getAll();
     for (let windowObj of windows) { // eslint-disable-line prefer-const
       // First the pinned tabs, then the normal ones.
@@ -226,7 +226,7 @@ const backgroundLogic = {
     }
   },
 
-  async _sortTabsInternal(windowObj, pinnedTabs) {
+  const _sortTabsInternal = async (windowObj, pinnedTabs) => {
     const tabs = await browser.tabs.query({windowId: windowObj.id});
     let pos = 0;
 
@@ -266,7 +266,7 @@ const backgroundLogic = {
     });
   },
 
-  async hideTabs(options) {
+  const hideTabs = async (options) => {
     const requiredArguments = ["cookieStoreId", "windowId"];
     this.checkArgs(requiredArguments, options, "hideTabs");
     const { cookieStoreId, windowId } = options;
@@ -278,7 +278,7 @@ const backgroundLogic = {
     return containerState;
   },
 
-  async showTabs(options) {
+  const showTabs = async (options) => {
     if (!("cookieStoreId" in options)) {
       return Promise.reject("showTabs must be called with cookieStoreId argument.");
     }

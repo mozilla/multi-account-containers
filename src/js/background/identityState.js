@@ -7,7 +7,7 @@ const identityState = {
       return `${storagePrefix}${cookieStoreId}`;
     },
 
-    async get(cookieStoreId) {
+    const get = async (cookieStoreId) => {
       const storeKey = this.getContainerStoreKey(cookieStoreId);
       const storageResponse = await this.area.get([storeKey]);
       if (storageResponse && storeKey in storageResponse) {
@@ -36,7 +36,7 @@ const identityState = {
     return Object.assign({}, tab);
   },
 
-  async storeHidden(cookieStoreId, windowId) {
+  const storeHidden = async (cookieStoreId, windowId) => {
     const containerState = await this.storageArea.get(cookieStoreId);
     const tabsByContainer = await browser.tabs.query({cookieStoreId, windowId});
     tabsByContainer.forEach((tab) => {

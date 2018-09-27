@@ -69,12 +69,12 @@ const assignManager = {
       return this.area.remove([siteStoreKey]);
     },
 
-    async deleteContainer(userContextId) {
+    const deleteContainer = async (userContextId) => {
       const sitesByContainer = await this.getByContainer(userContextId);
       this.area.remove(Object.keys(sitesByContainer));
     },
 
-    async getByContainer(userContextId) {
+    const getByContainer = async (userContextId) => {
       const sites = {};
       const siteConfigs = await this.area.get();
       Object.keys(siteConfigs).forEach((key) => {
@@ -107,14 +107,14 @@ const assignManager = {
   },
 
   // We return here so the confirm page can load the tab when exempted
-  async _exemptTab(m) {
+  const _exemptTab = async (m) => {
     const pageUrl = m.pageUrl;
     this.storageArea.setExempted(pageUrl, m.tabId);
     return true;
   },
 
   // Before a request is handled by the browser we decide if we should route through a different container
-  async onBeforeRequest(options) {
+  const onBeforeRequest = async (options) => {
     if (options.frameId !== 0 || options.tabId === -1) {
       return {};
     }
@@ -240,7 +240,7 @@ const assignManager = {
 
   },
 
-  async _onClickedHandler(info, tab) {
+  const _onClickedHandler = async (info, tab) => {
     const userContextId = this.getUserContextIdFromCookieStore(tab);
     // Mapping ${URL(info.pageUrl).hostname} to ${userContextId}
     let remove;
@@ -295,7 +295,7 @@ const assignManager = {
     return true;
   },
 
-  async _setOrRemoveAssignment(tabId, pageUrl, userContextId, remove) {
+  const _setOrRemoveAssignment = async (tabId, pageUrl, userContextId, remove) => {
     let actionName;
 
     // https://github.com/mozilla/testpilot-containers/issues/626
@@ -334,7 +334,7 @@ const assignManager = {
     this.calculateContextMenu(tab);
   },
 
-  async _getAssignment(tab) {
+  const _getAssignment = async (tab) => {
     const cookieStore = this.getUserContextIdFromCookieStore(tab);
     // Ensure we have a cookieStore to assign to
     if (cookieStore
@@ -361,7 +361,7 @@ const assignManager = {
     browser.contextMenus.remove(this.MENU_MOVE_ID);
   },
 
-  async calculateContextMenu(tab) {
+  const calculateContextMenu = async (tab) => {
     this.removeContextMenu();
     const siteSettings = await this._getAssignment(tab);
     // Return early and not add an item if we have false

@@ -164,7 +164,7 @@ const messageHandler = {
     });
   },
 
-  async incrementCountOfContainerTabsOpened() {
+  const incrementCountOfContainerTabsOpened = async () =>  {
     const key = "containerTabsOpened";
     const count = await browser.storage.local.get({[key]: 0});
     const countOfContainerTabsOpened = ++count[key];
@@ -182,7 +182,7 @@ const messageHandler = {
     }
   },
 
-  async unhideContainer(cookieStoreId) {
+  const unhideContainer = async (cookieStoreId) => {
     if (!this.unhideQueue.includes(cookieStoreId)) {
       this.unhideQueue.push(cookieStoreId);
       // Unhide all hidden tabs
@@ -193,7 +193,7 @@ const messageHandler = {
     }
   },
 
-  async onFocusChangedCallback(windowId) {
+  const onFocusChangedCallback = async (windowId) => {
     assignManager.removeContextMenu();
     // browserAction loses background color in new windows ...
     // https://bugzil.la/1314674
