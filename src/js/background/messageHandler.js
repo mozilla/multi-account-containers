@@ -176,9 +176,7 @@ const messageHandler = {
       storage.achievements.push({"name": "manyContainersOpened", "done": false});
       // use set and spread to create a unique array
       const achievements = [...new Set(storage.achievements)];
-      browser.storage.local.set({achievements});
-      browser.browserAction.setBadgeBackgroundColor({color: "rgba(0,217,0,255)"});
-      browser.browserAction.setBadgeText({text: "NEW"});
+      badge.displayBrowserActionBadge("rgba(0,217,0,255)","NEW");
     }
   },
 

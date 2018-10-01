@@ -10,14 +10,14 @@ const badge = {
     browser.browserAction.setTitle({ tabId, title: "Containers disabled in Private Browsing Mode" });
   },
 
-  async displayBrowserActionBadge() {
+  async displayBrowserActionBadge(rgba_values,text) {
     const extensionInfo = await backgroundLogic.getExtensionInfo();
     const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
 
     if (MAJOR_VERSIONS.indexOf(extensionInfo.version) > -1 &&
         storage.browserActionBadgesClicked.indexOf(extensionInfo.version) < 0) {
-      browser.browserAction.setBadgeBackgroundColor({color: "rgba(0,217,0,255)"});
-      browser.browserAction.setBadgeText({text: "NEW"});
+      browser.browserAction.setBadgeBackgroundColor({color: rgba_values});
+      browser.browserAction.setBadgeText({text: text});
     }
   }
 };
