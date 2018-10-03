@@ -8,6 +8,7 @@ const CONTAINER_UNHIDE_SRC = "/img/container-unhide.svg";
 const DEFAULT_COLOR = "blue";
 const DEFAULT_ICON = "circle";
 const NEW_CONTAINER_ID = "new";
+const background = "/js/background/";
 
 const ONBOARDING_STORAGE_KEY = "onboarding-stage";
 
@@ -153,6 +154,8 @@ const Logic = {
   },
 
   async clearBrowserActionBadge() {
+    const extensionInfo = await background.backgroundLogic.getExtensionInfo();
+    const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
     background.badge.displayBrowserActionBadge("","");
     storage.browserActionBadgesClicked.push(extensionInfo.version);
     // use set and spread to create a unique array
