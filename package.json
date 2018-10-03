@@ -9,13 +9,12 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "addons-linter": "^0.15.14",
+    "addons-linter": "^1.3.2",
     "chai": "^4.1.2",
-    "deploy-txp": "^1.0.7",
     "eslint": "^3.17.1",
     "eslint-plugin-no-unsanitized": "^2.0.0",
     "eslint-plugin-promise": "^3.4.0",
-    "htmllint-cli": "^0.0.5",
+    "htmllint-cli": "0.0.7",
     "jsdom": "^11.6.2",
     "json": "^9.0.6",
     "mocha": "^5.0.0",
@@ -36,7 +35,6 @@
   },
   "scripts": {
     "build": "npm test && cd src && web-ext build --overwrite-dest",
-    "deploy": "deploy-txp",
     "lint": "npm-run-all lint:*",
     "lint:addon": "addons-linter src --self-hosted",
     "lint:css": "stylelint src/css/*.css",
