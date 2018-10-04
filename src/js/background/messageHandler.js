@@ -4,6 +4,7 @@ const messageHandler = {
   // If this were in platform we would change how the tab opens based on "new tab" link navigations such as ctrl+click
   LAST_CREATED_TAB_TIMER: 2000,
   unhideQueue: [],
+  activeTab: -1,
 
   init() {
     // Handles messages from webextension code
@@ -112,11 +113,20 @@ const messageHandler = {
       browser.contextualIdentities.onRemoved.addListener(({contextualIdentity}) => {
         const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(contextualIdentity.cookieStoreId);
         backgroundLogic.deleteContainer(userContextId, true);
+
+        assignManager.removeReloadMenuEntry(contextualIdentity);
+      });
+    }
+
+    if (browser.contextualIdentities.onCreated) {
+      browser.contextualIdentities.onCreated.addListener(({contextualIdentity}) => {
+        assignManager.addReloadMenuEntry(contextualIdentity, ["all", "tab"]);
       });
     }
 
     browser.tabs.onActivated.addListener((info) => {
       assignManager.removeContextMenu();
+      this.activeTab = info.tabId;
       browser.tabs.get(info.tabId).then((tab) => {
         assignManager.calculateContextMenu(tab);
       }).catch((e) => {
@@ -134,11 +144,15 @@ const messageHandler = {
       }
       assignManager.removeContextMenu();
 
-      browser.tabs.get(details.tabId).then((tab) => {
-        assignManager.calculateContextMenu(tab);
-      }).catch((e) => {
-        throw e;
-      });
+      // make sure to update the context menu only if the request was completed
+      // for the currently active tab
+      if (details.tabId === this.activeTab) {
+        browser.tabs.get(details.tabId).then((tab) => {
+          assignManager.calculateContextMenu(tab);
+        }).catch((e) => {
+          throw e;
+        });
+      }
     }, {urls: ["<all_urls>"], types: ["main_frame"]});
 
     browser.tabs.onCreated.addListener((tab) => {

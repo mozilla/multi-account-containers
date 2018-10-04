@@ -1,4 +1,5 @@
 const assignManager = {
+  MENU_RELOAD_IN: "reopen-in-container",
   MENU_ASSIGN_ID: "open-in-this-container",
   MENU_REMOVE_ID: "remove-open-in-this-container",
   MENU_SEPARATOR_ID: "separator",
@@ -241,6 +242,22 @@ const assignManager = {
   },
 
   async _onClickedHandler(info, tab) {
+    const reopenCookieStoreId = this.getReloadMenuIdFromCookieStoreId(info.menuItemId);
+
+    if (reopenCookieStoreId) {
+      const newTab = await browser.tabs.create({
+        active: info.frameId !== undefined,
+        cookieStoreId: reopenCookieStoreId,
+        index: tab.index + 1,
+        openerTabId: tab.openerTabId,
+        pinned: tab.pinned,
+        url: tab.url,
+      });
+      browser.tabs.update(newTab.id, {"muted": tab.mutedInfo.muted});
+      browser.tabs.remove(tab.id);
+      return;
+    }
+
     const userContextId = this.getUserContextIdFromCookieStore(tab);
     // Mapping ${URL(info.pageUrl).hostname} to ${userContextId}
     let remove;
@@ -281,6 +298,16 @@ const assignManager = {
       return false;
     }
     return backgroundLogic.getUserContextIdFromCookieStoreId(tab.cookieStoreId);
+  },
+
+  getCookieStoreIdFromReloadMenuId(cookieStoreId) {
+    return "reopen-in-" + cookieStoreId;
+  },
+
+  getReloadMenuIdFromCookieStoreId(contextMenuId) {
+    if (contextMenuId.startsWith("reopen-in-"))
+      return contextMenuId.substring(10);
+    return false;
   },
 
   isTabPermittedAssign(tab) {
@@ -355,14 +382,68 @@ const assignManager = {
     // We also can't change for always private mode
     // See: https://bugzilla.mozilla.org/show_bug.cgi?id=1352102
     browser.contextMenus.remove(this.MENU_ASSIGN_ID);
+    browser.contextMenus.remove(this.MENU_RELOAD_IN);
     browser.contextMenus.remove(this.MENU_REMOVE_ID);
     browser.contextMenus.remove(this.MENU_SEPARATOR_ID);
     browser.contextMenus.remove(this.MENU_HIDE_ID);
     browser.contextMenus.remove(this.MENU_MOVE_ID);
   },
 
+  addReloadMenuEntry(contextualIdentity, contexts) {
+    browser.contextMenus.create({
+      id: this.getCookieStoreIdFromReloadMenuId(contextualIdentity.cookieStoreId),
+      title: contextualIdentity.name,
+      // TODO: colorized icons?
+      icons: {
+        "16": contextualIdentity.iconUrl
+      },
+      contexts: contexts,
+      parentId: this.MENU_RELOAD_IN,
+    });
+  },
+
+  removeReloadMenuEntry(contextualIdentity) {
+    browser.contextMenus.remove(this.getCookieStoreIdFromReloadMenuId(contextualIdentity.cookieStoreId));
+  },
+
   async calculateContextMenu(tab) {
     this.removeContextMenu();
+
+    browser.contextMenus.create({
+      id: this.MENU_RELOAD_IN,
+      title: "Reopen in container",
+      contexts: ["all", "tab"],
+    });
+
+    browser.contextMenus.create({
+      id: this.getCookieStoreIdFromReloadMenuId("firefox-default"),
+      title: "Default",
+      contexts: ["all", "tab"],
+      parentId: this.MENU_RELOAD_IN,
+    });
+
+    browser.contextMenus.create({
+      id: "reopen-separator",
+      contexts: ["all", "tab"],
+      type: "separator",
+      parentId: this.MENU_RELOAD_IN,
+    });
+
+    let identities;
+    try {
+      identities = await browser.contextualIdentities.query({});
+    } catch (e) {
+      identities = [];
+    }
+
+    identities.forEach(async (identity) => {
+      if (identity.cookieStoreId === tab.cookieStoreId) {
+        this.addReloadMenuEntry(identity, ["tab"], false);
+      } else {
+        this.addReloadMenuEntry(identity, ["all", "tab"], false);
+      }
+    });
+
     const siteSettings = await this._getAssignment(tab);
     // Return early and not add an item if we have false
     // False represents assignment is not permitted
