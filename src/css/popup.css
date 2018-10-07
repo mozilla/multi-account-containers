@@ -685,6 +685,16 @@ span ~ .panel-header-text {
   padding-inline-start: 16px;
 }
 
+ul.container-info-url-list {
+  font-size: 14px;
+  list-style-type: none;
+  padding-left: 16px;
+}
+
+li.container-info-url-item {
+  padding-left: 16px;
+}
+
 .container-info-has-tabs img,
 .container-info-tab-row img {
   block-size: 16px;
@@ -700,7 +710,8 @@ span ~ .panel-header-text {
   max-inline-size: 200px;
 }
 
-.container-info-list {
+.container-info-list,
+.container-url-list {
   display: flex;
   flex-direction: column;
   margin-block-start: 4px;

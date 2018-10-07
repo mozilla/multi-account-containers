@@ -123,7 +123,6 @@ const Logic = {
   },
 
   async showAchievementOrContainersListPanel() {
-    // Do we need to show an achievement panel?
     let showAchievements = false;
     const achievementsStorage = await browser.storage.local.get({achievements: []});
     for (const achievement of achievementsStorage.achievements) {
@@ -752,6 +751,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
     // Populating the panel: name and icon
     document.getElementById("container-info-name").textContent = identity.name;
+    document.getElementById("container-info-urls-name").textContent = identity.name + " Sites";
 
     const icon = document.getElementById("container-info-icon");
     icon.setAttribute("data-identity-icon", identity.icon);
@@ -774,13 +774,41 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       table.firstChild.remove();
     }
 
+    const urlList = document.getElementById("container-info-urls");
+    while (urlList.firstChild) {
+      urlList.firstChild.remove();
+    }
+
     // Let's retrieve the list of tabs.
-    const tabs = await browser.runtime.sendMessage({
-      method: "getTabs",
-      windowId: browser.windows.WINDOW_ID_CURRENT,
-      cookieStoreId: Logic.currentIdentity().cookieStoreId
-    });
-    return this.buildInfoTable(tabs);
+    const [tabs, urls] = await Promise.all([
+      browser.runtime.sendMessage({
+        method: "getTabs",
+        windowId: browser.windows.WINDOW_ID_CURRENT,
+        cookieStoreId: Logic.currentIdentity().cookieStoreId
+      }),
+      browser.runtime.sendMessage({
+        method: "getUrlsForContainer",
+        cookieStoreId: Logic.currentIdentity().cookieStoreId
+      }),
+    ]);
+    this.buildInfoTable(tabs);
+    this.buildUrlList(urls);
+    return;
+  },
+
+  buildUrlList(urls) {
+    const fragment = document.createDocumentFragment();
+    if (urls.length === 0) {
+      urls = ["None"];
+    }
+    for (let url of urls) { // eslint-disable-line prefer-const
+      const li = document.createElement("li");
+      fragment.appendChild(li);
+      li.classList.add("container-info-url-item");
+      li.innerText = url;
+    }
+
+    document.getElementById("container-info-urls").appendChild(fragment);
   },
 
   buildInfoTable(tabs) {

@@ -112,6 +112,28 @@ const backgroundLogic = {
     return list.concat(containerState.hiddenTabs);
   },
 
+  async getUrlsForContainer(options) {
+    const requiredArguments = ["cookieStoreId"];
+    this.checkArgs(requiredArguments, options, "getUrlsForContainer");
+    const { cookieStoreId } = options;
+
+    const userContextId = this.getUserContextIdFromCookieStoreId(cookieStoreId);
+
+    let siteStoreKeyBase = assignManager.storageArea.getSiteStoreKey("http://x");
+    siteStoreKeyBase = siteStoreKeyBase.slice(0, siteStoreKeyBase.length-1);
+    let isSiteStorageKey = new RegExp("^" + siteStoreKeyBase);
+    isSiteStorageKey = isSiteStorageKey.test.bind(isSiteStorageKey);
+
+    const containerUrls = [];
+    for (const [key, value] of Object.entries(await browser.storage.local.get())) {
+      if (isSiteStorageKey(key) && value.userContextId === userContextId) {
+        containerUrls.push(key.slice(siteStoreKeyBase.length));
+      }
+    }
+
+    return containerUrls;
+  },
+
   async moveTabsToWindow(options) {
     const requiredArguments = ["cookieStoreId", "windowId"];
     this.checkArgs(requiredArguments, options, "moveTabsToWindow");

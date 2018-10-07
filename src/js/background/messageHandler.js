@@ -62,6 +62,11 @@ const messageHandler = {
           windowId: m.windowId
         });
         break;
+      case "getUrlsForContainer":
+        response = backgroundLogic.getUrlsForContainer({
+          cookieStoreId: m.cookieStoreId,
+        });
+        break;
       case "queryIdentitiesState":
         response = backgroundLogic.queryIdentitiesState(m.message.windowId);
         break;
