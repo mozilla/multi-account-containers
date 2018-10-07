@@ -1,5 +1,17 @@
 //This object allows other scripts to access the list mapping containers to their proxies
 window.proxifiedContainers = {
+
+  //Slightly modified version of 'retrieve' which returns a direct proxy whenever an error is met.
+  retrieveFromBackground: function(cookieStoreId = null) {
+    return new Promise((resolve, reject) => {
+      window.proxifiedContainers.retrieve(cookieStoreId).then((success) => {
+        resolve(success.proxy);
+      }, (error) => {
+        resolve({type: "direct"});
+      });
+    });
+  },
+
   //Resolves to a proxy object which can be used in the return of the listener required for browser.proxy.onRequest.addListener
   retrieve: function(cookieStoreId = null) {
     return new Promise((resolve, reject) => {
@@ -15,10 +27,10 @@ window.proxifiedContainers = {
           if (Object.getOwnPropertyNames(results).length == 0) {
             reject({error: "uninitialized", message: ""});
           }
-          
+
           else if(cookieStoreId == null) {
             resolve(results_array);
-          }          
+          }
 
 
           else {
@@ -57,7 +69,7 @@ window.proxifiedContainers = {
         {
           proxifiedContainersStore[index] = {cookieStoreId: cookieStoreId, proxy: proxy};
         }
-        
+
         browser.storage.local.set({proxifiedContainersKey: proxifiedContainersStore});
         resolve(proxifiedContainersStore[index]);
       }, (errorObj) => {

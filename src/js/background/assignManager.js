@@ -117,6 +117,16 @@ const assignManager = {
     return true;
   },
 
+  async handleProxifiedRequest(requestInfo) {
+    if(requestInfo.tabId === -1)
+      return {type: "direct"};
+
+    var tab = await browser.tabs.get(requestInfo.tabId);
+    var proxy = await window.proxifiedContainers.retrieveFromBackground(tab.cookieStoreId);
+
+    return proxy;
+  },
+
   // Before a request is handled by the browser we decide if we should route through a different container
   async onBeforeRequest(options) {
     if (options.frameId !== 0 || options.tabId === -1) {
@@ -223,6 +233,10 @@ const assignManager = {
     browser.contextMenus.onClicked.addListener((info, tab) => {
       this._onClickedHandler(info, tab);
     });
+
+    // Before anything happens we decide if the request should be proxified
+    browser.extension.getBackgroundPage().console.log('[SAMUEL CODE] Adding proxy.onRequest listener');
+    browser.proxy.onRequest.addListener(this.handleProxifiedRequest, {urls: ["<all_urls>"]});
 
     // Before a request is handled by the browser we decide if we should route through a different container
     this.canceledRequests = {};

@@ -30,7 +30,8 @@
     "storage",
     "tabs",
     "webRequestBlocking",
-    "webRequest"
+    "webRequest",
+    "proxy"
   ],
 
   "commands": {
