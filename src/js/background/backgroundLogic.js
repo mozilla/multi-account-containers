@@ -42,6 +42,8 @@ const backgroundLogic = {
         this.cookieStoreId(options.userContextId),
         options.params
       );
+
+      window.proxifiedContainers.set(this.cookieStoreId(options.userContextId), options.proxy);
     } else {
       donePromise = browser.contextualIdentities.create(options.params);
     }
