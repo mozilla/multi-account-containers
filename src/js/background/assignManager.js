@@ -121,8 +121,8 @@ const assignManager = {
     if(requestInfo.tabId === -1)
       return {type: "direct"};
 
-    var tab = await browser.tabs.get(requestInfo.tabId);
-    var proxy = await window.proxifiedContainers.retrieveFromBackground(tab.cookieStoreId);
+    const tab = await browser.tabs.get(requestInfo.tabId);
+    const proxy = await window.proxifiedContainers.retrieveFromBackground(tab.cookieStoreId);
 
     return proxy;
   },
@@ -235,7 +235,6 @@ const assignManager = {
     });
 
     // Before anything happens we decide if the request should be proxified
-    browser.extension.getBackgroundPage().console.log('[SAMUEL CODE] Adding proxy.onRequest listener');
     browser.proxy.onRequest.addListener(this.handleProxifiedRequest, {urls: ["<all_urls>"]});
 
     // Before a request is handled by the browser we decide if we should route through a different container

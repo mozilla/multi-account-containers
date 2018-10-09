@@ -1069,26 +1069,32 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       iconInput.checked = iconInput.value === identity.icon;
     });
 
-    var edit_proxy_dom = function(result) {
-      if(result.type == "http")
-        document.querySelector('#edit-container-panel-proxy').value = result.host.toString() + ":" + result.port.toString();
-      else if(result.type == "direct")
-        document.querySelector('#edit-container-panel-proxy').value = "";
-    }
+    const edit_proxy_dom = function(result) {
+      if(result.type === "http")
+        document.querySelector("#edit-container-panel-proxy").value = result.host.toString() + ":" + result.port.toString();
+      else if(result.type === "direct")
+        document.querySelector("#edit-container-panel-proxy").value = "";
+    };
+
+
 
     window.proxifiedContainers.retrieve(identity.cookieStoreId).then((result) => {
       edit_proxy_dom(result.proxy);
     }, (error) => {
-      if(error.error == "uninitialized" || error.error == "doesnotexist") {
-        window.proxifiedContainers.set(identity.cookieStoreId, DEFAULT_PROXY, error.error == "uninitialized").then((result) => {
+      if(error.error === "uninitialized" || error.error === "doesnotexist") {
+        window.proxifiedContainers.set(identity.cookieStoreId, DEFAULT_PROXY, error.error === "uninitialized").then((result) => {
           edit_proxy_dom(result.proxy);
         }, (error) => {
-          browser.extension.getBackgroundPage().console.log(error);
+          window.proxifiedContainers.report_proxy_error(error);
+        }).catch((error) => {
+          window.proxifiedContainers.report_proxy_error(error);
         });
       }
       else {
-        browser.extension.getBackgroundPage().console.log(error);
+        window.proxifiedContainers.report_proxy_error(error);
       }
+    }).catch((error) => {
+      window.proxifiedContainers.report_proxy_error(error);
     });
 
     return Promise.resolve(null);
