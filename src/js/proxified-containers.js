@@ -18,7 +18,7 @@ window.proxifiedContainers = {
 
   report_proxy_error: function(error) {
     //Currently I print to console but this is inefficient
-    browser.extension.getBackgroundPage().console.log("proxifiedContainers error occured: " + JSON.Stringify(error));
+    browser.extension.getBackgroundPage().console.log("proxifiedContainers error occured: " + JSON.stringify(error));
   },
 
   //Resolves to a proxy object which can be used in the return of the listener required for browser.proxy.onRequest.addListener
