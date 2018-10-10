@@ -16,9 +16,10 @@ window.proxifiedContainers = {
     });
   },
 
-  report_proxy_error: function(error) {
+  report_proxy_error: function(error, identifier = null) {
     //Currently I print to console but this is inefficient
-    browser.extension.getBackgroundPage().console.log("proxifiedContainers error occured: " + JSON.stringify(error));
+    const relevant_id_str = identifier === null ? "" : " call supplied with id: " + identifier.toString() + " ";
+    browser.extension.getBackgroundPage().console.log("proxifiedContainers error occured" + relevant_id_str + ": " + JSON.stringify(error));
   },
 
   //Resolves to a proxy object which can be used in the return of the listener required for browser.proxy.onRequest.addListener
@@ -42,7 +43,8 @@ window.proxifiedContainers = {
           resolve(results_array);
         } else {
           const val = results_array.find(o => o.cookieStoreId === cookieStoreId);
-          if (val === null) {
+
+          if (typeof val !== "object" ) {
             reject({
               error: "doesnotexist",
               message: ""
@@ -58,7 +60,7 @@ window.proxifiedContainers = {
           message: error
         });
       }).catch((error) => {
-        window.proxifiedContainers.report_proxy_error(error);
+        window.proxifiedContainers.report_proxy_error(error, "5");
       });
     });
   },

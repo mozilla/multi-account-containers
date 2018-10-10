@@ -1085,16 +1085,16 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         window.proxifiedContainers.set(identity.cookieStoreId, DEFAULT_PROXY, error.error === "uninitialized").then((result) => {
           edit_proxy_dom(result.proxy);
         }, (error) => {
-          window.proxifiedContainers.report_proxy_error(error);
+          window.proxifiedContainers.report_proxy_error(error, "popup.js: occurence 1");
         }).catch((error) => {
-          window.proxifiedContainers.report_proxy_error(error);
+          window.proxifiedContainers.report_proxy_error(error, "popup.js: occurence 2");
         });
       }
       else {
-        window.proxifiedContainers.report_proxy_error(error);
+        window.proxifiedContainers.report_proxy_error(error, "popup.js: occurence 3");
       }
-    }).catch((error) => {
-      window.proxifiedContainers.report_proxy_error(error);
+    }).catch((err) => {
+      window.proxifiedContainers.report_proxy_error(err, "popup.js: occurence 4");
     });
 
     return Promise.resolve(null);
