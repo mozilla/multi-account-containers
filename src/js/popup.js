@@ -1069,6 +1069,9 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       iconInput.checked = iconInput.value === identity.icon;
     });
 
+    //Clear the proxy field before doing the retrieval requests below
+    document.querySelector("#edit-container-panel-proxy").value = "";
+
     const edit_proxy_dom = function(result) {
       if(result.type === "http")
         document.querySelector("#edit-container-panel-proxy").value = result.host.toString() + ":" + result.port.toString();
@@ -1083,18 +1086,18 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     }, (error) => {
       if(error.error === "uninitialized" || error.error === "doesnotexist") {
         window.proxifiedContainers.set(identity.cookieStoreId, DEFAULT_PROXY, error.error === "uninitialized").then((result) => {
-          edit_proxy_dom(result.proxy);
+          edit_proxy_dom(result);
         }, (error) => {
-          window.proxifiedContainers.report_proxy_error(error, "popup.js: occurence 1");
+          window.proxifiedContainers.report_proxy_error(error, "popup.js: error 1");
         }).catch((error) => {
-          window.proxifiedContainers.report_proxy_error(error, "popup.js: occurence 2");
+          window.proxifiedContainers.report_proxy_error(error, "popup.js: error 2");
         });
       }
       else {
-        window.proxifiedContainers.report_proxy_error(error, "popup.js: occurence 3");
+        window.proxifiedContainers.report_proxy_error(error, "popup.js: error 3");
       }
     }).catch((err) => {
-      window.proxifiedContainers.report_proxy_error(err, "popup.js: occurence 4");
+      window.proxifiedContainers.report_proxy_error(err, "popup.js: error 4");
     });
 
     return Promise.resolve(null);

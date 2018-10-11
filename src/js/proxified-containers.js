@@ -1,3 +1,20 @@
+//Below lets us print errors, huge thanks to Jonothan @ https://stackoverflow.com/questions/18391212/is-it-not-possible-to-stringify-an-error-using-json-stringify
+if (!('toJSON' in Error.prototype))
+Object.defineProperty(Error.prototype, 'toJSON', {
+    value: function () {
+        var alt = {};
+
+        Object.getOwnPropertyNames(this).forEach(function (key) {
+            alt[key] = this[key];
+        }, this);
+
+        return alt;
+    },
+    configurable: true,
+    writable: true
+});
+
+
 //This object allows other scripts to access the list mapping containers to their proxies
 window.proxifiedContainers = {
 
@@ -60,7 +77,7 @@ window.proxifiedContainers = {
           message: error
         });
       }).catch((error) => {
-        window.proxifiedContainers.report_proxy_error(error, "5");
+        window.proxifiedContainers.report_proxy_error(error, "proxified-containers.js: error 1");
       });
     });
   },
@@ -68,15 +85,22 @@ window.proxifiedContainers = {
     return new Promise((resolve, reject) => {
       if (initialize === true) {
         const proxifiedContainersStore = [];
+        proxifiedContainersStore.push({
+          cookieStoreId: cookieStoreId,
+          proxy: proxy
+        });
+
         browser.storage.local.set({
           proxifiedContainersKey: proxifiedContainersStore
         });
+
+        resolve(proxy);
       }
 
       //Assumes proxy is a properly formatted object
       window.proxifiedContainers.retrieve().then((proxifiedContainersStore) => {
-
         let index = proxifiedContainersStore.findIndex(i => i.cookieStoreId === cookieStoreId);
+
         if (index === -1) {
           proxifiedContainersStore.push({
             cookieStoreId: cookieStoreId,
@@ -93,6 +117,7 @@ window.proxifiedContainers = {
         browser.storage.local.set({
           proxifiedContainersKey: proxifiedContainersStore
         });
+
         resolve(proxifiedContainersStore[index]);
       }, (errorObj) => {
         reject(errorObj);
@@ -100,7 +125,7 @@ window.proxifiedContainers = {
         throw error;
       });
     });
-  },
+   },
   parseProxy: function(proxy_str) {
     const regexp = /(\b(\w+):(\w+)@)?(((?:\d{1,3}\.){3}\d{1,3}\b)|(\b(\w+)(\.(\w+))+))(:(\d+))?/;
     if (regexp.test(proxy_str) !== true)
