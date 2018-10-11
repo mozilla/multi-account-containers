@@ -1,18 +1,18 @@
 //Below lets us print errors, huge thanks to Jonothan @ https://stackoverflow.com/questions/18391212/is-it-not-possible-to-stringify-an-error-using-json-stringify
-if (!('toJSON' in Error.prototype))
-Object.defineProperty(Error.prototype, 'toJSON', {
-    value: function () {
-        var alt = {};
+if (!("toJSON" in Error.prototype))
+  Object.defineProperty(Error.prototype, "toJSON", {
+    value: function() {
+      let alt = {};
 
-        Object.getOwnPropertyNames(this).forEach(function (key) {
-            alt[key] = this[key];
-        }, this);
+      Object.getOwnPropertyNames(this).forEach(function(key) {
+        alt[key] = this[key];
+      }, this);
 
-        return alt;
+      return alt;
     },
     configurable: true,
     writable: true
-});
+  });
 
 
 //This object allows other scripts to access the list mapping containers to their proxies
@@ -61,7 +61,7 @@ window.proxifiedContainers = {
         } else {
           const val = results_array.find(o => o.cookieStoreId === cookieStoreId);
 
-          if (typeof val !== "object" ) {
+          if (typeof val !== "object" || val === null) {
             reject({
               error: "doesnotexist",
               message: ""
@@ -125,7 +125,7 @@ window.proxifiedContainers = {
         throw error;
       });
     });
-   },
+  },
   parseProxy: function(proxy_str) {
     const regexp = /(\b(\w+):(\w+)@)?(((?:\d{1,3}\.){3}\d{1,3}\b)|(\b(\w+)(\.(\w+))+))(:(\d+))?/;
     if (regexp.test(proxy_str) !== true)
