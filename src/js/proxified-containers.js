@@ -21,7 +21,7 @@ proxifiedContainers = {
   // Slightly modified version of 'retrieve' which returns a direct proxy whenever an error is met.
   retrieveFromBackground: function(cookieStoreId = null) {
     return new Promise((resolve, reject) => {
-      window.proxifiedContainers.retrieve(cookieStoreId).then((success) => {
+      proxifiedContainers.retrieve(cookieStoreId).then((success) => {
         resolve(success.proxy);
       }, function() {
         resolve({
@@ -77,7 +77,7 @@ proxifiedContainers = {
           message: error
         });
       }).catch((error) => {
-        window.proxifiedContainers.report_proxy_error(error, "proxified-containers.js: error 1");
+        proxifiedContainers.report_proxy_error(error, "proxified-containers.js: error 1");
       });
     });
   },

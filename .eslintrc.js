@@ -18,7 +18,8 @@ module.exports = {
     "XPCOMUtils": true,
     "OS": true,
     "ADDON_UNINSTALL": true,
-    "ADDON_DISABLE": true
+    "ADDON_DISABLE": true,
+    "proxifiedContainers": true
   },
   "plugins": [
     "promise",

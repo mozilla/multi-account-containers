@@ -43,13 +43,13 @@ const backgroundLogic = {
         options.params
       );
 
-      window.proxifiedContainers.set(this.cookieStoreId(options.userContextId), options.proxy);
+      proxifiedContainers.set(this.cookieStoreId(options.userContextId), options.proxy);
     } else {
       donePromise = browser.contextualIdentities.create(options.params);
 
       // We cannot yet access the new cookieStoreId via this.cookieStoreId(...), so we take this from the resolved promise
       donePromise.then((identity) => {
-        window.proxifiedContainers.set(identity.cookieStoreId, options.proxy);
+        proxifiedContainers.set(identity.cookieStoreId, options.proxy);
       }).catch(() => {
         // Empty because this should never happen theoretically.
       });

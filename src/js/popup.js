@@ -967,7 +967,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
             icon: formValues.get("container-icon") || DEFAULT_ICON,
             color: formValues.get("container-color") || DEFAULT_COLOR
           },
-          proxy: window.proxifiedContainers.parseProxy(document.getElementById("edit-container-panel-proxy").value) || DEFAULT_PROXY
+          proxy: proxifiedContainers.parseProxy(document.getElementById("edit-container-panel-proxy").value) || DEFAULT_PROXY
         }
       });
       await Logic.refreshIdentities();
@@ -1081,23 +1081,23 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
 
 
-    window.proxifiedContainers.retrieve(identity.cookieStoreId).then((result) => {
+    proxifiedContainers.retrieve(identity.cookieStoreId).then((result) => {
       edit_proxy_dom(result.proxy);
     }, (error) => {
       if(error.error === "uninitialized" || error.error === "doesnotexist") {
-        window.proxifiedContainers.set(identity.cookieStoreId, DEFAULT_PROXY, error.error === "uninitialized").then((result) => {
+        proxifiedContainers.set(identity.cookieStoreId, DEFAULT_PROXY, error.error === "uninitialized").then((result) => {
           edit_proxy_dom(result);
         }, (error) => {
-          window.proxifiedContainers.report_proxy_error(error, "popup.js: error 1");
+          proxifiedContainers.report_proxy_error(error, "popup.js: error 1");
         }).catch((error) => {
-          window.proxifiedContainers.report_proxy_error(error, "popup.js: error 2");
+          proxifiedContainers.report_proxy_error(error, "popup.js: error 2");
         });
       }
       else {
-        window.proxifiedContainers.report_proxy_error(error, "popup.js: error 3");
+        proxifiedContainers.report_proxy_error(error, "popup.js: error 3");
       }
     }).catch((err) => {
-      window.proxifiedContainers.report_proxy_error(err, "popup.js: error 4");
+      proxifiedContainers.report_proxy_error(err, "popup.js: error 4");
     });
 
     return Promise.resolve(null);

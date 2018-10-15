@@ -122,7 +122,7 @@ const assignManager = {
       return {type: "direct"};
 
     const tab = await browser.tabs.get(requestInfo.tabId);
-    const proxy = await window.proxifiedContainers.retrieveFromBackground(tab.cookieStoreId);
+    const proxy = await proxifiedContainers.retrieveFromBackground(tab.cookieStoreId);
 
     return proxy;
   },
