@@ -1069,7 +1069,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       iconInput.checked = iconInput.value === identity.icon;
     });
 
-    //Clear the proxy field before doing the retrieval requests below
+    // Clear the proxy field before doing the retrieval requests below
     document.querySelector("#edit-container-panel-proxy").value = "";
 
     const edit_proxy_dom = function(result) {

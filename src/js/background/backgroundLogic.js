@@ -47,11 +47,11 @@ const backgroundLogic = {
     } else {
       donePromise = browser.contextualIdentities.create(options.params);
 
-      //We cannot yet access the new cookieStoreId via this.cookieStoreId(...), so we take this from the resolved promise
+      // We cannot yet access the new cookieStoreId via this.cookieStoreId(...), so we take this from the resolved promise
       donePromise.then((identity) => {
         window.proxifiedContainers.set(identity.cookieStoreId, options.proxy);
       }).catch(() => {
-        //Empty because this should never happen theoretically.
+        // Empty because this should never happen theoretically.
       });
     }
     await donePromise;
@@ -165,7 +165,7 @@ const backgroundLogic = {
         index: -1
       });
     } else {
-      //As we get a blank tab here we will need to await the tabs creation
+      // As we get a blank tab here we will need to await the tabs creation
       newWindowObj = await browser.windows.create({
       });
       hiddenDefaultTabToClose = true;
