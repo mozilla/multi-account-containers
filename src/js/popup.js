@@ -507,7 +507,9 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     });
 
     Logic.addEnterHandler(document.querySelector("#edit-containers-link"), () => {
-      Logic.showPanel(P_CONTAINERS_EDIT);
+      if (!document.querySelector("#edit-containers").classList.contains("disable-edit-containers")){
+        Logic.showPanel(P_CONTAINERS_EDIT);
+      }
     });
 
     Logic.addEnterHandler(document.querySelector("#sort-containers-link"), async function () {
