@@ -45,6 +45,7 @@ body {
   --small-text-size: 0.833rem; /* 10px */
   --small-radius: 3px;
   --icon-button-size: calc(calc(var(--block-line-separation-size) * 2) + 1.66rem); /* 20px */
+  --inactive-opacity: 0.3;
 }
 
 @media (min-resolution: 1dppx) {
@@ -576,6 +577,11 @@ span ~ .panel-header-text {
 
 .edit-containers-panel .userContext-wrapper {
   max-inline-size: 204px;
+}
+
+.disable-edit-containers {
+  opacity: var(--inactive-opacity);
+  pointer-events: none;
 }
 
 .userContext-wrapper {

@@ -506,8 +506,10 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       Logic.showPanel(P_CONTAINER_EDIT, { name: Logic.generateIdentityName() });
     });
 
-    Logic.addEnterHandler(document.querySelector("#edit-containers-link"), () => {
-      Logic.showPanel(P_CONTAINERS_EDIT);
+    Logic.addEnterHandler(document.querySelector("#edit-containers-link"), (e) => {
+      if (!e.target.classList.contains("disable-edit-containers")){
+        Logic.showPanel(P_CONTAINERS_EDIT);
+      }
     });
 
     Logic.addEnterHandler(document.querySelector("#sort-containers-link"), async function () {
@@ -687,6 +689,13 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     document.addEventListener("mousedown", () => {
       document.removeEventListener("focus", focusHandler);
     });
+    /*  If no container is present disable the Edit Containers button */
+    const editContainer = document.querySelector("#edit-containers-link");
+    if (Logic.identities().length === 0) {
+      editContainer.classList.add("disable-edit-containers");
+    } else {
+      editContainer.classList.remove("disable-edit-containers");
+    }
 
     return Promise.resolve();
   },
