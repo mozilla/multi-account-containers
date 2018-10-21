@@ -682,12 +682,9 @@ span ~ .panel-header-text {
   opacity: 1;
 }
 
-.container-info-tab-row:not(.clickable) .container-close-tab {
-  opacity: 0;
-}
-
+.container-info-tab-row:not(.clickable) .container-close-tab,
 .container-info-tab-row:not(.clickable):hover .container-close-tab {
-  opacity: 0.5;
+  opacity: 0;
 }
 
 .container-info-has-tabs,

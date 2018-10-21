@@ -769,7 +769,6 @@ Logic.registerPanel(P_CONTAINER_INFO, {
   },
 
   buildInfoTable(tabs) {
-    const identity = Logic.currentIdentity();
     // For each one, let's create a new line.
     const fragment = document.createDocumentFragment();
     for (let tab of tabs) { // eslint-disable-line prefer-const
@@ -779,22 +778,13 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       tr.innerHTML = escaped`
         <td></td>
         <td class="container-info-tab-title truncate-text" title="${tab.url}" >${tab.title}</td>
-        <td><img src="/img/container-close-tab.svg" style="width:50%;" id="close-tab" class="container-close-tab clickable" /></td>`;
+        <td><img src="/img/container-close-tab.svg" style="width:50%;" id="close-tab" class="container-close-tab" /></td>`;
       tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favIconUrl));
 
       document.getElementById("container-info-table").appendChild(fragment);
 
       const closeTab = document.querySelector("#close-tab");
       closeTab.setAttribute("id", tab.id);
-
-      if(identity.hasHiddenTabs) {
-        closeTab.addEventListener("mouseover",function() {
-          tr.classList.add("clickable");
-        });
-        closeTab.addEventListener("mouseout",function() {
-          tr.classList.remove("clickable");
-        });
-      }
 
       Logic.addEnterHandler(closeTab, async function(e) {
         await browser.tabs.remove(Number(e.target.id));
