@@ -538,7 +538,7 @@ span ~ .panel-header-text {
 }
 
 #current-tab > label > input:checked {
-  background-image: url("chrome://global/skin/in-content/check.svg#check-native");
+  background-image: url("/img/check.svg");
   background-position: -1px -1px;
   background-size: var(--icon-size);
 }
