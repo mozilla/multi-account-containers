@@ -506,8 +506,8 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       Logic.showPanel(P_CONTAINER_EDIT, { name: Logic.generateIdentityName() });
     });
 
-    Logic.addEnterHandler(document.querySelector("#edit-containers-link"), () => {
-      if (!document.querySelector("#edit-containers").classList.contains("disable-edit-containers")){
+    Logic.addEnterHandler(document.querySelector("#edit-containers-link"), (e) => {
+      if (!e.target.classList.contains("disable-edit-containers")){
         Logic.showPanel(P_CONTAINERS_EDIT);
       }
     });
@@ -690,7 +690,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       document.removeEventListener("focus", focusHandler);
     });
     /*  If no container is present disable the Edit Containers button */
-    const editContainer = document.querySelector("#edit-containers");
+    const editContainer = document.querySelector("#edit-containers-link");
     if (Logic.identities().length === 0) {
       editContainer.classList.add("disable-edit-containers");
     } else {
