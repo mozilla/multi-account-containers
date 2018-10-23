@@ -778,24 +778,25 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       tr.innerHTML = escaped`
         <td></td>
         <td class="container-info-tab-title truncate-text" title="${tab.url}" >${tab.title}</td>
-        <td><img src="/img/container-close-tab.svg" style="width:50%;" id="close-tab" class="container-close-tab" /></td>`;
+        <td><img src="/img/container-close-tab.svg" width="50%" id="${tab.id}" class="container-close-tab" /></td>`;
       tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favIconUrl));
 
       document.getElementById("container-info-table").appendChild(fragment);
 
-      const closeTab = document.querySelector("#close-tab");
-      closeTab.setAttribute("id", tab.id);
-
-      Logic.addEnterHandler(closeTab, async function(e) {
-        await browser.tabs.remove(Number(e.target.id));
-        window.close();
-      });
+      const closeTab = document.getElementById(tab.id);
+      if(tab.hiddenState) {
+        closeTab.remove();
+      }
 
       // On click, we activate this tab. But only if this tab is active.
       if (!tab.hiddenState) {
         tr.classList.add("clickable");
         Logic.addEnterHandler(tr, async function () {
           await browser.tabs.update(tab.id, {active: true});
+          window.close();
+        });
+        Logic.addEnterHandler(closeTab, async function(e) {
+          await browser.tabs.remove(Number(e.target.id));
           window.close();
         });
       }
