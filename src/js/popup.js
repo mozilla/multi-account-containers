@@ -1088,16 +1088,16 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         proxifiedContainers.set(identity.cookieStoreId, DEFAULT_PROXY, error.error === "uninitialized").then((result) => {
           edit_proxy_dom(result);
         }, (error) => {
-          proxifiedContainers.report_proxy_error(error, "popup.js: error 1");
+          proxifiedContainers.report_proxy_error(error, "popup.js: unexpected set(...) error");
         }).catch((error) => {
-          proxifiedContainers.report_proxy_error(error, "popup.js: error 2");
+          proxifiedContainers.report_proxy_error(error, "popup.js: unexpected set(...) exception");
         });
       }
       else {
-        proxifiedContainers.report_proxy_error(error, "popup.js: error 3");
+        proxifiedContainers.report_proxy_error(error, "popup.js: unknown error");
       }
     }).catch((err) => {
-      proxifiedContainers.report_proxy_error(err, "popup.js: error 4");
+      proxifiedContainers.report_proxy_error(err, "popup.js: unexpected retrieve error");
     });
 
     return Promise.resolve(null);
