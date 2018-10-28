@@ -1,4 +1,4 @@
-// Below lets us print errors, huge thanks to Jonothan @ https://stackoverflow.com/questions/18391212/is-it-not-possible-to-stringify-an-error-using-json-stringify
+// Below lets us print errors, huge thanks to Jonathan @ https://stackoverflow.com/questions/18391212/is-it-not-possible-to-stringify-an-error-using-json-stringify
 if (!("toJSON" in Error.prototype))
   Object.defineProperty(Error.prototype, "toJSON", {
     value: function() {
