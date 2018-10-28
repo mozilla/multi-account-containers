@@ -18,6 +18,7 @@ window.Utils = {
     imageElement.addEventListener("error", errorListener);
     imageElement.addEventListener("load", loadListener);
     return imageElement;
-  }
+  },
+  DEFAULT_PROXY: Object.freeze({type: "direct"})
 
 };
