@@ -1074,7 +1074,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
     const edit_proxy_dom = function(result) {
       if(result.type === "http")
-        document.querySelector("#edit-container-panel-proxy").value = result.host.toString() + ":" + result.port.toString();
+        document.querySelector("#edit-container-panel-proxy").value = `${result.host}:${result.port}`;
       else if(result.type === "direct")
         document.querySelector("#edit-container-panel-proxy").value = "";
     };
