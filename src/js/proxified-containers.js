@@ -126,6 +126,8 @@ proxifiedContainers = {
       });
     });
   },
+
+  //Parses a proxy description string of the format host[:port] or username:password@[host:port] (port is optional)
   parseProxy(proxy_str) {
     const regexp = /(\b(\w+):(\w+)@)?(((?:\d{1,3}\.){3}\d{1,3}\b)|(\b(\w+)(\.(\w+))+))(:(\d+))?/;
     if (regexp.test(proxy_str) !== true)
