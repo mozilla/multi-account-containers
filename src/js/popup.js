@@ -778,7 +778,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       tr.innerHTML = escaped`
         <td></td>
         <td class="container-info-tab-title truncate-text" title="${tab.url}" >${tab.title}</td>
-        <td><img src="/img/container-close-tab.svg" width="50%" id="${tab.id}" class="container-close-tab" /></td>`;
+        <td><img src="/img/container-close-tab.svg" id="${tab.id}" class="container-close-tab" /></td>`;
       tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favIconUrl));
 
       document.getElementById("container-info-table").appendChild(fragment);
