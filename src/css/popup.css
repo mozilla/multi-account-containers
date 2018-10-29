@@ -671,6 +671,7 @@ span ~ .panel-header-text {
 }
 
 .container-close-tab {
+  inline-size: 50%;
   opacity: 0;
 }
 
