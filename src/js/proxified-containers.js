@@ -25,7 +25,7 @@ proxifiedContainers = {
         resolve(success.proxy);
       }, function() {
         resolve({
-          type: "direct"
+          Utils.DEFAULT_PROXY
         });
       }).catch((error) => {
         reject(error);
