@@ -7,7 +7,6 @@ const CONTAINER_UNHIDE_SRC = "/img/container-unhide.svg";
 const DEFAULT_COLOR = "blue";
 const DEFAULT_ICON = "circle";
 const NEW_CONTAINER_ID = "new";
-const DEFAULT_PROXY = {type: "direct"};
 
 const ONBOARDING_STORAGE_KEY = "onboarding-stage";
 
@@ -967,7 +966,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
             icon: formValues.get("container-icon") || DEFAULT_ICON,
             color: formValues.get("container-color") || DEFAULT_COLOR
           },
-          proxy: proxifiedContainers.parseProxy(document.getElementById("edit-container-panel-proxy").value) || DEFAULT_PROXY
+          proxy: proxifiedContainers.parseProxy(document.getElementById("edit-container-panel-proxy").value) || Utils.DEFAULT_PROXY
         }
       });
       await Logic.refreshIdentities();
@@ -1085,7 +1084,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       edit_proxy_dom(result.proxy);
     }, (error) => {
       if(error.error === "uninitialized" || error.error === "doesnotexist") {
-        proxifiedContainers.set(identity.cookieStoreId, DEFAULT_PROXY, error.error === "uninitialized").then((result) => {
+        proxifiedContainers.set(identity.cookieStoreId, Utils.DEFAULT_PROXY, error.error === "uninitialized").then((result) => {
           edit_proxy_dom(result);
         }, (error) => {
           proxifiedContainers.report_proxy_error(error, "popup.js: unexpected set(...) error");

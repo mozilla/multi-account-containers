@@ -18,7 +18,16 @@ window.Utils = {
     imageElement.addEventListener("error", errorListener);
     imageElement.addEventListener("load", loadListener);
     return imageElement;
-  },
-  DEFAULT_PROXY: Object.freeze({type: "direct"})
+  }
 
 };
+
+// The following creates a fake (but convincing) constant Utils.DEFAULT_PROXY
+Object.defineProperty(window.Utils, "DEFAULT_PROXY", {
+  value: Object.freeze({type: "direct"}),
+  writable: false,
+  enumerable: true,
+
+  // Setting configurable to false avoids deletion of Utils.DEFAULT_PROXY
+  configurable: false
+});

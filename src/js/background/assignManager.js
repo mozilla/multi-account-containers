@@ -119,7 +119,7 @@ const assignManager = {
 
   async handleProxifiedRequest(requestInfo) {
     if(requestInfo.tabId === -1)
-      return {type: "direct"};
+      return Utils.DEFAULT_PROXY;
 
     const tab = await browser.tabs.get(requestInfo.tabId);
     const proxy = await proxifiedContainers.retrieveFromBackground(tab.cookieStoreId);
