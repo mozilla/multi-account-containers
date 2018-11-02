@@ -24,9 +24,7 @@ proxifiedContainers = {
       proxifiedContainers.retrieve(cookieStoreId).then((success) => {
         resolve(success.proxy);
       }, function() {
-        resolve({
-          Utils.DEFAULT_PROXY
-        });
+        resolve(Utils.DEFAULT_PROXY);
       }).catch((error) => {
         reject(error);
       });
