@@ -148,17 +148,17 @@ proxifiedContainers = {
     }
   },
 
-  //Deletes the proxy information object for a specified cookieStoreId [useful for cleaning]
+  // Deletes the proxy information object for a specified cookieStoreId [useful for cleaning]
   delete(cookieStoreId) {
     return new Promise((resolve, reject) => {
       // Assumes proxy is a properly formatted object
       proxifiedContainers.retrieve().then((proxifiedContainersStore) => {
-        let index = proxifiedContainersStore.findIndex(i => i.cookieStoreId === cookieStoreId);
+        const index = proxifiedContainersStore.findIndex(i => i.cookieStoreId === cookieStoreId);
 
         if (index === -1) {
           reject({error: "not-found", message: `Container '${cookieStoreId}' not found.`});
         } else {
-          delete proxifiedContainersStore[index];
+          proxifiedContainersStore.splice(index, 1);
         }
 
         browser.storage.local.set({

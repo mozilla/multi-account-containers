@@ -32,6 +32,10 @@ const backgroundLogic = {
       await browser.contextualIdentities.remove(this.cookieStoreId(userContextId));
     }
     assignManager.deleteContainer(userContextId);
+
+    // Now remove the identity->proxy association in proxifiedContainers also
+    proxifiedContainers.delete(this.cookieStoreId(userContextId));
+
     return {done: true, userContextId};
   },
 
