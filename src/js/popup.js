@@ -162,7 +162,7 @@ const Logic = {
   async clearBrowserActionBadge() {
     const extensionInfo = await getExtensionInfo();
     const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
-    browser.browserAction.setBadgeBackgroundColor({color: ""});
+    browser.browserAction.setBadgeBackgroundColor({color: null});
     browser.browserAction.setBadgeText({text: ""});
     storage.browserActionBadgesClicked.push(extensionInfo.version);
     // use set and spread to create a unique array
