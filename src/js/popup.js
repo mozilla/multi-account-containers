@@ -162,7 +162,7 @@ const Logic = {
   async clearBrowserActionBadge() {
     const extensionInfo = await getExtensionInfo();
     const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
-    browser.browserAction.setBadgeBackgroundColor({color: ""});
+    browser.browserAction.setBadgeBackgroundColor({color: null});
     browser.browserAction.setBadgeText({text: ""});
     storage.browserActionBadgesClicked.push(extensionInfo.version);
     // use set and spread to create a unique array
@@ -210,6 +210,27 @@ const Logic = {
       return activeTabs[0];
     }
     return false;
+  },
+
+  async numTabs() {
+    const activeTabs = await browser.tabs.query({windowId: browser.windows.WINDOW_ID_CURRENT});
+    return activeTabs.length;
+  },
+
+  _disableMoveTabs(message) {
+    const moveTabsEl = document.querySelector("#container-info-movetabs");
+    const fragment = document.createDocumentFragment();
+    const incompatEl = document.createElement("div");
+
+    moveTabsEl.classList.remove("clickable");
+    moveTabsEl.setAttribute("title", message);
+
+    fragment.appendChild(incompatEl);
+    incompatEl.setAttribute("id", "container-info-movetabs-incompat");
+    incompatEl.textContent = message;
+    incompatEl.classList.add("container-info-tab-row");
+
+    moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
   },
 
   async refreshIdentities() {
@@ -485,8 +506,10 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       Logic.showPanel(P_CONTAINER_EDIT, { name: Logic.generateIdentityName() });
     });
 
-    Logic.addEnterHandler(document.querySelector("#edit-containers-link"), () => {
-      Logic.showPanel(P_CONTAINERS_EDIT);
+    Logic.addEnterHandler(document.querySelector("#edit-containers-link"), (e) => {
+      if (!e.target.classList.contains("disable-edit-containers")){
+        Logic.showPanel(P_CONTAINERS_EDIT);
+      }
     });
 
     Logic.addEnterHandler(document.querySelector("#sort-containers-link"), async function () {
@@ -666,6 +689,13 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     document.addEventListener("mousedown", () => {
       document.removeEventListener("focus", focusHandler);
     });
+    /*  If no container is present disable the Edit Containers button */
+    const editContainer = document.querySelector("#edit-containers-link");
+    if (Logic.identities().length === 0) {
+      editContainer.classList.add("disable-edit-containers");
+    } else {
+      editContainer.classList.remove("disable-edit-containers");
+    }
 
     return Promise.resolve();
   },
@@ -698,37 +728,31 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     });
 
     // Check if the user has incompatible add-ons installed
+    let incompatible = false;
     try {
-      const incompatible = await browser.runtime.sendMessage({
+      incompatible = await browser.runtime.sendMessage({
         method: "checkIncompatibleAddons"
       });
-      const moveTabsEl = document.querySelector("#container-info-movetabs");
-      if (incompatible) {
-        const fragment = document.createDocumentFragment();
-        const incompatEl = document.createElement("div");
-
-        moveTabsEl.classList.remove("clickable");
-        moveTabsEl.setAttribute("title", "Moving container tabs is incompatible with Pulse, PageShot, and SnoozeTabs.");
-
-        fragment.appendChild(incompatEl);
-        incompatEl.setAttribute("id", "container-info-movetabs-incompat");
-        incompatEl.textContent = "Incompatible with other Experiments.";
-        incompatEl.classList.add("container-info-tab-row");
-
-        moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
-      } else {
-        Logic.addEnterHandler(moveTabsEl, async function () {
-          await browser.runtime.sendMessage({
-            method: "moveTabsToWindow",
-            windowId: browser.windows.WINDOW_ID_CURRENT,
-            cookieStoreId: Logic.currentIdentity().cookieStoreId,
-          });
-          window.close();
-        });
-      }
     } catch (e) {
       throw new Error("Could not check for incompatible add-ons.");
     }
+    const moveTabsEl = document.querySelector("#container-info-movetabs");
+    const numTabs = await Logic.numTabs();
+    if (incompatible) {
+      Logic._disableMoveTabs("Moving container tabs is incompatible with Pulse, PageShot, and SnoozeTabs.");
+      return;
+    } else if (numTabs === 1) {
+      Logic._disableMoveTabs("Cannot move a tab from a single-tab window.");
+      return; 
+    }
+    Logic.addEnterHandler(moveTabsEl, async function () {
+      await browser.runtime.sendMessage({
+        method: "moveTabsToWindow",
+        windowId: browser.windows.WINDOW_ID_CURRENT,
+        cookieStoreId: Logic.currentIdentity().cookieStoreId,
+      });
+      window.close();
+    });
   },
 
   // This method is called when the panel is shown.
@@ -1001,6 +1025,11 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
     document.querySelector("#edit-container-panel-usercontext-input").value = userContextId || NEW_CONTAINER_ID;
+    const containerName = document.querySelector("#edit-container-panel-name-input");
+    window.requestAnimationFrame(() => {
+      containerName.select();
+      containerName.focus();
+    });
     [...document.querySelectorAll("[name='container-color']")].forEach(colorInput => {
       colorInput.checked = colorInput.value === identity.color;
     });
