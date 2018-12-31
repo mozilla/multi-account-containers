@@ -1082,15 +1082,12 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     document.getElementById("delete-container-name").textContent = identity.name;
 
     const totalNumberOfTabs = identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
+    let warningMessage = "";
     if (totalNumberOfTabs > 0) {
-      let warningMessage = `If you remove this container now, ${totalNumberOfTabs} `;
-      warningMessage += totalNumberOfTabs > 1
-        ? "container tabs will be closed."
-        : "container tab will be closed.";
-      document.getElementById("delete-container-tab-warning").textContent = warningMessage;
-    } else {
-      document.getElementById("delete-container-tab-warning").textContent = "";
+      const grammaticalNumTabs = totalNumberOfTabs > 1 ? "tabs" : "tab";
+      warningMessage = `If you remove this container now, ${totalNumberOfTabs} container ${grammaticalNumTabs} will be closed.`;
     }
+    document.getElementById("delete-container-tab-warning").textContent = warningMessage;
 
     const icon = document.getElementById("delete-container-icon");
     icon.setAttribute("data-identity-icon", identity.icon);
