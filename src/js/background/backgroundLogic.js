@@ -6,6 +6,7 @@ const backgroundLogic = {
     "about:home",
     "about:blank"
   ]),
+  unhideQueue: [],
 
   async getExtensionInfo() {
     const manifestPath = browser.extension.getURL("manifest.json");
@@ -112,6 +113,17 @@ const backgroundLogic = {
     return list.concat(containerState.hiddenTabs);
   },
 
+  async unhideContainer(cookieStoreId) {
+    if (!this.unhideQueue.includes(cookieStoreId)) {
+      this.unhideQueue.push(cookieStoreId);
+      await this.showTabs({
+        cookieStoreId
+      });
+      this.unhideQueue.splice(this.unhideQueue.indexOf(cookieStoreId), 1);
+    }
+  },
+
+
   async moveTabsToWindow(options) {
     const requiredArguments = ["cookieStoreId", "windowId"];
     this.checkArgs(requiredArguments, options, "moveTabsToWindow");
@@ -123,6 +135,7 @@ const backgroundLogic = {
     });
 
     const containerState = await identityState.storageArea.get(cookieStoreId);
+
     // Nothing to do
     if (list.length === 0 &&
         containerState.hiddenTabs.length === 0) {
@@ -152,12 +165,15 @@ const backgroundLogic = {
     const showHiddenPromises = [];
 
     // Let's show the hidden tabs.
-    for (let object of containerState.hiddenTabs) { // eslint-disable-line prefer-const
-      showHiddenPromises.push(browser.tabs.create({
-        url: object.url || DEFAULT_TAB,
-        windowId: newWindowObj.id,
-        cookieStoreId
-      }));
+    if (!this.unhideQueue.includes(cookieStoreId)) {
+      this.unhideQueue.push(cookieStoreId);
+      for (let object of containerState.hiddenTabs) { // eslint-disable-line prefer-const
+        showHiddenPromises.push(browser.tabs.create({
+          url: object.url || DEFAULT_TAB,
+          windowId: newWindowObj.id,
+          cookieStoreId
+        }));
+      }
     }
 
     if (hiddenDefaultTabToClose) {
@@ -176,7 +192,9 @@ const backgroundLogic = {
         browser.tabs.remove(tab.id);
       }
     }
-    return await identityState.storageArea.set(cookieStoreId, containerState);
+    const rv = await identityState.storageArea.set(cookieStoreId, containerState);
+    this.unhideQueue.splice(this.unhideQueue.indexOf(cookieStoreId), 1);
+    return rv;
   },
 
   async _closeTabs(userContextId, windowId = false) {
@@ -307,4 +325,3 @@ const backgroundLogic = {
     return `firefox-container-${userContextId}`;
   }
 };
-
