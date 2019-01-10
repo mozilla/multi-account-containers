@@ -777,28 +777,42 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       tr.classList.add("container-info-tab-row");
       tr.innerHTML = escaped`
         <td></td>
-        <td class="container-info-tab-title truncate-text" title="${tab.url}" >${tab.title}</td>
-        <td><img src="/img/container-close-tab.svg" id="${tab.id}" class="container-close-tab" /></td>`;
+        <td class="container-info-tab-title truncate-text" title="${tab.url}" ><div class="container-tab-title">${tab.title}</div></td>`;
       tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favIconUrl));
-
       document.getElementById("container-info-table").appendChild(fragment);
-
-      const closeTab = document.getElementById(tab.id);
-      if(tab.hiddenState) {
-        closeTab.remove();
-      }
-
+      
       // On click, we activate this tab. But only if this tab is active.
       if (!tab.hiddenState) {
+        const closeImage = document.createElement("img");
+        closeImage.src="/img/container-close-tab.svg";
+        closeImage.className = "container-close-tab";
+        closeImage.title="Close tab";
+        closeImage.id = tab.id;
+        tr.querySelector(".container-info-tab-title").appendChild(closeImage);
+
+        // On hover, we add truncate-text class to add close-tab-image after tab title truncates
+        tr.addEventListener("mouseover", () => {
+          tr.querySelector(".container-info-tab-title").classList.remove("truncate-text");
+          tr.querySelector(".container-tab-title").classList.add("truncate-text");
+        });
+        tr.addEventListener("mouseout", () => {
+          tr.querySelector(".container-info-tab-title").classList.add("truncate-text");
+          tr.querySelector(".container-tab-title").classList.remove("truncate-text");
+        });
+
         tr.classList.add("clickable");
         Logic.addEnterHandler(tr, async function () {
           await browser.tabs.update(tab.id, {active: true});
           window.close();
         });
-        Logic.addEnterHandler(closeTab, async function(e) {
-          await browser.tabs.remove(Number(e.target.id));
-          window.close();
-        });
+
+        const closeTab = document.getElementById(tab.id);
+        if (closeTab) {
+          Logic.addEnterHandler(closeTab, async function(e) {
+            await browser.tabs.remove(Number(e.target.id));
+            window.close();
+          });
+        }
       }
     } 
   },

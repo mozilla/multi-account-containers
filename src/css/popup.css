@@ -653,7 +653,11 @@ span ~ .panel-header-text {
 
 /* Container info list */
 .container-info-tab-title {
-  flex: 1;
+  display: flex;
+}
+
+.container-info-tab-row:hover .container-info-tab-title .truncate-text {
+  inline-size: 184px;
 }
 
 #container-info-hideorshow {
@@ -671,16 +675,18 @@ span ~ .panel-header-text {
 }
 
 .container-close-tab {
-  inline-size: 50%;
-  opacity: 0;
+  transform: scale(0.7);
+  visibility: collapse;
 }
 
 .container-info-tab-row:hover .container-close-tab {
   opacity: 0.5;
+  visibility: visible;
 }
 
 .container-info-tab-row .container-close-tab:hover {
   opacity: 1;
+  visibility: visible;
 }
 
 .container-info-has-tabs,
