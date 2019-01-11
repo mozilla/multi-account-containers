@@ -46,6 +46,7 @@ body {
   --small-radius: 3px;
   --icon-button-size: calc(calc(var(--block-line-separation-size) * 2) + 1.66rem); /* 20px */
   --column-panel-inline-size: 268px;
+  --inactive-opacity: 0.3;
 }
 
 @media (min-resolution: 1dppx) {
@@ -538,7 +539,7 @@ span ~ .panel-header-text {
 }
 
 #current-tab > label > input:checked {
-  background-image: url("chrome://global/skin/in-content/check.svg#check-native");
+  background-image: url("/img/check.svg");
   background-position: -1px -1px;
   background-size: var(--icon-size);
 }
@@ -577,6 +578,11 @@ span ~ .panel-header-text {
 
 .edit-containers-panel .userContext-wrapper {
   max-inline-size: 204px;
+}
+
+.disable-edit-containers {
+  opacity: var(--inactive-opacity);
+  pointer-events: none;
 }
 
 .userContext-wrapper {
