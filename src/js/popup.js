@@ -805,20 +805,44 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       tr.classList.add("container-info-tab-row");
       tr.innerHTML = escaped`
         <td></td>
-        <td class="container-info-tab-title truncate-text" title="${tab.url}" >${tab.title}</td>`;
+        <td class="container-info-tab-title truncate-text" title="${tab.url}" ><div class="container-tab-title">${tab.title}</div></td>`;
       tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favIconUrl));
-
+      document.getElementById("container-info-table").appendChild(fragment);
+      
       // On click, we activate this tab. But only if this tab is active.
       if (!tab.hiddenState) {
+        const closeImage = document.createElement("img");
+        closeImage.src = "/img/container-close-tab.svg";
+        closeImage.className = "container-close-tab";
+        closeImage.title = "Close tab";
+        closeImage.id = tab.id;
+        const tabTitle = tr.querySelector(".container-info-tab-title");
+        tabTitle.appendChild(closeImage);
+
+        // On hover, we add truncate-text class to add close-tab-image after tab title truncates
+        const tabTitleHoverEvent = () => {
+          tabTitle.classList.toggle("truncate-text");
+          tr.querySelector(".container-tab-title").classList.toggle("truncate-text");
+        };
+
+        tr.addEventListener("mouseover", tabTitleHoverEvent);
+        tr.addEventListener("mouseout", tabTitleHoverEvent);
+
         tr.classList.add("clickable");
         Logic.addEnterHandler(tr, async function () {
           await browser.tabs.update(tab.id, {active: true});
           window.close();
         });
-      }
-    }
 
-    document.getElementById("container-info-table").appendChild(fragment);
+        const closeTab = document.getElementById(tab.id);
+        if (closeTab) {
+          Logic.addEnterHandler(closeTab, async function(e) {
+            await browser.tabs.remove(Number(e.target.id));
+            window.close();
+          });
+        }
+      }
+    } 
   },
 });
 
