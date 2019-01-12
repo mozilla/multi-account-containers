@@ -162,7 +162,7 @@ const Logic = {
   async clearBrowserActionBadge() {
     const extensionInfo = await getExtensionInfo();
     const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
-    browser.browserAction.setBadgeBackgroundColor({color: ""});
+    browser.browserAction.setBadgeBackgroundColor({color: null});
     browser.browserAction.setBadgeText({text: ""});
     storage.browserActionBadgesClicked.push(extensionInfo.version);
     // use set and spread to create a unique array
@@ -177,7 +177,9 @@ const Logic = {
       name: "Default",
       cookieStoreId,
       icon: "default-tab",
-      color: "default-tab"
+      color: "default-tab",
+      numberOfHiddenTabs: 0,
+      numberOfOpenTabs: 0
     };
     // Handle old style rejection with null and also Promise.reject new style
     try {
@@ -248,6 +250,8 @@ const Logic = {
       if (stateObject) {
         identity.hasOpenTabs = stateObject.hasOpenTabs;
         identity.hasHiddenTabs = stateObject.hasHiddenTabs;
+        identity.numberOfHiddenTabs = stateObject.numberOfHiddenTabs;
+        identity.numberOfOpenTabs = stateObject.numberOfOpenTabs;
       }
       return identity;
     });
@@ -801,20 +805,44 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       tr.classList.add("container-info-tab-row");
       tr.innerHTML = escaped`
         <td></td>
-        <td class="container-info-tab-title truncate-text" title="${tab.url}" >${tab.title}</td>`;
+        <td class="container-info-tab-title truncate-text" title="${tab.url}" ><div class="container-tab-title">${tab.title}</div></td>`;
       tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favIconUrl));
-
+      document.getElementById("container-info-table").appendChild(fragment);
+      
       // On click, we activate this tab. But only if this tab is active.
       if (!tab.hiddenState) {
+        const closeImage = document.createElement("img");
+        closeImage.src = "/img/container-close-tab.svg";
+        closeImage.className = "container-close-tab";
+        closeImage.title = "Close tab";
+        closeImage.id = tab.id;
+        const tabTitle = tr.querySelector(".container-info-tab-title");
+        tabTitle.appendChild(closeImage);
+
+        // On hover, we add truncate-text class to add close-tab-image after tab title truncates
+        const tabTitleHoverEvent = () => {
+          tabTitle.classList.toggle("truncate-text");
+          tr.querySelector(".container-tab-title").classList.toggle("truncate-text");
+        };
+
+        tr.addEventListener("mouseover", tabTitleHoverEvent);
+        tr.addEventListener("mouseout", tabTitleHoverEvent);
+
         tr.classList.add("clickable");
         Logic.addEnterHandler(tr, async function () {
           await browser.tabs.update(tab.id, {active: true});
           window.close();
         });
-      }
-    }
 
-    document.getElementById("container-info-table").appendChild(fragment);
+        const closeTab = document.getElementById(tab.id);
+        if (closeTab) {
+          Logic.addEnterHandler(closeTab, async function(e) {
+            await browser.tabs.remove(Number(e.target.id));
+            window.close();
+          });
+        }
+      }
+    } 
   },
 });
 
@@ -1074,8 +1102,16 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
   prepare() {
     const identity = Logic.currentIdentity();
 
-    // Populating the panel: name and icon
+    // Populating the panel: name, icon, and warning message
     document.getElementById("delete-container-name").textContent = identity.name;
+
+    const totalNumberOfTabs = identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
+    let warningMessage = "";
+    if (totalNumberOfTabs > 0) {
+      const grammaticalNumTabs = totalNumberOfTabs > 1 ? "tabs" : "tab";
+      warningMessage = `If you remove this container now, ${totalNumberOfTabs} container ${grammaticalNumTabs} will be closed.`;
+    }
+    document.getElementById("delete-container-tab-warning").textContent = warningMessage;
 
     const icon = document.getElementById("delete-container-icon");
     icon.setAttribute("data-identity-icon", identity.icon);

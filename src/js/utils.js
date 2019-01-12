@@ -1,4 +1,4 @@
-const DEFAULT_FAVICON = "moz-icon://goat?size=16";
+const DEFAULT_FAVICON = "/img/blank-favicon.svg";
 
 // TODO use export here instead of globals
 window.Utils = {
