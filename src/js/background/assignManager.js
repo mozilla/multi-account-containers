@@ -12,7 +12,11 @@ const assignManager = {
     getSiteStoreKey(pageUrl) {
       const url = new window.URL(pageUrl);
       const storagePrefix = "siteContainerMap@@_";
-      return `${storagePrefix}${url.hostname}`;
+      if (url.port === "80" || url.port === "443") {
+        return `${storagePrefix}${url.hostname}`;
+      } else {
+        return `${storagePrefix}${url.hostname}${url.port}`;
+      }
     },
 
     setExempted(pageUrl, tabId) {
