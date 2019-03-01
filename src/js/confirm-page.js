@@ -18,17 +18,13 @@ async function load() {
     document.getElementById("current-container-name").textContent = currentContainer.name;
   }
 
-  document.getElementById("redirect-form").addEventListener("submit", (e) => {
+  document.getElementById("confirm").addEventListener("click", (e) => {
     e.preventDefault();
-    const buttonTarget = e.explicitOriginalTarget;
-    switch (buttonTarget.id) {
-    case "confirm":
-      confirmSubmit(redirectUrl, cookieStoreId);
-      break;
-    case "deny":
-      denySubmit(redirectUrl);
-      break;
-    }
+    confirmSubmit(redirectUrl, cookieStoreId);
+  });
+  document.getElementById("deny").addEventListener("click", (e) => {
+    e.preventDefault();
+    denySubmit(redirectUrl);
   });
 }
 
