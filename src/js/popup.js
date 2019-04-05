@@ -666,11 +666,15 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       const hasTabs = (identity.hasHiddenTabs || identity.hasOpenTabs);
       const tr = document.createElement("tr");
       const context = document.createElement("td");
+      const focus = document.createElement("td");
       const manage = document.createElement("td");
+      const openIdentities = Logic.identities().filter(i => i.hasOpenTabs);
+      const focusingOn = openIdentities.length === 1 ? openIdentities[0] : null;
 
       tr.classList.add("container-panel-row");
 
       context.classList.add("userContext-wrapper", "open-newtab", "clickable", "firstTabindex");
+      focus.classList.add("focus-container", "pop-button");
       manage.classList.add("show-tabs", "pop-button");
       manage.setAttribute("title", `View ${identity.name} container`);
       context.setAttribute("tabindex", "0");
@@ -683,7 +687,10 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
           </div>
         </div>
         <div class="container-name truncate-text"></div>`;
-      context.querySelector(".container-name").textContent = identity.name;
+      const containerName = context.querySelector(".container-name");
+      containerName.textContent = identity.name;
+      focus.title = escaped`Focus on ${identity.name} container`;
+      focus.innerHTML = "<img src='/img/container-focus.svg' class='focus-container pop-button-image-small' />";
       manage.innerHTML = "<img src='/img/container-arrow.svg' class='show-tabs pop-button-image-small' />";
 
       fragment.appendChild(tr);
@@ -691,13 +698,32 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       tr.appendChild(context);
 
       if (hasTabs) {
+        if (focusingOn !== identity) {
+          tr.appendChild(focus);
+        }
         tr.appendChild(manage);
+
+        if (identity.hasHiddenTabs) {
+          containerName.classList.add("hidden-tabs");
+          containerName.textContent +=  escaped` (${identity.numberOfHiddenTabs})`;
+        } else {
+          containerName.textContent +=  escaped` (${identity.numberOfOpenTabs})`;
+        }
       }
 
       Logic.addEnterHandler(tr, async (e) => {
-        if (e.target.matches(".open-newtab")
-          || e.target.parentNode.matches(".open-newtab")
-          || e.type === "keydown") {
+        if (e.target.matches(".focus-container")) {
+          Logic.identities().forEach(otherIdentity => {
+            browser.runtime.sendMessage({
+              method: otherIdentity === identity ? "showTabs" : "hideTabs",
+              windowId: browser.windows.WINDOW_ID_CURRENT,
+              cookieStoreId: otherIdentity.cookieStoreId
+            });
+          });
+          window.close();
+        } else if (e.target.matches(".open-newtab")
+            || e.target.parentNode.matches(".open-newtab")
+            || e.type === "keydown") {
           try {
             browser.tabs.create({
               cookieStoreId: identity.cookieStoreId

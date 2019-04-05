@@ -583,6 +583,10 @@ span ~ .panel-header-text {
   padding-inline-start: 4px;
 }
 
+.container-panel-row .container-name.hidden-tabs {
+  opacity: var(--inactive-opacity);
+}
+
 .edit-containers-panel .userContext-wrapper {
   max-inline-size: calc(var(--overflow-size) + 203px);
 }
