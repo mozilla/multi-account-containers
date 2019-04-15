@@ -3,7 +3,7 @@ const messageHandler = {
   // We use this to catch redirected tabs that have just opened
   // If this were in platform we would change how the tab opens based on "new tab" link navigations such as ctrl+click
   LAST_CREATED_TAB_TIMER: 2000,
-  BROWSER_NAME = (await browser.runtime.getBrowserInfo()).name.toLowerCase(),
+  BROWSER_NAME: (await browser.runtime.getBrowserInfo()).name.toLowerCase(),
 
   init() {
     // Handles messages from webextension code
