@@ -1,4 +1,5 @@
 const DEFAULT_TAB = "about:newtab";
+const BROWSER_NAME = (await browser.runtime.getBrowserInfo()).name.toLowerCase();
 const backgroundLogic = {
   NEW_TAB_PAGES: new Set([
     "about:startpage",
@@ -19,7 +20,7 @@ const backgroundLogic = {
     if (!cookieStoreId) {
       return false;
     }
-    const container = cookieStoreId.replace("firefox-container-", "");
+    const container = cookieStoreId.replace(BROWSER_NAME + "-container-", "");
     if (container !== cookieStoreId) {
       return container;
     }
@@ -324,6 +325,6 @@ const backgroundLogic = {
   },
 
   cookieStoreId(userContextId) {
-    return `firefox-container-${userContextId}`;
+    return BROWSER_NAME + `-container-${userContextId}`;
   }
 };
