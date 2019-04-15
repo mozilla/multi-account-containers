@@ -218,7 +218,7 @@ const backgroundLogic = {
   async queryIdentitiesState(windowId) {
     const identities = await browser.contextualIdentities.query({});
     const identitiesOutput = {};
-    const identitiesPromise = identities.map(async function (identity) {
+    const identitiesPromise = identities.map(async (identity) => {
       const { cookieStoreId } = identity;
       const containerState = await identityState.storageArea.get(cookieStoreId);
       const openTabs = await browser.tabs.query({
