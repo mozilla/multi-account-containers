@@ -395,7 +395,7 @@ Logic.registerPanel(P_ONBOARDING_1, {
   initialize() {
     // Let's move to the next panel.
     [...document.querySelectorAll(".onboarding-start-button")].forEach(startElement => {
-      Logic.addEnterHandler(startElement, async function () {
+      Logic.addEnterHandler(startElement, async () => {
         await Logic.setOnboardingStage(1);
         Logic.showPanel(P_ONBOARDING_2);
       });
@@ -419,7 +419,7 @@ Logic.registerPanel(P_ONBOARDING_2, {
   initialize() {
     // Let's move to the containers list panel.
     [...document.querySelectorAll(".onboarding-next-button")].forEach(nextElement => {
-      Logic.addEnterHandler(nextElement, async function () {
+      Logic.addEnterHandler(nextElement, async () => {
         await Logic.setOnboardingStage(2);
         Logic.showPanel(P_ONBOARDING_3);
       });
@@ -443,7 +443,7 @@ Logic.registerPanel(P_ONBOARDING_3, {
   initialize() {
     // Let's move to the containers list panel.
     [...document.querySelectorAll(".onboarding-almost-done-button")].forEach(almostElement => {
-      Logic.addEnterHandler(almostElement, async function () {
+      Logic.addEnterHandler(almostElement, async () => {
         await Logic.setOnboardingStage(3);
         Logic.showPanel(P_ONBOARDING_4);
       });
@@ -465,7 +465,7 @@ Logic.registerPanel(P_ONBOARDING_4, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    Logic.addEnterHandler(document.querySelector("#onboarding-done-button"), async function () {
+    Logic.addEnterHandler(document.querySelector("#onboarding-done-button"), async () => {
       await Logic.setOnboardingStage(4);
       Logic.showPanel(P_ONBOARDING_5);
     });
@@ -486,7 +486,7 @@ Logic.registerPanel(P_ONBOARDING_5, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    Logic.addEnterHandler(document.querySelector("#onboarding-longpress-button"), async function () {
+    Logic.addEnterHandler(document.querySelector("#onboarding-longpress-button"), async () => {
       await Logic.setOnboardingStage(5);
       Logic.showPanel(P_CONTAINERS_LIST);
     });
@@ -516,7 +516,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       }
     });
 
-    Logic.addEnterHandler(document.querySelector("#sort-containers-link"), async function () {
+    Logic.addEnterHandler(document.querySelector("#sort-containers-link"), async () => {
       try {
         await browser.runtime.sendMessage({
           method: "sortTabs"
@@ -659,7 +659,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         tr.appendChild(manage);
       }
 
-      Logic.addEnterHandler(tr, async function (e) {
+      Logic.addEnterHandler(tr, async (e) => {
         if (e.target.matches(".open-newtab")
             || e.target.parentNode.matches(".open-newtab")
             || e.type === "keydown") {
@@ -717,7 +717,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       Logic.showPreviousPanel();
     });
 
-    Logic.addEnterHandler(document.querySelector("#container-info-hideorshow"), async function () {
+    Logic.addEnterHandler(document.querySelector("#container-info-hideorshow"), async () => {
       const identity = Logic.currentIdentity();
       try {
         browser.runtime.sendMessage({
@@ -749,7 +749,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       Logic._disableMoveTabs("Cannot move a tab from a single-tab window.");
       return; 
     }
-    Logic.addEnterHandler(moveTabsEl, async function () {
+    Logic.addEnterHandler(moveTabsEl, async () => {
       await browser.runtime.sendMessage({
         method: "moveTabsToWindow",
         windowId: browser.windows.WINDOW_ID_CURRENT,
@@ -829,14 +829,14 @@ Logic.registerPanel(P_CONTAINER_INFO, {
         tr.addEventListener("mouseout", tabTitleHoverEvent);
 
         tr.classList.add("clickable");
-        Logic.addEnterHandler(tr, async function () {
+        Logic.addEnterHandler(tr, async () => {
           await browser.tabs.update(tab.id, {active: true});
           window.close();
         });
 
         const closeTab = document.getElementById(tab.id);
         if (closeTab) {
-          Logic.addEnterHandler(closeTab, async function(e) {
+          Logic.addEnterHandler(closeTab, async (e) => {
             await browser.tabs.remove(Number(e.target.id));
             window.close();
           });
@@ -997,7 +997,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         />`;
         const deleteButton = trElement.querySelector(".delete-assignment");
         const that = this;
-        Logic.addEnterHandler(deleteButton, async function () {
+        Logic.addEnterHandler(deleteButton, async () => {
           const userContextId = Logic.currentUserContextId();
           // Lets show the message to the current tab
           // TODO remove then when firefox supports arrow fn async
@@ -1082,7 +1082,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
       Logic.showPreviousPanel();
     });
 
-    Logic.addEnterHandler(document.querySelector("#delete-container-ok-link"), async function () {
+    Logic.addEnterHandler(document.querySelector("#delete-container-ok-link"), async () => {
       /* This promise wont resolve if the last tab was removed from the window.
           as the message async callback stops listening, this isn't an issue for us however it might be in future
           if you want to do anything post delete do it in the background script.
@@ -1130,7 +1130,7 @@ Logic.registerPanel(P_CONTAINERS_ACHIEVEMENT, {
   // This method is called when the object is registered.
   initialize() {
     // Set done and move to the containers list panel.
-    Logic.addEnterHandler(document.querySelector("#achievement-done-button"), async function () {
+    Logic.addEnterHandler(document.querySelector("#achievement-done-button"), async () => {
       await Logic.setAchievementDone("manyContainersOpened");
       Logic.showPanel(P_CONTAINERS_LIST);
     });
