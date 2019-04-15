@@ -9,6 +9,7 @@ const DEFAULT_COLOR = "blue";
 const DEFAULT_ICON = "circle";
 const NEW_CONTAINER_ID = "new";
 
+const BROWSER_NAME = (await browser.runtime.getBrowserInfo()).name.toLowerCase();
 const ONBOARDING_STORAGE_KEY = "onboarding-stage";
 
 // List of panels
@@ -202,7 +203,7 @@ const Logic = {
   },
 
   userContextId(cookieStoreId = "") {
-    const userContextId = cookieStoreId.replace("firefox-container-", "");
+    const userContextId = cookieStoreId.replace(BROWSER_NAME + "-container-", "");
     return (userContextId !== cookieStoreId) ? Number(userContextId) : false;
   },
 
