@@ -3,6 +3,7 @@ const messageHandler = {
   // We use this to catch redirected tabs that have just opened
   // If this were in platform we would change how the tab opens based on "new tab" link navigations such as ctrl+click
   LAST_CREATED_TAB_TIMER: 2000,
+  BROWSER_NAME = (await browser.runtime.getBrowserInfo()).name.toLowerCase(),
 
   init() {
     // Handles messages from webextension code
@@ -148,8 +149,8 @@ const messageHandler = {
       this.lastCreatedTab = tab;
       if (tab.cookieStoreId) {
         // Don't count firefox-default, firefox-private, nor our own confirm page loads
-        if (tab.cookieStoreId !== "firefox-default" &&
-            tab.cookieStoreId !== "firefox-private" &&
+        if (tab.cookieStoreId !== this.BROWSER_NAME + "-default" &&
+            tab.cookieStoreId !== this.BROWSER_NAME + "-private" &&
             !tab.url.startsWith("moz-extension")) {
           // increment the counter of container tabs opened
           this.incrementCountOfContainerTabsOpened();
