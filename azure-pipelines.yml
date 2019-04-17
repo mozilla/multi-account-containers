@@ -1,0 +1,33 @@
+trigger:
+- master
+
+jobs:
+- job: linux
+  displayName: Linux
+  pool: Hosted Ubuntu 1604
+  steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '10.x'
+    displayName: 'Install Node.js'
+  - script: |
+      npm install
+    displayName: 'npm install'
+  - script: |
+      npm run build
+    displayName: 'npm run build'
+
+- job: windows
+  displayName: Windows
+  pool: Hosted
+  steps:
+  - task: NodeTool@0
+    inputs:
+      versionSpec: '10.x'
+    displayName: 'Install Node.js'
+  - script: |
+      npm install
+    displayName: 'npm install'
+  - script: |
+      npm run build
+    displayName: 'npm run build'
