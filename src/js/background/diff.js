@@ -33,9 +33,7 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-export default function Diff() {}
-
-Diff.prototype = {
+window.Diff = {
   diff(oldString, newString, options = {}) {
     let callback = options.callback;
     if (typeof options === 'function') {
