@@ -283,12 +283,12 @@ const backgroundLogic = {
     for (const difference of differ.diff(beforeIds, afterIds)) {
       if (!difference.added)
         continue;
-      let movingIds = difference.value;
+      const movingIds = difference.value;
       const nearestFollowingIndex = afterIds.indexOf(movingIds[movingIds.length - 1]) + 1;
       let newIndex = nearestFollowingIndex < afterIds.length ? sortedIds.indexOf(afterIds[nearestFollowingIndex]) : -1;
       if (newIndex < 0)
         newIndex = beforeIds.length;
-      let oldIndices = movingIds.map(id => sortedIds.indexOf(id));
+      const oldIndices = movingIds.map(id => sortedIds.indexOf(id));
       if (oldIndices[0] < newIndex)
         newIndex--;
       browser.tabs.move(movingIds, {
