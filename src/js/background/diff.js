@@ -186,23 +186,17 @@ Diff.prototype = {
         || (this.options.ignoreCase && left.toLowerCase() === right.toLowerCase());
     }
   },
-  removeEmpty(array) {
-    let ret = [];
-    for (let i = 0; i < array.length; i++) {
-      if (array[i]) {
-        ret.push(array[i]);
-      }
-    }
-    return ret;
+  removeEmpty(value) {
+    return value;
   },
   castInput(value) {
     return value;
   },
   tokenize(value) {
-    return value.split('');
+    return value.slice();
   },
-  join(chars) {
-    return chars.join('');
+  join(value) {
+    return value;
   }
 };
 
