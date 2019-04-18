@@ -34,7 +34,7 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 window.Diff = {
-  diff(oldString, newString, options = {}) {
+  diff(oldValues, newValues, options = {}) {
     let callback = options.callback;
     if (typeof options === 'function') {
       callback = options;
@@ -54,22 +54,22 @@ window.Diff = {
     }
 
     // Allow subclasses to massage the input prior to running
-    oldString = this.castInput(oldString);
-    newString = this.castInput(newString);
+    oldValues = this.castInput(oldValues);
+    newValues = this.castInput(newValues);
 
-    oldString = this.removeEmpty(this.tokenize(oldString));
-    newString = this.removeEmpty(this.tokenize(newString));
+    oldValues = this.removeEmpty(this.tokenize(oldValues));
+    newValues = this.removeEmpty(this.tokenize(newValues));
 
-    let newLen = newString.length, oldLen = oldString.length;
+    let newLen = newValues.length, oldLen = oldValues.length;
     let editLength = 1;
     let maxEditLength = newLen + oldLen;
     let bestPath = [{ newPos: -1, components: [] }];
 
     // Seed editLength = 0, i.e. the content starts with the same values
-    let oldPos = this.extractCommon(bestPath[0], newString, oldString, 0);
+    let oldPos = this.extractCommon(bestPath[0], newValues, oldValues, 0);
     if (bestPath[0].newPos + 1 >= newLen && oldPos + 1 >= oldLen) {
       // Identity per the equality and tokenizer
-      return done([{value: this.join(newString), count: newString.length}]);
+      return done([{value: this.join(newValues), count: newValues.length}]);
     }
 
     // Main worker method. checks all permutations of a given edit length for acceptance.
@@ -104,11 +104,11 @@ window.Diff = {
           self.pushComponent(basePath.components, true, undefined);
         }
 
-        oldPos = self.extractCommon(basePath, newString, oldString, diagonalPath);
+        oldPos = self.extractCommon(basePath, newValues, oldValues, diagonalPath);
 
         // If we have hit the end of both strings, then we are done
         if (basePath.newPos + 1 >= newLen && oldPos + 1 >= oldLen) {
-          return done(this._buildValues(self, basePath.components, newString, oldString, self.useLongestToken));
+          return done(this._buildValues(self, basePath.components, newValues, oldValues, self.useLongestToken));
         } else {
           // Otherwise track this path as a potential candidate and continue.
           bestPath[diagonalPath] = basePath;
@@ -155,14 +155,14 @@ window.Diff = {
       components.push({count: 1, added: added, removed: removed });
     }
   },
-  extractCommon(basePath, newString, oldString, diagonalPath) {
-    let newLen = newString.length,
-        oldLen = oldString.length,
+  extractCommon(basePath, newValues, oldValues, diagonalPath) {
+    let newLen = newValues.length,
+        oldLen = oldValues.length,
         newPos = basePath.newPos,
         oldPos = newPos - diagonalPath,
 
         commonCount = 0;
-    while (newPos + 1 < newLen && oldPos + 1 < oldLen && this.equals(newString[newPos + 1], oldString[oldPos + 1])) {
+    while (newPos + 1 < newLen && oldPos + 1 < oldLen && this.equals(newValues[newPos + 1], oldValues[oldPos + 1])) {
       newPos++;
       oldPos++;
       commonCount++;
@@ -197,7 +197,7 @@ window.Diff = {
     return value;
   },
 
-  _buildValues(diff, components, newString, oldString, useLongestToken) {
+  _buildValues(diff, components, newValues, oldValues, useLongestToken) {
     let componentPos = 0,
         componentLen = components.length,
         newPos = 0,
@@ -207,15 +207,15 @@ window.Diff = {
       let component = components[componentPos];
       if (!component.removed) {
         if (!component.added && useLongestToken) {
-          let value = newString.slice(newPos, newPos + component.count);
+          let value = newValues.slice(newPos, newPos + component.count);
           value = value.map(function(value, i) {
-            let oldValue = oldString[oldPos + i];
+            let oldValue = oldValues[oldPos + i];
             return oldValue.length > value.length ? oldValue : value;
           });
 
           component.value = diff.join(value);
         } else {
-          component.value = diff.join(newString.slice(newPos, newPos + component.count));
+          component.value = diff.join(newValues.slice(newPos, newPos + component.count));
         }
         newPos += component.count;
 
@@ -224,7 +224,7 @@ window.Diff = {
           oldPos += component.count;
         }
       } else {
-        component.value = diff.join(oldString.slice(oldPos, oldPos + component.count));
+        component.value = diff.join(oldValues.slice(oldPos, oldPos + component.count));
         oldPos += component.count;
 
         // Reverse add and remove so removes are output first to match common convention
