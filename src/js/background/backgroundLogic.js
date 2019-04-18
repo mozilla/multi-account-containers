@@ -291,7 +291,7 @@ const backgroundLogic = {
       // Reject already moved tabs.
       let oldIndices = movingIds.map(id => sortedIds.indexOf(id));
       movingIds = movingIds.filter((id, index) => oldIndices[index] > -1);
-      if (movingIds.length == 0)
+      if (movingIds.length === 0)
         continue;
       oldIndices = oldIndices.filter(index => index > -1);
       if (oldIndices[0] < newIndex)

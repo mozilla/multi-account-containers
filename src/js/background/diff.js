@@ -3,7 +3,7 @@
   This version is simplified for the usecase:
    - comparison of arrays
    - synchronous function call
-   - equality of elements can be detected via the "==" operator
+   - equality of elements can be detected via the "===" operator
 */
 /*
 Software License Agreement (BSD License)
@@ -39,18 +39,18 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-window.Diff = {
+const Diff = {
   diff(oldValues, newValues) {
     oldValues = oldValues.slice();
     newValues = newValues.slice();
 
-    let newLen = newValues.length, oldLen = oldValues.length;
+    const newLen = newValues.length, oldLen = oldValues.length;
     let editLength = 1;
-    let maxEditLength = newLen + oldLen;
-    let bestPath = [{ newPos: -1, components: [] }];
+    const maxEditLength = newLen + oldLen;
+    const bestPath = [{ newPos: -1, components: [] }];
 
     // Seed editLength = 0, i.e. the content starts with the same values
-    let oldPos = this.extractCommon(bestPath[0], newValues, oldValues, 0);
+    const oldPos = this.extractCommon(bestPath[0], newValues, oldValues, 0);
     if (bestPath[0].newPos + 1 >= newLen && oldPos + 1 >= oldLen) {
       // Identity per the equality
       return [{value: newValues, count: newValues.length}];
@@ -60,16 +60,16 @@ window.Diff = {
     function execEditLength() {
       for (let diagonalPath = -1 * editLength; diagonalPath <= editLength; diagonalPath += 2) {
         let basePath;
-        let addPath = bestPath[diagonalPath - 1],
-            removePath = bestPath[diagonalPath + 1],
-            oldPos = (removePath ? removePath.newPos : 0) - diagonalPath;
+        const addPath = bestPath[diagonalPath - 1];
+        const removePath = bestPath[diagonalPath + 1];
+        let oldPos = (removePath ? removePath.newPos : 0) - diagonalPath;
         if (addPath) {
           // No one else is going to attempt to use this value, clear it
           bestPath[diagonalPath - 1] = undefined;
         }
 
-        let canAdd = addPath && addPath.newPos + 1 < newLen,
-            canRemove = removePath && 0 <= oldPos && oldPos < oldLen;
+        const canAdd = addPath && addPath.newPos + 1 < newLen;
+        const canRemove = removePath && 0 <= oldPos && oldPos < oldLen;
         if (!canAdd && !canRemove) {
           // If this path is a terminal then prune
           bestPath[diagonalPath] = undefined;
@@ -103,7 +103,7 @@ window.Diff = {
     }
 
     while (editLength <= maxEditLength) {
-      let ret = execEditLength.call(this);
+      const ret = execEditLength.call(this);
       if (ret) {
         return ret;
       }
@@ -111,7 +111,7 @@ window.Diff = {
   },
 
   pushComponent(components, added, removed) {
-    let last = components[components.length - 1];
+    const last = components[components.length - 1];
     if (last && last.added === added && last.removed === removed) {
       // We need to clone here as the component clone operation is just
       // as shallow array clone
@@ -121,13 +121,13 @@ window.Diff = {
     }
   },
   extractCommon(basePath, newValues, oldValues, diagonalPath) {
-    let newLen = newValues.length,
-        oldLen = oldValues.length,
-        newPos = basePath.newPos,
-        oldPos = newPos - diagonalPath,
+    const newLen = newValues.length;
+    const oldLen = oldValues.length;
+    let newPos = basePath.newPos;
+    let oldPos = newPos - diagonalPath;
 
-        commonCount = 0;
-    while (newPos + 1 < newLen && oldPos + 1 < oldLen && newValues[newPos + 1] == oldValues[oldPos + 1]) {
+    let commonCount = 0;
+    while (newPos + 1 < newLen && oldPos + 1 < oldLen && newValues[newPos + 1] === oldValues[oldPos + 1]) {
       newPos++;
       oldPos++;
       commonCount++;
@@ -142,18 +142,18 @@ window.Diff = {
   },
 
   _buildValues(components, newValues, oldValues, useLongestToken) {
-    let componentPos = 0,
-        componentLen = components.length,
-        newPos = 0,
-        oldPos = 0;
+    let componentPos = 0;
+    const componentLen = components.length;
+    let newPos = 0;
+    let oldPos = 0;
 
     for (; componentPos < componentLen; componentPos++) {
-      let component = components[componentPos];
+      const component = components[componentPos];
       if (!component.removed) {
         if (!component.added && useLongestToken) {
           let value = newValues.slice(newPos, newPos + component.count);
           value = value.map(function(value, i) {
-            let oldValue = oldValues[oldPos + i];
+            const oldValue = oldValues[oldPos + i];
             return oldValue.length > value.length ? oldValue : value;
           });
 
@@ -175,7 +175,7 @@ window.Diff = {
         // The diffing algorithm is tied to add then remove output and this is the simplest
         // route to get the desired output with minimal overhead.
         if (componentPos && components[componentPos - 1].added) {
-          let tmp = components[componentPos - 1];
+          const tmp = components[componentPos - 1];
           components[componentPos - 1] = components[componentPos];
           components[componentPos] = tmp;
         }
