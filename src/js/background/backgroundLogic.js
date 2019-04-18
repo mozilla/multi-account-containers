@@ -238,7 +238,7 @@ const backgroundLogic = {
   },
 
   async sortTabs() {
-    const windows = await browser.windows.getAll({ populate: true });
+    const windows = await browser.windows.getAll({populate: true});
     for (let windowObj of windows) { // eslint-disable-line prefer-const
       // First the pinned tabs, then the normal ones.
       await this._sortTabsInternal(windowObj, true);
