@@ -248,7 +248,8 @@ const backgroundLogic = {
 
   async _sortTabsInternal(windowObj, pinnedTabs) {
     const tabs = windowObj.tabs;
-    let pos = 0;
+    const sortedTabs = [];
+    let offset = 0;
 
     // Let's collect UCIs/tabs for this window.
     const map = new Map;
@@ -260,7 +261,7 @@ const backgroundLogic = {
 
       if (!pinnedTabs && tab.pinned) {
         // pinned tabs must be consider as taken positions.
-        ++pos;
+        ++offset;
         continue;
       }
 
@@ -269,21 +270,39 @@ const backgroundLogic = {
         map.set(userContextId, []);
       }
       map.get(userContextId).push(tab);
+      sortedTabs.push(tab);
     }
 
     // Let's sort the map.
     const sortMap = new Map([...map.entries()].sort((a, b) => a[0] > b[0]));
 
     // Let's move tabs.
-    sortMap.forEach(tabs => {
-      for (const tab of tabs) {
-        ++pos;
-        browser.tabs.move(tab.id, {
-          windowId: windowObj.id,
-          index: pos
-        });
-      }
-    });
+    const afterIds = Array.from(sortMap.values()).reduce((acc, val) => acc.concat(val), []).map(tab => tab.id);
+    const beforeIds = sortedTabs.map(tab => tab.id);
+    let sortedIds = beforeIds.slice(0);
+    for (const difference of Diff.diff(beforeIds, afterIds)) {
+      if (!difference.added)
+        continue;
+      let movingIds = difference.value;
+      const nearestFollowingIndex = afterIds.indexOf(movingIds[movingIds.length - 1]) + 1;
+      let newIndex = nearestFollowingIndex < afterIds.length ? sortedIds.indexOf(afterIds[nearestFollowingIndex]) : -1;
+      if (newIndex < 0)
+        newIndex = beforeIds.length;
+      // Reject already moved tabs.
+      let oldIndices = movingIds.map(id => sortedIds.indexOf(id));
+      movingIds = movingIds.filter((id, index) => oldIndices[index] > -1);
+      if (movingIds.length == 0)
+        continue;
+      oldIndices = oldIndices.filter(index => index > -1);
+      if (oldIndices[0] < newIndex)
+        newIndex--;
+      browser.tabs.move(movingIds, {
+        windowId: windowObj.id,
+        index:    newIndex + offset
+      });
+      sortedIds = sortedIds.filter(id => !movingIds.includes(id));
+      sortedIds.splice(newIndex, 0, ...movingIds);
+    }
   },
 
   async hideTabs(options) {
