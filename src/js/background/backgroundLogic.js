@@ -241,12 +241,12 @@ const backgroundLogic = {
     const windows = await browser.windows.getAll({populate: true});
     for (let windowObj of windows) { // eslint-disable-line prefer-const
       // First the pinned tabs, then the normal ones.
-      await this._sortTabsInternal(windowObj, true);
-      await this._sortTabsInternal(windowObj, false);
+      this._sortTabsInternal(windowObj, true);
+      this._sortTabsInternal(windowObj, false);
     }
   },
 
-  async _sortTabsInternal(windowObj, pinnedTabs) {
+  _sortTabsInternal(windowObj, pinnedTabs) {
     const tabs = windowObj.tabs;
     const sortedTabs = [];
     let offset = 0;
@@ -289,11 +289,6 @@ const backgroundLogic = {
       if (newIndex < 0)
         newIndex = beforeIds.length;
       let oldIndices = movingIds.map(id => sortedIds.indexOf(id));
-      // Reject already removed tabs.
-      movingIds = movingIds.filter((id, index) => oldIndices[index] > -1);
-      if (movingIds.length === 0)
-        continue;
-      oldIndices = oldIndices.filter(index => index > -1);
       if (oldIndices[0] < newIndex)
         newIndex--;
       browser.tabs.move(movingIds, {
