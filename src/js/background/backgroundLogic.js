@@ -280,7 +280,7 @@ const backgroundLogic = {
     const afterIds = Array.from(sortMap.values()).reduce((acc, val) => acc.concat(val), []).map(tab => tab.id);
     const beforeIds = sortedTabs.map(tab => tab.id);
     let sortedIds = beforeIds.slice(0);
-    for (const difference of Diff.diff(beforeIds, afterIds)) {
+    for (const difference of differ.diff(beforeIds, afterIds)) {
       if (!difference.added)
         continue;
       let movingIds = difference.value;

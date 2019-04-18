@@ -39,7 +39,7 @@ IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISI
 OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-const Diff = {
+const differ = { // eslint-disable-line no-unused-vars
   diff(oldValues, newValues) {
     oldValues = oldValues.slice();
     newValues = newValues.slice();

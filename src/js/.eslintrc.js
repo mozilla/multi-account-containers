@@ -6,6 +6,7 @@ module.exports = {
     "assignManager": true,
     "badge": true,
     "backgroundLogic": true,
+    "differ": true,
     "identityState": true,
     "messageHandler": true
   }
