@@ -1,4 +1,10 @@
-/* Original version: https://github.com/kpdecker/jsdiff */
+/*
+  Original version: https://github.com/kpdecker/jsdiff
+  This version is simplified for the usecase:
+   - comparison of arrays
+   - synchronous function call
+   - equality of elements can be detected via the "==" operator
+*/
 /*
 Software License Agreement (BSD License)
 
