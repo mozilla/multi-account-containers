@@ -34,31 +34,9 @@ OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 window.Diff = {
-  diff(oldValues, newValues, options = {}) {
-    let callback = options.callback;
-    if (typeof options === 'function') {
-      callback = options;
-      options = {};
-    }
-    this.options = options;
-
-    let self = this;
-
-    function done(value) {
-      if (callback) {
-        setTimeout(function() { callback(undefined, value); }, 0);
-        return true;
-      } else {
-        return value;
-      }
-    }
-
-    // Allow subclasses to massage the input prior to running
-    oldValues = this.castInput(oldValues);
-    newValues = this.castInput(newValues);
-
-    oldValues = this.removeEmpty(this.tokenize(oldValues));
-    newValues = this.removeEmpty(this.tokenize(newValues));
+  diff(oldValues, newValues) {
+    oldValues = oldValues.slice();
+    newValues = newValues.slice();
 
     let newLen = newValues.length, oldLen = oldValues.length;
     let editLength = 1;
@@ -68,8 +46,8 @@ window.Diff = {
     // Seed editLength = 0, i.e. the content starts with the same values
     let oldPos = this.extractCommon(bestPath[0], newValues, oldValues, 0);
     if (bestPath[0].newPos + 1 >= newLen && oldPos + 1 >= oldLen) {
-      // Identity per the equality and tokenizer
-      return done([{value: this.join(newValues), count: newValues.length}]);
+      // Identity per the equality
+      return [{value: newValues, count: newValues.length}];
     }
 
     // Main worker method. checks all permutations of a given edit length for acceptance.
@@ -97,18 +75,18 @@ window.Diff = {
         // and does not pass the bounds of the diff graph
         if (!canAdd || (canRemove && addPath.newPos < removePath.newPos)) {
           basePath = this._clonePath(removePath);
-          self.pushComponent(basePath.components, undefined, true);
+          this.pushComponent(basePath.components, undefined, true);
         } else {
           basePath = addPath; // No need to clone, we've pulled it from the list
           basePath.newPos++;
-          self.pushComponent(basePath.components, true, undefined);
+          this.pushComponent(basePath.components, true, undefined);
         }
 
-        oldPos = self.extractCommon(basePath, newValues, oldValues, diagonalPath);
+        oldPos = this.extractCommon(basePath, newValues, oldValues, diagonalPath);
 
         // If we have hit the end of both strings, then we are done
         if (basePath.newPos + 1 >= newLen && oldPos + 1 >= oldLen) {
-          return done(this._buildValues(self, basePath.components, newValues, oldValues, self.useLongestToken));
+          return this._buildValues(basePath.components, newValues, oldValues, this.useLongestToken);
         } else {
           // Otherwise track this path as a potential candidate and continue.
           bestPath[diagonalPath] = basePath;
@@ -118,29 +96,10 @@ window.Diff = {
       editLength++;
     }
 
-    // Performs the length of edit iteration. Is a bit fugly as this has to support the
-    // sync and async mode which is never fun. Loops over execEditLength until a value
-    // is produced.
-    if (callback) {
-      (function exec() {
-        setTimeout(function() {
-          // This should not happen, but we want to be safe.
-          /* istanbul ignore next */
-          if (editLength > maxEditLength) {
-            return callback();
-          }
-
-          if (!execEditLength.call(this)) {
-            exec();
-          }
-        }, 0);
-      }());
-    } else {
-      while (editLength <= maxEditLength) {
-        let ret = execEditLength.call(this);
-        if (ret) {
-          return ret;
-        }
+    while (editLength <= maxEditLength) {
+      let ret = execEditLength.call(this);
+      if (ret) {
+        return ret;
       }
     }
   },
@@ -162,7 +121,7 @@ window.Diff = {
         oldPos = newPos - diagonalPath,
 
         commonCount = 0;
-    while (newPos + 1 < newLen && oldPos + 1 < oldLen && this.equals(newValues[newPos + 1], oldValues[oldPos + 1])) {
+    while (newPos + 1 < newLen && oldPos + 1 < oldLen && newValues[newPos + 1] == oldValues[oldPos + 1]) {
       newPos++;
       oldPos++;
       commonCount++;
@@ -176,28 +135,7 @@ window.Diff = {
     return oldPos;
   },
 
-  equals(left, right) {
-    if (this.options.comparator) {
-      return this.options.comparator(left, right);
-    } else {
-      return left === right
-        || (this.options.ignoreCase && left.toLowerCase() === right.toLowerCase());
-    }
-  },
-  removeEmpty(value) {
-    return value;
-  },
-  castInput(value) {
-    return value;
-  },
-  tokenize(value) {
-    return value.slice();
-  },
-  join(value) {
-    return value;
-  },
-
-  _buildValues(diff, components, newValues, oldValues, useLongestToken) {
+  _buildValues(components, newValues, oldValues, useLongestToken) {
     let componentPos = 0,
         componentLen = components.length,
         newPos = 0,
@@ -213,9 +151,9 @@ window.Diff = {
             return oldValue.length > value.length ? oldValue : value;
           });
 
-          component.value = diff.join(value);
+          component.value = value;
         } else {
-          component.value = diff.join(newValues.slice(newPos, newPos + component.count));
+          component.value = newValues.slice(newPos, newPos + component.count);
         }
         newPos += component.count;
 
@@ -224,7 +162,7 @@ window.Diff = {
           oldPos += component.count;
         }
       } else {
-        component.value = diff.join(oldValues.slice(oldPos, oldPos + component.count));
+        component.value = oldValues.slice(oldPos, oldPos + component.count);
         oldPos += component.count;
 
         // Reverse add and remove so removes are output first to match common convention
@@ -236,18 +174,6 @@ window.Diff = {
           components[componentPos] = tmp;
         }
       }
-    }
-
-    // Special case handle for when one terminal is ignored (i.e. whitespace).
-    // For this case we merge the terminal into the prior string and drop the change.
-    // This is only available for string mode.
-    let lastComponent = components[componentLen - 1];
-    if (componentLen > 1
-        && typeof lastComponent.value === 'string'
-        && (lastComponent.added || lastComponent.removed)
-        && diff.equals('', lastComponent.value)) {
-      components[componentLen - 2].value += lastComponent.value;
-      components.pop();
     }
 
     return components;
