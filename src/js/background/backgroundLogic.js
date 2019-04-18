@@ -288,8 +288,8 @@ const backgroundLogic = {
       let newIndex = nearestFollowingIndex < afterIds.length ? sortedIds.indexOf(afterIds[nearestFollowingIndex]) : -1;
       if (newIndex < 0)
         newIndex = beforeIds.length;
-      // Reject already moved tabs.
       let oldIndices = movingIds.map(id => sortedIds.indexOf(id));
+      // Reject already removed tabs.
       movingIds = movingIds.filter((id, index) => oldIndices[index] > -1);
       if (movingIds.length === 0)
         continue;
