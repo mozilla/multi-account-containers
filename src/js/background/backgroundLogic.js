@@ -277,26 +277,27 @@ const backgroundLogic = {
     const sortMap = new Map([...map.entries()].sort((a, b) => a[0] > b[0]));
 
     // Let's move tabs.
-    const afterIds = Array.from(sortMap.values()).reduce((acc, val) => acc.concat(val), []).map(tab => tab.id);
     const beforeIds = sortedTabs.map(tab => tab.id);
-    let sortedIds = beforeIds.slice(0);
+    const afterIds = Array.from(sortMap.values()).reduce((acc, val) => acc.concat(val), []).map(tab => tab.id);
+    let currentIds = beforeIds.slice(0);
     for (const difference of differ.diff(beforeIds, afterIds)) {
       if (!difference.added)
         continue;
       const movingIds = difference.value;
-      const nearestFollowingIndex = afterIds.indexOf(movingIds[movingIds.length - 1]) + 1;
-      let newIndex = nearestFollowingIndex < afterIds.length ? sortedIds.indexOf(afterIds[nearestFollowingIndex]) : -1;
+      const lastMovingId = movingIds[movingIds.length - 1];
+      const nearestFollowingIndex = afterIds.indexOf(lastMovingId) + 1;
+      let newIndex = nearestFollowingIndex < afterIds.length ? currentIds.indexOf(afterIds[nearestFollowingIndex]) : -1;
       if (newIndex < 0)
         newIndex = beforeIds.length;
-      const oldIndices = movingIds.map(id => sortedIds.indexOf(id));
-      if (oldIndices[0] < newIndex)
+      const oldIndex = currentIds.indexOf(movingIds[0]);
+      if (oldIndex < newIndex)
         newIndex--;
       browser.tabs.move(movingIds, {
         windowId: windowObj.id,
         index:    newIndex + offset
       });
-      sortedIds = sortedIds.filter(id => !movingIds.includes(id));
-      sortedIds.splice(newIndex, 0, ...movingIds);
+      currentIds = currentIds.filter(id => !movingIds.includes(id));
+      currentIds.splice(newIndex, 0, ...movingIds);
     }
   },
 
