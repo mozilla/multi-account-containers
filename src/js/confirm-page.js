@@ -20,13 +20,20 @@ async function load() {
 
   document.getElementById("redirect-form").addEventListener("submit", (e) => {
     e.preventDefault();
-    const buttonTarget = e.explicitOriginalTarget;
-    switch (buttonTarget.id) {
-    case "confirm":
-      confirmSubmit(redirectUrl, cookieStoreId);
-      break;
+    let button = "confirm"; // Confirm is the form default.
+    let buttonTarget = e.explicitOriginalTarget;
+    if (buttonTarget.tagName !== "BUTTON") {
+      buttonTarget = buttonTarget.closest("button");
+    }
+    if (buttonTarget && buttonTarget.id) {
+      button = buttonTarget.id;
+    }
+    switch (button) {
     case "deny":
       denySubmit(redirectUrl);
+      break;
+    case "confirm":
+      confirmSubmit(redirectUrl, cookieStoreId);
       break;
     }
   });
