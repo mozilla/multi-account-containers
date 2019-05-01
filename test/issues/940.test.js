@@ -160,7 +160,7 @@ describe("#940", () => {
       await promise2;
 
       background.browser.tabs.create.should.have.been.calledTwice;
-    }).timeout(2005);
+    }).timeout(2002);
 
     it("should not influence the canceled url in other tabs", async () => {
       const newTab = {
