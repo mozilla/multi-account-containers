@@ -97,18 +97,19 @@
 
   <div class="panel container-panel hide" id="container-panel">
     <div id="current-tab">
-      <h3>Current Tab</h3>
+      <h3>Aktueller Tab</h3>
       <div id="current-page"></div>
       <label for="container-page-assigned">
         <input type="checkbox" id="container-page-assigned" />
         <span class="truncate-text">
-          Always open in
+          Immer in
           <span id="current-container"></span>
+          öffnen
         </span>
       </label>
     </div>
     <div class="container-panel-controls">
-      <a href="#" class="action-link" id="sort-containers-link" title="Sort tabs into container order">Sort Tabs</a>
+      <a href="#" class="action-link" id="sort-containers-link" title="Sort tabs into container order">Tabs sortieren</a>
     </div>
     <div class="scrollable panel-content" tabindex="-1">
       <table class="identities-list">
@@ -117,9 +118,9 @@
     </div>
     <div class="panel-footer edit-identities">
       <div class="edit-containers-text panel-footer-secondary">
-        <a href="#" tabindex="0" id="edit-containers-link">Edit Containers</a>
+        <a href="#" tabindex="0" id="edit-containers-link">Umgebungen bearbeiten</a>
       </div>
-      <a href="#" tabindex="0" class="add-container-link pop-button" id="container-add-link" title="Create new container">
+      <a href="#" tabindex="0" class="add-container-link pop-button" id="container-add-link" title="Neue Umgebung erstellen">
         <img class="pop-button-image-small icon" alt="Create new container icon" src="/img/container-add.svg" />
       </a>
     </div>
@@ -138,9 +139,9 @@
         </div>
         <div class="select-row clickable container-info-panel-hide container-info-has-tabs" id="container-info-hideorshow">
           <img id="container-info-hideorshow-icon" alt="Hide Container icon" src="/img/container-hide.svg" class="icon container-info-panel-hideorshow-icon"/>
-          <span id="container-info-hideorshow-label">Hide this container</span>
+          <span id="container-info-hideorshow-label">Diese Umgebung verstecken</span>
         </div>
-        <div class="select-row clickable container-info-panel-movetabs container-info-has-tabs" id="container-info-movetabs">Move tabs to a new window</div>
+        <div class="select-row clickable container-info-panel-movetabs container-info-has-tabs" id="container-info-movetabs">Tabs in ein neues Fenster verschieben</div>
         <div class="scrollable">
           <table id="container-info-table" class="container-info-list">
           </table>
@@ -152,7 +153,7 @@
 
   <div class="panel edit-containers-panel hide" id="edit-containers-panel">
     <div class="panel-header">
-      <h3 class="panel-header-text">Edit Containers</h3>
+      <h3 class="panel-header-text">Umgebungen bearbeiten</h3>
     </div>
     <div class="scrollable panel-content">
       <table class="unstriped">
@@ -160,7 +161,7 @@
       </table>
     </div>
     <div class="panel-footer edit-containers-panel-footer">
-      <a href="#" id="exit-edit-mode-link" class="exit-edit-mode-link edit-containers-exit-text">Exit Edit Mode</a>
+      <a href="#" id="exit-edit-mode-link" class="exit-edit-mode-link edit-containers-exit-text">Bearbeitungsmodus beenden</a>
     </div>
   </div>
 
@@ -178,19 +179,19 @@
             <input type="text" name="container-name" id="edit-container-panel-name-input" maxlength="25"/>
           </fieldset>
           <fieldset id="edit-container-panel-choose-color" class="radio-choice">
-            <legend>Choose a color</legend>
+            <legend>Wähle eine Farbe</legend>
           </fieldset>
           <fieldset id="edit-container-panel-choose-icon" class="radio-choice">
-            <legend>Choose an icon</legend>
+            <legend>Wähle ein Symbol</legend>
           </fieldset>
         </form>
         <div id="edit-sites-assigned" class="scrollable" hidden>
-          <h3>Sites assigned to this container</h3>
+          <h3>Webseiten die dieser Umgebung zugeordnet sind</h3>
           <div class="assigned-sites-list">
           </div>
         </div>
         <div class="panel-footer">
-          <a href="#" class="button secondary expanded footer-button cancel-button" id="edit-container-cancel-link">Cancel</a>
+          <a href="#" class="button secondary expanded footer-button cancel-button" id="edit-container-cancel-link">Abbrechen</a>
           <a class="button primary expanded footer-button" id="edit-container-ok-link">OK</a>
         </div>
       </div>
@@ -203,11 +204,11 @@
       <h3 id="delete-container-name" class="panel-header-text container-name"></h3>
     </div>
     <div class="panel-content delete-container-confirm">
-      <h4 class="delete-container-confirm-title">Remove This Container</h4>
-      <p><span id="delete-container-tab-warning"></span> Are you sure you want to remove this Container?</p>
+      <h4 class="delete-container-confirm-title">Diese Umgebung löschen</h4>
+      <p><span id="delete-container-tab-warning"></span>Möchten Sie diese Umgebung wirklich löschen?</p>
     </div>
     <div class="panel-footer">
-      <a href="#" class="button expanded secondary footer-button cancel-button" id="delete-container-cancel-link">Cancel</a>
+      <a href="#" class="button expanded secondary footer-button cancel-button" id="delete-container-cancel-link">Abbrechen</a>
       <a href="#" class="button expanded primary footer-button" id="delete-container-ok-link">OK</a>
     </div>
   </div>
