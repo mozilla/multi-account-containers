@@ -47,7 +47,12 @@
     "browser_style": true,
     "default_icon": "img/container-site.svg",
     "default_title": "Multi-Account Containers",
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "theme_icons": [{
+        "light": "img/container-site-light.svg",
+        "dark": "img/container-site.svg",
+        "size": 32
+    }]
   },
 
   "background": {
