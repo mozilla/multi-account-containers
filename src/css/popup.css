@@ -236,7 +236,7 @@ table {
   text-decoration: underline;
 }
 
-/* Panels keep everything togethert */
+/* Panels keep everything together */
 .panel {
   display: flex;
   flex-direction: column;
