@@ -123,6 +123,22 @@ const backgroundLogic = {
     }
   },
 
+  // https://github.com/mozilla/multi-account-containers/issues/847
+  async lockOrUnlockContainer(options) {
+    if (!("userContextId" in options)) {
+      return Promise.reject("lockOrUnlockContainer must be called with userContextId argument.");
+    }
+  
+    const cookieStoreId = this.cookieStoreId(options.userContextId);
+    const containerState = await identityState.storageArea.get(cookieStoreId);
+    if (options.isLocked) {
+      containerState.isLocked = "locked";
+    } else {
+      delete containerState.isLocked;
+    }
+    return await identityState.storageArea.set(cookieStoreId, containerState);
+  },
+  
 
   async moveTabsToWindow(options) {
     const requiredArguments = ["cookieStoreId", "windowId"];
@@ -229,7 +245,9 @@ const backgroundLogic = {
         hasHiddenTabs: !!containerState.hiddenTabs.length,
         hasOpenTabs: !!openTabs.length,
         numberOfHiddenTabs: containerState.hiddenTabs.length,
-        numberOfOpenTabs: openTabs.length
+        numberOfOpenTabs: openTabs.length,
+        // https://github.com/mozilla/multi-account-containers/issues/847
+        isLocked: !!containerState.isLocked
       };
       return;
     });

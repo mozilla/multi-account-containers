@@ -141,8 +141,21 @@ const assignManager = {
       return {};
     }
     const userContextId = this.getUserContextIdFromCookieStore(tab);
-    if (!siteSettings
-        || userContextId === siteSettings.userContextId
+    
+    // Determine if "locked out", i.e.:
+    // This request's URL is not associated with any particular contextualIdentity.
+    // But the current tab's contextualIdentity is locked. So must open request in new tab.
+    // https://github.com/mozilla/multi-account-containers/issues/847
+    let isLockedOut;
+    if (!siteSettings && "cookieStoreId" in tab) {
+      const currentContainerState = await identityState.storageArea.get(tab.cookieStoreId);
+      isLockedOut = !!currentContainerState.isLocked;
+    } else {
+      isLockedOut = false;
+    }
+    
+    if ((!siteSettings && !isLockedOut)
+        || (siteSettings && userContextId === siteSettings.userContextId)
         || this.storageArea.isExempted(options.url, tab.id)) {
       return {};
     }
@@ -188,15 +201,22 @@ const assignManager = {
       }
     }
 
-    this.reloadPageInContainer(
-      options.url,
-      userContextId,
-      siteSettings.userContextId,
-      tab.index + 1,
-      tab.active,
-      siteSettings.neverAsk,
-      openTabId
-    );
+    if (isLockedOut) {
+      // Open new tab in default context
+      // https://github.com/mozilla/multi-account-containers/issues/847
+      browser.tabs.create({url: options.url});
+    } else {
+      // Open new tab in specific context
+      this.reloadPageInContainer(
+        options.url,
+        userContextId,
+        siteSettings.userContextId,
+        tab.index + 1,
+        tab.active,
+        siteSettings.neverAsk,
+        openTabId
+      );
+    }
     this.calculateContextMenu(tab);
 
     /* Removal of existing tabs:
@@ -395,7 +415,20 @@ const assignManager = {
         neverAsk: false
       }, exemptedTabIds);
       actionName = "added";
+    
     } else {
+      // Unlock container if no more assignments after this one is removed.
+      // https://github.com/mozilla/multi-account-containers/issues/847
+      const assignments = await this.storageArea.getByContainer(userContextId);
+      const assignmentKeys = Object.keys(assignments);
+      if (!(assignmentKeys.length > 1)) {
+        await backgroundLogic.lockOrUnlockContainer({
+          userContextId: userContextId,
+          isLocked: false
+        });
+      }
+    
+      // Remove assignment
       await this.storageArea.remove(pageUrl);
       actionName = "removed";
     }

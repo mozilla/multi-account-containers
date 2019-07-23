@@ -4,6 +4,9 @@
 
 const CONTAINER_HIDE_SRC = "/img/container-hide.svg";
 const CONTAINER_UNHIDE_SRC = "/img/container-unhide.svg";
+// https://github.com/mozilla/multi-account-containers/issues/847
+const CONTAINER_LOCKED_SRC = "/img/container-lock.svg";
+const CONTAINER_UNLOCKED_SRC = "/img/container-unlock.svg";
 
 const DEFAULT_COLOR = "blue";
 const DEFAULT_ICON = "circle";
@@ -252,6 +255,8 @@ const Logic = {
         identity.hasHiddenTabs = stateObject.hasHiddenTabs;
         identity.numberOfHiddenTabs = stateObject.numberOfHiddenTabs;
         identity.numberOfOpenTabs = stateObject.numberOfOpenTabs;
+        // https://github.com/mozilla/multi-account-containers/issues/847
+        identity.isLocked = stateObject.isLocked;
       }
       return identity;
     });
@@ -1011,7 +1016,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     }
   },
 
-  showAssignedContainers(assignments) {
+  showAssignedContainers(assignments, isLocked) {
     const assignmentPanel = document.getElementById("edit-sites-assigned");
     const assignmentKeys = Object.keys(assignments);
     assignmentPanel.hidden = !(assignmentKeys.length > 0);
@@ -1022,6 +1027,38 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       while (tableElement.firstChild) {
         tableElement.firstChild.remove();
       }
+      
+      /* Container locking: https://github.com/mozilla/multi-account-containers/issues/847 */
+      const lockOrUnlockIcon = isLocked ? CONTAINER_LOCKED_SRC : CONTAINER_UNLOCKED_SRC;
+      const lockOrUnlockLabel = isLocked ? "Locked" : "Unlocked";
+      const lockOrUnlockClass = isLocked ? "container-locked" : "container-unlocked";
+      const lockElement = document.createElement("div");
+      lockElement.innerHTML = escaped`
+        <img class="icon" src="${lockOrUnlockIcon}">
+        <div title="${lockOrUnlockLabel}">
+          ${lockOrUnlockLabel}
+        </div>`;
+      lockElement.classList.add("container-info-tab-row", "clickable", "container-lockorunlock", lockOrUnlockClass);
+      tableElement.appendChild(lockElement);
+      
+      const that = this;
+      Logic.addEnterHandler(lockElement, async () => {
+        try {
+          await browser.runtime.sendMessage({
+            method: "lockOrUnlockContainer",
+            message: {
+              userContextId: Logic.currentUserContextId(),
+              isLocked: !isLocked
+            }
+          });
+          that.showAssignedContainers(assignments, !isLocked);
+        } catch (e) {
+          throw new Error("Failed to lock/unlock. ", e.message);
+        }
+      });
+      /* Container locking: https://github.com/mozilla/multi-account-containers/issues/847 */
+      
+      /* Assignment list */
       assignmentKeys.forEach((siteKey) => {
         const site = assignments[siteKey];
         const trElement = document.createElement("div");
@@ -1047,7 +1084,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
           const currentTab = await Logic.currentTab();
           Logic.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
           delete assignments[siteKey];
-          that.showAssignedContainers(assignments);
+          that.showAssignedContainers(assignments, isLocked);
         });
         trElement.classList.add("container-info-tab-row", "clickable");
         tableElement.appendChild(trElement);
@@ -1091,7 +1128,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
     const userContextId = Logic.currentUserContextId();
     const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
-    this.showAssignedContainers(assignments);
+    this.showAssignedContainers(assignments, identity.isLocked);
     document.querySelector("#edit-container-panel .panel-footer").hidden = !!userContextId;
 
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";

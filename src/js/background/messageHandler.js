@@ -19,6 +19,10 @@ const messageHandler = {
       case "createOrUpdateContainer":
         response = backgroundLogic.createOrUpdateContainer(m.message);
         break;
+      case "lockOrUnlockContainer":
+        // https://github.com/mozilla/multi-account-containers/issues/847
+        response = backgroundLogic.lockOrUnlockContainer(m.message);
+        break;
       case "neverAsk":
         assignManager._neverAsk(m);
         break;

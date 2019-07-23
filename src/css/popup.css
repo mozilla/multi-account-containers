@@ -925,6 +925,15 @@ span ~ .panel-header-text {
   padding-block-end: 6px;
 }
 
+/* https://github.com/mozilla/multi-account-containers/issues/847 */
+.container-lockorunlock.container-locked * {
+  filter: invert(0.5) sepia(1) saturate(127) hue-rotate(360deg);
+}
+
+.container-lockorunlock.container-unlocked * {
+  filter: invert(0.5);
+}
+
 /* Achievement panel elements */
 .share-ctas {
   padding-block-end: 0.5em;
