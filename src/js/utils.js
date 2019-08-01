@@ -18,6 +18,22 @@ window.Utils = {
     imageElement.addEventListener("error", errorListener);
     imageElement.addEventListener("load", loadListener);
     return imageElement;
+  },
+
+  // See comment in PR #313 - so far the (hacky) method being used to block proxies is to produce a sufficiently long random address
+  getBogusProxy() {
+    const bogusFailover = 1;
+    if(typeof window.Utils.pregeneratedString !== 'undefined')
+    {
+      return {type:"socks4", host:"w.${window.Utils.pregeneratedString}.coo", port:9999, username:"foo", failoverTimeout:bogusFailover};
+    }
+    else
+    {
+      const bogusLength = 8;
+      let array = new Uint8Array(bogusLength);
+      window.crypto.getRandomValues(array);
+      window.Utils.pregeneratedString = array.toString('hex');
+    }
   }
 
 };

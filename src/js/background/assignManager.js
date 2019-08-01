@@ -118,8 +118,10 @@ const assignManager = {
   },
 
   async handleProxifiedRequest(requestInfo) {
+
+    // The following blocks potentially dangerous requests for privacy that come without a tabId
     if(requestInfo.tabId === -1)
-      return Utils.DEFAULT_PROXY;
+      return Utils.getBogusProxy();
 
     const tab = await browser.tabs.get(requestInfo.tabId);
     const proxy = await proxifiedContainers.retrieveFromBackground(tab.cookieStoreId);
