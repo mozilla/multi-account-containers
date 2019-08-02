@@ -23,16 +23,34 @@ window.Utils = {
   // See comment in PR #313 - so far the (hacky) method being used to block proxies is to produce a sufficiently long random address
   getBogusProxy() {
     const bogusFailover = 1;
+    const bogusType = "socks4";
+    const bogusPort = 9999;
+    const bogusUsername = "foo";
+    const bogusPassword = "foo";
     if(typeof window.Utils.pregeneratedString !== 'undefined')
     {
-      return {type:"socks4", host:"w.${window.Utils.pregeneratedString}.coo", port:9999, username:"foo", failoverTimeout:bogusFailover};
+      return {type:bogusType, host:`w.${window.Utils.pregeneratedString}.coo`, port:bogusPort, username:bogusUsername, failoverTimeout:bogusFailover};
     }
     else
     {
+      // Initialize Utils.pregeneratedString
+      window.Utils.pregeneratedString = "";
+
+      // We generate a cryptographically random string (of length specified in bogusLength), but we only do so once - thus negating any time delay caused
       const bogusLength = 8;
       let array = new Uint8Array(bogusLength);
       window.crypto.getRandomValues(array);
-      window.Utils.pregeneratedString = array.toString('hex');
+      for(let i = 0; i < bogusLength; i++)
+      {
+        let s = array[i].toString(16);
+        if(s.length == 1)
+          window.Utils.pregeneratedString += `0${s}`;
+        else
+          window.Utils.pregeneratedString += s;
+      }
+
+      // The only issue with this approach is that if (for some unknown reason) pregeneratedString is not saved, it will result in an infinite loop - but better than a privacy leak!
+      return getBogusProxy();
     }
   }
 
