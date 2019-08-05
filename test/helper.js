@@ -42,6 +42,15 @@ module.exports = {
       clickEvent.initEvent("click");
       popup.document.getElementById(id).dispatchEvent(clickEvent);
       await nextTick();
+    },
+    
+    // Wildcard subdomains: https://github.com/mozilla/multi-account-containers/issues/473
+    async setWildcard(tab, wildcard) {
+      const site = new URL(tab.url).hostname;
+      const siteToWildcardKey = `siteToWildcardMap@@_${site}`;
+      const wildcardToSiteKey = `wildcardToSiteMap@@_${wildcard}`;
+      await background.browser.storage.local.set({[siteToWildcardKey]: wildcard});
+      await background.browser.storage.local.set({[wildcardToSiteKey]: site});
     }
   },
 };

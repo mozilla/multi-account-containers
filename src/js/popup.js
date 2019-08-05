@@ -361,6 +361,17 @@ const Logic = {
     });
   },
 
+  // Wildcard subdomains: https://github.com/mozilla/multi-account-containers/issues/473
+  setOrRemoveWildcard(tabId, url, userContextId, wildcard) {
+    return browser.runtime.sendMessage({
+      method: "setOrRemoveWildcard",
+      tabId,
+      url,
+      userContextId,
+      wildcard
+    });
+  },
+  
   generateIdentityName() {
     const defaultName = "Container #";
     const ids = [];
@@ -381,7 +392,7 @@ const Logic = {
         return defaultName + (id < 10 ? "0" : "") + id;
       }
     }
-  },
+  }
 };
 
 // P_ONBOARDING_1: First page for Onboarding.
@@ -985,18 +996,40 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         const trElement = document.createElement("div");
         /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
            This is pending a better solution for favicons from web extensions */
-        const assumedUrl = `https://${site.hostname}`;
+        const assumedUrl = `https://${site.host}`;
         trElement.innerHTML = escaped`
         <img class="icon" src="${assumedUrl}/favicon.ico">
-        <div title="${site.hostname}" class="truncate-text hostname">
-          ${site.hostname}
-        </div>
+        <div title="${site.host}" class="truncate-text hostname"></div>
         <img
           class="pop-button-image delete-assignment"
           src="/img/container-delete.svg"
-        />`;
-        const deleteButton = trElement.querySelector(".delete-assignment");
+        />`;        
+        trElement.querySelector(".hostname").appendChild(this.assignmentElement(site));
+        
         const that = this;
+        
+        // Wildcard subdomains: https://github.com/mozilla/multi-account-containers/issues/473
+        trElement.querySelectorAll(".subdomain").forEach(function(subdomainLink) {
+          subdomainLink.addEventListener("click", async (e) => {
+            const userContextId = Logic.currentUserContextId();
+            // Wildcard hostname is stored in id attribute
+            const wildcard = e.target.id;
+            if (wildcard) {
+              // Remove wildcard from other site that has same wildcard
+              Object.values(assignments).forEach((site) => {
+                if (site.wildcard === wildcard) { delete site.wildcard; }
+              });
+              site.wildcard = wildcard;
+            } else {
+              delete site.wildcard;
+            }
+            const currentTab = await Logic.currentTab();
+            Logic.setOrRemoveWildcard(currentTab.id, assumedUrl, userContextId, wildcard);
+            that.showAssignedContainers(assignments);
+          });
+        });
+        
+        const deleteButton = trElement.querySelector(".delete-assignment");
         Logic.addEnterHandler(deleteButton, async () => {
           const userContextId = Logic.currentUserContextId();
           // Lets show the message to the current tab
@@ -1006,10 +1039,45 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
           delete assignments[siteKey];
           that.showAssignedContainers(assignments);
         });
+        
         trElement.classList.add("container-info-tab-row", "clickable");
         tableElement.appendChild(trElement);
       });
     }
+  },
+  
+  // Wildcard subdomains: https://github.com/mozilla/multi-account-containers/issues/473
+  assignmentElement(site) {
+    const result = document.createElement("span");
+  
+    // Remove wildcard subdomain
+    if (site.wildcard && site.wildcard !== site.host) {
+      result.appendChild(this.assignmentSubdomainLink(null, "___"));
+      result.appendChild(document.createTextNode("."));
+    }
+  
+    // Add wildcard subdomain
+    let host = site.wildcard ? site.wildcard : site.host;
+    let indexOfDot;
+    while ((indexOfDot = host.indexOf(".")) >= 0) {
+      const subdomain = host.substring(0, indexOfDot);
+      host = host.substring(indexOfDot + 1);
+      result.appendChild(this.assignmentSubdomainLink(host, subdomain));
+      result.appendChild(document.createTextNode("."));
+    }
+
+    // Root domain
+    result.appendChild(document.createTextNode(host));
+  
+    return result;
+  },
+  
+  assignmentSubdomainLink(wildcard, text) {
+    const result = document.createElement("a");
+    if (wildcard) { result.id = wildcard; }
+    result.className = "subdomain";
+    result.appendChild(document.createTextNode(text));
+    return result;
   },
 
   initializeRadioButtons() {
