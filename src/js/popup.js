@@ -985,9 +985,9 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         const trElement = document.createElement("div");
         /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
            This is pending a better solution for favicons from web extensions */
-        const assumedUrl = `https://${site.hostname}`;
+        const assumedUrl = `https://${site.hostname}/favicon.ico`;
         trElement.innerHTML = escaped`
-        <img class="icon" src="${assumedUrl}/favicon.ico">
+        <div class="favicon"></div>
         <div title="${site.hostname}" class="truncate-text hostname">
           ${site.hostname}
         </div>
@@ -995,6 +995,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
           class="pop-button-image delete-assignment"
           src="/img/container-delete.svg"
         />`;
+        trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
         const deleteButton = trElement.querySelector(".delete-assignment");
         const that = this;
         Logic.addEnterHandler(deleteButton, async () => {
