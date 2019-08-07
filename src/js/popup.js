@@ -987,7 +987,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
            This is pending a better solution for favicons from web extensions */
         const assumedUrl = `https://${site.hostname}/favicon.ico`;
         trElement.innerHTML = escaped`
-        <div></div>
+        <div class="favicon"></div>
         <div title="${site.hostname}" class="truncate-text hostname">
           ${site.hostname}
         </div>
@@ -995,7 +995,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
           class="pop-button-image delete-assignment"
           src="/img/container-delete.svg"
         />`;
-        trElement.querySelector("div").appendChild(Utils.createFavIconElement(assumedUrl));
+        trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
         const deleteButton = trElement.querySelector(".delete-assignment");
         const that = this;
         Logic.addEnterHandler(deleteButton, async () => {
