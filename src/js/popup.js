@@ -272,6 +272,12 @@ const Logic = {
       throw new Error("Something really bad happened. Unknown panel: " + panel);
     }
 
+    if (window.innerWidth > 300) {
+      //if popup is in the overflow menu, window will be larger than 300px
+      var root = document.documentElement;
+      root.style.setProperty('--overflow-size', "125px");
+      root.style.setProperty('--icon-fit', "12");
+    }
     this._previousPanel = this._currentPanel;
     this._currentPanel = panel;
 
