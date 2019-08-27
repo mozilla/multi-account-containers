@@ -292,7 +292,7 @@ const Logic = {
     document.querySelector(this.getPanelSelector(this._panels[panel])).classList.remove("hide");
     window.setTimeout(function () {
       //sometimes this executes before the window is there and window.innerWidth returns undefined
-      const difference = window.innerWidth - document.body.offsetWidth
+      const difference = window.innerWidth - document.body.offsetWidth;
       if (difference > 2) {
         //if popup is in the overflow menu, window will be larger than 300px
         const root = document.documentElement;
