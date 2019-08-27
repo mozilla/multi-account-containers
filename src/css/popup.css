@@ -47,7 +47,7 @@ body {
   --icon-button-size: calc(calc(var(--block-line-separation-size) * 2) + 1.66rem); /* 20px */
   --column-panel-inline-size: calc(var(--overflow-size) + 268px);
   --inactive-opacity: 0.3;
-  --overflow-size: 0;
+  --overflow-size: 0px;
   --icon-fit: 8;
 }
 
