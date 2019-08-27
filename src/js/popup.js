@@ -272,7 +272,6 @@ const Logic = {
       throw new Error("Something really bad happened. Unknown panel: " + panel);
     }
 
-
     this._previousPanel = this._currentPanel;
     this._currentPanel = panel;
 
@@ -293,12 +292,12 @@ const Logic = {
     document.querySelector(this.getPanelSelector(this._panels[panel])).classList.remove("hide");
     window.setTimeout(function () {
       //sometimes this executes before the window is there and window.innerWidth returns undefined
-      var width = window.innerWidth;
+      const width = window.innerWidth;
       if (width > 300) {
         //if popup is in the overflow menu, window will be larger than 300px
-        var root = document.documentElement;
-        root.style.setProperty('--overflow-size', "125px");
-        root.style.setProperty('--icon-fit', "12");
+        const root = document.documentElement;
+        root.style.setProperty("--overflow-size", "125px");
+        root.style.setProperty("--icon-fit", "12");
       }
     }, 200);
   },
