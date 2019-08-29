@@ -47,7 +47,7 @@ html {
 }
 
 #redirect-url {
-  background: #efefef;
+  background: #efedf0; /* Grey 20 */
   border-radius: 2px;
   line-height: 1.5;
   padding-block-end: 0.5rem;
@@ -55,6 +55,14 @@ html {
   padding-inline-end: 0.5rem;
   padding-inline-start: 0.5rem;
 }
+
+/* stylelint-disable media-feature-name-no-unknown */
+@media (prefers-color-scheme: dark) {
+  #redirect-url {
+    background: #38383d; /* Grey 70 */
+  }
+}
+/* stylelint-enable */
 
 #redirect-url img {
   block-size: 16px;
