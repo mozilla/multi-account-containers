@@ -1144,3 +1144,14 @@ Logic.registerPanel(P_CONTAINERS_ACHIEVEMENT, {
 });
 
 Logic.init();
+
+window.addEventListener("resize", function () {
+  //for overflow menu
+  const difference = window.innerWidth - document.body.offsetWidth;
+  if (difference > 2) {
+    //if popup is in the overflow menu, window will be larger than 300px
+    const root = document.documentElement;
+    root.style.setProperty("--overflow-size", difference + "px");
+    root.style.setProperty("--icon-fit", "12");
+  }
+});
