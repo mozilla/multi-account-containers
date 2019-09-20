@@ -19,8 +19,8 @@ html {
 
 body {
   font-family: Roboto, Noto, "San Francisco", Ubuntu, "Segoe UI", "Fira Sans", message-box, Arial, sans-serif;
-  inline-size: 300px;
-  max-inline-size: 300px;
+  inline-size: calc(var(--overflow-size) + 299px);
+  max-inline-size: calc(var(--overflow-size) + 299px);
 }
 
 :root {
@@ -45,8 +45,10 @@ body {
   --small-text-size: 0.833rem; /* 10px */
   --small-radius: 3px;
   --icon-button-size: calc(calc(var(--block-line-separation-size) * 2) + 1.66rem); /* 20px */
-  --column-panel-inline-size: 268px;
+  --column-panel-inline-size: calc(var(--overflow-size) + 267px);
   --inactive-opacity: 0.3;
+  --overflow-size: 1px;
+  --icon-fit: 8;
 }
 
 @media (min-resolution: 1dppx) {
@@ -577,7 +579,7 @@ span ~ .panel-header-text {
 }
 
 .edit-containers-panel .userContext-wrapper {
-  max-inline-size: 204px;
+  max-inline-size: calc(var(--overflow-size) + 203px);
 }
 
 .disable-edit-containers {
@@ -822,7 +824,7 @@ span ~ .panel-header-text {
   align-items: center;
   block-size: 29px;
   display: flex;
-  flex: 0 0 calc(100% / 8);
+  flex: 0 0 calc(100% / var(--icon-fit));
 }
 
 .radio-choice > .radio-container > label {
