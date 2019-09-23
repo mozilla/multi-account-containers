@@ -23,13 +23,9 @@ body {
   max-inline-size: calc(var(--overflow-size) + 299px);
 }
 
-/**
- Bugfix: incorrect scrollbars/spacing when editing container with many assignments
- https://github.com/mozilla/multi-account-containers/issues/948
- */
 html,
 body {
-  block-size: 100%;
+  block-size: 100%; /* Bugfix: issue 948 */
 }
 
 :root {
@@ -794,20 +790,12 @@ span ~ .panel-header-text {
   padding-inline-start: 16px;
 }
 
-/**
- Bugfix: incorrect scrollbars/spacing when editing container with many assignments
- https://github.com/mozilla/multi-account-containers/issues/948
- */
 .edit-container-panel .columns {
-  overflow: hidden;
+  overflow: hidden; /* Bugfix: issue 948 */
 }
 
 #edit-sites-assigned {
-  /**
-   Bugfix: incorrect scrollbars/spacing when editing container with many assignments
-   https://github.com/mozilla/multi-account-containers/issues/948
-   */
-  flex: 1000;
+  flex: 1000; /* Bugfix: issue 948 */
 }
 
 #edit-sites-assigned h3 {
