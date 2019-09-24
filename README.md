@@ -62,3 +62,6 @@ Facebook & Twitter icons CC-Attrib https://fairheadcreative.com.
 - [License](./LICENSE.txt)
 - [Contributing](./CONTRIBUTING.md)
 - [Code Of Conduct](./CODE_OF_CONDUCT.md)
+
+SVG icons `container-lock.svg`, `container-unlock.svg` attributed to https://github.com/mui-org/material-ui
+and covered by the [MIT Licence](./LICENCE.MIT.txt).
