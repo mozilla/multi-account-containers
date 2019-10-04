@@ -745,7 +745,6 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     } catch (e) {
       throw new Error("Could not check for incompatible add-ons.");
     }
-<<<<<<< HEAD
     const moveTabsEl = document.querySelector("#container-info-movetabs");
     const numTabs = await Logic.numTabs();
     if (incompatible) {
@@ -763,8 +762,6 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       });
       window.close();
     });
-=======
->>>>>>> Integrated the proxified-containers.js logic into relevant files without direct proxifying yet
   },
 
   // This method is called when the panel is shown.
