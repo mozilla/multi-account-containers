@@ -158,6 +158,47 @@ table {
   --identity-icon-color: #af51f5;
 }
 
+[data-identity-color="black"] {
+  --identity-tab-color: #000000;
+  --identity-icon-color: #000000;
+}
+
+[data-identity-color="CUDorange"] {
+  --identity-tab-color: #e69f00;
+  --identity-icon-color: #e69f00;
+}
+
+[data-identity-color="skyblue"] {
+  --identity-tab-color: #56b4e9;
+  --identity-icon-color: #56b4e9;
+}
+
+[data-identity-color="bluegreen"] {
+  --identity-tab-color: #009e73;
+  --identity-icon-color: #009e73;
+}
+
+[data-identity-color="CUDyellow"] {
+  --identity-tab-color: #f0e442;
+  --identity-icon-color: #f0e442;
+}
+
+[data-identity-color="CUDblue"] {
+  --identity-tab-color: #0072b2;
+  --identity-icon-color: #0072b2;
+}
+
+[data-identity-color="vermillion"] {
+  --identity-tab-color: #d55e00;
+  --identity-icon-color: #d55e00;
+}
+
+[data-identity-color="redpurple"] {
+  --identity-tab-color: #cc79a7;
+  --identity-icon-color: #cc79a7;
+}
+
+
 [data-identity-icon="fingerprint"] {
   --identity-icon: url("/img/usercontext.svg#fingerprint");
 }

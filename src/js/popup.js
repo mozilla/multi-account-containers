@@ -1019,6 +1019,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
      <label for="edit-container-panel-choose-color-${containerColor}" class="usercontext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="${containerColor}">`;
     };
     const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple" ];
+    const CUDcolors = ["black", "CUDorange", "skyblue", "bluegreen", "CUDyellow", "CUDblue", "vermillion", "redpurple" ];
     const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
     colors.forEach((containerColor) => {
       const templateInstance = document.createElement("div");
