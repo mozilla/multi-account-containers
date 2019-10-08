@@ -1029,7 +1029,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
      <label for="edit-container-panel-choose-color-${containerColor}" class="usercontext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="${containerColor}">`;
     };
     let colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple" ];
-    let CUDenabled = await this.findColorset();
+    const CUDenabled = await this.findColorset();
     if (CUDenabled) {
       //"Color Universal Design" color set from: https://jfly.uni-koeln.de/color/#pallet
       colors = ["black", "CUDorange", "skyblue", "bluegreen", "CUDyellow", "CUDblue", "vermillion", "redpurple" ];

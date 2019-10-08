@@ -159,8 +159,8 @@ table {
 }
 
 [data-identity-color="black"] {
-  --identity-tab-color: #000000;
-  --identity-icon-color: #000000;
+  --identity-tab-color: #000;
+  --identity-icon-color: #000;
 }
 
 [data-identity-color="CUDorange"] {
@@ -197,7 +197,6 @@ table {
   --identity-tab-color: #cc79a7;
   --identity-icon-color: #cc79a7;
 }
-
 
 [data-identity-icon="fingerprint"] {
   --identity-icon: url("/img/usercontext.svg#fingerprint");
