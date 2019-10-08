@@ -1031,6 +1031,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     let colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple" ];
     let CUDenabled = await this.findColorset();
     if (CUDenabled) {
+      //"Color Universal Design" color set from: https://jfly.uni-koeln.de/color/#pallet
       colors = ["black", "CUDorange", "skyblue", "bluegreen", "CUDyellow", "CUDblue", "vermillion", "redpurple" ];
     }
     const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
