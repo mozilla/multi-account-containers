@@ -1013,13 +1013,26 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     }
   },
 
-  initializeRadioButtons() {
+  async findColorset() {
+    let CUDenabled;
+    try {
+      CUDenabled = await browser.contextualIdentities.CUDcolors();
+    } catch(error) {
+      CUDenabled = false;
+    }
+    return CUDenabled;
+  },
+
+  async initializeRadioButtons() {
     const colorRadioTemplate = (containerColor) => {
       return escaped`<input type="radio" value="${containerColor}" name="container-color" id="edit-container-panel-choose-color-${containerColor}" />
      <label for="edit-container-panel-choose-color-${containerColor}" class="usercontext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="${containerColor}">`;
     };
-    const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple" ];
-    const CUDcolors = ["black", "CUDorange", "skyblue", "bluegreen", "CUDyellow", "CUDblue", "vermillion", "redpurple" ];
+    let colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple" ];
+    let CUDenabled = await this.findColorset();
+    if (CUDenabled) {
+      colors = ["black", "CUDorange", "skyblue", "bluegreen", "CUDyellow", "CUDblue", "vermillion", "redpurple" ];
+    }
     const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
     colors.forEach((containerColor) => {
       const templateInstance = document.createElement("div");
