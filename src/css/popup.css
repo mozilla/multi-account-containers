@@ -876,6 +876,19 @@ span ~ .panel-header-text {
   flex: 0 0 calc(100% / var(--icon-fit));
 }
 
+#CUD-checkbox-label {
+  align-items: center;
+  block-size: 29px;
+  display: flex;
+  flex: 0 0 calc(100% / var(--icon-fit));
+  margin-block-end: 10px;
+  margin-block-start: -10px;
+}
+
+#CUD-colors-enabled {
+  margin-inline-end: 4px;
+}
+
 .radio-choice > .radio-container > label {
   background: none;
   block-size: 23px;

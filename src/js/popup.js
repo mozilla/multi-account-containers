@@ -918,7 +918,9 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
   // This method is called when the object is registered.
   initialize() {
-    this.initializeRadioButtons();
+    this.initializeColorRadioButtons();
+    this.initializeIconRadioButtons();
+    this.initializeCUDcheck();
 
     Logic.addEnterHandler(document.querySelector("#edit-container-panel-back-arrow"), () => {
       const formValues = new FormData(this._editForm);
@@ -945,7 +947,11 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       this._submitForm();
     });
 
-
+    const cudCheckbox = document.getElementById("CUD-colors-enabled");
+    //colorInitializer = this.initializeColorRadioButtons;
+    cudCheckbox.addEventListener("change", () => {
+      this.onCUDcheckbox();
+    });
   },
 
   async _submitForm() {
@@ -1013,28 +1019,46 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     }
   },
 
-  async findColorset() {
+  async CUDenabledExists() {
+    let CUDenabledExists;
+    // try/catch for older Firefox versions that do not have the CUDcolorEnabled setting.
+    try {
+      await browser.privacy.services.CUDcolorsEnabled.get({});
+      CUDenabledExists = true;
+    } catch(error) {
+      CUDenabledExists = false;
+    }
+    return CUDenabledExists;
+  },
+
+  async CUDenabled() {
     let CUDenabled;
     try {
-      CUDenabled = await browser.contextualIdentities.CUDcolors();
+      const getting = await browser.privacy.services.CUDcolorsEnabled.get({});
+      CUDenabled = getting.value;
     } catch(error) {
       CUDenabled = false;
     }
     return CUDenabled;
   },
 
-  async initializeRadioButtons() {
+  async initializeColorRadioButtons() {
     const colorRadioTemplate = (containerColor) => {
       return escaped`<input type="radio" value="${containerColor}" name="container-color" id="edit-container-panel-choose-color-${containerColor}" />
      <label for="edit-container-panel-choose-color-${containerColor}" class="usercontext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="${containerColor}">`;
     };
     let colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple" ];
-    const CUDenabled = await this.findColorset();
+    const CUDenabled = await this.CUDenabled();
     if (CUDenabled) {
       //"Color Universal Design" color set from: https://jfly.uni-koeln.de/color/#pallet
       colors = ["black", "CUDorange", "skyblue", "bluegreen", "CUDyellow", "CUDblue", "vermillion", "redpurple" ];
     }
     const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
+    colorRadioFieldset.innerHTML = "";
+    const legend = document.createElement("legend");
+    legend.innerHTML = escaped`Choose a color`;
+    colorRadioFieldset.appendChild(legend);
+
     colors.forEach((containerColor) => {
       const templateInstance = document.createElement("div");
       templateInstance.classList.add("radio-container");
@@ -1042,7 +1066,9 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       templateInstance.innerHTML = colorRadioTemplate(containerColor);
       colorRadioFieldset.appendChild(templateInstance);
     });
+  },
 
+  initializeIconRadioButtons() {
     const iconRadioTemplate = (containerIcon) => {
       return escaped`<input type="radio" value="${containerIcon}" name="container-icon" id="edit-container-panel-choose-icon-${containerIcon}" />
      <label for="edit-container-panel-choose-icon-${containerIcon}" class="usercontext-icon choose-color-icon" data-identity-color="grey" data-identity-icon="${containerIcon}">`;
@@ -1056,6 +1082,30 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       templateInstance.innerHTML = iconRadioTemplate(containerIcon);
       iconRadioFieldset.appendChild(templateInstance);
     });
+  },
+
+  async initializeCUDcheck() {   
+    const cudCheckbox = document.getElementById("CUD-colors-enabled");
+    if (await this.CUDenabledExists()) {
+      if (await this.CUDenabled()) {
+        cudCheckbox.checked = true;
+      } else {
+        cudCheckbox.checked = false;
+      }
+    } else {
+      const label = document.getElementById("CUD-checkbox-label");
+      label.remove();
+    }
+  },
+
+  onCUDcheckbox () {
+    const checkbox = document.getElementById("CUD-colors-enabled");
+    if(checkbox.checked) {
+      browser.privacy.services.CUDcolorsEnabled.set({value: true});
+    } else {
+      browser.privacy.services.CUDcolorsEnabled.set({value: false});
+    }
+    this.initializeColorRadioButtons();
   },
 
   // This method is called when the panel is shown.
