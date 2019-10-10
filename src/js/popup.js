@@ -543,6 +543,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
           previousElement.focus();
         }
       }
+
       switch (e.keyCode) {
       case 40:
         next();
@@ -550,6 +551,26 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       case 38:
         previous();
         break;
+      case 39:
+        {
+          const showTabs = element.parentNode.querySelector(".show-tabs");
+          if(showTabs) {
+            showTabs.click();
+          }
+          const panel = document.querySelector("html");
+          if(panel) {
+            panel.focus();
+          }
+          break;
+        }
+      case 37:
+        {
+          const hideTabs = element.parentNode.querySelector(".panel-back-arrow");
+          if(hideTabs) {
+            hideTabs.click();
+          }
+          break;
+        }
       default:
         if ((e.keyCode >= 49 && e.keyCode <= 57) &&
             Logic._currentPanel === "containersList") {
@@ -747,7 +768,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       return;
     } else if (numTabs === 1) {
       Logic._disableMoveTabs("Cannot move a tab from a single-tab window.");
-      return; 
+      return;
     }
     Logic.addEnterHandler(moveTabsEl, async () => {
       await browser.runtime.sendMessage({
@@ -808,7 +829,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
         <td class="container-info-tab-title truncate-text" title="${tab.url}" ><div class="container-tab-title">${tab.title}</div></td>`;
       tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favIconUrl));
       document.getElementById("container-info-table").appendChild(fragment);
-      
+
       // On click, we activate this tab. But only if this tab is active.
       if (!tab.hiddenState) {
         const closeImage = document.createElement("img");
@@ -842,7 +863,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
           });
         }
       }
-    } 
+    }
   },
 });
 
