@@ -610,7 +610,15 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       const siteSettings = await Logic.getAssignment(currentTab);
       this.setupAssignmentCheckbox(siteSettings, currentTabUserContextId);
       const currentPage = document.getElementById("current-page");
-      currentPage.innerHTML = escaped`<span class="page-title truncate-text">${currentTab.title}</span>`;
+      //using DOMParser to modify innerHTML 
+      const htmlText = escaped`<span class="page-title truncate-text">${currentTab.title}</span>`;
+      const parser =  new DOMParser();
+      const parsed = parser.parseFromString(htmlText, `text/html`);
+      const tags = parsed.getElementsByTagName(`body`)
+      for (const tag of tags) {
+      currentPage.appendChild(tag)
+      }
+      
       const favIconElement = Utils.createFavIconElement(currentTab.favIconUrl || "");
       currentPage.prepend(favIconElement);
 
@@ -640,7 +648,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       manage.title = escaped`View ${identity.name} container`;
       context.setAttribute("tabindex", "0");
       context.title = escaped`Create ${identity.name} tab`;
-      context.innerHTML = escaped`
+      const htmlText = escaped`
         <div class="userContext-icon-wrapper open-newtab">
           <div class="usercontext-icon"
             data-identity-icon="${identity.icon}"
@@ -648,6 +656,13 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
           </div>
         </div>
         <div class="container-name truncate-text"></div>`;
+      const parser = new DOMParser()
+      const parsed = parser.parseFromString(htmlText, `text/html`)
+      const tags = parsed.getElementsByTagName(`body`)
+      for (const tag of tags) {
+      currentPage.appendChild(tag)
+      }      
+      
       context.querySelector(".container-name").textContent = identity.name;
       manage.innerHTML = "<img src='/img/container-arrow.svg' class='show-tabs pop-button-image-small' />";
 
@@ -803,9 +818,16 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       const tr = document.createElement("tr");
       fragment.appendChild(tr);
       tr.classList.add("container-info-tab-row");
-      tr.innerHTML = escaped`
+      const htmlText= escaped`
         <td></td>
         <td class="container-info-tab-title truncate-text" title="${tab.url}" ><div class="container-tab-title">${tab.title}</div></td>`;
+      const parser = new DOMParser()
+      const parsed = parser.parseFromString(htmlText, `text/html`)
+      const tags = parsed.getElementsByTagName(`body`)
+      for (const tag of tags) {
+      tr.appendChild(tag)
+      }
+      
       tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favIconUrl));
       document.getElementById("container-info-table").appendChild(fragment);
       
@@ -866,7 +888,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       const tr = document.createElement("tr");
       fragment.appendChild(tr);
       tr.classList.add("container-panel-row");
-      tr.innerHTML = escaped`
+      const htmlText = escaped`
         <td class="userContext-wrapper">
           <div class="userContext-icon-wrapper">
             <div class="usercontext-icon"
@@ -887,6 +909,13 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
             src="/img/container-delete.svg"
           />
         </td>`;
+      const parser = new DOMParser()
+      const parsed = parser.parseFromString(htmlText, `text/html`)
+      const tags = parsed.getElementsByTagName(`body`)
+      for (const tag of tags) {
+      tr.appendChild(tag)
+      }
+      
       tr.querySelector(".container-name").textContent = identity.name;
       tr.querySelector(".edit-container").setAttribute("title", `Edit ${identity.name} container`);
       tr.querySelector(".remove-container").setAttribute("title", `Remove ${identity.name} container`);
@@ -986,7 +1015,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
            This is pending a better solution for favicons from web extensions */
         const assumedUrl = `https://${site.hostname}/favicon.ico`;
-        trElement.innerHTML = escaped`
+        const htmlText = escaped`
         <div class="favicon"></div>
         <div title="${site.hostname}" class="truncate-text hostname">
           ${site.hostname}
@@ -995,6 +1024,13 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
           class="pop-button-image delete-assignment"
           src="/img/container-delete.svg"
         />`;
+        const parser = new DOMParser()
+        const parsed = parser.parseFromString(htmlText, `text/html`)
+        const tags = parsed.getElementsByTagName(`body`)
+        for (const tag of tags) {
+        trElement.appendChild(tag)
+        }       
+        
         trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
         const deleteButton = trElement.querySelector(".delete-assignment");
         const that = this;
@@ -1023,8 +1059,15 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     colors.forEach((containerColor) => {
       const templateInstance = document.createElement("div");
       templateInstance.classList.add("radio-container");
-      // eslint-disable-next-line no-unsanitized/property
-      templateInstance.innerHTML = colorRadioTemplate(containerColor);
+      // eslint-disable-next-line no-unsanitized/property     
+      const htmlText = colorRadioTemplate(containerColor);
+      const parser = new DOMParser()
+      const parsed = parser.parseFromString(htmlText, `text/html`)
+      const tags = parsed.getElementsByTagName(`body`)
+      for (const tag of tags) {
+      templateInstance.appendChild(tag)
+      }
+      
       colorRadioFieldset.appendChild(templateInstance);
     });
 
@@ -1038,7 +1081,14 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       const templateInstance = document.createElement("div");
       templateInstance.classList.add("radio-container");
       // eslint-disable-next-line no-unsanitized/property
-      templateInstance.innerHTML = iconRadioTemplate(containerIcon);
+      const htmlText= iconRadioTemplate(containerIcon);
+      const parser = new DOMParser()
+      const parsed = parser.parseFromString(htmlText, `text/html`)
+      const tags = parsed.getElementsByTagName(`body`)
+      for (const tag of tags) {
+      templateInstance.appendChild(tag)
+      }
+      
       iconRadioFieldset.appendChild(templateInstance);
     });
   },
