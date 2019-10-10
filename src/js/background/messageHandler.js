@@ -171,13 +171,7 @@ const messageHandler = {
 
     // When the user opens their _ tab, give them the achievement
     if (countOfContainerTabsOpened === 100) {
-      const storage = await browser.storage.local.get({achievements: []});
-      storage.achievements.push({"name": "manyContainersOpened", "done": false});
-      // use set and spread to create a unique array
-      const achievements = [...new Set(storage.achievements)];
-      browser.storage.local.set({achievements});
-      browser.browserAction.setBadgeBackgroundColor({color: "rgba(0,217,0,255)"});
-      browser.browserAction.setBadgeText({text: "NEW"});
+      badge.displayBrowserActionBadge("showAchievement");      
     }
   },
 
@@ -187,7 +181,7 @@ const messageHandler = {
     // https://bugzil.la/1314674
     // https://github.com/mozilla/testpilot-containers/issues/608
     // ... so re-call displayBrowserActionBadge on window changes
-    badge.displayBrowserActionBadge();
+    badge.displayBrowserActionBadge("remove");
     browser.tabs.query({active: true, windowId}).then((tabs) => {
       if (tabs && tabs[0]) {
         assignManager.calculateContextMenu(tabs[0]);

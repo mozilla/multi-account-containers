@@ -79,7 +79,7 @@ const Logic = {
   async init() {
     // Remove browserAction "upgraded" badge when opening panel
     this.clearBrowserActionBadge();
-
+    
     // Retrieve the list of identities.
     const identitiesPromise = this.refreshIdentities();
 
@@ -159,7 +159,7 @@ const Logic = {
     });
   },
 
-  async clearBrowserActionBadge() {
+ async clearBrowserActionBadge() {
     const extensionInfo = await getExtensionInfo();
     const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
     browser.browserAction.setBadgeBackgroundColor({color: null});
