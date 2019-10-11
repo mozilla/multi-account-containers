@@ -12,18 +12,18 @@ const badge = {
 
   async displayBrowserActionBadge(action) { 
     const extensionInfo = await backgroundLogic.getExtensionInfo();
-      function changeBadgeColorText(color, text){
-        browser.browserAction.setBadgeBackgroundColor({color: color});
-        browser.browserAction.setBadgeText({text: text});
-      }
-    if(action==="remove"){    
+    function changeBadgeColorText(color, text){
+      browser.browserAction.setBadgeBackgroundColor({color: color});
+      browser.browserAction.setBadgeText({text: text});
+    }
+    if(action==="remove") {    
       const ActionBadgesClickedStorage = await browser.storage.local.get({browserActionBadgesClicked: []});
       if (MAJOR_VERSIONS.indexOf(extensionInfo.version) > -1 &&
           ActionBadgesClickedStorage.browserActionBadgesClicked.indexOf(extensionInfo.version) < 0) {
-          changeBadgeColorText("rgba(0,217,0,255)", "NEW")
+        changeBadgeColorText("rgba(0,217,0,255)", "NEW");
       }
     }
-    else if (action==="showAchievement"){
+    else if (action==="showAchievement") {
       const achievementsStorage = await browser.storage.local.get({achievements: []});
       achievementsStorage.achievements.push({"name": "manyContainersOpened", "done": false});
       // use set and spread to create a unique array
