@@ -159,7 +159,7 @@ const Logic = {
     });
   },
 
- async clearBrowserActionBadge() {
+  async clearBrowserActionBadge() {
     const extensionInfo = await getExtensionInfo();
     const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
     browser.browserAction.setBadgeBackgroundColor({color: null});
@@ -613,10 +613,10 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       //using DOMParser to modify innerHTML 
       const htmlText = escaped`<span class="page-title truncate-text">${currentTab.title}</span>`;
       const parser =  new DOMParser();
-      const parsed = parser.parseFromString(htmlText, `text/html`);
-      const tags = parsed.getElementsByTagName(`body`)
+      const parsed = parser.parseFromString("htmlText", "text/html");
+      const tags = parsed.getElementsByTagName("body");
       for (const tag of tags) {
-      currentPage.appendChild(tag)
+        currentPage.appendChild(tag);
       }
       
       const favIconElement = Utils.createFavIconElement(currentTab.favIconUrl || "");
@@ -656,11 +656,11 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
           </div>
         </div>
         <div class="container-name truncate-text"></div>`;
-      const parser = new DOMParser()
-      const parsed = parser.parseFromString(htmlText, `text/html`)
-      const tags = parsed.getElementsByTagName(`body`)
+      const parser = new DOMParser();
+      const parsed = parser.parseFromString("htmlText", "text/html");
+      const tags = parsed.getElementsByTagName("body");
       for (const tag of tags) {
-      currentPage.appendChild(tag)
+        context.appendChild(tag);
       }      
       
       context.querySelector(".container-name").textContent = identity.name;
@@ -821,11 +821,11 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       const htmlText= escaped`
         <td></td>
         <td class="container-info-tab-title truncate-text" title="${tab.url}" ><div class="container-tab-title">${tab.title}</div></td>`;
-      const parser = new DOMParser()
-      const parsed = parser.parseFromString(htmlText, `text/html`)
-      const tags = parsed.getElementsByTagName(`body`)
+      const parser = new DOMParser();
+      const parsed = parser.parseFromString("htmlText", "text/html");
+      const tags = parsed.getElementsByTagName("body");
       for (const tag of tags) {
-      tr.appendChild(tag)
+        tr.appendChild(tag);
       }
       
       tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favIconUrl));
@@ -909,11 +909,11 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
             src="/img/container-delete.svg"
           />
         </td>`;
-      const parser = new DOMParser()
-      const parsed = parser.parseFromString(htmlText, `text/html`)
-      const tags = parsed.getElementsByTagName(`body`)
+      const parser = new DOMParser();
+      const parsed = parser.parseFromString("htmlText", "text/html");
+      const tags = parsed.getElementsByTagName("body");
       for (const tag of tags) {
-      tr.appendChild(tag)
+        tr.appendChild(tag);
       }
       
       tr.querySelector(".container-name").textContent = identity.name;
@@ -1024,11 +1024,11 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
           class="pop-button-image delete-assignment"
           src="/img/container-delete.svg"
         />`;
-        const parser = new DOMParser()
-        const parsed = parser.parseFromString(htmlText, `text/html`)
-        const tags = parsed.getElementsByTagName(`body`)
+        const parser = new DOMParser();
+        const parsed = parser.parseFromString("htmlText", "text/html");
+        const tags = parsed.getElementsByTagName("body");
         for (const tag of tags) {
-        trElement.appendChild(tag)
+          trElement.appendChild(tag);
         }       
         
         trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
@@ -1061,11 +1061,11 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       templateInstance.classList.add("radio-container");
       // eslint-disable-next-line no-unsanitized/property     
       const htmlText = colorRadioTemplate(containerColor);
-      const parser = new DOMParser()
-      const parsed = parser.parseFromString(htmlText, `text/html`)
-      const tags = parsed.getElementsByTagName(`body`)
+      const parser = new DOMParser();
+      const parsed = parser.parseFromString("htmlText", "text/html");
+      const tags = parsed.getElementsByTagName("body");
       for (const tag of tags) {
-      templateInstance.appendChild(tag)
+        templateInstance.appendChild(tag);
       }
       
       colorRadioFieldset.appendChild(templateInstance);
@@ -1082,11 +1082,11 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       templateInstance.classList.add("radio-container");
       // eslint-disable-next-line no-unsanitized/property
       const htmlText= iconRadioTemplate(containerIcon);
-      const parser = new DOMParser()
-      const parsed = parser.parseFromString(htmlText, `text/html`)
-      const tags = parsed.getElementsByTagName(`body`)
+      const parser = new DOMParser();
+      const parsed = parser.parseFromString("htmlText", "text/html");
+      const tags = parsed.getElementsByTagName("body");
       for (const tag of tags) {
-      templateInstance.appendChild(tag)
+        templateInstance.appendChild(tag);
       }
       
       iconRadioFieldset.appendChild(templateInstance);
