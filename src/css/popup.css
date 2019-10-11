@@ -470,12 +470,36 @@ manage things like container crud */
   inline-size: var(--inline-button-size);
   justify-content: center;
   text-decoration: none;
+  width: 200px;
+  
 }
-
 #container-panel #sort-containers-link:hover,
 #container-panel #sort-containers-link:focus {
   background: #f2f2f2;
 }
+
+#container-panel #search-containers-link:hover,
+#container-panel #search-containers-link:focus {
+  background: #f2f2f2;
+}
+
+#container-panel #search-containers-link {
+  align-items: center;
+  block-size: var(--block-url-label-size);
+  border: 1px solid #d8d8d8;
+  border-radius: var(--small-radius);
+  color: var(--title-text-color);
+  display: flex;
+  font-size: var(--small-text-size);
+  inline-size: var(--inline-button-size);
+  justify-content: center;
+  text-decoration: none;
+  width: 100px;
+  margin-right: 2px;
+
+  
+}
+
 
 span ~ .panel-header-text {
   padding-block-end: 0;
@@ -794,6 +818,10 @@ span ~ .panel-header-text {
   overflow: hidden; /* Bugfix: issue 948 */
 }
 
+.radio-search > .radio-container > [type="radio"]{
+width: 40px;
+
+}
 #edit-sites-assigned {
   flex: 1000; /* Bugfix: issue 948 */
 }
@@ -872,6 +900,7 @@ span ~ .panel-header-text {
   -moz-appearance: none;
   display: inline;
   opacity: 0;
+  
 }
 
 .radio-choice > .radio-container > [type="radio"]:checked + label {
@@ -914,6 +943,19 @@ span ~ .panel-header-text {
   padding-block-start: 5px;
   padding-inline-end: 5px;
   padding-inline-start: 5px;
+}
+
+.container-panel-controls  input[type="text"] {
+  block-size: 28px;
+  border-radius: 3px;
+  font-size: 14px;
+  inline-size: 100%;
+  padding-block-end: 5px;
+  padding-block-start: 5px;
+  padding-inline-end: 5px;
+  padding-inline-start: 5px;
+  width: 200px;
+  margin-right: 2px;
 }
 
 .edit-container-panel legend {

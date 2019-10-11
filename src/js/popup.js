@@ -505,6 +505,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
   panelSelector: "#container-panel",
 
   // This method is called when the object is registered.
+
   async initialize() {
     Logic.addEnterHandler(document.querySelector("#container-add-link"), () => {
       Logic.showPanel(P_CONTAINER_EDIT, { name: Logic.generateIdentityName() });
@@ -1043,6 +1044,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     });
   },
 
+  
+
   // This method is called when the panel is shown.
   async prepare() {
     const identity = Logic.currentIdentity();
@@ -1070,6 +1073,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   },
 
 });
+
+//For displaying search icon for search bar
 
 // P_CONTAINER_DELETE: Delete a container.
 // ----------------------------------------------------------------------------
