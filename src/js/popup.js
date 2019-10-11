@@ -613,7 +613,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       //using DOMParser to modify innerHTML 
       const htmlText = escaped`<span class="page-title truncate-text">${currentTab.title}</span>`;
       const parser =  new DOMParser();
-      const parsed = parser.parseFromString("htmlText", "text/html");
+      const parsed = parser.parseFromString(htmlText, "text/html");
       const tags = parsed.getElementsByTagName("body");
       for (const tag of tags) {
         currentPage.appendChild(tag);
@@ -657,7 +657,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         </div>
         <div class="container-name truncate-text"></div>`;
       const parser = new DOMParser();
-      const parsed = parser.parseFromString("htmlText", "text/html");
+      const parsed = parser.parseFromString(htmlText, "text/html");
       const tags = parsed.getElementsByTagName("body");
       for (const tag of tags) {
         context.appendChild(tag);
@@ -822,7 +822,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
         <td></td>
         <td class="container-info-tab-title truncate-text" title="${tab.url}" ><div class="container-tab-title">${tab.title}</div></td>`;
       const parser = new DOMParser();
-      const parsed = parser.parseFromString("htmlText", "text/html");
+      const parsed = parser.parseFromString(htmlText, "text/html");
       const tags = parsed.getElementsByTagName("body");
       for (const tag of tags) {
         tr.appendChild(tag);
@@ -910,7 +910,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
           />
         </td>`;
       const parser = new DOMParser();
-      const parsed = parser.parseFromString("htmlText", "text/html");
+      const parsed = parser.parseFromString(htmlText, "text/html");
       const tags = parsed.getElementsByTagName("body");
       for (const tag of tags) {
         tr.appendChild(tag);
@@ -1025,7 +1025,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
           src="/img/container-delete.svg"
         />`;
         const parser = new DOMParser();
-        const parsed = parser.parseFromString("htmlText", "text/html");
+        const parsed = parser.parseFromString(htmlText, "text/html");
         const tags = parsed.getElementsByTagName("body");
         for (const tag of tags) {
           trElement.appendChild(tag);
@@ -1062,7 +1062,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       // eslint-disable-next-line no-unsanitized/property     
       const htmlText = colorRadioTemplate(containerColor);
       const parser = new DOMParser();
-      const parsed = parser.parseFromString("htmlText", "text/html");
+      const parsed = parser.parseFromString(htmlText, "text/html");
       const tags = parsed.getElementsByTagName("body");
       for (const tag of tags) {
         templateInstance.appendChild(tag);
@@ -1083,7 +1083,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       // eslint-disable-next-line no-unsanitized/property
       const htmlText= iconRadioTemplate(containerIcon);
       const parser = new DOMParser();
-      const parsed = parser.parseFromString("htmlText", "text/html");
+      const parsed = parser.parseFromString(htmlText, "text/html");
       const tags = parsed.getElementsByTagName("body");
       for (const tag of tags) {
         templateInstance.appendChild(tag);
