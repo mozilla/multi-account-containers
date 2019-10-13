@@ -59,6 +59,12 @@
     "page": "js/background/index.html"
   },
 
+  "options_ui": {
+    "page": "options.html",
+    "browser_style": true,
+    "chrome_style": true
+  },
+
   "content_scripts": [
     {
       "matches": ["<all_urls>"],

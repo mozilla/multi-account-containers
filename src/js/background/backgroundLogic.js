@@ -215,6 +215,39 @@ const backgroundLogic = {
     return browser.tabs.remove(tabIds);
   },
 
+  async backupIdentitiesState() {
+    const identities = await browser.contextualIdentities.query({});
+    return identities.map(({ color, icon, name }) => ({ color, icon, name }));
+  },
+
+  async restoreIdentitiesState(identities) {
+    const backup = await browser.contextualIdentities.query({});
+    let allSucceed = true;
+    const identitiesPromise = identities.map(({ color, icon, name }) =>
+      browser.contextualIdentities.create({ color, icon, name }).catch(() => {
+        allSucceed = false;
+        return null;
+      })
+    );
+    const created = await Promise.all(identitiesPromise);
+    if (!allSucceed) { // Importation failed, restore previous state
+      await Promise.all(
+        created.map((identityOrNull) => {
+          if (identityOrNull) {
+            return browser.contextualIdentities.remove(identityOrNull.cookieStoreId);
+          }
+          return Promise.resolve();
+        })
+      );
+    } else { // Importation succeed, remove old identities
+      await Promise.all(
+        backup.map((identity) =>
+          browser.contextualIdentities.remove(identity.cookieStoreId)
+        )
+      );
+    }
+  },
+
   async queryIdentitiesState(windowId) {
     const identities = await browser.contextualIdentities.query({});
     const identitiesOutput = {};
