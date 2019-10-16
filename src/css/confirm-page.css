@@ -60,6 +60,7 @@ html {
 @media (prefers-color-scheme: dark) {
   #redirect-url {
     background: #38383d; /* Grey 70 */
+    color: #eee; /* White 20 */
   }
 }
 /* stylelint-enable */
