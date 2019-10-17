@@ -283,11 +283,16 @@ const assignManager = {
   },
 
   async _onClickedBookmark(info) {
-    const bookmark = await browser.bookmarks.get(info.bookmarkId);
-    browser.tabs.create({
-      cookieStoreId: info.menuItemId,
-      url: bookmark[0].url
-    });
+    let bookmarks = await browser.bookmarks.get(info.bookmarkId);
+    if (bookmarks[0].type === "folder") { 
+      bookmarks = await browser.bookmarks.getChildren(bookmarks[0].id);
+    }
+    for (let bookmark of bookmarks) { // eslint-disable-line prefer-const
+      browser.tabs.create({
+        cookieStoreId: info.menuItemId,
+        url: bookmark.url
+      });
+    }
   },
 
 
