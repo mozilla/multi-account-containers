@@ -505,7 +505,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
   panelSelector: "#container-panel",
 
   // This method is called when the object is registered.
-
   async initialize() {
     Logic.addEnterHandler(document.querySelector("#container-add-link"), () => {
       Logic.showPanel(P_CONTAINER_EDIT, { name: Logic.generateIdentityName() });
@@ -911,7 +910,28 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
   },
 });
 
-// P_CONTAINER_EDIT: Editor for a container.
+// Search the container tab entered in the search box
+
+const search = document.querySelector("#search-containers-link");
+search.onclick = searchvalue;
+let val= document.getElementById('search-container-panel');
+let tab = document.getElementsByClassName("container-name truncate-text");
+let row = document.getElementsByClassName("userContext-wrapper");
+function searchvalue(e){
+ console.log(row[1].innerHTML)
+ for(var x=0;x<tab.length;x++){
+  if(val.value==tab[x].innerHTML){
+        row[x].focus();
+    
+  }
+ }
+  
+}
+
+
+
+
+// P_CONTAINER_EDIT: Editor for a contain #container-nameer.
 // ----------------------------------------------------------------------------
 
 Logic.registerPanel(P_CONTAINER_EDIT, {
@@ -1044,8 +1064,6 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     });
   },
 
-  
-
   // This method is called when the panel is shown.
   async prepare() {
     const identity = Logic.currentIdentity();
@@ -1059,7 +1077,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     document.querySelector("#edit-container-panel-usercontext-input").value = userContextId || NEW_CONTAINER_ID;
     const containerName = document.querySelector("#edit-container-panel-name-input");
     window.requestAnimationFrame(() => {
-      containerName.select();
+      containerName.select();edit-container-panel-name-input
       containerName.focus();
     });
     [...document.querySelectorAll("[name='container-color']")].forEach(colorInput => {
@@ -1073,8 +1091,6 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   },
 
 });
-
-//For displaying search icon for search bar
 
 // P_CONTAINER_DELETE: Delete a container.
 // ----------------------------------------------------------------------------
