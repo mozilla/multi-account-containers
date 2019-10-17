@@ -4,6 +4,7 @@ const assignManager = {
   MENU_SEPARATOR_ID: "separator",
   MENU_HIDE_ID: "hide-container",
   MENU_MOVE_ID: "move-to-new-window-container",
+  OPEN_IN_CONTAINER: "open-link-in-container-tab",
 
   storageArea: {
     area: browser.storage.local,
@@ -221,7 +222,11 @@ const assignManager = {
 
   init() {
     browser.contextMenus.onClicked.addListener((info, tab) => {
-      this._onClickedHandler(info, tab);
+      if (tab) {
+        this._onClickedHandler(info, tab);
+      } else {
+        this._onClickedBookmark(info);
+      }
     });
 
     // Before a request is handled by the browser we decide if we should route through a different container
@@ -241,6 +246,8 @@ const assignManager = {
         delete this.canceledRequests[options.tabId];
       }
     },{urls: ["<all_urls>"], types: ["main_frame"]});
+
+    this.initBookmarksMenu();
 
   },
 
@@ -273,6 +280,14 @@ const assignManager = {
         break;
       }
     }
+  },
+
+  async _onClickedBookmark(info) {
+    const bookmark = await browser.bookmarks.get(info.bookmarkId);
+    browser.tabs.create({
+      cookieStoreId: info.menuItemId,
+      url: bookmark[0].url
+    });
   },
 
 
@@ -440,6 +455,24 @@ const assignManager = {
         browser.history.deleteUrl({url: confirmUrl});
       }).catch((e) => {
         throw e;
+      });
+    }
+  },
+
+  async initBookmarksMenu() {
+    browser.contextMenus.create({
+      id: this.OPEN_IN_CONTAINER,
+      title: "Open Link in Container Tab",
+      contexts: ["bookmark"],
+    });
+
+    const identities = await browser.contextualIdentities.query({});
+    for (let identity of identities) { // eslint-disable-line prefer-const
+      browser.contextMenus.create({
+        parentId: this.OPEN_IN_CONTAINER,
+        id: identity.cookieStoreId,
+        title: identity.name,
+        icons: { "16": `img/usercontext.svg#${identity.icon}` }           
       });
     }
   }
