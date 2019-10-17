@@ -12,22 +12,14 @@ function getStyle(themeInfo) {
   
     document.getElementById('current-tab').style.color=themeInfo.colors.tab_background_text;
    
-    const headers = document.getElementsByTagName('h3');
-    for (var i = 0; i < headers.length; i++) {
-      headers[i].style.color =themeInfo.colors.tab_background_text;
+    const colorChangingText = document.getElementsByClassName("tabBackgroundText");
+    for (var i = 0; i < colorChangingText.length; i++) {
+      colorChangingText[i].style.color =themeInfo.colors.tab_background_text;
     } 
 
-    const paras= document.getElementsByTagName('p');
-    for (var i = 0; i < paras.length; i++) {
-      paras[i].style.color =themeInfo.colors.tab_background_text;
-    } 
-   
+  
     document.getElementById('sort-containers-link').style.color=themeInfo.colors.tab_background_text;
-
-    var legends1= document.getElementsByTagName('legend');
-    for (var i = 0; i < legends1.length; i++) {
-      legends1[i].style.color =themeInfo.colors.tab_background_text;
-    } 
+ 
     
   }   
 
