@@ -21,6 +21,26 @@ For more info, see:
 1. `npm install`
 2. `./node_modules/.bin/web-ext run -s src/`
 
+or
+
+you can also test your changes without having to install web-ext as step #2 above
+
+**Debugging in the browser**
+
+Visit `about:debugging` in your browser.
+
+Then select the option `load temporary Add-on`
+and load the extension by selecting any file from the Web Extensions' dir. In our case, e.g. select manifest.json from the src dir. 
+
+For reference, [watch this video](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Your_first_WebExtension#Installing)
+
+After you make your changes, simply press the `reload` button to see them in effect.
+
+
+
+
+
+
 ### Testing
 TBD
 
