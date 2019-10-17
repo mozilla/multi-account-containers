@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -624,7 +625,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
   // This method is called when the panel is shown.
   async prepare() {
     const fragment = document.createDocumentFragment();
-
     this.prepareCurrentTabHeader();
 
     Logic.identities().forEach(identity => {
@@ -641,7 +641,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       context.setAttribute("tabindex", "0");
       context.title = escaped`Create ${identity.name} tab`;
       context.innerHTML = escaped`
-        <div class="userContext-icon-wrapper open-newtab">
+      <div class="userContext-icon-wrapper open-newtab">
           <div class="usercontext-icon"
             data-identity-icon="${identity.icon}"
             data-identity-color="${identity.color}">
@@ -650,11 +650,22 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         <div class="container-name truncate-text"></div>`;
       context.querySelector(".container-name").textContent = identity.name;
       manage.innerHTML = "<img src='/img/container-arrow.svg' class='show-tabs pop-button-image-small' />";
-
+     
       fragment.appendChild(tr);
 
       tr.appendChild(context);
-
+      function style(themeInfo){
+        context.style.backgroundColor=themeInfo.colors.toolbar;
+        context.style.color=themeInfo.colors.tab_background_text;
+      }
+      async function getTheme() {
+        const themeInfo = await browser.theme.getCurrent();
+  
+        style(themeInfo);
+      }
+      getTheme();
+      
+     
       if (hasTabs) {
         tr.appendChild(manage);
       }
@@ -674,6 +685,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         } else if (hasTabs) {
           Logic.showPanel(P_CONTAINER_INFO, identity);
         }
+     
       });
     });
 
@@ -862,12 +874,13 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
   // This method is called when the panel is shown.
   prepare() {
     const fragment = document.createDocumentFragment();
+   
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
       fragment.appendChild(tr);
       tr.classList.add("container-panel-row");
       tr.innerHTML = escaped`
-        <td class="userContext-wrapper">
+        <td  class="userContext-wrapper">
           <div class="userContext-icon-wrapper">
             <div class="usercontext-icon"
               data-identity-icon="${identity.icon}"
@@ -890,6 +903,24 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       tr.querySelector(".container-name").textContent = identity.name;
       tr.querySelector(".edit-container").setAttribute("title", `Edit ${identity.name} container`);
       tr.querySelector(".remove-container").setAttribute("title", `Remove ${identity.name} container`);
+      
+      function style(themeInfo){
+        const tabl= document.getElementsByClassName("userContext-wrapper");
+    
+    // eslint-disable-next-line no-var
+        for (var i = 0; i < tabl.length; i++) {
+          tabl[i].style.backgroundColor=themeInfo.colors.toolbar;
+          tabl[i].style.color=themeInfo.colors.tab_background_text;
+        } 
+      }
+      async function getTheme() 
+      {
+        const themeInfo = await browser.theme.getCurrent();
+        
+        style(themeInfo);
+      }
+      getTheme();
+     
 
 
       Logic.addEnterHandler(tr, e => {
@@ -1001,6 +1032,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         Logic.addEnterHandler(deleteButton, async () => {
           const userContextId = Logic.currentUserContextId();
           // Lets show the message to the current tab
+          // eslint-disable-next-line no-warning-comments
           // TODO remove then when firefox supports arrow fn async
           const currentTab = await Logic.currentTab();
           Logic.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
@@ -1155,3 +1187,4 @@ window.addEventListener("resize", function () {
     root.style.setProperty("--icon-fit", "12");
   }
 });
+

@@ -601,7 +601,7 @@ span ~ .panel-header-text {
 
 .container-panel-row:hover .clickable.userContext-wrapper,
 .container-panel-row:focus .clickable.userContext-wrapper {
-  background: #f2f2f2;
+  background-color: #f2f2f2;
 }
 
 .userContext-icon-wrapper {
