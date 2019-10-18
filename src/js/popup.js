@@ -615,8 +615,14 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       currentPage.prepend(favIconElement);
 
       const currentContainer = document.getElementById("current-container");
+      const DefaultText =document.getElementById("default-text");
+      const DefaultBox =document.getElementById("container-page-assigned");
       currentContainer.innerText = identity.name;
-
+      if (currentContainer.innerText === "Default"){
+        DefaultBox.style.display="none";
+        DefaultText.style.display="none";
+        currentContainer.style.display="none";
+      }
       currentContainer.setAttribute("data-identity-color", identity.color);
     }
   },
