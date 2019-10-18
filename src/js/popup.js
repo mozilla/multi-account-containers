@@ -914,18 +914,15 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
 
 const search = document.querySelector("#search-containers-link");
 search.onclick = searchvalue;
-let val= document.getElementById('search-container-panel');
-let tab = document.getElementsByClassName("container-name truncate-text");
-let row = document.getElementsByClassName("userContext-wrapper");
-function searchvalue(e){
- console.log(row[1].innerHTML)
- for(var x=0;x<tab.length;x++){
-  if(val.value==tab[x].innerHTML){
-        row[x].focus();
-    
+const val= document.getElementById("search-container-panel");
+const tab = document.getElementsByClassName("container-name truncate-text");
+const row = document.getElementsByClassName("userContext-wrapper");
+function searchvalue(){
+  for(let x=0;x<tab.length;x++){
+    if(val.value===tab[x].innerHTML){
+      row[x].focus();  
+    }
   }
- }
-  
 }
 
 

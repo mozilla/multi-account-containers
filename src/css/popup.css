@@ -471,8 +471,8 @@ manage things like container crud */
   justify-content: center;
   text-decoration: none;
   width: 200px;
-  
 }
+
 #container-panel #sort-containers-link:hover,
 #container-panel #sort-containers-link:focus {
   background: #f2f2f2;
@@ -493,13 +493,10 @@ manage things like container crud */
   font-size: var(--small-text-size);
   inline-size: var(--inline-button-size);
   justify-content: center;
+  margin-right: 2px;
   text-decoration: none;
   width: 100px;
-  margin-right: 2px;
-
-  
 }
-
 
 span ~ .panel-header-text {
   padding-block-end: 0;
@@ -818,10 +815,10 @@ span ~ .panel-header-text {
   overflow: hidden; /* Bugfix: issue 948 */
 }
 
-.radio-search > .radio-container > [type="radio"]{
-width: 40px;
-
+.radio-search > .radio-container > [type="radio"] {
+  width: 40px;
 }
+
 #edit-sites-assigned {
   flex: 1000; /* Bugfix: issue 948 */
 }
@@ -900,7 +897,6 @@ width: 40px;
   -moz-appearance: none;
   display: inline;
   opacity: 0;
-  
 }
 
 .radio-choice > .radio-container > [type="radio"]:checked + label {
@@ -945,17 +941,17 @@ width: 40px;
   padding-inline-start: 5px;
 }
 
-.container-panel-controls  input[type="text"] {
+.container-panel-controls input[type="text"] {
   block-size: 28px;
   border-radius: 3px;
   font-size: 14px;
   inline-size: 100%;
+  margin-right: 2px;
   padding-block-end: 5px;
   padding-block-start: 5px;
   padding-inline-end: 5px;
   padding-inline-start: 5px;
   width: 200px;
-  margin-right: 2px;
 }
 
 .edit-container-panel legend {
