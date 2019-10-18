@@ -474,7 +474,7 @@ manage things like container crud */
 
 #container-panel #sort-containers-link:hover,
 #container-panel #sort-containers-link:focus {
-  background: #f2f2f2;
+  background: #a2b1dd;
 }
 
 span ~ .panel-header-text {
