@@ -382,6 +382,11 @@ const Logic = {
       }
     }
   },
+
+  getCurrentPanel() {
+    const panelItem = this._panels[this._currentPanel];
+    return document.querySelector(this.getPanelSelector(panelItem));
+  },
 };
 
 // P_ONBOARDING_1: First page for Onboarding.
@@ -550,6 +555,14 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       case 38:
         previous();
         break;
+      case 13: {
+        const panel = Logic.getCurrentPanel();
+        const button = panel.getElementsByTagName("A")[0];
+        if(button) {
+          button.click();
+        }
+        break;
+      }
       default:
         if ((e.keyCode >= 49 && e.keyCode <= 57) &&
             Logic._currentPanel === "containersList") {
