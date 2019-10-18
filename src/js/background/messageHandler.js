@@ -177,11 +177,6 @@ const messageHandler = {
 
   async onFocusChangedCallback(windowId) {
     assignManager.removeContextMenu();
-    // browserAction loses background color in new windows ...
-    // https://bugzil.la/1314674
-    // https://github.com/mozilla/testpilot-containers/issues/608
-    // ... so re-call displayBrowserActionBadge on window changes
-    badge.displayBrowserActionBadge("remove");
     browser.tabs.query({active: true, windowId}).then((tabs) => {
       if (tabs && tabs[0]) {
         assignManager.calculateContextMenu(tabs[0]);
