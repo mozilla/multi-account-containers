@@ -113,11 +113,12 @@ const backgroundLogic = {
     return list.concat(containerState.hiddenTabs);
   },
 
-  async unhideContainer(cookieStoreId) {
+  async unhideContainer(cookieStoreId, toHide) {
     if (!this.unhideQueue.includes(cookieStoreId)) {
       this.unhideQueue.push(cookieStoreId);
       await this.showTabs({
-        cookieStoreId
+        cookieStoreId,
+        toHide
       });
       this.unhideQueue.splice(this.unhideQueue.indexOf(cookieStoreId), 1);
     }
@@ -309,12 +310,16 @@ const backgroundLogic = {
     const containerState = await identityState.storageArea.get(options.cookieStoreId);
 
     for (let object of containerState.hiddenTabs) { // eslint-disable-line prefer-const
-      promises.push(this.openNewTab({
-        userContextId: userContextId,
-        url: object.url,
-        nofocus: options.nofocus || false,
-        pinned: object.pinned,
-      }));
+      // do not show already opened url
+      if (object.url !== options.toHide) {
+        promises.push(this.openNewTab({
+          userContextId: userContextId,
+          url: object.url,
+          nofocus: options.nofocus || false,
+          pinned: object.pinned,
+        }));
+      }
+
     }
 
     containerState.hiddenTabs = [];

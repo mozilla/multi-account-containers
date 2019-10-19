@@ -155,7 +155,24 @@ const messageHandler = {
           this.incrementCountOfContainerTabsOpened();
         }
 
-        backgroundLogic.unhideContainer(tab.cookieStoreId);
+        this.tabUpdateHandler = (tabId, changeInfo) => {
+          if (tabId === tab.id && changeInfo.status === "complete") {
+            // get current tab's url to not open the same one from hidden tabs
+            browser.tabs.get(tabId).then(loadedTab => {
+              backgroundLogic.unhideContainer(tab.cookieStoreId, loadedTab.url);
+            }).catch((e) => {
+              throw e;
+            });
+
+            browser.tabs.onUpdated.removeListener(this.tabUpdateHandler);
+          }
+        };
+
+        // if it's a container tab wait for it to complete and
+        // unhide other tabs from this container
+        if (tab.cookieStoreId.startsWith("firefox-container")) {
+          browser.tabs.onUpdated.addListener(this.tabUpdateHandler);
+        }
       }
       setTimeout(() => {
         this.lastCreatedTab = null;
