@@ -4,7 +4,7 @@ const assignManager = {
   MENU_SEPARATOR_ID: "separator",
   MENU_HIDE_ID: "hide-container",
   MENU_MOVE_ID: "move-to-new-window-container",
-  OPEN_IN_CONTAINER: "open-link-in-container-tab",
+  OPEN_IN_CONTAINER: "open-bookmark-in-container-tab",
 
   storageArea: {
     area: browser.storage.local,
@@ -222,10 +222,10 @@ const assignManager = {
 
   init() {
     browser.contextMenus.onClicked.addListener((info, tab) => {
-      if (tab) {
-        this._onClickedHandler(info, tab);
-      } else {
+      if (info.bookmarkId) {
         this._onClickedBookmark(info);
+      } else {
+        this._onClickedHandler(info, tab);
       }
     });
 
@@ -467,7 +467,7 @@ const assignManager = {
   async initBookmarksMenu() {
     browser.contextMenus.create({
       id: this.OPEN_IN_CONTAINER,
-      title: "Open Link in Container Tab",
+      title: "Open Bookmark in Container Tab",
       contexts: ["bookmark"],
     });
 
