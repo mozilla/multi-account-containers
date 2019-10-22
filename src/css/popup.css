@@ -756,17 +756,17 @@ span ~ .panel-header-text {
   color: #fff;
   display: inline-block;
   justify-content: center;
-  padding-top: 6px;
-  padding-bottom: 30%;
-  min-width: 100%;
+  padding-block-start: 6px;
+  padding-inline-start: 30%;
+  width: 100%;
 }
 
 .exit-edit-mode-link img {
   block-size: 16px;
   display: inline;
   filter: grayscale(100%) brightness(5);
-  transform: scaleX(-1);
   inline-size: 16px;
+  transform: scaleX(-1);
   margin-inline-end: 5px;
   vertical-align: bottom;
 }
