@@ -246,9 +246,30 @@ const assignManager = {
         delete this.canceledRequests[options.tabId];
       }
     },{urls: ["<all_urls>"], types: ["main_frame"]});
-
     this.initBookmarksMenu();
+    browser.contextualIdentities.onCreated.addListener(this.contextualIdentCreated);
+    browser.contextualIdentities.onUpdated.addListener(this.contextualIdentUpdated);
+    browser.contextualIdentities.onRemoved.addListener(this.contextualIdentRemoved);
+  },
 
+  contextualIdentCreated(changeInfo) {
+    browser.contextMenus.create({
+      parentId: assignManager.OPEN_IN_CONTAINER,
+      id: changeInfo.contextualIdentity.cookieStoreId,
+      title: changeInfo.contextualIdentity.name,
+      icons: { "16": `img/usercontext.svg#${changeInfo.contextualIdentity.icon}` }
+    });
+  },
+
+  contextualIdentUpdated(changeInfo) {
+    browser.contextMenus.update(changeInfo.contextualIdentity.cookieStoreId, {
+      title: changeInfo.contextualIdentity.name,
+      icons: { "16": `img/usercontext.svg#${changeInfo.contextualIdentity.icon}` }
+    });
+  },
+
+  contextualIdentRemoved(changeInfo) {
+    browser.contextMenus.remove(changeInfo.contextualIdentity.cookieStoreId);
   },
 
   async _onClickedHandler(info, tab) {
@@ -477,7 +498,7 @@ const assignManager = {
         parentId: this.OPEN_IN_CONTAINER,
         id: identity.cookieStoreId,
         title: identity.name,
-        icons: { "16": `img/usercontext.svg#${identity.icon}` }           
+        icons: { "16": `img/usercontext.svg#${identity.icon}` }
       });
     }
   }
