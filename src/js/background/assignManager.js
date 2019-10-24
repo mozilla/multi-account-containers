@@ -244,28 +244,19 @@ const assignManager = {
     this.getPermissions();
   },
 
-  getPermissions() {
-    browser.permissions.getAll().
-    then((permissions) => {
-      if (permissions.permissions.includes("bookmarks")) {
-        this.makeBookmarksMenu();
-      } else {
-        browser.contextMenus.remove(this.OPEN_IN_CONTAINER);
-      }
-    }).
-    catch((err) => {
-      return err.message;
-    });
+  async getPermissions() {
+    const {permissions} = await browser.permissions.getAll()
+    permissions.includes("bookmarks") ? this.makeBookmarksMenu() : browser.contextMenus.remove(this.OPEN_IN_CONTAINER);
   },
 
   makeBookmarksMenu() {
     this.initBookmarksMenu();
-    browser.contextualIdentities.onCreated.addListener(this.contextualIdentCreated);
-    browser.contextualIdentities.onUpdated.addListener(this.contextualIdentUpdated);
-    browser.contextualIdentities.onRemoved.addListener(this.contextualIdentRemoved);
+    browser.contextualIdentities.onCreated.addListener(this.contextualIdentityCreated);
+    browser.contextualIdentities.onUpdated.addListener(this.contextualIdentityUpdated);
+    browser.contextualIdentities.onRemoved.addListener(this.contextualIdentityRemoved);
   },
 
-  contextualIdentCreated(changeInfo) {
+  contextualIdentityCreated(changeInfo) {
     browser.contextMenus.create({
       parentId: assignManager.OPEN_IN_CONTAINER,
       id: changeInfo.contextualIdentity.cookieStoreId,
@@ -274,14 +265,14 @@ const assignManager = {
     });
   },
 
-  contextualIdentUpdated(changeInfo) {
+  contextualIdentityUpdated(changeInfo) {
     browser.contextMenus.update(changeInfo.contextualIdentity.cookieStoreId, {
       title: changeInfo.contextualIdentity.name,
       icons: { "16": `img/usercontext.svg#${changeInfo.contextualIdentity.icon}` }
     });
   },
 
-  contextualIdentRemoved(changeInfo) {
+  contextualIdentityRemoved(changeInfo) {
     browser.contextMenus.remove(changeInfo.contextualIdentity.cookieStoreId);
   },
 
@@ -322,9 +313,8 @@ const assignManager = {
       const [bookmarkTreeNode] = await browser.bookmarks.get(info.bookmarkId);
       if (bookmarkTreeNode.type === "folder") {
         return await browser.bookmarks.getChildren(bookmarkTreeNode.id);
-      } else {
-        return [bookmarkTreeNode];
       }
+      return [bookmarkTreeNode];
     }
 
     const bookmarks = await _getBookmarksFromInfo(info);
