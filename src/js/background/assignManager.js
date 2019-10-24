@@ -143,7 +143,6 @@ const assignManager = {
     const userContextId = this.getUserContextIdFromCookieStore(tab);
     if (!siteSettings
         || userContextId === siteSettings.userContextId
-        || tab.incognito
         || this.storageArea.isExempted(options.url, tab.id)) {
       return {};
     }
@@ -353,11 +352,9 @@ const assignManager = {
 
   isTabPermittedAssign(tab) {
     // Ensure we are not an important about url
-    // Ensure we are not in incognito mode
     const url = new URL(tab.url);
     if (url.protocol === "about:"
-        || url.protocol === "moz-extension:"
-        || tab.incognito) {
+        || url.protocol === "moz-extension:") {
       return false;
     }
     return true;
