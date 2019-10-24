@@ -46,9 +46,6 @@ const backgroundLogic = {
       donePromise = browser.contextualIdentities.create(options.params);
     }
     await donePromise;
-    browser.runtime.sendMessage({
-      method: "refreshNeeded"
-    });
   },
 
   async openNewTab(options) {
