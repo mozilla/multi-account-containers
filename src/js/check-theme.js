@@ -21,6 +21,7 @@ function getStyle(themeInfo) {
     document.getElementById('sort-containers-link').style.color=themeInfo.colors.tab_background_text;
  
     
+    
   }   
 
 }
