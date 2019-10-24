@@ -383,7 +383,7 @@ const Logic = {
     }
   },
 
-  getCurrentPanel() {
+  getCurrentPanelElement() {
     const panelItem = this._panels[this._currentPanel];
     return document.querySelector(this.getPanelSelector(panelItem));
   },
@@ -556,7 +556,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         previous();
         break;
       case 13: {
-        const panel = Logic.getCurrentPanel();
+        const panel = Logic.getCurrentPanelElement();
         const button = panel.getElementsByTagName("A")[0];
         if(button) {
           button.click();
