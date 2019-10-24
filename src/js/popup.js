@@ -543,7 +543,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
           previousElement.focus();
         }
       }
-
       switch (e.keyCode) {
       case 40:
         next();
@@ -557,15 +556,11 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
           if(showTabs) {
             showTabs.click();
           }
-          const panel = document.querySelector("html");
-          if(panel) {
-            panel.focus();
-          }
           break;
         }
       case 37:
         {
-          const hideTabs = element.parentNode.querySelector(".panel-back-arrow");
+          const hideTabs = document.querySelector(".panel-back-arrow");
           if(hideTabs) {
             hideTabs.click();
           }
