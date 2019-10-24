@@ -30,7 +30,10 @@
     "storage",
     "tabs",
     "webRequestBlocking",
-    "webRequest",
+    "webRequest"
+  ],
+
+  "optional_permissions": [
     "bookmarks"
   ],
 
@@ -71,5 +74,9 @@
 
   "web_accessible_resources": [
     "/img/container-site-d-24.png"
-  ]
+  ],
+
+  "options_ui": {
+    "page": "options.html"
+  }
 }
