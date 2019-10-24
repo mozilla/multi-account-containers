@@ -55,6 +55,7 @@ const backgroundLogic = {
     let url = options.url || undefined;
     const userContextId = ("userContextId" in options) ? options.userContextId : 0;
     const active = ("nofocus" in options) ? options.nofocus : true;
+    const discarded = ("noload" in options) ? options.noload : false;
 
     const cookieStoreId = backgroundLogic.cookieStoreId(userContextId);
     // Autofocus url bar will happen in 54: https://bugzilla.mozilla.org/show_bug.cgi?id=1295072
@@ -71,6 +72,7 @@ const backgroundLogic = {
     return browser.tabs.create({
       url,
       active,
+      discarded,
       pinned: options.pinned || false,
       cookieStoreId
     });
@@ -313,6 +315,7 @@ const backgroundLogic = {
         userContextId: userContextId,
         url: object.url,
         nofocus: options.nofocus || false,
+        noload: true,
         pinned: object.pinned,
       }));
     }
