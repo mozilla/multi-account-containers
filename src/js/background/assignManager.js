@@ -245,7 +245,7 @@ const assignManager = {
   },
 
   async getPermissions() {
-    const {permissions} = await browser.permissions.getAll()
+    const {permissions} = await browser.permissions.getAll();
     permissions.includes("bookmarks") ? this.makeBookmarksMenu() : browser.contextMenus.remove(this.OPEN_IN_CONTAINER);
   },
 
