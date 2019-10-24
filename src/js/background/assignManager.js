@@ -319,21 +319,33 @@ const assignManager = {
   async _onClickedBookmark(info) {
 
     async function _getBookmarksFromInfo(info) {
-      const bookmarkTreeNode = await browser.bookmarks.get(info.bookmarkId);
-      const firstBookmark = bookmarkTreeNode[0];
-      if (firstBookmark.type === "folder") {
-        return await browser.bookmarks.getChildren(firstBookmark.id);
+      const [bookmarkTreeNode] = await browser.bookmarks.get(info.bookmarkId);
+      if (bookmarkTreeNode.type === "folder") {
+        return await browser.bookmarks.getChildren(bookmarkTreeNode.id);
       } else {
-        return bookmarkTreeNode;
+        return [bookmarkTreeNode];
       }
     }
 
     const bookmarks = await _getBookmarksFromInfo(info);
     for (const bookmark of bookmarks) {
-      browser.tabs.create({
-        cookieStoreId: info.menuItemId,
-        url: bookmark.url
-      });
+      // Some checks on the urls from https://github.com/Rob--W/bookmark-container-tab/ thanks!
+      if ( !/^(javascript|place):/i.test(bookmark.url) && bookmark.type !== "folder") {
+        const openInReaderMode = bookmark.url.startsWith("about:reader");
+        if(openInReaderMode) {
+          try {
+            const parsed = new URL(bookmark.url);
+            bookmark.url = parsed.searchParams.get("url") + parsed.hash; // can't believe const lets me do this ...
+          } catch (err) {
+            return err.message;
+          }
+        }
+        browser.tabs.create({
+          cookieStoreId: info.menuItemId,
+          url: bookmark.url,
+          openInReaderMode: openInReaderMode
+        });
+      }
     }
   },
 
