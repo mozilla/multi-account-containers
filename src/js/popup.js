@@ -713,11 +713,14 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
   // This method is called when the object is registered.
   async initialize() {
-    Logic.addEnterHandler(document.querySelector("#close-container-info-panel"), () => {
+    const closeContEl = document.querySelector("#close-container-info-panel");
+    closeContEl.setAttribute("tabindex", "0");
+    Logic.addEnterHandler(closeContEl, () => {
       Logic.showPreviousPanel();
     });
-
-    Logic.addEnterHandler(document.querySelector("#container-info-hideorshow"), async () => {
+    const hideContEl = document.querySelector("#container-info-hideorshow");
+    hideContEl.setAttribute("tabindex", "0");
+    Logic.addEnterHandler(hideContEl, async () => {
       const identity = Logic.currentIdentity();
       try {
         browser.runtime.sendMessage({
@@ -741,6 +744,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       throw new Error("Could not check for incompatible add-ons.");
     }
     const moveTabsEl = document.querySelector("#container-info-movetabs");
+    moveTabsEl.setAttribute("tabindex","0");
     const numTabs = await Logic.numTabs();
     if (incompatible) {
       Logic._disableMoveTabs("Moving container tabs is incompatible with Pulse, PageShot, and SnoozeTabs.");
@@ -807,6 +811,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
         <td></td>
         <td class="container-info-tab-title truncate-text" title="${tab.url}" ><div class="container-tab-title">${tab.title}</div></td>`;
       tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favIconUrl));
+      tr.setAttribute("tabindex", "0");
       document.getElementById("container-info-table").appendChild(fragment);
 
       // On click, we activate this tab. But only if this tab is active.
