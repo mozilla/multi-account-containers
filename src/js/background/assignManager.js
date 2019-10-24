@@ -5,7 +5,6 @@ const assignManager = {
   MENU_HIDE_ID: "hide-container",
   MENU_MOVE_ID: "move-to-new-window-container",
   OPEN_IN_CONTAINER: "open-bookmark-in-container-tab",
-
   storageArea: {
     area: browser.storage.local,
     exemptedTabs: {},
@@ -222,11 +221,7 @@ const assignManager = {
 
   init() {
     browser.contextMenus.onClicked.addListener((info, tab) => {
-      if (info.bookmarkId) {
-        this._onClickedBookmark(info);
-      } else {
-        this._onClickedHandler(info, tab);
-      }
+      info.bookmarkId ? this._onClickedBookmark(info) : this._onClickedHandler(info, tab);
     });
 
     // Before a request is handled by the browser we decide if we should route through a different container
@@ -246,6 +241,24 @@ const assignManager = {
         delete this.canceledRequests[options.tabId];
       }
     },{urls: ["<all_urls>"], types: ["main_frame"]});
+    this.getPermissions();
+  },
+
+  getPermissions() {
+    browser.permissions.getAll().
+    then((permissions) => {
+      if (permissions.permissions.includes("bookmarks")) {
+        this.makeBookmarksMenu();
+      } else {
+        browser.contextMenus.remove(this.OPEN_IN_CONTAINER);
+      }
+    }).
+    catch((err) => {
+      return err.message;
+    });
+  },
+
+  makeBookmarksMenu() {
     this.initBookmarksMenu();
     browser.contextualIdentities.onCreated.addListener(this.contextualIdentCreated);
     browser.contextualIdentities.onUpdated.addListener(this.contextualIdentUpdated);
@@ -304,11 +317,19 @@ const assignManager = {
   },
 
   async _onClickedBookmark(info) {
-    let bookmarks = await browser.bookmarks.get(info.bookmarkId);
-    if (bookmarks[0].type === "folder") { 
-      bookmarks = await browser.bookmarks.getChildren(bookmarks[0].id);
+
+    async function _getBookmarksFromInfo(info) {
+      const bookmarkTreeNode = await browser.bookmarks.get(info.bookmarkId);
+      const firstBookmark = bookmarkTreeNode[0];
+      if (firstBookmark.type === "folder") {
+        return await browser.bookmarks.getChildren(firstBookmark.id);
+      } else {
+        return bookmarkTreeNode;
+      }
     }
-    for (let bookmark of bookmarks) { // eslint-disable-line prefer-const
+
+    const bookmarks = await _getBookmarksFromInfo(info);
+    for (const bookmark of bookmarks) {
       browser.tabs.create({
         cookieStoreId: info.menuItemId,
         url: bookmark.url
@@ -493,7 +514,7 @@ const assignManager = {
     });
 
     const identities = await browser.contextualIdentities.query({});
-    for (let identity of identities) { // eslint-disable-line prefer-const
+    for (const identity of identities) {
       browser.contextMenus.create({
         parentId: this.OPEN_IN_CONTAINER,
         id: identity.cookieStoreId,
