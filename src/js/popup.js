@@ -657,11 +657,10 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
       tr.classList.add("container-panel-row");
 
-      context.classList.add("userContext-wrapper", "open-newtab", "clickable");
+      context.classList.add("userContext-wrapper", "open-newtab", "clickable", "firstTabindex");
       manage.classList.add("show-tabs", "pop-button");
       manage.setAttribute("title", `View ${identity.name} container`);
       context.setAttribute("tabindex", "0");
-      context.classList.add("firstTabindex");
       context.setAttribute("title", `Create ${identity.name} tab`);
       context.innerHTML = escaped`
         <div class="userContext-icon-wrapper open-newtab">
