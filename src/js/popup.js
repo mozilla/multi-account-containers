@@ -289,7 +289,13 @@ const Logic = {
         }
       }
     });
-    document.querySelector(this.getPanelSelector(this._panels[panel])).classList.remove("hide");
+    const panelEl = document.querySelector(this.getPanelSelector(this._panels[panel]));
+    panelEl.classList.remove("hide");
+
+    const focusEl = panelEl.querySelector(".firstTabindex");
+    if(focusEl) {
+      focusEl.focus();
+    }
   },
 
   showPreviousPanel() {
@@ -550,6 +556,22 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       case 38:
         previous();
         break;
+      case 39:
+        {
+          const showTabs = element.parentNode.querySelector(".show-tabs");
+          if(showTabs) {
+            showTabs.click();
+          }
+          break;
+        }
+      case 37:
+        {
+          const hideTabs = document.querySelector(".panel-back-arrow");
+          if(hideTabs) {
+            hideTabs.click();
+          }
+          break;
+        }
       default:
         if ((e.keyCode >= 49 && e.keyCode <= 57) &&
             Logic._currentPanel === "containersList") {
@@ -635,7 +657,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
       tr.classList.add("container-panel-row");
 
-      context.classList.add("userContext-wrapper", "open-newtab", "clickable");
+      context.classList.add("userContext-wrapper", "open-newtab", "clickable", "firstTabindex");
       manage.classList.add("show-tabs", "pop-button");
       manage.setAttribute("title", `View ${identity.name} container`);
       context.setAttribute("tabindex", "0");
@@ -715,6 +737,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
   async initialize() {
     const closeContEl = document.querySelector("#close-container-info-panel");
     closeContEl.setAttribute("tabindex", "0");
+    closeContEl.classList.add("firstTabindex");
     Logic.addEnterHandler(closeContEl, () => {
       Logic.showPreviousPanel();
     });
