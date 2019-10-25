@@ -153,25 +153,25 @@ const messageHandler = {
             !tab.url.startsWith("moz-extension")) {
           // increment the counter of container tabs opened
           this.incrementCountOfContainerTabsOpened();
-        }
 
-        this.tabUpdateHandler = (tabId, changeInfo) => {
-          if (tabId === tab.id && changeInfo.status === "complete") {
-            // get current tab's url to not open the same one from hidden tabs
-            browser.tabs.get(tabId).then(loadedTab => {
-              backgroundLogic.unhideContainer(tab.cookieStoreId, loadedTab.url);
-            }).catch((e) => {
-              throw e;
-            });
+          this.tabUpdateHandler = (tabId, changeInfo) => {
+            if (tabId === tab.id && changeInfo.status === "complete") {
+              // get current tab's url to not open the same one from hidden tabs
+              browser.tabs.get(tabId).then(loadedTab => {
+                backgroundLogic.unhideContainer(tab.cookieStoreId, loadedTab.url);
+              }).catch((e) => {
+                throw e;
+              });
 
-            browser.tabs.onUpdated.removeListener(this.tabUpdateHandler);
+              browser.tabs.onUpdated.removeListener(this.tabUpdateHandler);
+            }
+          };
+
+          // if it's a container tab wait for it to complete and
+          // unhide other tabs from this container
+          if (tab.cookieStoreId.startsWith("firefox-container")) {
+            browser.tabs.onUpdated.addListener(this.tabUpdateHandler);
           }
-        };
-
-        // if it's a container tab wait for it to complete and
-        // unhide other tabs from this container
-        if (tab.cookieStoreId.startsWith("firefox-container")) {
-          browser.tabs.onUpdated.addListener(this.tabUpdateHandler);
         }
       }
       setTimeout(() => {
