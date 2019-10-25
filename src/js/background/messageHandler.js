@@ -10,6 +10,9 @@ const messageHandler = {
       let response;
 
       switch (m.method) {
+      case "resetBookmarksContext":
+        response = assignManager.getPermissions();
+        break;
       case "deleteContainer":
         response = backgroundLogic.deleteContainer(m.message.userContextId);
         break;
@@ -141,9 +144,6 @@ const messageHandler = {
     }, {urls: ["<all_urls>"], types: ["main_frame"]});
 
     browser.tabs.onCreated.addListener((tab) => {
-      if (tab.incognito) {
-        badge.disableAddon(tab.id);
-      }
       // lets remember the last tab created so we can close it if it looks like a redirect
       this.lastCreatedTab = tab;
       if (tab.cookieStoreId) {
