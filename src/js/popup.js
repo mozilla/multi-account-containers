@@ -388,6 +388,11 @@ const Logic = {
       }
     }
   },
+
+  getCurrentPanelElement() {
+    const panelItem = this._panels[this._currentPanel];
+    return document.querySelector(this.getPanelSelector(panelItem));
+  },
 };
 
 // P_ONBOARDING_1: First page for Onboarding.
@@ -556,6 +561,14 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       case 38:
         previous();
         break;
+      case 13: {
+        const panel = Logic.getCurrentPanelElement();
+        const button = panel.getElementsByTagName("A")[0];
+        if(button) {
+          button.click();
+        }
+        break;
+      }
       case 39:
         {
           const showTabs = element.parentNode.querySelector(".show-tabs");
