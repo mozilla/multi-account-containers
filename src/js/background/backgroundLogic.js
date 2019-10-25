@@ -113,12 +113,12 @@ const backgroundLogic = {
     return list.concat(containerState.hiddenTabs);
   },
 
-  async unhideContainer(cookieStoreId, toHide) {
+  async unhideContainer(cookieStoreId, alreadyShowingUrl) {
     if (!this.unhideQueue.includes(cookieStoreId)) {
       this.unhideQueue.push(cookieStoreId);
       await this.showTabs({
         cookieStoreId,
-        toHide
+        alreadyShowingUrl
       });
       this.unhideQueue.splice(this.unhideQueue.indexOf(cookieStoreId), 1);
     }
@@ -311,7 +311,7 @@ const backgroundLogic = {
 
     for (let object of containerState.hiddenTabs) { // eslint-disable-line prefer-const
       // do not show already opened url
-      if (object.url !== options.toHide) {
+      if (object.url !== options.alreadyShowingUrl) {
         promises.push(this.openNewTab({
           userContextId: userContextId,
           url: object.url,
