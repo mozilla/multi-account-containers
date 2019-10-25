@@ -1,6 +1,6 @@
 async function load() {
   const searchParams = new URL(window.location).searchParams;
-  const redirectUrl = decodeURIComponent(searchParams.get("url"));
+  const redirectUrl = searchParams.get("url");
   const cookieStoreId = searchParams.get("cookieStoreId");
   const currentCookieStoreId = searchParams.get("currentCookieStoreId");
   const redirectUrlElement = document.getElementById("redirect-url");
