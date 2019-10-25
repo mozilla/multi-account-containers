@@ -29,6 +29,9 @@
     "webRequestBlocking",
     "webRequest"
   ],
+  "optional_permissions": [
+    "bookmarks"
+  ],
   "commands": {
     "_execute_browser_action": {
       "suggested_key": {
@@ -70,5 +73,8 @@
   ],
   "web_accessible_resources": [
     "/img/container-site-d-24.png"
-  ]
+  ],
+  "options_ui": {
+    "page": "options.html"
+  }
 }
