@@ -12,15 +12,15 @@ const NEW_CONTAINER_ID = "new";
 const ONBOARDING_STORAGE_KEY = "onboarding-stage";
 
 // List of panels
-const P_ONBOARDING_1     = "onboarding1";
-const P_ONBOARDING_2     = "onboarding2";
-const P_ONBOARDING_3     = "onboarding3";
-const P_ONBOARDING_4     = "onboarding4";
-const P_ONBOARDING_5     = "onboarding5";
-const P_CONTAINERS_LIST  = "containersList";
-const P_CONTAINERS_EDIT  = "containersEdit";
-const P_CONTAINER_INFO   = "containerInfo";
-const P_CONTAINER_EDIT   = "containerEdit";
+const P_ONBOARDING_1 = "onboarding1";
+const P_ONBOARDING_2 = "onboarding2";
+const P_ONBOARDING_3 = "onboarding3";
+const P_ONBOARDING_4 = "onboarding4";
+const P_ONBOARDING_5 = "onboarding5";
+const P_CONTAINERS_LIST = "containersList";
+const P_CONTAINERS_EDIT = "containersEdit";
+const P_CONTAINER_INFO = "containerInfo";
+const P_CONTAINER_EDIT = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
 const P_CONTAINERS_ACHIEVEMENT = "containersAchievement";
 
@@ -32,7 +32,7 @@ const P_CONTAINERS_ACHIEVEMENT = "containersAchievement";
  * @return {string} The escaped string.
  */
 function escapeXML(str) {
-  const replacements = {"&": "&amp;", "\"": "&quot;", "'": "&apos;", "<": "&lt;", ">": "&gt;", "/": "&#x2F;"};
+  const replacements = { "&": "&amp;", "\"": "&quot;", "'": "&apos;", "<": "&lt;", ">": "&gt;", "/": "&#x2F;" };
   return String(str).replace(/[&"'<>/]/g, m => replacements[m]);
 }
 
@@ -85,7 +85,7 @@ const Logic = {
 
     try {
       await identitiesPromise;
-    } catch(e) {
+    } catch (e) {
       throw new Error("Failed to retrieve the identities or variation. We cannot continue. ", e.message);
     }
 
@@ -125,7 +125,7 @@ const Logic = {
   async showAchievementOrContainersListPanel() {
     // Do we need to show an achievement panel?
     let showAchievements = false;
-    const achievementsStorage = await browser.storage.local.get({achievements: []});
+    const achievementsStorage = await browser.storage.local.get({ achievements: [] });
     for (const achievement of achievementsStorage.achievements) {
       if (!achievement.done) {
         showAchievements = true;
@@ -142,7 +142,7 @@ const Logic = {
   // they have to click the "Done" button to stop the panel
   // from showing
   async setAchievementDone(achievementName) {
-    const achievementsStorage = await browser.storage.local.get({achievements: []});
+    const achievementsStorage = await browser.storage.local.get({ achievements: [] });
     const achievements = achievementsStorage.achievements;
     achievements.forEach((achievement, index, achievementsArray) => {
       if (achievement.name === achievementName) {
@@ -150,7 +150,7 @@ const Logic = {
         achievementsArray[index] = achievement;
       }
     });
-    browser.storage.local.set({achievements});
+    browser.storage.local.set({ achievements });
   },
 
   setOnboardingStage(stage) {
@@ -161,9 +161,9 @@ const Logic = {
 
   async clearBrowserActionBadge() {
     const extensionInfo = await getExtensionInfo();
-    const storage = await browser.storage.local.get({browserActionBadgesClicked: []});
-    browser.browserAction.setBadgeBackgroundColor({color: null});
-    browser.browserAction.setBadgeText({text: ""});
+    const storage = await browser.storage.local.get({ browserActionBadgesClicked: [] });
+    browser.browserAction.setBadgeBackgroundColor({ color: null });
+    browser.browserAction.setBadgeText({ text: "" });
     storage.browserActionBadgesClicked.push(extensionInfo.version);
     // use set and spread to create a unique array
     const browserActionBadgesClicked = [...new Set(storage.browserActionBadgesClicked)];
@@ -184,7 +184,7 @@ const Logic = {
     // Handle old style rejection with null and also Promise.reject new style
     try {
       return await browser.contextualIdentities.get(cookieStoreId) || defaultContainer;
-    } catch(e) {
+    } catch (e) {
       return defaultContainer;
     }
   },
@@ -207,7 +207,7 @@ const Logic = {
   },
 
   async currentTab() {
-    const activeTabs = await browser.tabs.query({active: true, windowId: browser.windows.WINDOW_ID_CURRENT});
+    const activeTabs = await browser.tabs.query({ active: true, windowId: browser.windows.WINDOW_ID_CURRENT });
     if (activeTabs.length > 0) {
       return activeTabs[0];
     }
@@ -215,7 +215,7 @@ const Logic = {
   },
 
   async numTabs() {
-    const activeTabs = await browser.tabs.query({windowId: browser.windows.WINDOW_ID_CURRENT});
+    const activeTabs = await browser.tabs.query({ windowId: browser.windows.WINDOW_ID_CURRENT });
     return activeTabs.length;
   },
 
@@ -259,7 +259,7 @@ const Logic = {
 
   getPanelSelector(panel) {
     if (this._onboardingVariation === "securityOnboarding" &&
-        panel.hasOwnProperty("securityPanelSelector")) {
+      panel.hasOwnProperty("securityPanelSelector")) {
       return panel.securityPanelSelector;
     } else {
       return panel.panelSelector;
@@ -289,7 +289,13 @@ const Logic = {
         }
       }
     });
-    document.querySelector(this.getPanelSelector(this._panels[panel])).classList.remove("hide");
+    const panelEl = document.querySelector(this.getPanelSelector(this._panels[panel]));
+    panelEl.classList.remove("hide");
+
+    const focusEl = panelEl.querySelector(".firstTabindex");
+    if(focusEl) {
+      focusEl.focus();
+    }
   },
 
   showPreviousPanel() {
@@ -333,7 +339,7 @@ const Logic = {
 
     return browser.runtime.sendMessage({
       method: "deleteContainer",
-      message: {userContextId}
+      message: { userContextId }
     });
   },
 
@@ -347,7 +353,7 @@ const Logic = {
   getAssignmentObjectByContainer(userContextId) {
     return browser.runtime.sendMessage({
       method: "getAssignmentObjectByContainer",
-      message: {userContextId}
+      message: { userContextId }
     });
   },
 
@@ -376,7 +382,7 @@ const Logic = {
     });
 
     // Here we find the first valid id.
-    for (let id = 1;; ++id) {
+    for (let id = 1; ; ++id) {
       if (ids.indexOf(id) === -1) {
         return defaultName + (id < 10 ? "0" : "") + id;
       }
@@ -511,7 +517,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     });
 
     Logic.addEnterHandler(document.querySelector("#edit-containers-link"), (e) => {
-      if (!e.target.classList.contains("disable-edit-containers")){
+      if (!e.target.classList.contains("disable-edit-containers")) {
         Logic.showPanel(P_CONTAINERS_EDIT);
       }
     });
@@ -653,9 +659,10 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
       context.classList.add("userContext-wrapper", "open-newtab", "clickable");
       manage.classList.add("show-tabs", "pop-button");
-      manage.title = escaped`View ${identity.name} container`;
+      manage.setAttribute("title", `View ${identity.name} container`);
       context.setAttribute("tabindex", "0");
-      context.title = escaped`Create ${identity.name} tab`;
+      context.classList.add("firstTabindex");
+      context.setAttribute("title", `Create ${identity.name} tab`);
       context.innerHTML = escaped`
         <div class="userContext-icon-wrapper open-newtab">
           <div class="usercontext-icon"
@@ -677,8 +684,8 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
       Logic.addEnterHandler(tr, async (e) => {
         if (e.target.matches(".open-newtab")
-            || e.target.parentNode.matches(".open-newtab")
-            || e.type === "keydown") {
+          || e.target.parentNode.matches(".open-newtab")
+          || e.type === "keydown") {
           try {
             browser.tabs.create({
               cookieStoreId: identity.cookieStoreId
@@ -729,11 +736,15 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
   // This method is called when the object is registered.
   async initialize() {
-    Logic.addEnterHandler(document.querySelector("#close-container-info-panel"), () => {
+    const closeContEl = document.querySelector("#close-container-info-panel");
+    closeContEl.setAttribute("tabindex", "0");
+    closeContEl.classList.add("firstTabindex");
+    Logic.addEnterHandler(closeContEl, () => {
       Logic.showPreviousPanel();
     });
-
-    Logic.addEnterHandler(document.querySelector("#container-info-hideorshow"), async () => {
+    const hideContEl = document.querySelector("#container-info-hideorshow");
+    hideContEl.setAttribute("tabindex", "0");
+    Logic.addEnterHandler(hideContEl, async () => {
       const identity = Logic.currentIdentity();
       try {
         browser.runtime.sendMessage({
@@ -757,6 +768,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       throw new Error("Could not check for incompatible add-ons.");
     }
     const moveTabsEl = document.querySelector("#container-info-movetabs");
+    moveTabsEl.setAttribute("tabindex","0");
     const numTabs = await Logic.numTabs();
     if (incompatible) {
       Logic._disableMoveTabs("Moving container tabs is incompatible with Pulse, PageShot, and SnoozeTabs.");
@@ -823,6 +835,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
         <td></td>
         <td class="container-info-tab-title truncate-text" title="${tab.url}" ><div class="container-tab-title">${tab.title}</div></td>`;
       tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favIconUrl));
+      tr.setAttribute("tabindex", "0");
       document.getElementById("container-info-table").appendChild(fragment);
 
       // On click, we activate this tab. But only if this tab is active.
@@ -846,7 +859,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
         tr.classList.add("clickable");
         Logic.addEnterHandler(tr, async () => {
-          await browser.tabs.update(tab.id, {active: true});
+          await browser.tabs.update(tab.id, { active: true });
           window.close();
         });
 
@@ -1034,7 +1047,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       return escaped`<input type="radio" value="${containerColor}" name="container-color" id="edit-container-panel-choose-color-${containerColor}" />
      <label for="edit-container-panel-choose-color-${containerColor}" class="usercontext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="${containerColor}">`;
     };
-    const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple" ];
+    const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"];
     const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
     colors.forEach((containerColor) => {
       const templateInstance = document.createElement("div");
@@ -1109,7 +1122,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
         await Logic.removeIdentity(Logic.userContextId(Logic.currentIdentity().cookieStoreId));
         await Logic.refreshIdentities();
         Logic.showPreviousPanel();
-      } catch(e) {
+      } catch (e) {
         Logic.showPanel(P_CONTAINERS_LIST);
       }
     });
