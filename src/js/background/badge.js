@@ -1,8 +1,7 @@
 const MAJOR_VERSIONS = ["2.3.0", "2.4.0"];
 const badge = {
-  async init() {
-    const showVersionIndicator = await browser.windows.getCurrent();
-    this.displayBrowserActionBadge(showVersionIndicator);
+  async init() {    
+    this.displayBrowserActionBadge("showVersionIndicator");
   },
 
   disableAddon(tabId) {
