@@ -10,6 +10,9 @@ const messageHandler = {
       let response;
 
       switch (m.method) {
+      case "resetBookmarksContext":
+        response = assignManager.getPermissions();
+        break;
       case "deleteContainer":
         response = backgroundLogic.deleteContainer(m.message.userContextId);
         break;
@@ -141,9 +144,6 @@ const messageHandler = {
     }, {urls: ["<all_urls>"], types: ["main_frame"]});
 
     browser.tabs.onCreated.addListener((tab) => {
-      if (tab.incognito) {
-        badge.disableAddon(tab.id);
-      }
       // lets remember the last tab created so we can close it if it looks like a redirect
       this.lastCreatedTab = tab;
       if (tab.cookieStoreId) {
@@ -153,9 +153,26 @@ const messageHandler = {
             !tab.url.startsWith("moz-extension")) {
           // increment the counter of container tabs opened
           this.incrementCountOfContainerTabsOpened();
-        }
 
-        backgroundLogic.unhideContainer(tab.cookieStoreId);
+          this.tabUpdateHandler = (tabId, changeInfo) => {
+            if (tabId === tab.id && changeInfo.status === "complete") {
+              // get current tab's url to not open the same one from hidden tabs
+              browser.tabs.get(tabId).then(loadedTab => {
+                backgroundLogic.unhideContainer(tab.cookieStoreId, loadedTab.url);
+              }).catch((e) => {
+                throw e;
+              });
+
+              browser.tabs.onUpdated.removeListener(this.tabUpdateHandler);
+            }
+          };
+
+          // if it's a container tab wait for it to complete and
+          // unhide other tabs from this container
+          if (tab.cookieStoreId.startsWith("firefox-container")) {
+            browser.tabs.onUpdated.addListener(this.tabUpdateHandler);
+          }
+        }
       }
       setTimeout(() => {
         this.lastCreatedTab = null;

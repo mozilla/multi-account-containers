@@ -289,7 +289,13 @@ const Logic = {
         }
       }
     });
-    document.querySelector(this.getPanelSelector(this._panels[panel])).classList.remove("hide");
+    const panelEl = document.querySelector(this.getPanelSelector(this._panels[panel]));
+    panelEl.classList.remove("hide");
+
+    const focusEl = panelEl.querySelector(".firstTabindex");
+    if(focusEl) {
+      focusEl.focus();
+    }
   },
 
   showPreviousPanel() {
@@ -381,6 +387,11 @@ const Logic = {
         return defaultName + (id < 10 ? "0" : "") + id;
       }
     }
+  },
+
+  getCurrentPanelElement() {
+    const panelItem = this._panels[this._currentPanel];
+    return document.querySelector(this.getPanelSelector(panelItem));
   },
 };
 
@@ -550,6 +561,30 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       case 38:
         previous();
         break;
+      case 13: {
+        const panel = Logic.getCurrentPanelElement();
+        const button = panel.getElementsByTagName("A")[0];
+        if(button) {
+          button.click();
+        }
+        break;
+      }
+      case 39:
+        {
+          const showTabs = element.parentNode.querySelector(".show-tabs");
+          if(showTabs) {
+            showTabs.click();
+          }
+          break;
+        }
+      case 37:
+        {
+          const hideTabs = document.querySelector(".panel-back-arrow");
+          if(hideTabs) {
+            hideTabs.click();
+          }
+          break;
+        }
       default:
         if ((e.keyCode >= 49 && e.keyCode <= 57) &&
             Logic._currentPanel === "containersList") {
@@ -635,7 +670,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
       tr.classList.add("container-panel-row");
 
-      context.classList.add("userContext-wrapper", "open-newtab", "clickable");
+      context.classList.add("userContext-wrapper", "open-newtab", "clickable", "firstTabindex");
       manage.classList.add("show-tabs", "pop-button");
       manage.setAttribute("title", `View ${identity.name} container`);
       context.setAttribute("tabindex", "0");
@@ -715,11 +750,15 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
   // This method is called when the object is registered.
   async initialize() {
-    Logic.addEnterHandler(document.querySelector("#close-container-info-panel"), () => {
+    const closeContEl = document.querySelector("#close-container-info-panel");
+    closeContEl.setAttribute("tabindex", "0");
+    closeContEl.classList.add("firstTabindex");
+    Logic.addEnterHandler(closeContEl, () => {
       Logic.showPreviousPanel();
     });
-
-    Logic.addEnterHandler(document.querySelector("#container-info-hideorshow"), async () => {
+    const hideContEl = document.querySelector("#container-info-hideorshow");
+    hideContEl.setAttribute("tabindex", "0");
+    Logic.addEnterHandler(hideContEl, async () => {
       const identity = Logic.currentIdentity();
       try {
         browser.runtime.sendMessage({
@@ -743,6 +782,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       throw new Error("Could not check for incompatible add-ons.");
     }
     const moveTabsEl = document.querySelector("#container-info-movetabs");
+    moveTabsEl.setAttribute("tabindex","0");
     const numTabs = await Logic.numTabs();
     if (incompatible) {
       Logic._disableMoveTabs("Moving container tabs is incompatible with Pulse, PageShot, and SnoozeTabs.");
@@ -809,6 +849,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
         <td></td>
         <td class="container-info-tab-title truncate-text" title="${tab.url}" ><div class="container-tab-title">${tab.title}</div></td>`;
       tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favIconUrl));
+      tr.setAttribute("tabindex", "0");
       document.getElementById("container-info-table").appendChild(fragment);
 
       // On click, we activate this tab. But only if this tab is active.
