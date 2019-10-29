@@ -894,7 +894,6 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       tr.querySelector(".container-name").textContent = identity.name;
       tr.querySelector(".edit-container").setAttribute("title", `Edit ${identity.name} container`);
       tr.querySelector(".remove-container").setAttribute("title", `Remove ${identity.name} container`);
-      tr.setAttribute("tabindex","0");
 
       Logic.addEnterHandler(tr, e => {
         if (e.target.matches(".edit-container-icon") || e.target.parentNode.matches(".edit-container-icon")) {
@@ -909,42 +908,6 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
 
     list.innerHTML = "";
     list.appendChild(fragment);
-    list.addEventListener("keydown", (e) => {
-      console.log("hi");
-      const selectables = [...document.querySelectorAll("[tabindex='0'], [tabindex='-1']")];
-      console.log(selectables[0].innerHTML);
-      const element = document.activeElement;
-      const index = selectables.indexOf(element) || 0;
-      function next() {
-        const nextElement = selectables[index + 1];
-        if (nextElement) {
-          nextElement.focus();
-        }
-      }
-      function previous() {
-        const previousElement = selectables[index - 1];
-        if (previousElement) {
-          previousElement.focus();
-        }
-      }
-      switch (e.keyCode) {
-      case 40:
-        next();
-        break;
-      case 38:
-        previous();
-        break;
-      default:
-        if ((e.keyCode >= 49 && e.keyCode <= 57) &&
-            Logic._currentPanel === "containersEdit") {
-          const element = selectables[e.keyCode - 48];
-          if (element) {
-            element.click();
-          }
-        }
-        break;
-      }
-    });
     return Promise.resolve(null);
   },
   
