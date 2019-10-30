@@ -467,10 +467,9 @@ manage things like container crud */
   color: var(--title-text-color);
   display: flex;
   font-size: var(--small-text-size);
-  inline-size: var(--inline-button-size);
+  inline-size: 200px;
   justify-content: center;
   text-decoration: none;
-  inline-size: 200px;
 }
 
 #container-panel #sort-containers-link:hover,
@@ -491,11 +490,10 @@ manage things like container crud */
   color: var(--title-text-color);
   display: flex;
   font-size: var(--small-text-size);
-  inline-size: var(--inline-button-size);
+  inline-size: 100px;
   justify-content: center;
   margin-right: 2px;
   text-decoration: none;
-  inline-size: 100px;
 }
 
 span ~ .panel-header-text {
@@ -945,13 +943,12 @@ span ~ .panel-header-text {
   block-size: 28px;
   border-radius: 3px;
   font-size: 14px;
-  inline-size: 100%;
+  inline-size: 200px;
   margin-right: 2px;
   padding-block-end: 5px;
   padding-block-start: 5px;
   padding-inline-end: 5px;
   padding-inline-start: 5px;
-  inline-size: 200px;
 }
 
 .edit-container-panel legend {
