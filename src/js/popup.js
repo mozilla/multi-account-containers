@@ -892,7 +892,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       tr.querySelector(".container-name").textContent = identity.name;
       tr.querySelector(".edit-container").setAttribute("title", `Edit ${identity.name} container`);
       tr.querySelector(".remove-container").setAttribute("title", `Remove ${identity.name} container`);
-  
+    
       Logic.addEnterHandler(tr, e => {
         if (e.target.matches(".edit-container-icon") || e.target.parentNode.matches(".edit-container-icon")) {
           Logic.showPanel(P_CONTAINER_EDIT, identity);
@@ -1041,7 +1041,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       templateInstance.innerHTML = iconRadioTemplate(containerIcon);
       iconRadioFieldset.appendChild(templateInstance);
     });
-  },P_CONTAINERS_EDIT
+  },
 
   // This method is called when the panel is shown.
   async prepare() {
