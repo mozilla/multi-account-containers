@@ -470,7 +470,7 @@ manage things like container crud */
   inline-size: var(--inline-button-size);
   justify-content: center;
   text-decoration: none;
-  width: 200px;
+  inline-size: 200px;
 }
 
 #container-panel #sort-containers-link:hover,
@@ -495,7 +495,7 @@ manage things like container crud */
   justify-content: center;
   margin-right: 2px;
   text-decoration: none;
-  width: 100px;
+  inline-size: 100px;
 }
 
 span ~ .panel-header-text {
@@ -816,7 +816,7 @@ span ~ .panel-header-text {
 }
 
 .radio-search > .radio-container > [type="radio"] {
-  width: 40px;
+  inline-size: 40px;
 }
 
 #edit-sites-assigned {
@@ -951,7 +951,7 @@ span ~ .panel-header-text {
   padding-block-start: 5px;
   padding-inline-end: 5px;
   padding-inline-start: 5px;
-  width: 200px;
+  inline-size: 200px;
 }
 
 .edit-container-panel legend {

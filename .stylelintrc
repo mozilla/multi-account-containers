@@ -12,6 +12,7 @@
     "order/declaration-block-properties-alphabetical-order": true,
     "property-blacklist": [
       "/(min[-]|max[-])height/",
+      "/width/",
       "/top/",
       "/bottom/",
       "padding",
