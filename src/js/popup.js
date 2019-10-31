@@ -895,6 +895,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
             src="/img/container-edit.svg"
             class="pop-button-image" />
         </td>
+        
         <td class="remove-container pop-button delete-container-icon">
           <img
             class="pop-button-image"
@@ -904,19 +905,15 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       tr.querySelector(".container-name").textContent = identity.name;
       tr.querySelector(".edit-container").setAttribute("title", `Edit ${identity.name} container`);
       tr.querySelector(".remove-container").setAttribute("title", `Remove ${identity.name} container`);
-      //document.getElementById("halp").style.backgroundColor="red";
       function style(themeInfo){
         const tabl= document.getElementsByClassName("userContext-wrapper");
         const inner_tabl1=document.getElementsByClassName("edit-container");
         const inner_tabl2=document.getElementsByClassName("remove-container");
-    
+        tr.style.backgroundColor=themeInfo.colors.toolbar;
     // eslint-disable-next-line no-var
         for (var i = 0; i < tabl.length; i++) {
           tabl[i].style.backgroundColor=themeInfo.colors.toolbar;
-          //inner_tabl1[i].style.backgroundColor=themeInfo.colors.toolbar;
-          //inner_tabl2[i].style.backgroundColor=themeInfo.colors.toolbar;
           tabl[i].style.color=themeInfo.colors.tab_background_text;
-          
         }
         // eslint-disable-next-line no-var
         for(var j = 0; j < inner_tabl1.length; j++) {

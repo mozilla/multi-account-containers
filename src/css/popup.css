@@ -583,9 +583,11 @@ span ~ .panel-header-text {
   padding-inline-start: 4px;
 }
 
-.edit-containers-panel .userContext-wrapper {
+/* disabling this removes white spaces around svg icon in edit-containers mode */
+
+/* .edit-containers-panel .userContext-wrapper {
   max-inline-size: calc(var(--overflow-size) + 203px);
-}
+} */
 
 .disable-edit-containers {
   opacity: var(--inactive-opacity);
