@@ -890,6 +890,8 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       tr.querySelector(".container-name").textContent = identity.name;
       tr.querySelector(".edit-container").setAttribute("title", `Edit ${identity.name} container`);
       tr.querySelector(".remove-container").setAttribute("title", `Remove ${identity.name} container`);
+      tr.querySelector(".edit-container").setAttribute("tabindex","0");
+      tr.querySelector(".remove-container").setAttribute("tabindex","0");
 
 
       Logic.addEnterHandler(tr, e => {
