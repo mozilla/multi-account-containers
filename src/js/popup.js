@@ -413,9 +413,14 @@ Logic.registerPanel(P_ONBOARDING_1, {
   initialize() {
     // Let's move to the next panel.
     [...document.querySelectorAll(".onboarding-start-button")].forEach(startElement => {
-      Logic.addEnterHandler(startElement, async () => {
-        await Logic.setOnboardingStage(1);
-        Logic.showPanel(P_ONBOARDING_2);
+      Logic.addEnterHandler(startElement.parentNode, async (e) => {
+        if(e.target === startElement
+          || (e.keyCode === 13
+              && e.target === startElement.parentNode) ) {
+
+          await Logic.setOnboardingStage(1);
+          Logic.showPanel(P_ONBOARDING_2);
+        }
       });
     });
   },
@@ -437,9 +442,14 @@ Logic.registerPanel(P_ONBOARDING_2, {
   initialize() {
     // Let's move to the containers list panel.
     [...document.querySelectorAll(".onboarding-next-button")].forEach(nextElement => {
-      Logic.addEnterHandler(nextElement, async () => {
-        await Logic.setOnboardingStage(2);
-        Logic.showPanel(P_ONBOARDING_3);
+      Logic.addEnterHandler(nextElement.parentNode, async (e) => {
+        if(e.target === nextElement
+          || (e.keyCode === 13
+              && e.target === nextElement.parentNode) ) {
+
+          await Logic.setOnboardingStage(2);
+          Logic.showPanel(P_ONBOARDING_3);
+        }
       });
     });
   },
@@ -461,9 +471,14 @@ Logic.registerPanel(P_ONBOARDING_3, {
   initialize() {
     // Let's move to the containers list panel.
     [...document.querySelectorAll(".onboarding-almost-done-button")].forEach(almostElement => {
-      Logic.addEnterHandler(almostElement, async () => {
-        await Logic.setOnboardingStage(3);
-        Logic.showPanel(P_ONBOARDING_4);
+      Logic.addEnterHandler(almostElement.parentNode, async (e) => {
+        if(e.target === almostElement
+          || (e.keyCode === 13
+              && e.target === almostElement.parentNode) ) {
+
+          await Logic.setOnboardingStage(3);
+          Logic.showPanel(P_ONBOARDING_4);
+        }
       });
     });
   },
@@ -483,9 +498,15 @@ Logic.registerPanel(P_ONBOARDING_4, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    Logic.addEnterHandler(document.querySelector("#onboarding-done-button"), async () => {
-      await Logic.setOnboardingStage(4);
-      Logic.showPanel(P_ONBOARDING_5);
+    const doneElement = document.querySelector("#onboarding-done-button");
+    Logic.addEnterHandler(doneElement.parentNode, async (e) => {
+      if(e.target === doneElement
+        || (e.keyCode === 13
+            && e.target === doneElement.parentNode) ) {
+
+        await Logic.setOnboardingStage(4);
+        Logic.showPanel(P_ONBOARDING_5);
+      }
     });
   },
 
@@ -504,9 +525,15 @@ Logic.registerPanel(P_ONBOARDING_5, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    Logic.addEnterHandler(document.querySelector("#onboarding-longpress-button"), async () => {
-      await Logic.setOnboardingStage(5);
-      Logic.showPanel(P_CONTAINERS_LIST);
+    const lpElement = document.querySelector("#onboarding-longpress-button");
+    Logic.addEnterHandler(lpElement.parentNode, async (e) => {
+      if(e.target === lpElement
+        || (e.keyCode === 13
+            && e.target === lpElement.parentNode) ) {
+
+        await Logic.setOnboardingStage(5);
+        Logic.showPanel(P_CONTAINERS_LIST);
+      }
     });
   },
 
