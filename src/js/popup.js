@@ -281,7 +281,7 @@ const Logic = {
     await this._panels[panel].prepare();
     Object.keys(this._panels).forEach((panelKey) => {
       const panelItem = this._panels[panelKey];
-      const panelElement = document.querySelector(this.getPanelSelector(panelItem));
+      const panelElement = this.getPanelElementByKey(panelKey);
       if (!panelElement.classList.contains("hide")) {
         panelElement.classList.add("hide");
         if ("unregister" in panelItem) {
@@ -289,7 +289,7 @@ const Logic = {
         }
       }
     });
-    const panelEl = document.querySelector(this.getPanelSelector(this._panels[panel]));
+    const panelEl = this.getCurrentPanelElement();
     panelEl.classList.remove("hide");
 
     const focusEl = panelEl.querySelector(".firstTabindex");
@@ -393,6 +393,11 @@ const Logic = {
     const panelItem = this._panels[this._currentPanel];
     return document.querySelector(this.getPanelSelector(panelItem));
   },
+
+  getPanelElementByKey(panelKey) {
+    const panelItem = this._panels[panelKey];
+    return document.querySelector(this.getPanelSelector(panelItem));
+  }
 };
 
 // P_ONBOARDING_1: First page for Onboarding.
