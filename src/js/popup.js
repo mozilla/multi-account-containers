@@ -292,9 +292,11 @@ const Logic = {
     const panelEl = this.getCurrentPanelElement();
     panelEl.classList.remove("hide");
 
-    const focusEl = panelEl.querySelector(".firstTabindex");
-    if(focusEl) {
-      focusEl.focus();
+    const firstFocus = panelEl.querySelector(".firstTabindex");
+    if(firstFocus) {
+      firstFocus.focus();
+    } else {
+      panelEl.focus();
     }
   },
 
