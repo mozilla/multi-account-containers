@@ -716,6 +716,10 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     Logic.addEnterHandler(document.querySelector("#close-container-info-panel"), () => {
       Logic.showPreviousPanel();
     });
+     
+    document.getElementById("container-info-hideorshow").setAttribute("tabindex","0");
+    document.getElementById("container-info-movetabs").setAttribute("tabindex","0");
+    document.getElementById("close-container-info-panel").setAttribute("tabindex","0");
 
     Logic.addEnterHandler(document.querySelector("#container-info-hideorshow"), async () => {
       const identity = Logic.currentIdentity();
@@ -928,7 +932,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         Logic.showPreviousPanel();
       }
     });
-
+    
+    document.getElementById("edit-container-panel-back-arrow").setAttribute("tabindex","0");
     Logic.addEnterHandler(document.querySelector("#edit-container-cancel-link"), () => {
       Logic.showPreviousPanel();
     });
@@ -944,7 +949,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     this._editForm.addEventListener("submit", () => {
       this._submitForm();
     });
-
+    document.getElementById("edit-container-panel-back-arrow").setAttribute("tabindex","0");
 
   },
 
