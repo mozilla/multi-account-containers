@@ -490,6 +490,8 @@ const assignManager = {
         currentCookieStoreId = backgroundLogic.cookieStoreId(currentUserContextId);
         confirmUrl += `&currentCookieStoreId=${currentCookieStoreId}`;
       }
+
+      browser.storage.local.set({ "confirmUrl": confirmUrl});
       browser.tabs.create({
         url: confirmUrl,
         cookieStoreId: currentCookieStoreId,

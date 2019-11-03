@@ -1,5 +1,12 @@
 async function load() {
-  const searchParams = new URL(window.location).searchParams;
+
+  let searchParams = new URL(window.location).searchParams;
+
+  if (!searchParams.get("url")) {
+    const savedUrl = await browser.storage.local.get("confirmUrl");
+    searchParams = new URL(savedUrl.confirmUrl).searchParams;
+  }
+
   const redirectUrl = searchParams.get("url");
   const cookieStoreId = searchParams.get("cookieStoreId");
   const currentCookieStoreId = searchParams.get("currentCookieStoreId");
