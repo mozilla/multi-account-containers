@@ -59,6 +59,6 @@ Finally, we also publish the release to GitHub for those followers.
 
 Facebook & Twitter icons CC-Attrib https://fairheadcreative.com.
 
-- [Licence](./LICENSE.txt)
+- [License](./LICENSE.txt)
 - [Contributing](./CONTRIBUTING.md)
 - [Code Of Conduct](./CODE_OF_CONDUCT.md)
