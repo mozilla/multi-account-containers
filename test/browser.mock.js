@@ -58,7 +58,16 @@ module.exports = () => {
     contextualIdentities: {
       create: sinon.stub(),
       get: sinon.stub(),
-      query: sinon.stub().resolves([])
+      query: sinon.stub().resolves([]),
+      onCreated: {
+        addListener: sinon.stub()
+      },
+      onUpdated: {
+        addListener: sinon.stub()
+      },
+      onRemoved: {
+        addListener: sinon.stub()
+      }
     },
     contextMenus: {
       create: sinon.stub(),
@@ -82,6 +91,9 @@ module.exports = () => {
     },
     extension: {
       getURL: sinon.stub().returns("moz-extension://multi-account-containers/confirm-page.html")
+    },
+    permissions: {
+      getAll: sinon.stub().returns({"permissions": ["bookmarks"]})
     }
   };
 
