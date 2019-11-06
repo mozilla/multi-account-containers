@@ -756,7 +756,6 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     });
 
     Logic.addEnterHandler(document.querySelector("#container-info-hideorshow"), async () => {
-=======
     const hideContEl = document.querySelector("#container-info-hideorshow");
     hideContEl.setAttribute("tabindex", "0");
     Logic.addEnterHandler(hideContEl, async () => {
