@@ -3,24 +3,24 @@ function requestPermissions() {
   const checkbox = document.querySelector("#bookmarksPermissions");
   if (checkbox.checked) {
     browser.permissions.request({permissions: ["bookmarks"]}).
-    then((response) => {
-      if (response) {
-        browser.runtime.sendMessage({ method: "resetBookmarksContext" });
-      } else {
-        checkbox.checked = false;
-      }
-    }).
-    catch((err) => {
-      return err.message;
-    });
+      then((response) => {
+        if (response) {
+          browser.runtime.sendMessage({ method: "resetBookmarksContext" });
+        } else {
+          checkbox.checked = false;
+        }
+      }).
+      catch((err) => {
+        return err.message;
+      });
   } else {
     browser.permissions.remove({permissions: ["bookmarks"]}).
-    then(() => {
-      browser.runtime.sendMessage({ method: "resetBookmarksContext" });
-    }).
-    catch((err) => {
-      return err.message;
-    });
+      then(() => {
+        browser.runtime.sendMessage({ method: "resetBookmarksContext" });
+      }).
+      catch((err) => {
+        return err.message;
+      });
   }
 }
 
