@@ -142,22 +142,31 @@ const assignManager = {
     }
     const userContextId = this.getUserContextIdFromCookieStore(tab);
     
-    // Determine if "locked out", i.e.:
-    // This request's URL is not associated with any particular contextualIdentity.
-    // But the current tab's contextualIdentity is locked. So must open request in new tab.
     // https://github.com/mozilla/multi-account-containers/issues/847
-    let isLockedOut;
-    if (!siteSettings && "cookieStoreId" in tab) {
-      const currentContainerState = await identityState.storageArea.get(tab.cookieStoreId);
-      isLockedOut = !!currentContainerState.isLocked;
-    } else {
-      isLockedOut = false;
-    }
+    //    
+    // Handle the case where this request's URL is not assigned to any particular
+    // container. We must do the following check:
+    //
+    // If the current tab's container is "unlocked", we can just go ahead
+    // and open the URL in the current tab, since an "unlocked" container accepts
+    // any-and-all sites.
+    //
+    // But if the current tab's container has been "locked" by the user, then we must
+    // re-open the page in the default container, because the user doesn't want random
+    // sites polluting their locked container.
+    //
+    // For example:
+    //   - the current tab's container is locked and only allows "www.google.com"
+    //   - the incoming request is for "www.amazon.com", which has no specific container assignment
+    //   - in this case, we must re-open "www.amazon.com" in a new tab in the default container
+    const mustReloadPageInDefaultContainerDueToLocking = await this._determineMustReloadPageInDefaultContainerDueToLocking(siteSettings, tab);
     
-    if ((!siteSettings && !isLockedOut)
-        || (siteSettings && userContextId === siteSettings.userContextId)
-        || this.storageArea.isExempted(options.url, tab.id)) {
-      return {};
+    if (!mustReloadPageInDefaultContainerDueToLocking) {
+      if (!siteSettings
+          || userContextId === siteSettings.userContextId
+          || this.storageArea.isExempted(options.url, tab.id)) {
+        return {};
+      }
     }
     const removeTab = backgroundLogic.NEW_TAB_PAGES.has(tab.url)
       || (messageHandler.lastCreatedTab
@@ -201,12 +210,11 @@ const assignManager = {
       }
     }
 
-    if (isLockedOut) {
-      // Open new tab in default context
-      // https://github.com/mozilla/multi-account-containers/issues/847
+    if (mustReloadPageInDefaultContainerDueToLocking) {
+      // Open new tab in default container
       browser.tabs.create({url: options.url});
     } else {
-      // Open new tab in specific context
+      // Open new tab in assigned container
       this.reloadPageInContainer(
         options.url,
         userContextId,
@@ -236,6 +244,25 @@ const assignManager = {
     return {
       cancel: true,
     };
+  },
+  
+  async _determineMustReloadPageInDefaultContainerDueToLocking(siteSettings, tab) {
+    // Tab doesn't support cookies, so containers not supported either.
+    if (!("cookieStoreId" in tab)) {
+      return false;
+    }
+    
+    // Requested page has been assigned to a specific container.
+    // I.e. it will be opened in that container anyway, so we don't need to check if the
+    // current tab's container is locked or not.
+    if (siteSettings) {
+      return false;
+    }
+    
+    // Requested page is not assigned to a specific container. If the current tab's container
+    // is locked, then the page must be reloaded in the default container.
+    const currentContainerState = await identityState.storageArea.get(tab.cookieStoreId);
+    return currentContainerState && currentContainerState.isLocked;
   },
 
   init() {
@@ -417,26 +444,29 @@ const assignManager = {
       actionName = "added";
     
     } else {
-      // Unlock container if no more assignments after this one is removed.
-      // https://github.com/mozilla/multi-account-containers/issues/847
-      const assignments = await this.storageArea.getByContainer(userContextId);
-      const assignmentKeys = Object.keys(assignments);
-      if (!(assignmentKeys.length > 1)) {
-        await backgroundLogic.lockOrUnlockContainer({
-          userContextId: userContextId,
-          isLocked: false
-        });
-      }
-    
       // Remove assignment
       await this.storageArea.remove(pageUrl);
       actionName = "removed";
+      
+      // Unlock container if now empty
+      await this._unlockContainerIfHasNoAssignments(userContextId);    
     }
     browser.tabs.sendMessage(tabId, {
       text: `Successfully ${actionName} site to always open in this container`
     });
     const tab = await browser.tabs.get(tabId);
     this.calculateContextMenu(tab);
+  },
+  
+  async _unlockContainerIfHasNoAssignments(userContextId) {
+    const assignments = await this.storageArea.getByContainer(userContextId);
+    const hasAssignments = assignments && Object.keys(assignments).length > 0;
+    if (!hasAssignments) {
+      await backgroundLogic.lockOrUnlockContainer({
+        userContextId: userContextId,
+        isLocked: false
+      });
+    }
   },
 
   async _getAssignment(tab) {

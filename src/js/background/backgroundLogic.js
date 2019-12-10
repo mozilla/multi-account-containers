@@ -246,7 +246,6 @@ const backgroundLogic = {
         hasOpenTabs: !!openTabs.length,
         numberOfHiddenTabs: containerState.hiddenTabs.length,
         numberOfOpenTabs: openTabs.length,
-        // https://github.com/mozilla/multi-account-containers/issues/847
         isLocked: !!containerState.isLocked
       };
       return;
