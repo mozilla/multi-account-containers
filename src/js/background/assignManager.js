@@ -240,7 +240,12 @@ const assignManager = {
         delete this.canceledRequests[options.tabId];
       }
     },{urls: ["<all_urls>"], types: ["main_frame"]});
+
     this.resetBookmarksMenuItem();
+
+    // Run when installed and on startup
+    browser.runtime.onInstalled.addListener(()=>{this.initSync()});
+    browser.runtime.onStartup.addListener(()=>{this.initSync()});
   },
 
   async resetBookmarksMenuItem() {
@@ -537,6 +542,84 @@ const assignManager = {
       browser.contextMenus.remove(identity.cookieStoreId);
     }
   }
+
+  initSync() {
+    console.log("initSync");
+    browser.storage.onChanged.addListener(runSync);
+    addContextualIdentityListeners();
+    runSync();
+  }, 
 };
 
 assignManager.init();
+
+async function backup() {
+  browser.storage.onChanged.removeListener(runSync);
+  const identities = await browser.contextualIdentities.query({});
+  console.log("backup", identities);
+  await browser.storage.sync.set({ identities: identities });
+  const storage = await browser.storage.sync.get();
+  console.log("in sync: ", storage);
+  browser.storage.onChanged.addListener(runSync);
+}
+
+async function restore(inSync) {
+  removeContextualIdentityListeners();
+  const syncIdentities = inSync.identities;
+  const browserIdentities = await browser.contextualIdentities.query({});
+
+  for (const syncIdentity of syncIdentities) {
+    const compareNames = function (browserIdentity) { return (browserIdentity.name == syncIdentity.name); };
+    const match = browserIdentities.find(compareNames);
+    if (!match) {
+      browser.contextualIdentities.create({name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
+      continue;
+    } else {
+      if (syncIdentity.color == match.color && syncIdentity.icon == match.icon) {
+        console.log("everything is the same:", syncIdentity, match);
+        continue;
+      }
+      console.log("somethings are different:", syncIdentity, match);
+      browser.contextualIdentities.update(match.cookieStoreId, {name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
+    }
+  }
+  backup();
+  addContextualIdentityListeners();
+}
+
+async function runSync() {
+  console.log("runSync");
+  const inSync = await browser.storage.sync.get();
+  if (Object.entries(inSync).length === 0){
+    console.log("no sync storage, backing up...");
+    backup();
+  } else {
+    console.log("storage found, attempting to restore ...");
+    restore(inSync);
+  }
+}
+
+function addContextualIdentityListeners() {
+  console.log("adding listeners");
+  browser.contextualIdentities.onCreated.addListener(backup);
+  browser.contextualIdentities.onRemoved.addListener(backup);
+  browser.contextualIdentities.onUpdated.addListener(backup);
+}
+
+function removeContextualIdentityListeners() {
+  browser.contextualIdentities.onCreated.removeListener(backup);
+  browser.contextualIdentities.onRemoved.removeListener(backup);
+  browser.contextualIdentities.onUpdated.removeListener(backup);
+}
+
+async function runSync() {
+  console.log("runSync");
+  const inSync = await browser.storage.sync.get();
+  if (Object.entries(inSync).length === 0){
+    console.log("no sync storage, backing up...");
+    backup();
+  } else {
+    console.log("storage found, attempting to restore ...");
+    restore(inSync);
+  }
+}
