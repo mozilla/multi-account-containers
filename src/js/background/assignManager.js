@@ -1,3 +1,4 @@
+/* jshint esversion: 8*/
 const assignManager = {
   MENU_ASSIGN_ID: "open-in-this-container",
   MENU_REMOVE_ID: "remove-open-in-this-container",
@@ -8,6 +9,16 @@ const assignManager = {
   storageArea: {
     area: browser.storage.local,
     exemptedTabs: {},
+
+    getSynced() {
+      const beenSynced = this.area.get("beenSynced");
+      if (Object.entries(beenSynced).length === 0) return false;
+      return true;
+     },
+
+    setSynced() {
+      this.area.set({beenSynced: true});
+     },
 
     getSiteStoreKey(pageUrl) {
       const url = new window.URL(pageUrl);
@@ -92,7 +103,20 @@ const assignManager = {
         }
       });
       return sites;
+    },
+
+    async getAllAssignedSites() {
+      const sites = {};
+      const siteConfigs = await this.area.get();
+      for(const key of Object.keys(siteConfigs)) {
+        if (key.includes("siteContainerMap@@_")) {
+          const site = siteConfigs[key];
+          sites[key] = site;
+        }
+      }
+      return sites;
     }
+
   },
 
   _neverAsk(m) {
@@ -541,13 +565,18 @@ const assignManager = {
     for (const identity of identities) {
       browser.contextMenus.remove(identity.cookieStoreId);
     }
-  }
+  },
 
-  initSync() {
+  async initSync() {
     console.log("initSync");
-    browser.storage.onChanged.addListener(runSync);
-    addContextualIdentityListeners();
-    runSync();
+    // browser.storage.onChanged.addListener(runSync);
+    // addContextualIdentityListeners();
+    const beenSynced = await assignManager.storageArea.getSynced();
+    if (beenSynced){
+      runSync();
+    } else {
+      runFirstSync();
+    }
   }, 
 };
 
@@ -558,10 +587,41 @@ async function backup() {
   const identities = await browser.contextualIdentities.query({});
   console.log("backup", identities);
   await browser.storage.sync.set({ identities: identities });
+  const cookieStoreIDmap = await identityState.getCookieStoreIDuuidMap();
+  await browser.storage.sync.set({ cookieStoreIDmap: cookieStoreIDmap });
+  const assignedSites = await assignManager.storageArea.getAllAssignedSites();
+  await browser.storage.sync.set({ assignedSites: assignedSites});
   const storage = await browser.storage.sync.get();
   console.log("in sync: ", storage);
   browser.storage.onChanged.addListener(runSync);
 }
+
+browser.resetMAC = async function () {
+  // for debugging and testing: remove all containers except the default 4 and the first one created
+  browser.storage.onChanged.removeListener(runSync);
+
+  // sync state on install: no sync data
+  // await browser.storage.sync.clear();
+
+  // FF1: no sync, Only default containers and 1 extra
+  // browser.storage.local.clear();
+  // const localData = {"browserActionBadgesClicked":["6.1.1"],"containerTabsOpened":6,"identitiesState@@_firefox-container-1":{"hiddenTabs":[]},"identitiesState@@_firefox-container-2":{"hiddenTabs":[]},"identitiesState@@_firefox-container-3":{"hiddenTabs":[]},"identitiesState@@_firefox-container-4":{"hiddenTabs":[]},"identitiesState@@_firefox-container-6":{"hiddenTabs":[]},"identitiesState@@_firefox-default":{"hiddenTabs":[]},"onboarding-stage":5,"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":true},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":true},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":false}};
+  // browser.storage.local.set(localData);
+
+  // sync state after FF1 (default + 1)
+  await browser.storage.sync.clear();
+  const syncData = {"cookieStoreIDmap":{"firefox-container-1":"38eb85cc-0793-47c3-b51f-a4f1edf8908c","firefox-container-2":"19fcfbe5-c9ae-4445-8c8b-a7853e3d4462","firefox-container-3":"ac97270e-ccf6-4121-8d7f-74b764c5c78f","firefox-container-4":"595ae5cf-669c-4461-a738-05d3321d923e","firefox-container-6":"b39de7b4-b169-4128-bca3-e73f0376d9ed"},"assignedSites":{"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0,"userContextUUID":"38eb85cc-0793-47c3-b51f-a4f1edf8908c"},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":!0,"userContextUUID":"19fcfbe5-c9ae-4445-8c8b-a7853e3d4462"},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1,"userContextUUID":"595ae5cf-669c-4461-a738-05d3321d923e"}},"identities":[{"name":"Personal","icon":"fingerprint","iconUrl":"resource://usercontext-content/fingerprint.svg","color":"blue","colorCode":"#37adff","cookieStoreId":"firefox-container-1"},{"name":"Work","icon":"briefcase","iconUrl":"resource://usercontext-content/briefcase.svg","color":"orange","colorCode":"#ff9f00","cookieStoreId":"firefox-container-2"},{"name":"Banking","icon":"dollar","iconUrl":"resource://usercontext-content/dollar.svg","color":"green","colorCode":"#51cd00","cookieStoreId":"firefox-container-3"},{"name":"Shopping","icon":"cart","iconUrl":"resource://usercontext-content/cart.svg","color":"pink","colorCode":"#ff4bda","cookieStoreId":"firefox-container-4"},{"name":"Container #01","icon":"chill","iconUrl":"resource://usercontext-content/chill.svg","color":"green","colorCode":"#51cd00","cookieStoreId":"firefox-container-6"}]};
+  browser.storage.sync.set(syncData);
+
+  // FF2 (intial sync w/ default 4 + 1 with some changes)
+  removeContextualIdentityListeners();
+  browser.contextualIdentities.update("firefox-container-2", {color:"purple"});
+  browser.contextualIdentities.update("firefox-container-4", {icon:"pet"});
+  browser.storage.local.clear();
+  const localData = {"browserActionBadgesClicked":["6.1.1"],"containerTabsOpened":6,"identitiesState@@_firefox-container-1":{"hiddenTabs":[]},"identitiesState@@_firefox-container-2":{"hiddenTabs":[]},"identitiesState@@_firefox-container-3":{"hiddenTabs":[]},"identitiesState@@_firefox-container-4":{"hiddenTabs":[]},"identitiesState@@_firefox-container-6":{"hiddenTabs":[]},"identitiesState@@_firefox-default":{"hiddenTabs":[]},"onboarding-stage":5,"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":!0},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1}};
+  browser.storage.local.set(localData);
+
+};
 
 async function restore(inSync) {
   removeContextualIdentityListeners();
@@ -600,7 +660,6 @@ async function runSync() {
 }
 
 function addContextualIdentityListeners() {
-  console.log("adding listeners");
   browser.contextualIdentities.onCreated.addListener(backup);
   browser.contextualIdentities.onRemoved.addListener(backup);
   browser.contextualIdentities.onUpdated.addListener(backup);
@@ -612,14 +671,26 @@ function removeContextualIdentityListeners() {
   browser.contextualIdentities.onUpdated.removeListener(backup);
 }
 
-async function runSync() {
-  console.log("runSync");
-  const inSync = await browser.storage.sync.get();
-  if (Object.entries(inSync).length === 0){
-    console.log("no sync storage, backing up...");
-    backup();
-  } else {
-    console.log("storage found, attempting to restore ...");
-    restore(inSync);
+async function runFirstSync() {
+  console.log("runFirstSync");
+  const browserIdentities = await browser.contextualIdentities.query({});
+  addUUIDsToContainers(browserIdentities);
+  connectUUIDsToAssignedSites(browserIdentities);
+  runSync();
+  assignManager.storageArea.setSynced();
+}
+
+async function addUUIDsToContainers(browserIdentities) {
+  for (const identity of browserIdentities) {
+    identityState.addUUID(identity.cookieStoreId);
+  }
+}
+
+async function connectUUIDsToAssignedSites(browserIdentities) {
+  const assignedSites = await assignManager.storageArea.getAllAssignedSites();
+  for (const siteKey of Object.keys(assignedSites)) {
+    const identity = await identityState.storageArea.get("firefox-container-" + assignedSites[siteKey].userContextId);
+    assignedSites[siteKey].userContextUUID = identity.macUUID;
+    assignManager.storageArea.area.set({ [siteKey]: assignedSites[siteKey] });
   }
 }
