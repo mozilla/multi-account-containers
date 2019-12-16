@@ -76,6 +76,20 @@ const identityState = {
     return this.updateUUID(cookieStoreId, uuidv4());
   },
 
+  async lookupCookieStoreId(macUUID) {
+    console.log("luCSI");
+    const macConfigs = await this.storageArea.area.get();
+    for(const key of Object.keys(macConfigs)) {
+      if (key.includes("identitiesState@@_")) {
+        if(macConfigs[key].macUUID === macUUID) {
+          console.log(key);
+          return key.replace(/^firefox-container-@@_/, "");
+        }
+      }
+    }
+    return false;
+  },
+
   _createIdentityState() {
     return {
       hiddenTabs: [],
