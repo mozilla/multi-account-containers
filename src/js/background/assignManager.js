@@ -569,8 +569,6 @@ const assignManager = {
 
   async initSync() {
     console.log("initSync");
-    // browser.storage.onChanged.addListener(runSync);
-    // addContextualIdentityListeners();
     const beenSynced = await assignManager.storageArea.getSynced();
     if (beenSynced){
       runSync();
@@ -596,21 +594,26 @@ async function backup() {
   browser.storage.onChanged.addListener(runSync);
 }
 
-browser.resetMAC = async function () {
+browser.resetMAC1 = async function () {
   // for debugging and testing: remove all containers except the default 4 and the first one created
   browser.storage.onChanged.removeListener(runSync);
 
   // sync state on install: no sync data
-  // await browser.storage.sync.clear();
+  await browser.storage.sync.clear();
 
   // FF1: no sync, Only default containers and 1 extra
-  // browser.storage.local.clear();
-  // const localData = {"browserActionBadgesClicked":["6.1.1"],"containerTabsOpened":6,"identitiesState@@_firefox-container-1":{"hiddenTabs":[]},"identitiesState@@_firefox-container-2":{"hiddenTabs":[]},"identitiesState@@_firefox-container-3":{"hiddenTabs":[]},"identitiesState@@_firefox-container-4":{"hiddenTabs":[]},"identitiesState@@_firefox-container-6":{"hiddenTabs":[]},"identitiesState@@_firefox-default":{"hiddenTabs":[]},"onboarding-stage":5,"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":true},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":true},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":false}};
-  // browser.storage.local.set(localData);
+  browser.storage.local.clear();
+  const localData = {"browserActionBadgesClicked":["6.1.1"],"containerTabsOpened":6,"identitiesState@@_firefox-container-1":{"hiddenTabs":[]},"identitiesState@@_firefox-container-2":{"hiddenTabs":[]},"identitiesState@@_firefox-container-3":{"hiddenTabs":[]},"identitiesState@@_firefox-container-4":{"hiddenTabs":[]},"identitiesState@@_firefox-container-6":{"hiddenTabs":[]},"identitiesState@@_firefox-default":{"hiddenTabs":[]},"onboarding-stage":5,"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":true},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":true},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":false}};
+  browser.storage.local.set(localData);
+};
+
+browser.resetMAC2 = async function () {
+  // for debugging and testing: remove all containers except the default 4 and the first one created
+  browser.storage.onChanged.removeListener(runSync);
 
   // sync state after FF1 (default + 1)
   await browser.storage.sync.clear();
-  const syncData = {"cookieStoreIDmap":{"firefox-container-1":"38eb85cc-0793-47c3-b51f-a4f1edf8908c","firefox-container-2":"19fcfbe5-c9ae-4445-8c8b-a7853e3d4462","firefox-container-3":"ac97270e-ccf6-4121-8d7f-74b764c5c78f","firefox-container-4":"595ae5cf-669c-4461-a738-05d3321d923e","firefox-container-6":"b39de7b4-b169-4128-bca3-e73f0376d9ed"},"assignedSites":{"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0,"userContextUUID":"38eb85cc-0793-47c3-b51f-a4f1edf8908c"},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":!0,"userContextUUID":"19fcfbe5-c9ae-4445-8c8b-a7853e3d4462"},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1,"userContextUUID":"595ae5cf-669c-4461-a738-05d3321d923e"}},"identities":[{"name":"Personal","icon":"fingerprint","iconUrl":"resource://usercontext-content/fingerprint.svg","color":"blue","colorCode":"#37adff","cookieStoreId":"firefox-container-1"},{"name":"Work","icon":"briefcase","iconUrl":"resource://usercontext-content/briefcase.svg","color":"orange","colorCode":"#ff9f00","cookieStoreId":"firefox-container-2"},{"name":"Banking","icon":"dollar","iconUrl":"resource://usercontext-content/dollar.svg","color":"green","colorCode":"#51cd00","cookieStoreId":"firefox-container-3"},{"name":"Shopping","icon":"cart","iconUrl":"resource://usercontext-content/cart.svg","color":"pink","colorCode":"#ff4bda","cookieStoreId":"firefox-container-4"},{"name":"Container #01","icon":"chill","iconUrl":"resource://usercontext-content/chill.svg","color":"green","colorCode":"#51cd00","cookieStoreId":"firefox-container-6"}]};
+  const syncData = {"cookieStoreIDmap":{"firefox-container-1":"4dc76734-5b71-4f2e-85d0-1cb199ae3821","firefox-container-2":"30308b8d-393c-4375-b9a1-afc59f0dea79","firefox-container-3":"7419c94d-85d7-4d76-94c0-bacef1de722f","firefox-container-4":"2b9fe881-e552-4df9-8cab-922f4688bb68","firefox-container-6":"db7f622e-682b-4556-968a-6e2542ff3b26"},"assignedSites":{"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":!0},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1}},"identities":[{"name":"Personal","icon":"fingerprint","iconUrl":"resource://usercontext-content/fingerprint.svg","color":"blue","colorCode":"#37adff","cookieStoreId":"firefox-container-1"},{"name":"Work","icon":"briefcase","iconUrl":"resource://usercontext-content/briefcase.svg","color":"orange","colorCode":"#ff9f00","cookieStoreId":"firefox-container-2"},{"name":"Banking","icon":"dollar","iconUrl":"resource://usercontext-content/dollar.svg","color":"green","colorCode":"#51cd00","cookieStoreId":"firefox-container-3"},{"name":"Shopping","icon":"cart","iconUrl":"resource://usercontext-content/cart.svg","color":"pink","colorCode":"#ff4bda","cookieStoreId":"firefox-container-4"},{"name":"Container #01","icon":"chill","iconUrl":"resource://usercontext-content/chill.svg","color":"green","colorCode":"#51cd00","cookieStoreId":"firefox-container-6"}]};
   browser.storage.sync.set(syncData);
 
   // FF2 (intial sync w/ default 4 + 1 with some changes)
@@ -618,7 +621,7 @@ browser.resetMAC = async function () {
   browser.contextualIdentities.update("firefox-container-2", {color:"purple"});
   browser.contextualIdentities.update("firefox-container-4", {icon:"pet"});
   browser.storage.local.clear();
-  const localData = {"browserActionBadgesClicked":["6.1.1"],"containerTabsOpened":6,"identitiesState@@_firefox-container-1":{"hiddenTabs":[]},"identitiesState@@_firefox-container-2":{"hiddenTabs":[]},"identitiesState@@_firefox-container-3":{"hiddenTabs":[]},"identitiesState@@_firefox-container-4":{"hiddenTabs":[]},"identitiesState@@_firefox-container-6":{"hiddenTabs":[]},"identitiesState@@_firefox-default":{"hiddenTabs":[]},"onboarding-stage":5,"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":!0},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1}};
+  const localData = {"browserActionBadgesClicked":["6.1.1"],"containerTabsOpened":7,"identitiesState@@_firefox-container-1":{"hiddenTabs":[]},"identitiesState@@_firefox-container-2":{"hiddenTabs":[]},"identitiesState@@_firefox-container-3":{"hiddenTabs":[]},"identitiesState@@_firefox-container-4":{"hiddenTabs":[]},"identitiesState@@_firefox-container-6":{"hiddenTabs":[]},"identitiesState@@_firefox-default":{"hiddenTabs":[]},"onboarding-stage":5,"siteContainerMap@@_developer.mozilla.org":{"userContextId":"6","neverAsk":!1},"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1}};
   browser.storage.local.set(localData);
 
 };
@@ -642,6 +645,62 @@ async function restore(inSync) {
       console.log("somethings are different:", syncIdentity, match);
       browser.contextualIdentities.update(match.cookieStoreId, {name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
     }
+  }
+  backup();
+  addContextualIdentityListeners();
+}
+
+async function restoreFirstRun(inSync) {
+  removeContextualIdentityListeners();
+  const browserIdentities = await browser.contextualIdentities.query({});
+  const syncIdentities = inSync.identities;
+  for (const syncIdentity of inSync.identities) {
+    const compareNames = function (browserIdentity) { return (browserIdentity.name == syncIdentity.name); };
+    const match = browserIdentities.find(compareNames);
+    if (!match) {
+      newIdentity = await browser.contextualIdentities.create({name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
+      identityState.updateUUID(newIdentity.cookieStoreId, syncIdentity.macUUID);
+      continue;
+    } else {
+      if (syncIdentity.color == match.color && syncIdentity.icon == match.icon) {
+        console.log("everything is the same:", syncIdentity, match);
+        continue;
+      }
+      console.log("somethings are different:", syncIdentity, match);
+      browser.contextualIdentities.update(match.cookieStoreId, {name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
+    }
+  }
+  const assignedSitesBrowser = await assignManager.storageArea.getAllAssignedSites();
+  console.log(assignedSitesBrowser);
+  const syncAssignedSites = inSync.assignedSites;
+  console.log(syncAssignedSites);
+  for(const key of Object.keys(syncAssignedSites)) {
+    if (assignedSitesBrowser.hasOwnProperty(key)) {
+      const syncCookieStoreId = "firefox-container-" + syncAssignedSites[key].userContextId;
+      const browserCookieStoreId = "firefox-container-" + assignedSitesBrowser[key].userContextId;
+      if (inSync.cookieStoreIDmap[syncCookieStoreId] == identityState.storageArea.get(browserCookieStoreId).macUUID) {
+        continue;
+      } else {
+        // ask user
+      }
+    } else {
+      const data = syncAssignedSites[key];
+      console.log("data", data);
+      const newUUID = inSync.cookieStoreIDmap["firefox-container-" + data.userContextId];
+      console.log("newUUID", newUUID);
+      data.userContextId = identityState.lookupCookieStoreId(newUUID);
+      console.log(data.userContextId);
+      assignManager.storageArea.set(
+        key.replace(/^siteContainerMap@@_/, "https://"),
+        data
+      );
+    }
+
+
+    // if (String(syncAssignedSites[key].userContextId) === String(syncIdentity.userContextId)) {
+    //   // const site = siteConfigs[key];
+    //   // sites[key] = site;
+    // }
   }
   backup();
   addContextualIdentityListeners();
@@ -675,8 +734,15 @@ async function runFirstSync() {
   console.log("runFirstSync");
   const browserIdentities = await browser.contextualIdentities.query({});
   addUUIDsToContainers(browserIdentities);
-  connectUUIDsToAssignedSites(browserIdentities);
-  runSync();
+  // connectUUIDsToAssignedSites(browserIdentities);
+  const inSync = await browser.storage.sync.get();
+  if (Object.entries(inSync).length === 0){
+    console.log("no sync storage, backing up...");
+    backup();
+  } else {
+    console.log("storage found, attempting to restore ...");
+    restoreFirstRun(inSync);
+  }
   assignManager.storageArea.setSynced();
 }
 
@@ -686,11 +752,11 @@ async function addUUIDsToContainers(browserIdentities) {
   }
 }
 
-async function connectUUIDsToAssignedSites(browserIdentities) {
-  const assignedSites = await assignManager.storageArea.getAllAssignedSites();
-  for (const siteKey of Object.keys(assignedSites)) {
-    const identity = await identityState.storageArea.get("firefox-container-" + assignedSites[siteKey].userContextId);
-    assignedSites[siteKey].userContextUUID = identity.macUUID;
-    assignManager.storageArea.area.set({ [siteKey]: assignedSites[siteKey] });
-  }
-}
+// async function connectUUIDsToAssignedSites(browserIdentities) {
+//   const assignedSites = await assignManager.storageArea.getAllAssignedSites();
+//   for (const siteKey of Object.keys(assignedSites)) {
+//     const identity = await identityState.storageArea.get("firefox-container-" + assignedSites[siteKey].userContextId);
+//     assignedSites[siteKey].userContextUUID = identity.macUUID;
+//     assignManager.storageArea.area.set({ [siteKey]: assignedSites[siteKey] });
+//   }
+// }
