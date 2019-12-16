@@ -632,13 +632,13 @@ async function restore(inSync) {
   const browserIdentities = await browser.contextualIdentities.query({});
 
   for (const syncIdentity of syncIdentities) {
-    const compareNames = function (browserIdentity) { return (browserIdentity.name == syncIdentity.name); };
+    const compareNames = function (browserIdentity) { return (browserIdentity.name === syncIdentity.name); };
     const match = browserIdentities.find(compareNames);
     if (!match) {
       browser.contextualIdentities.create({name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
       continue;
     } else {
-      if (syncIdentity.color == match.color && syncIdentity.icon == match.icon) {
+      if (syncIdentity.color === match.color && syncIdentity.icon === match.icon) {
         console.log("everything is the same:", syncIdentity, match);
         continue;
       }
@@ -655,14 +655,14 @@ async function restoreFirstRun(inSync) {
   const browserIdentities = await browser.contextualIdentities.query({});
   const syncIdentities = inSync.identities;
   for (const syncIdentity of inSync.identities) {
-    const compareNames = function (browserIdentity) { return (browserIdentity.name == syncIdentity.name); };
+    const compareNames = function (browserIdentity) { return (browserIdentity.name === syncIdentity.name); };
     const match = browserIdentities.find(compareNames);
     if (!match) {
       newIdentity = await browser.contextualIdentities.create({name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
       identityState.updateUUID(newIdentity.cookieStoreId, syncIdentity.macUUID);
       continue;
     } else {
-      if (syncIdentity.color == match.color && syncIdentity.icon == match.icon) {
+      if (syncIdentity.color === match.color && syncIdentity.icon === match.icon) {
         console.log("everything is the same:", syncIdentity, match);
         continue;
       }
@@ -678,7 +678,7 @@ async function restoreFirstRun(inSync) {
     if (assignedSitesBrowser.hasOwnProperty(key)) {
       const syncCookieStoreId = "firefox-container-" + syncAssignedSites[key].userContextId;
       const browserCookieStoreId = "firefox-container-" + assignedSitesBrowser[key].userContextId;
-      if (inSync.cookieStoreIDmap[syncCookieStoreId] == identityState.storageArea.get(browserCookieStoreId).macUUID) {
+      if (inSync.cookieStoreIDmap[syncCookieStoreId] === identityState.storageArea.get(browserCookieStoreId).macUUID) {
         continue;
       } else {
         // ask user
