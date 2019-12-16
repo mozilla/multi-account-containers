@@ -77,12 +77,10 @@ const identityState = {
   },
 
   async lookupCookieStoreId(macUUID) {
-    console.log("luCSI");
     const macConfigs = await this.storageArea.area.get();
     for(const key of Object.keys(macConfigs)) {
       if (key.includes("identitiesState@@_")) {
         if(macConfigs[key].macUUID === macUUID) {
-          console.log(key);
           return key.replace(/^firefox-container-@@_/, "");
         }
       }
