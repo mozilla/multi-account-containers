@@ -85,37 +85,42 @@ const assignManager = {
     },
 
     async deleteContainer(userContextId) {
-      const sitesByContainer = await this.getByContainer(userContextId);
+      const sitesByContainer = await this.getAssignedSites(userContextId);
       this.area.remove(Object.keys(sitesByContainer));
     },
 
-    async getByContainer(userContextId) {
+    async getAssignedSites(userContextId = null) {
       const sites = {};
       const siteConfigs = await this.area.get();
-      Object.keys(siteConfigs).forEach((key) => {
+      for(const key of Object.keys(siteConfigs)) {
+        if (key.includes("siteContainerMap@@_")) {
         // For some reason this is stored as string... lets check them both as that
-        if (String(siteConfigs[key].userContextId) === String(userContextId)) {
+          if (!!userContextId && String(siteConfigs[key].userContextId) !== String(userContextId)) {
+            continue;
+          }
           const site = siteConfigs[key];
           // In hindsight we should have stored this
           // TODO file a follow up to clean the storage onLoad
           site.hostname = key.replace(/^siteContainerMap@@_/, "");
           sites[key] = site;
         }
-      });
+      };
       return sites;
     },
 
-    async getAllAssignedSites() {
-      const sites = {};
-      const siteConfigs = await this.area.get();
-      for(const key of Object.keys(siteConfigs)) {
-        if (key.includes("siteContainerMap@@_")) {
-          const site = siteConfigs[key];
-          sites[key] = site;
-        }
-      }
-      return sites;
-    }
+    // async getAssignedSites(userContextId = null) {
+    //   const sites = {};
+    //   const siteConfigs = await this.area.get();
+    //   for(const key of Object.keys(siteConfigs)) {
+    //     if (key.includes("siteContainerMap@@_")) {
+    //         if(userContextId==null) {
+    //         const site = siteConfigs[key];
+    //         sites[key] = site;
+    //       }
+    //     }
+    //   }
+    //   return sites;
+    // }
 
   },
 
@@ -446,7 +451,7 @@ const assignManager = {
   },
 
   _getByContainer(userContextId) {
-    return this.storageArea.getByContainer(userContextId);
+    return this.storageArea.getAssignedSites(userContextId);
   },
 
   removeContextMenu() {
@@ -587,7 +592,7 @@ async function backup() {
   await browser.storage.sync.set({ identities: identities });
   const cookieStoreIDmap = await identityState.getCookieStoreIDuuidMap();
   await browser.storage.sync.set({ cookieStoreIDmap: cookieStoreIDmap });
-  const assignedSites = await assignManager.storageArea.getAllAssignedSites();
+  const assignedSites = await assignManager.storageArea.getAssignedSites();
   await browser.storage.sync.set({ assignedSites: assignedSites});
   const storage = await browser.storage.sync.get();
   console.log("in sync: ", storage);
@@ -670,7 +675,7 @@ async function restoreFirstRun(inSync) {
       browser.contextualIdentities.update(match.cookieStoreId, {name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
     }
   }
-  const assignedSitesBrowser = await assignManager.storageArea.getAllAssignedSites();
+  const assignedSitesBrowser = await assignManager.storageArea.getAssignedSites();
   console.log(assignedSitesBrowser);
   const syncAssignedSites = inSync.assignedSites;
   console.log(syncAssignedSites);
