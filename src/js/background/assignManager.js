@@ -695,12 +695,6 @@ async function restoreFirstRun(inSync) {
         data
       );
     }
-
-
-    // if (String(syncAssignedSites[key].userContextId) === String(syncIdentity.userContextId)) {
-    //   // const site = siteConfigs[key];
-    //   // sites[key] = site;
-    // }
   }
   backup();
   addContextualIdentityListeners();
@@ -734,7 +728,6 @@ async function runFirstSync() {
   console.log("runFirstSync");
   const browserIdentities = await browser.contextualIdentities.query({});
   addUUIDsToContainers(browserIdentities);
-  // connectUUIDsToAssignedSites(browserIdentities);
   const inSync = await browser.storage.sync.get();
   if (Object.entries(inSync).length === 0){
     console.log("no sync storage, backing up...");
@@ -751,12 +744,3 @@ async function addUUIDsToContainers(browserIdentities) {
     identityState.addUUID(identity.cookieStoreId);
   }
 }
-
-// async function connectUUIDsToAssignedSites(browserIdentities) {
-//   const assignedSites = await assignManager.storageArea.getAllAssignedSites();
-//   for (const siteKey of Object.keys(assignedSites)) {
-//     const identity = await identityState.storageArea.get("firefox-container-" + assignedSites[siteKey].userContextId);
-//     assignedSites[siteKey].userContextUUID = identity.macUUID;
-//     assignManager.storageArea.area.set({ [siteKey]: assignedSites[siteKey] });
-//   }
-// }
