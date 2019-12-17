@@ -93,7 +93,7 @@ module.exports = () => {
       getURL: sinon.stub().returns("moz-extension://multi-account-containers/confirm-page.html")
     },
     permissions: {
-      getAll: sinon.stub().returns({"permissions": ["bookmarks"]})
+      contains: sinon.stub().returns(true)
     }
   };
 
