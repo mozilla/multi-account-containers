@@ -1,9 +1,11 @@
 module.exports = () => {
-  const _storage = {};
+  const _localStorage = {};
+  const _syncStorage = {};
 
   // could maybe be replaced by https://github.com/acvetkov/sinon-chrome
   const browserMock = {
-    _storage,
+    _localStorage,
+    _syncStorage,
     runtime: {
       onMessage: {
         addListener: sinon.stub(),
@@ -12,6 +14,12 @@ module.exports = () => {
         addListener: sinon.stub(),
       },
       sendMessage: sinon.stub().resolves(),
+      onInstalled: {
+        addListener: sinon.stub()
+      },
+      onStartup: {
+        addListener: sinon.stub()
+      }
     },
     webRequest: {
       onBeforeRequest: {
@@ -52,7 +60,13 @@ module.exports = () => {
     storage: {
       local: {
         get: sinon.stub(),
-        set: sinon.stub()
+        set: sinon.stub(),
+        clear: () => { this._localStorage = {}; }
+      },
+      sync: {
+        get: sinon.stub(),
+        set: sinon.stub(),
+        clear: () => { this._syncStorage = {}; }
       }
     },
     contextualIdentities: {
@@ -101,26 +115,26 @@ module.exports = () => {
   browserMock.storage.local = {
     get: sinon.spy(async key => {
       if (!key) {
-        return _storage;
+        return _localStorage;
       }
       let result = {};
       if (Array.isArray(key)) {
         key.map(akey => {
-          if (typeof _storage[akey] !== "undefined") {
-            result[akey] = _storage[akey];
+          if (typeof _localStorage[akey] !== "undefined") {
+            result[akey] = _localStorage[akey];
           }
         });
       } else if (typeof key === "object") {
         // TODO support nested objects
         Object.keys(key).map(oKey => {
-          if (typeof _storage[oKey] !== "undefined") {
-            result[oKey] = _storage[oKey];
+          if (typeof _localStorage[oKey] !== "undefined") {
+            result[oKey] = _localStorage[oKey];
           } else {
             result[oKey] = key[oKey];
           }
         });
       } else {
-        result = _storage[key];
+        result = _localStorage[key];
       }
       return result;
     }),
@@ -128,22 +142,68 @@ module.exports = () => {
       if (typeof key === "object") {
         // TODO support nested objects
         Object.keys(key).map(oKey => {
-          _storage[oKey] = key[oKey];
+          _localStorage[oKey] = key[oKey];
         });
       } else {
-        _storage[key] = value;
+        _localStorage[key] = value;
       }
     }),
     remove: sinon.spy(async (key) => {
       if (Array.isArray(key)) {
         key.map(aKey => {
-          delete _storage[aKey];
+          delete _localStorage[aKey];
         });
       } else {
-        delete _storage[key];
+        delete _localStorage[key];
       }
     }),
   };
-
+  
+  browserMock.storage.sync = {
+    get: sinon.spy(async key => {
+      if (!key) {
+        return _syncStorage;
+      }
+      let result = {};
+      if (Array.isArray(key)) {
+        key.map(akey => {
+          if (typeof _syncStorage[akey] !== "undefined") {
+            result[akey] = _syncStorage[akey];
+          }
+        });
+      } else if (typeof key === "object") {
+        // TODO support nested objects
+        Object.keys(key).map(oKey => {
+          if (typeof _syncStorage[oKey] !== "undefined") {
+            result[oKey] = _syncStorage[oKey];
+          } else {
+            result[oKey] = key[oKey];
+          }
+        });
+      } else {
+        result = _syncStorage[key];
+      }
+      return result;
+    }),
+    set: sinon.spy(async (key, value) => {
+      if (typeof key === "object") {
+        // TODO support nested objects
+        Object.keys(key).map(oKey => {
+          _syncStorage[oKey] = key[oKey];
+        });
+      } else {
+        _syncStorage[key] = value;
+      }
+    }),
+    remove: sinon.spy(async (key) => {
+      if (Array.isArray(key)) {
+        key.map(aKey => {
+          delete _syncStorage[aKey];
+        });
+      } else {
+        delete _syncStorage[key];
+      }
+    }),
+  };
   return browserMock;
 };
