@@ -1,39 +1,23 @@
 
-function requestPermissions() {
+async function requestPermissions() {
   const checkbox = document.querySelector("#bookmarksPermissions");
   if (checkbox.checked) {
-    browser.permissions.request({permissions: ["bookmarks"]}).
-    then((response) => {
-      if (response) {
-        browser.runtime.sendMessage({ method: "resetBookmarksContext" });
-      } else {
-        checkbox.checked = false;
-      }
-    }).
-    catch((err) => {
-      return err.message;
-    });
+    const granted = await browser.permissions.request({permissions: ["bookmarks"]});
+    if (!granted) { 
+      checkbox.checked = false; 
+      return;
+    }
   } else {
-    browser.permissions.remove({permissions: ["bookmarks"]}).
-    then(() => {
-      browser.runtime.sendMessage({ method: "resetBookmarksContext" });
-    }).
-    catch((err) => {
-      return err.message;
-    });
+    await browser.permissions.remove({permissions: ["bookmarks"]});
   }
+  browser.runtime.sendMessage({ method: "resetBookmarksContext" });
 }
 
-function restoreOptions() {
-  browser.permissions.getAll()
-    .then((permissions) => {
-      if (permissions.permissions.includes("bookmarks")) {
-        document.querySelector("#bookmarksPermissions").checked = true;
-      }
-    }).
-    catch((err) => {
-      return err.message;
-    });
+async function restoreOptions() {
+  const hasPermission = await browser.permissions.contains({permissions: ["bookmarks"]});
+  if (hasPermission) {
+    document.querySelector("#bookmarksPermissions").checked = true;
+  }
 }
 
 
