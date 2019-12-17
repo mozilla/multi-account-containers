@@ -107,21 +107,6 @@ const assignManager = {
       };
       return sites;
     },
-
-    // async getAssignedSites(userContextId = null) {
-    //   const sites = {};
-    //   const siteConfigs = await this.area.get();
-    //   for(const key of Object.keys(siteConfigs)) {
-    //     if (key.includes("siteContainerMap@@_")) {
-    //         if(userContextId==null) {
-    //         const site = siteConfigs[key];
-    //         sites[key] = site;
-    //       }
-    //     }
-    //   }
-    //   return sites;
-    // }
-
   },
 
   _neverAsk(m) {
@@ -273,8 +258,8 @@ const assignManager = {
     this.resetBookmarksMenuItem();
 
     // Run when installed and on startup
-    browser.runtime.onInstalled.addListener(()=>{this.initSync()});
-    browser.runtime.onStartup.addListener(()=>{this.initSync()});
+    browser.runtime.onInstalled.addListener(this.initSync);
+    browser.runtime.onStartup.addListener(this.initSync);
   },
 
   async resetBookmarksMenuItem() {
@@ -577,10 +562,10 @@ const assignManager = {
     const beenSynced = await assignManager.storageArea.getSynced();
     if (beenSynced){
       runSync();
-    } else {
-      runFirstSync();
+      return;
     }
-  }, 
+    runFirstSync();
+  },
 };
 
 assignManager.init();
@@ -622,7 +607,7 @@ browser.resetMAC2 = async function () {
   browser.storage.sync.set(syncData);
 
   // FF2 (intial sync w/ default 4 + 1 with some changes)
-  removeContextualIdentityListeners();
+  removeContextualIdentityListeners(backup);
   browser.contextualIdentities.update("firefox-container-2", {color:"purple"});
   browser.contextualIdentities.update("firefox-container-4", {icon:"pet"});
   browser.storage.local.clear();
@@ -632,7 +617,7 @@ browser.resetMAC2 = async function () {
 };
 
 async function restore(inSync) {
-  removeContextualIdentityListeners();
+  removeContextualIdentityListeners(backup);
   const syncIdentities = inSync.identities;
   const browserIdentities = await browser.contextualIdentities.query({});
 
@@ -652,11 +637,11 @@ async function restore(inSync) {
     }
   }
   backup();
-  addContextualIdentityListeners();
+  addContextualIdentityListeners(backup);
 }
 
 async function restoreFirstRun(inSync) {
-  removeContextualIdentityListeners();
+  removeContextualIdentityListeners(backup);
   const browserIdentities = await browser.contextualIdentities.query({});
   const syncIdentities = inSync.identities;
   for (const syncIdentity of inSync.identities) {
@@ -664,7 +649,7 @@ async function restoreFirstRun(inSync) {
     const match = browserIdentities.find(compareNames);
     if (!match) {
       newIdentity = await browser.contextualIdentities.create({name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
-      identityState.updateUUID(newIdentity.cookieStoreId, syncIdentity.macUUID);
+      identityState.updateUUID(newIdentity.cookieStoreId, syncIdentity.macAddonUUID);
       continue;
     } else {
       if (syncIdentity.color === match.color && syncIdentity.icon === match.icon) {
@@ -683,7 +668,7 @@ async function restoreFirstRun(inSync) {
     if (assignedSitesBrowser.hasOwnProperty(key)) {
       const syncCookieStoreId = "firefox-container-" + syncAssignedSites[key].userContextId;
       const browserCookieStoreId = "firefox-container-" + assignedSitesBrowser[key].userContextId;
-      if (inSync.cookieStoreIDmap[syncCookieStoreId] === identityState.storageArea.get(browserCookieStoreId).macUUID) {
+      if (inSync.cookieStoreIDmap[syncCookieStoreId] === identityState.storageArea.get(browserCookieStoreId).macAddonUUID) {
         continue;
       } else {
         // ask user
@@ -702,7 +687,7 @@ async function restoreFirstRun(inSync) {
     }
   }
   backup();
-  addContextualIdentityListeners();
+  addContextualIdentityListeners(backup);
 }
 
 async function runSync() {
@@ -711,22 +696,22 @@ async function runSync() {
   if (Object.entries(inSync).length === 0){
     console.log("no sync storage, backing up...");
     backup();
-  } else {
-    console.log("storage found, attempting to restore ...");
-    restore(inSync);
+    return;
   }
+  console.log("storage found, attempting to restore ...");
+  restore(inSync);
 }
 
-function addContextualIdentityListeners() {
-  browser.contextualIdentities.onCreated.addListener(backup);
-  browser.contextualIdentities.onRemoved.addListener(backup);
-  browser.contextualIdentities.onUpdated.addListener(backup);
+function addContextualIdentityListeners(listener) {
+  browser.contextualIdentities.onCreated.addListener(listener);
+  browser.contextualIdentities.onRemoved.addListener(listener);
+  browser.contextualIdentities.onUpdated.addListener(listener);
 }
 
-function removeContextualIdentityListeners() {
-  browser.contextualIdentities.onCreated.removeListener(backup);
-  browser.contextualIdentities.onRemoved.removeListener(backup);
-  browser.contextualIdentities.onUpdated.removeListener(backup);
+function removeContextualIdentityListeners(listener) {
+  browser.contextualIdentities.onCreated.removeListener(listener);
+  browser.contextualIdentities.onRemoved.removeListener(listener);
+  browser.contextualIdentities.onUpdated.removeListener(listener);
 }
 
 async function runFirstSync() {
