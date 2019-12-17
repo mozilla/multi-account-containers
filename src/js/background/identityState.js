@@ -44,7 +44,7 @@ const identityState = {
       if (key.includes("identitiesState@@_")) {
         const container = containerInfo[key];
         const cookieStoreId = key.replace(/^identitiesState@@_/, "");
-        containers[cookieStoreId] = container.macUUID;
+        containers[cookieStoreId] = container.macAddonUUID;
       }
     }
     return containers;
@@ -69,18 +69,18 @@ const identityState = {
   },
   async updateUUID(cookieStoreId, uuid) {
     const containerState = await this.storageArea.get(cookieStoreId);
-    containerState.macUUID = uuid;
+    containerState.macAddonUUID = uuid;
     return this.storageArea.set(cookieStoreId, containerState);
   },
   async addUUID(cookieStoreId) {
     return this.updateUUID(cookieStoreId, uuidv4());
   },
 
-  async lookupCookieStoreId(macUUID) {
+  async lookupCookieStoreId(macAddonUUID) {
     const macConfigs = await this.storageArea.area.get();
     for(const key of Object.keys(macConfigs)) {
       if (key.includes("identitiesState@@_")) {
-        if(macConfigs[key].macUUID === macUUID) {
+        if(macConfigs[key].macAddonUUID === macAddonUUID) {
           return key.replace(/^firefox-container-@@_/, "");
         }
       }
@@ -91,7 +91,7 @@ const identityState = {
   _createIdentityState() {
     return {
       hiddenTabs: [],
-      macUUID: uuidv4()
+      macAddonUUID: uuidv4()
     };
   },
 };
