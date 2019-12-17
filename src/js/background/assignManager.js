@@ -642,6 +642,17 @@ async function restore(inSync) {
 
 async function restoreFirstRun(inSync) {
   removeContextualIdentityListeners(backup);
+  await reconcileIdentitiesByName(inSync);
+  await reconcileSiteAssignments(inSync);
+  backup();
+  addContextualIdentityListeners(backup);
+}
+
+/*
+ * Checks for the container name. If it exists, they are assumed to be the same container,
+ * and the color and icon are overwritten from sync, if different.
+ */
+async function reconcileIdentitiesByName(inSync){
   const browserIdentities = await browser.contextualIdentities.query({});
   const syncIdentities = inSync.identities;
   for (const syncIdentity of inSync.identities) {
@@ -651,15 +662,22 @@ async function restoreFirstRun(inSync) {
       newIdentity = await browser.contextualIdentities.create({name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
       identityState.updateUUID(newIdentity.cookieStoreId, syncIdentity.macAddonUUID);
       continue;
-    } else {
-      if (syncIdentity.color === match.color && syncIdentity.icon === match.icon) {
-        console.log("everything is the same:", syncIdentity, match);
-        continue;
-      }
-      console.log("somethings are different:", syncIdentity, match);
-      browser.contextualIdentities.update(match.cookieStoreId, {name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
     }
+    if (syncIdentity.color === match.color && syncIdentity.icon === match.icon) {
+      console.log("everything is the same:", syncIdentity, match);
+      continue;
+    }
+    console.log("somethings are different:", syncIdentity, match);
+    browser.contextualIdentities.update(match.cookieStoreId, {name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
   }
+}
+
+/*
+ * Checks for site previously assigned. If it exists, and has the same container assignment, 
+ * the assignment is kept. If it exists, but has a different assignment, the user is prompted
+ * (not yet implemented). If it does not exist, it is created.
+ */
+async function reconcileSiteAssignments(inSync) {
   const assignedSitesBrowser = await assignManager.storageArea.getAssignedSites();
   console.log(assignedSitesBrowser);
   const syncAssignedSites = inSync.assignedSites;
@@ -670,24 +688,21 @@ async function restoreFirstRun(inSync) {
       const browserCookieStoreId = "firefox-container-" + assignedSitesBrowser[key].userContextId;
       if (inSync.cookieStoreIDmap[syncCookieStoreId] === identityState.storageArea.get(browserCookieStoreId).macAddonUUID) {
         continue;
-      } else {
-        // ask user
       }
-    } else {
-      const data = syncAssignedSites[key];
-      console.log("data", data);
-      const newUUID = inSync.cookieStoreIDmap["firefox-container-" + data.userContextId];
-      console.log("newUUID", newUUID);
-      data.userContextId = identityState.lookupCookieStoreId(newUUID);
-      console.log(data.userContextId);
-      assignManager.storageArea.set(
-        key.replace(/^siteContainerMap@@_/, "https://"),
-        data
-      );
+      // TODO: if uuids are not the same, ask user where to assign the site.
+      continue;
     }
+    const data = syncAssignedSites[key];
+    console.log("data", data);
+    const newUUID = inSync.cookieStoreIDmap["firefox-container-" + data.userContextId];
+    console.log("newUUID", newUUID);
+    data.userContextId = identityState.lookupCookieStoreId(newUUID);
+    console.log(data.userContextId);
+    assignManager.storageArea.set(
+      key.replace(/^siteContainerMap@@_/, "https://"),
+      data
+    );
   }
-  backup();
-  addContextualIdentityListeners(backup);
 }
 
 async function runSync() {
