@@ -19,6 +19,7 @@
     "json": "^9.0.6",
     "mocha": "^6.2.2",
     "npm-run-all": "^4.0.0",
+    "nyc": "^14.1.1",
     "sinon": "^7.5.0",
     "sinon-chai": "^3.3.0",
     "stylelint": "^7.9.0",
@@ -42,7 +43,8 @@
     "lint:html": "htmllint *.html",
     "lint:js": "eslint .",
     "package": "rm -rf src/web-ext-artifacts && npm run build && mv src/web-ext-artifacts/firefox_multi-account_containers-*.zip addon.xpi",
-    "test": "npm run lint && mocha ./test/setup.js test/**/*.test.js",
-    "test-watch": "mocha ./test/setup.js test/**/*.test.js --watch"
+    "test": "npm run lint && npm run coverage",
+    "test-watch": "mocha ./test/setup.js test/**/*.test.js --watch",
+    "coverage": "nyc --reporter=html --reporter=text mocha ./test/setup.js test/**/*.test.js --timeout 60000"
   }
 }
