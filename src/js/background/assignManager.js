@@ -581,7 +581,7 @@ async function backup() {
   await browser.storage.sync.set({ assignedSites: assignedSites});
   const storage = await browser.storage.sync.get();
   console.log("in sync: ", storage);
-  browser.storage.onChanged.addListener(runSync);
+  //browser.storage.onChanged.addListener(runSync);
 }
 
 browser.resetMAC1 = async function () {
@@ -616,36 +616,80 @@ browser.resetMAC2 = async function () {
 
 };
 
+browser.resetMAC3 = async function () {
+  // for debugging and testing: remove all containers except the default 4 and the first one created
+  browser.storage.onChanged.removeListener(runSync);
+
+  // sync state after FF2 synced
+  await browser.storage.sync.clear();
+  const syncData = {"identities":[{"name":"Personal","icon":"fingerprint","iconUrl":"resource://usercontext-content/fingerprint.svg","color":"blue","colorCode":"#37adff","cookieStoreId":"firefox-container-1"},{"name":"Work","icon":"briefcase","iconUrl":"resource://usercontext-content/briefcase.svg","color":"orange","colorCode":"#ff9f00","cookieStoreId":"firefox-container-2"},{"name":"Banking","icon":"dollar","iconUrl":"resource://usercontext-content/dollar.svg","color":"green","colorCode":"#51cd00","cookieStoreId":"firefox-container-3"},{"name":"Shopping","icon":"cart","iconUrl":"resource://usercontext-content/cart.svg","color":"pink","colorCode":"#ff4bda","cookieStoreId":"firefox-container-4"},{"name":"Container #01","icon":"chill","iconUrl":"resource://usercontext-content/chill.svg","color":"green","colorCode":"#51cd00","cookieStoreId":"firefox-container-6"}],"cookieStoreIDmap":{"firefox-container-1":"021feeaa-fb44-49ce-91fb-673277afbf95","firefox-container-2":"7bc490d6-b711-46b7-b5a0-c48411e787d3","firefox-container-3":"65e15c60-c90a-40c1-ac61-ca95f21c9325","firefox-container-4":"4c0eb718-b43f-4f62-b2dc-d0c5f912fe5d","firefox-container-6":"266d9c04-fdd5-4d27-a44e-73c69b88ce0a"},"assignedSites":{"siteContainerMap@@_developer.mozilla.org":{"userContextId":"6","neverAsk":!1,"hostname":"developer.mozilla.org"},"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0,"hostname":"twitter.com"},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1,"hostname":"www.linkedin.com"}}};
+  browser.storage.sync.set(syncData);
+
+  // FF1 with updates from FF2 (intial sync w/ default 4 + 1 with some changes)
+  removeContextualIdentityListeners(backup);
+  browser.contextualIdentities.update("firefox-container-3", {color:"purple", icon:"fruit"});
+  //browser.contextualIdentities.create({name: "Container #02", icon: "vacation", color: "yellow"});
+  browser.storage.local.clear();
+  const localData = {"beenSynced":!0,"browserActionBadgesClicked":["6.1.1"],"containerTabsOpened":10,"identitiesState@@_firefox-container-1":{"hiddenTabs":[],"macAddonUUID":"a12c1ecf-52cd-4a2d-99e3-5e479b396f75"},"identitiesState@@_firefox-container-14":{"hiddenTabs":[],"macAddonUUID":"ee62f98b-6ec8-4ac7-9c6f-b76b1c3d91b4"},"identitiesState@@_firefox-container-2":{"hiddenTabs":[],"macAddonUUID":"d7d9a177-6bd4-4558-9495-03a8fb69443c"},"identitiesState@@_firefox-container-3":{"hiddenTabs":[],"macAddonUUID":"e04fc120-53cb-4d96-b960-b5ef8d285eca"},"identitiesState@@_firefox-container-4":{"hiddenTabs":[],"macAddonUUID":"eaff1081-32df-4dcc-aac4-a378655671ae"},"identitiesState@@_firefox-container-6":{"hiddenTabs":[],"macAddonUUID":"c9069f2f-346f-43c1-a071-8bcb74fa3fc2"},"identitiesState@@_firefox-default":{"hiddenTabs":[]},"onboarding-stage":5,"siteContainerMap@@_developer.mozilla.org":{"userContextId":"6","neverAsk":!1},"siteContainerMap@@_www.hotjar.com":{"userContextId":"6","neverAsk":!0}};
+  browser.storage.local.set(localData);
+
+};
+
 async function restore(inSync) {
   removeContextualIdentityListeners(backup);
-  const syncIdentities = inSync.identities;
-  const browserIdentities = await browser.contextualIdentities.query({});
-
-  for (const syncIdentity of syncIdentities) {
-    const compareNames = function (browserIdentity) { return (browserIdentity.name === syncIdentity.name); };
-    const match = browserIdentities.find(compareNames);
-    if (!match) {
-      browser.contextualIdentities.create({name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
-      continue;
-    } else {
-      if (syncIdentity.color === match.color && syncIdentity.icon === match.icon) {
-        console.log("everything is the same:", syncIdentity, match);
-        continue;
-      }
-      console.log("somethings are different:", syncIdentity, match);
-      browser.contextualIdentities.update(match.cookieStoreId, {name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
-    }
-  }
-  backup();
+  browser.storage.onChanged.removeListener(runSync);
+  reconcileIdentitiesByUUID(inSync);
+  reconcileSiteAssignments(inSync);
   addContextualIdentityListeners(backup);
+  //browser.storage.onChanged.addListener(runSync);
+  backup();
+}
+
+/*
+ * Matches uuids in sync to uuids locally, and updates containers accordingly.
+ * If there is no match, it creates the new container.
+ */
+async function reconcileIdentitiesByUUID(inSync) {
+  const syncIdentities = inSync.identities;
+  const syncCookieStoreIDmap = inSync.cookieStoreIDmap;
+
+  for (const syncCookieStoreID of Object.keys(syncCookieStoreIDmap)) {
+    const syncUUID = syncCookieStoreIDmap[syncCookieStoreID];
+    //find localCookiesStoreID by looking up the syncUUID
+    const localCookieStoreID = await identityState.lookupCookieStoreId(syncUUID);
+    console.log("rIBU", localCookieStoreID);
+    // get correct indentity info from sync
+    identityInfo = findIdentityFromSync(syncCookieStoreID, syncIdentities);
+    console.log(identityInfo);
+    if (localCookieStoreID) {
+      // update the local container with the sync data
+      console.log(localCookieStoreID);
+      browser.contextualIdentities.update(localCookieStoreID, identityInfo);
+      continue;
+    }
+    //not found, create new with same UUID
+    const newIdentity = browser.contextualIdentities.create(identityInfo);
+    indentityState.updateUUID(newIdentity.cookieStoreId, syncUUID);
+  }
+}
+
+function findIdentityFromSync(cookieStoreId, identitiesList){
+  console.log(cookieStoreId, identitiesList);
+  for (const identity of identitiesList) {
+    const { name, color, icon } = identity;
+    if (identity.cookieStoreId === cookieStoreId) return { name, color, icon };
+  }
 }
 
 async function restoreFirstRun(inSync) {
   removeContextualIdentityListeners(backup);
+  browser.storage.onChanged.removeListener(runSync);
   await reconcileIdentitiesByName(inSync);
-  await reconcileSiteAssignments(inSync);
-  backup();
+  const firstRun = true;
+  await reconcileSiteAssignments(inSync, firstRun);
   addContextualIdentityListeners(backup);
+  browser.storage.onChanged.addListener(runSync);
+  backup();
 }
 
 /*
@@ -653,11 +697,13 @@ async function restoreFirstRun(inSync) {
  * and the color and icon are overwritten from sync, if different.
  */
 async function reconcileIdentitiesByName(inSync){
-  const browserIdentities = await browser.contextualIdentities.query({});
+  const localIdentities = await browser.contextualIdentities.query({});
   const syncIdentities = inSync.identities;
+  const cookieStoreIDmap = inSync.cookieStoreIDmap;
   for (const syncIdentity of inSync.identities) {
-    const compareNames = function (browserIdentity) { return (browserIdentity.name === syncIdentity.name); };
-    const match = browserIdentities.find(compareNames);
+    syncIdentity.macAddonUUID = cookieStoreIDmap[syncIdentity.cookieStoreId];
+    const compareNames = function (localIdentity) { return (localIdentity.name === syncIdentity.name); };
+    const match = localIdentities.find(compareNames);
     if (!match) {
       newIdentity = await browser.contextualIdentities.create({name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
       identityState.updateUUID(newIdentity.cookieStoreId, syncIdentity.macAddonUUID);
@@ -665,10 +711,12 @@ async function reconcileIdentitiesByName(inSync){
     }
     if (syncIdentity.color === match.color && syncIdentity.icon === match.icon) {
       console.log("everything is the same:", syncIdentity, match);
+      identityState.updateUUID(match.cookieStoreId, syncIdentity.macAddonUUID);
       continue;
     }
     console.log("somethings are different:", syncIdentity, match);
     browser.contextualIdentities.update(match.cookieStoreId, {name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
+    identityState.updateUUID(match.cookieStoreId, syncIdentity.macAddonUUID);
   }
 }
 
@@ -677,32 +725,60 @@ async function reconcileIdentitiesByName(inSync){
  * the assignment is kept. If it exists, but has a different assignment, the user is prompted
  * (not yet implemented). If it does not exist, it is created.
  */
-async function reconcileSiteAssignments(inSync) {
-  const assignedSitesBrowser = await assignManager.storageArea.getAssignedSites();
-  console.log(assignedSitesBrowser);
+async function reconcileSiteAssignments(inSync, firstSync = false) {
+  const assignedSitesLocal = await assignManager.storageArea.getAssignedSites();
+  console.log(assignedSitesLocal);
   const syncAssignedSites = inSync.assignedSites;
   console.log(syncAssignedSites);
   for(const key of Object.keys(syncAssignedSites)) {
-    if (assignedSitesBrowser.hasOwnProperty(key)) {
+    if (assignedSitesLocal.hasOwnProperty(key)) {
       const syncCookieStoreId = "firefox-container-" + syncAssignedSites[key].userContextId;
-      const browserCookieStoreId = "firefox-container-" + assignedSitesBrowser[key].userContextId;
-      if (inSync.cookieStoreIDmap[syncCookieStoreId] === identityState.storageArea.get(browserCookieStoreId).macAddonUUID) {
+      const syncUUID = await inSync.cookieStoreIDmap[syncCookieStoreId];
+      const assignedSite = assignedSitesLocal[key];
+      const localCookieStoreId = "firefox-container-" + assignedSite.userContextId;
+      if (syncUUID === identityState.storageArea.get(localCookieStoreId).macAddonUUID) {
         continue;
       }
-      // TODO: if uuids are not the same, ask user where to assign the site.
+      if (!firstSync) {
+        // overwrite with Sync data
+        setAsignmentWithUUID(syncUUID, assignedSite);
+        // assignedSite.userContextId = identityState.lookupCookieStoreId(syncUUID).replace(/^firefox-container-/, ""); 
+        // assignManager.storageArea.set(
+        //   key.replace(/^siteContainerMap@@_/, "https://"),
+        //   assignedSite
+        // );
+        continue;
+      }
+      // TODO: on First Sync only, if uuids are not the same, 
+      // ask user where to assign the site.
       continue;
     }
-    const data = syncAssignedSites[key];
-    console.log("data", data);
-    const newUUID = inSync.cookieStoreIDmap["firefox-container-" + data.userContextId];
+    const assignedSite = syncAssignedSites[key];
+    console.log("assignedSite", assignedSite);
+    const newUUID = await inSync.cookieStoreIDmap["firefox-container-" + assignedSite.userContextId];
     console.log("newUUID", newUUID);
-    data.userContextId = identityState.lookupCookieStoreId(newUUID);
-    console.log(data.userContextId);
+    // setAsignmentWithUUID(newUUID, assignedSite);
+    const cookieStoreId = await identityState.lookupCookieStoreId(newUUID);
+    assignedSite.userContextId = cookieStoreId.replace(/^firefox-container-/, "");
     assignManager.storageArea.set(
       key.replace(/^siteContainerMap@@_/, "https://"),
-      data
+      assignedSite
     );
   }
+}
+
+async function setAsignmentWithUUID (newUUID, assignedSite) {
+  console.log("setAssingment UUID: ", newUUID);
+  const cookieStoreId = await identityState.lookupCookieStoreId(newUUID);
+  console.log(cookieStoreId);
+  // if (cookieStoreId) {
+    assignedSite.userContextId = cookieStoreId.replace(/^firefox-container-/, "");
+    console.log(assignedSite.userContextId);
+    assignManager.storageArea.set(
+      key.replace(/^siteContainerMap@@_/, "https://"),
+      assignedSite
+    );
+  // }
 }
 
 async function runSync() {
@@ -731,8 +807,8 @@ function removeContextualIdentityListeners(listener) {
 
 async function runFirstSync() {
   console.log("runFirstSync");
-  const browserIdentities = await browser.contextualIdentities.query({});
-  addUUIDsToContainers(browserIdentities);
+  const localIdentities = await browser.contextualIdentities.query({});
+  addUUIDsToContainers(localIdentities);
   const inSync = await browser.storage.sync.get();
   if (Object.entries(inSync).length === 0){
     console.log("no sync storage, backing up...");
@@ -744,8 +820,8 @@ async function runFirstSync() {
   assignManager.storageArea.setSynced();
 }
 
-async function addUUIDsToContainers(browserIdentities) {
-  for (const identity of browserIdentities) {
+async function addUUIDsToContainers(localIdentities) {
+  for (const identity of localIdentities) {
     identityState.addUUID(identity.cookieStoreId);
   }
 }
