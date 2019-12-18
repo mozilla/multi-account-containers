@@ -76,12 +76,24 @@ const identityState = {
     return this.updateUUID(cookieStoreId, uuidv4());
   },
 
+  async lookupMACaddonUUID(cookieStoreId) {
+    const macConfigs = await this.storageArea.area.get();
+    for(const key of Object.keys(macConfigs)) {
+      if (key.includes("identitiesState@@_")) {
+        if(macConfigs[key] === cookieStoreId) {
+          return macConfigs[key].macAddonUUID;
+        }
+      }
+    }
+    return false;
+  },
+
   async lookupCookieStoreId(macAddonUUID) {
     const macConfigs = await this.storageArea.area.get();
     for(const key of Object.keys(macConfigs)) {
       if (key.includes("identitiesState@@_")) {
         if(macConfigs[key].macAddonUUID === macAddonUUID) {
-          return key.replace(/^firefox-container-@@_/, "");
+          return String(key).replace(/^identitiesState@@_/, "");
         }
       }
     }
