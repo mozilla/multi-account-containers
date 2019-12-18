@@ -259,6 +259,7 @@ const Logic = {
 
   getPanelSelector(panel) {
     if (this._onboardingVariation === "securityOnboarding" &&
+    // eslint-disable-next-line no-prototype-builtins
       panel.hasOwnProperty("securityPanelSelector")) {
       return panel.securityPanelSelector;
     } else {
@@ -570,21 +571,21 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         break;
       }
       case 39:
-        {
-          const showTabs = element.parentNode.querySelector(".show-tabs");
-          if(showTabs) {
-            showTabs.click();
-          }
-          break;
+      {
+        const showTabs = element.parentNode.querySelector(".show-tabs");
+        if(showTabs) {
+          showTabs.click();
         }
+        break;
+      }
       case 37:
-        {
-          const hideTabs = document.querySelector(".panel-back-arrow");
-          if(hideTabs) {
-            hideTabs.click();
-          }
-          break;
+      {
+        const hideTabs = document.querySelector(".panel-back-arrow");
+        if(hideTabs) {
+          hideTabs.click();
         }
+        break;
+      }
       default:
         if ((e.keyCode >= 49 && e.keyCode <= 57) &&
             Logic._currentPanel === "containersList") {
