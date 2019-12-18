@@ -240,19 +240,26 @@ const assignManager = {
         delete this.canceledRequests[options.tabId];
       }
     },{urls: ["<all_urls>"], types: ["main_frame"]});
-    this.getPermissions();
+    this.resetBookmarksMenuItem();
   },
 
-  async getPermissions() {
-    const {permissions} = await browser.permissions.getAll();
-    permissions.includes("bookmarks") ? this.makeBookmarksMenu() : browser.contextMenus.remove(this.OPEN_IN_CONTAINER);
-  },
-
-  makeBookmarksMenu() {
-    this.initBookmarksMenu();
-    browser.contextualIdentities.onCreated.addListener(this.contextualIdentityCreated);
-    browser.contextualIdentities.onUpdated.addListener(this.contextualIdentityUpdated);
-    browser.contextualIdentities.onRemoved.addListener(this.contextualIdentityRemoved);
+  async resetBookmarksMenuItem() {
+    const hasPermission = await browser.permissions.contains({permissions: ["bookmarks"]});
+    if (this.hadBookmark === hasPermission) {
+      return;
+    }
+    this.hadBookmark = hasPermission;
+    if (hasPermission) {
+      this.initBookmarksMenu();
+      browser.contextualIdentities.onCreated.addListener(this.contextualIdentityCreated);
+      browser.contextualIdentities.onUpdated.addListener(this.contextualIdentityUpdated);
+      browser.contextualIdentities.onRemoved.addListener(this.contextualIdentityRemoved);
+    } else {
+      this.removeBookmarksMenu();
+      browser.contextualIdentities.onCreated.removeListener(this.contextualIdentityCreated);
+      browser.contextualIdentities.onUpdated.removeListener(this.contextualIdentityUpdated);
+      browser.contextualIdentities.onRemoved.removeListener(this.contextualIdentityRemoved);
+    }
   },
 
   contextualIdentityCreated(changeInfo) {
@@ -324,7 +331,7 @@ const assignManager = {
         if(openInReaderMode) {
           try {
             const parsed = new URL(bookmark.url);
-            bookmark.url = parsed.searchParams.get("url") + parsed.hash; // can't believe const lets me do this ...
+            bookmark.url = parsed.searchParams.get("url") + parsed.hash;
           } catch (err) {
             return err.message;
           }
@@ -520,6 +527,14 @@ const assignManager = {
         title: identity.name,
         icons: { "16": `img/usercontext.svg#${identity.icon}` }
       });
+    }
+  },
+
+  async removeBookmarksMenu() {
+    browser.contextMenus.remove(this.OPEN_IN_CONTAINER);
+    const identities = await browser.contextualIdentities.query({});
+    for (const identity of identities) {
+      browser.contextMenus.remove(identity.cookieStoreId);
     }
   }
 };

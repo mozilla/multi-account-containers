@@ -754,21 +754,24 @@ span ~ .panel-header-text {
   background: var(--primary-action-color);
   block-size: 100%;
   color: #fff;
-  display: flex;
-  flex: 1;
+  display: inline-block;
   justify-content: center;
+  padding-block-start: 6px;
+  padding-inline-start: 30%;
 }
 
-.exit-edit-mode-link::before {
-  background: url('/img/container-arrow.svg') no-repeat;
+.edit-containers-panel-footer {
+  background: var(--primary-action-color);
+}
+
+.exit-edit-mode-link img {
   block-size: 16px;
-  content: "";
-  display: block;
+  display: inline;
   filter: grayscale(100%) brightness(5);
-  float: left;
   inline-size: 16px;
   margin-inline-end: 5px;
   transform: scaleX(-1);
+  vertical-align: bottom;
 }
 
 .delete-container-confirm {

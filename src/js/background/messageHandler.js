@@ -11,7 +11,7 @@ const messageHandler = {
 
       switch (m.method) {
       case "resetBookmarksContext":
-        response = assignManager.getPermissions();
+        response = assignManager.resetBookmarksMenuItem();
         break;
       case "deleteContainer":
         response = backgroundLogic.deleteContainer(m.message.userContextId);
