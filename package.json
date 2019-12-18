@@ -12,7 +12,7 @@
     "addons-linter": "^1.3.2",
     "ajv": "^6.6.2",
     "chai": "^4.1.2",
-    "eslint": "^3.17.1",
+    "eslint": "^6.6.0",
     "eslint-plugin-no-unsanitized": "^2.0.0",
     "eslint-plugin-promise": "^3.4.0",
     "htmllint-cli": "0.0.7",
