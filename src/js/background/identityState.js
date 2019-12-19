@@ -67,12 +67,17 @@ const identityState = {
 
     return this.storageArea.set(cookieStoreId, containerState);
   },
+
   async updateUUID(cookieStoreId, uuid) {
-    const containerState = await this.storageArea.get(cookieStoreId);
-    containerState.macAddonUUID = uuid;
-    await this.storageArea.set(cookieStoreId, containerState);
-    return;
+    if (cookieStoreId && uuid) {
+      const containerState = await this.storageArea.get(cookieStoreId);
+      containerState.macAddonUUID = uuid;
+      await this.storageArea.set(cookieStoreId, containerState);
+      return;
+    } 
+    throw new Error ("cookieStoreId or uuid missing");
   },
+
   async addUUID(cookieStoreId) {
     return await this.updateUUID(cookieStoreId, uuidv4());
   },
