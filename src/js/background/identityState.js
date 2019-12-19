@@ -40,10 +40,10 @@ const identityState = {
   async getCookieStoreIDuuidMap() {
     const containers = {};
     const containerInfo = await identityState.storageArea.area.get();
-    for(const key of Object.keys(containerInfo)) {
-      if (key.includes("identitiesState@@_")) {
-        const container = containerInfo[key];
-        const cookieStoreId = key.replace(/^identitiesState@@_/, "");
+    for(const configKey of Object.keys(containerInfo)) {
+      if (configKey.includes("identitiesState@@_")) {
+        const container = containerInfo[configKey];
+        const cookieStoreId = configKey.replace(/^identitiesState@@_/, "");
         containers[cookieStoreId] = container.macAddonUUID;
       }
     }
@@ -79,10 +79,10 @@ const identityState = {
 
   async lookupMACaddonUUID(cookieStoreId) {
     const macConfigs = await this.storageArea.area.get();
-    for(const key of Object.keys(macConfigs)) {
-      if (key.includes("identitiesState@@_")) {
-        if(macConfigs[key] === cookieStoreId) {
-          return macConfigs[key].macAddonUUID;
+    for(const configKey of Object.keys(macConfigs)) {
+      if (configKey.includes("identitiesState@@_")) {
+        if(macConfigs[configKey] === cookieStoreId) {
+          return macConfigs[configKey].macAddonUUID;
         }
       }
     }
@@ -91,10 +91,10 @@ const identityState = {
 
   async lookupCookieStoreId(macAddonUUID) {
     const macConfigs = await this.storageArea.area.get();
-    for(const key of Object.keys(macConfigs)) {
-      if (key.includes("identitiesState@@_")) {
-        if(macConfigs[key].macAddonUUID === macAddonUUID) {
-          return String(key).replace(/^identitiesState@@_/, "");
+    for(const configKey of Object.keys(macConfigs)) {
+      if (configKey.includes("identitiesState@@_")) {
+        if(macConfigs[configKey].macAddonUUID === macAddonUUID) {
+          return String(configKey).replace(/^identitiesState@@_/, "");
         }
       }
     }
