@@ -92,17 +92,17 @@ const assignManager = {
     async getAssignedSites(userContextId = null) {
       const sites = {};
       const siteConfigs = await this.area.get();
-      for(const key of Object.keys(siteConfigs)) {
-        if (key.includes("siteContainerMap@@_")) {
+      for(const urlKey of Object.keys(siteConfigs)) {
+        if (urlKey.includes("siteContainerMap@@_")) {
         // For some reason this is stored as string... lets check them both as that
-          if (!!userContextId && String(siteConfigs[key].userContextId) !== String(userContextId)) {
+          if (!!userContextId && String(siteConfigs[urlKey].userContextId) !== String(userContextId)) {
             continue;
           }
-          const site = siteConfigs[key];
+          const site = siteConfigs[urlKey];
           // In hindsight we should have stored this
           // TODO file a follow up to clean the storage onLoad
-          site.hostname = key.replace(/^siteContainerMap@@_/, "");
-          sites[key] = site;
+          site.hostname = urlKey.replace(/^siteContainerMap@@_/, "");
+          sites[urlKey] = site;
         }
       };
       return sites;
@@ -564,10 +564,10 @@ const assignManager = {
     console.log("inLocal: ", localInfo);
     const beenSynced = await assignManager.storageArea.getSynced();
     if (beenSynced){
-      runSync();
+      await runSync();
       return;
     }
-    runFirstSync();
+    await runFirstSync();
   },
 };
 
@@ -741,12 +741,12 @@ async function reconcileIdentitiesByName(inSync){
 async function reconcileSiteAssignments(inSync, firstSync = false) {
   console.log("reconcileSiteAssignments");
   const assignedSitesLocal = await assignManager.storageArea.getAssignedSites();
-  const syncAssignedSites = inSync.assignedSites;
-  for(const key of Object.keys(syncAssignedSites)) {
-    if (assignedSitesLocal.hasOwnProperty(key)) {
-      const syncCookieStoreId = "firefox-container-" + syncAssignedSites[key].userContextId;
+  const assignedSitesFromSync = inSync.assignedSites;
+  for(const urlKey of Object.keys(assignedSitesFromSync)) {
+    if (assignedSitesLocal.hasOwnProperty(urlKey)) {
+      const syncCookieStoreId = "firefox-container-" + assignedSitesFromSync[urlKey].userContextId;
       const syncUUID = await inSync.cookieStoreIDmap[syncCookieStoreId];
-      const assignedSite = assignedSitesLocal[key];
+      const assignedSite = assignedSitesLocal[urlKey];
       const localCookieStoreId = "firefox-container-" + assignedSite.userContextId;
       const localIdentityUUID = await identityState.storageArea.get(localCookieStoreId).macAddonUUID
       if (syncUUID === localIdentityUUID) {
@@ -754,25 +754,25 @@ async function reconcileSiteAssignments(inSync, firstSync = false) {
       }
       if (!firstSync) {
         // overwrite with Sync data
-        await setAsignmentWithUUID(syncUUID, assignedSite, key);
+        await setAsignmentWithUUID(syncUUID, assignedSite, urlKey);
         continue;
       }
       // TODO: on First Sync only, if uuids are not the same, 
       // ask user where to assign the site.
       continue;
     }
-    const assignedSite = syncAssignedSites[key];
+    const assignedSite = assignedSitesFromSync[urlKey];
     console.log("new assignment ", assignedSite, ": ", assignedSite.userContextId)
     const newUUID = await inSync.cookieStoreIDmap["firefox-container-" + assignedSite.userContextId];
-    await setAsignmentWithUUID(newUUID, assignedSite, key);
+    await setAsignmentWithUUID(newUUID, assignedSite, urlKey);
   }
 }
 
-async function setAsignmentWithUUID (newUUID, assignedSite, key) {
+async function setAsignmentWithUUID (newUUID, assignedSite, urlKey) {
   const cookieStoreId = await identityState.lookupCookieStoreId(newUUID);
   assignedSite.userContextId = cookieStoreId.replace(/^firefox-container-/, "");
   await assignManager.storageArea.set(
-    key.replace(/^siteContainerMap@@_/, "https://"),
+    urlKey.replace(/^siteContainerMap@@_/, "https://"),
     assignedSite
   );
 }
@@ -788,7 +788,7 @@ async function runSync() {
     return;
   }
   console.log("storage found, attempting to restore ...");
-  restore(inSync);
+  await restore(inSync);
 }
 
 function addContextualIdentityListeners(listener) {
@@ -810,7 +810,7 @@ async function runFirstSync() {
   const inSync = await browser.storage.sync.get();
   if (Object.entries(inSync).length === 0){
     console.log("no sync storage, backing up...");
-    backup();
+    await backup();
   } else {
     console.log("storage found, attempting to restore ...");
     await restoreFirstRun(inSync);
