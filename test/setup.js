@@ -5,6 +5,7 @@ if (!process.listenerCount("unhandledRejection")) {
 const path = require("path");
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
+const crypto = require("crypto");
 global.sinon = require("sinon");
 global.expect = chai.expect;
 chai.should();
@@ -29,6 +30,9 @@ global.buildDom = async ({background = {}, popup = {}}) => {
       ...background.jsom,
       beforeParse(window) {
         window.browser.permissions.getAll.resolves({permissions: ["bookmarks"]});
+        window.crypto = {
+          getRandomValues: arr => crypto.randomBytes(arr.length),
+        };
       }
     }
   };
