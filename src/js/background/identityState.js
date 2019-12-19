@@ -70,10 +70,11 @@ const identityState = {
   async updateUUID(cookieStoreId, uuid) {
     const containerState = await this.storageArea.get(cookieStoreId);
     containerState.macAddonUUID = uuid;
-    return this.storageArea.set(cookieStoreId, containerState);
+    await this.storageArea.set(cookieStoreId, containerState);
+    return;
   },
   async addUUID(cookieStoreId) {
-    return this.updateUUID(cookieStoreId, uuidv4());
+    return await this.updateUUID(cookieStoreId, uuidv4());
   },
 
   async lookupMACaddonUUID(cookieStoreId) {
