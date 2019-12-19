@@ -712,8 +712,7 @@ async function reconcileIdentitiesByName(inSync){
   const cookieStoreIDmap = inSync.cookieStoreIDmap;
   for (const syncIdentity of inSync.identities) {
     syncIdentity.macAddonUUID = cookieStoreIDmap[syncIdentity.cookieStoreId];
-    const compareNames = function (localIdentity) { return (localIdentity.name === syncIdentity.name); };
-    const match = localIdentities.find(compareNames);
+    const match = localIdentities.find(localIdentity => localIdentity.name === syncIdentity.name);
     if (!match) {
       console.log("create new ident: ", syncIdentity.name)
       newIdentity = await browser.contextualIdentities.create({name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
