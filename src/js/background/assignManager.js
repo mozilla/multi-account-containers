@@ -10,8 +10,8 @@ const assignManager = {
     area: browser.storage.local,
     exemptedTabs: {},
 
-    getSynced() {
-      const beenSynced = this.area.get("beenSynced");
+    async getSynced() {
+      const beenSynced = await this.area.get("beenSynced");
       if (Object.entries(beenSynced).length === 0) return false;
       return true;
      },
@@ -558,7 +558,10 @@ const assignManager = {
   },
 
   async initSync() {
-    console.log("initSync");
+    const syncInfo = await browser.storage.sync.get();
+    const localInfo = await browser.storage.local.get();
+    console.log("inSync: ", syncInfo);
+    console.log("inLocal: ", localInfo);
     const beenSynced = await assignManager.storageArea.getSynced();
     if (beenSynced){
       runSync();
@@ -571,9 +574,10 @@ const assignManager = {
 assignManager.init();
 
 async function backup() {
-  browser.storage.onChanged.removeListener(runSync);
+  console.log("backup");
+  browser.storage.onChanged.removeListener(syncOnChangedListener);
+  removeContextualIdentityListeners(backup);
   const identities = await browser.contextualIdentities.query({});
-  console.log("backup", identities);
   await browser.storage.sync.set({ identities: identities });
   const cookieStoreIDmap = await identityState.getCookieStoreIDuuidMap();
   await browser.storage.sync.set({ cookieStoreIDmap: cookieStoreIDmap });
@@ -581,12 +585,15 @@ async function backup() {
   await browser.storage.sync.set({ assignedSites: assignedSites});
   const storage = await browser.storage.sync.get();
   console.log("in sync: ", storage);
-  //browser.storage.onChanged.addListener(runSync);
+  const localStorage = await browser.storage.local.get();
+  console.log("inLocal:", localStorage);
+  //browser.storage.onChanged.addListener(syncOnChangedListener);
+  //addContextualIdentityListeners(backup);
 }
 
 browser.resetMAC1 = async function () {
   // for debugging and testing: remove all containers except the default 4 and the first one created
-  browser.storage.onChanged.removeListener(runSync);
+  browser.storage.onChanged.removeListener(syncOnChangedListener);
 
   // sync state on install: no sync data
   await browser.storage.sync.clear();
@@ -599,7 +606,7 @@ browser.resetMAC1 = async function () {
 
 browser.resetMAC2 = async function () {
   // for debugging and testing: remove all containers except the default 4 and the first one created
-  browser.storage.onChanged.removeListener(runSync);
+  browser.storage.onChanged.removeListener(syncOnChangedListener);
 
   // sync state after FF1 (default + 1)
   await browser.storage.sync.clear();
@@ -618,11 +625,11 @@ browser.resetMAC2 = async function () {
 
 browser.resetMAC3 = async function () {
   // for debugging and testing: remove all containers except the default 4 and the first one created
-  browser.storage.onChanged.removeListener(runSync);
+  browser.storage.onChanged.removeListener(syncOnChangedListener);
 
   // sync state after FF2 synced
   await browser.storage.sync.clear();
-  const syncData = {"identities":[{"name":"Personal","icon":"fingerprint","iconUrl":"resource://usercontext-content/fingerprint.svg","color":"blue","colorCode":"#37adff","cookieStoreId":"firefox-container-1"},{"name":"Work","icon":"briefcase","iconUrl":"resource://usercontext-content/briefcase.svg","color":"orange","colorCode":"#ff9f00","cookieStoreId":"firefox-container-2"},{"name":"Banking","icon":"dollar","iconUrl":"resource://usercontext-content/dollar.svg","color":"green","colorCode":"#51cd00","cookieStoreId":"firefox-container-3"},{"name":"Shopping","icon":"cart","iconUrl":"resource://usercontext-content/cart.svg","color":"pink","colorCode":"#ff4bda","cookieStoreId":"firefox-container-4"},{"name":"Container #01","icon":"chill","iconUrl":"resource://usercontext-content/chill.svg","color":"green","colorCode":"#51cd00","cookieStoreId":"firefox-container-6"}],"cookieStoreIDmap":{"firefox-container-1":"021feeaa-fb44-49ce-91fb-673277afbf95","firefox-container-2":"7bc490d6-b711-46b7-b5a0-c48411e787d3","firefox-container-3":"65e15c60-c90a-40c1-ac61-ca95f21c9325","firefox-container-4":"4c0eb718-b43f-4f62-b2dc-d0c5f912fe5d","firefox-container-6":"266d9c04-fdd5-4d27-a44e-73c69b88ce0a"},"assignedSites":{"siteContainerMap@@_developer.mozilla.org":{"userContextId":"6","neverAsk":!1,"hostname":"developer.mozilla.org"},"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0,"hostname":"twitter.com"},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1,"hostname":"www.linkedin.com"}}};
+  const syncData = {"assignedSites":{"siteContainerMap@@_developer.mozilla.org":{"userContextId":"6","neverAsk":!1,"hostname":"developer.mozilla.org"},"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0,"hostname":"twitter.com"},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":!0,"hostname":"www.facebook.com"},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1,"hostname":"www.linkedin.com"},"siteContainerMap@@_reddit.com": {"userContextId": "7","neverAsk": true}},"cookieStoreIDmap":{"firefox-container-1":"4dc76734-5b71-4f2e-85d0-1cb199ae3821","firefox-container-2":"30308b8d-393c-4375-b9a1-afc59f0dea79","firefox-container-3":"7419c94d-85d7-4d76-94c0-bacef1de722f","firefox-container-4":"2b9fe881-e552-4df9-8cab-922f4688bb68","firefox-container-6":"db7f622e-682b-4556-968a-6e2542ff3b26","firefox-container-7":"ceb06672-76c0-48c4-959e-f3a3ee8358b6"},"identities":[{"name":"Personal","icon":"fingerprint","iconUrl":"resource://usercontext-content/fingerprint.svg","color":"blue","colorCode":"#37adff","cookieStoreId":"firefox-container-1"},{"name":"Work","icon":"briefcase","iconUrl":"resource://usercontext-content/briefcase.svg","color":"orange","colorCode":"#ff9f00","cookieStoreId":"firefox-container-2"},{"name":"Banking","icon":"dollar","iconUrl":"resource://usercontext-content/dollar.svg","color":"purple","colorCode":"#af51f5","cookieStoreId":"firefox-container-3"},{"name":"Shopping","icon":"cart","iconUrl":"resource://usercontext-content/cart.svg","color":"pink","colorCode":"#ff4bda","cookieStoreId":"firefox-container-4"},{"name":"Container #01","icon":"chill","iconUrl":"resource://usercontext-content/chill.svg","color":"green","colorCode":"#51cd00","cookieStoreId":"firefox-container-6"},{"name":"Container #02","icon":"vacation","iconUrl":"resource://usercontext-content/vacation.svg","color":"yellow","colorCode":"#ffcb00","cookieStoreId":"firefox-container-7"}]};
   browser.storage.sync.set(syncData);
 
   // FF1 with updates from FF2 (intial sync w/ default 4 + 1 with some changes)
@@ -630,19 +637,20 @@ browser.resetMAC3 = async function () {
   browser.contextualIdentities.update("firefox-container-3", {color:"purple", icon:"fruit"});
   //browser.contextualIdentities.create({name: "Container #02", icon: "vacation", color: "yellow"});
   browser.storage.local.clear();
-  const localData = {"beenSynced":!0,"browserActionBadgesClicked":["6.1.1"],"containerTabsOpened":10,"identitiesState@@_firefox-container-1":{"hiddenTabs":[],"macAddonUUID":"a12c1ecf-52cd-4a2d-99e3-5e479b396f75"},"identitiesState@@_firefox-container-14":{"hiddenTabs":[],"macAddonUUID":"ee62f98b-6ec8-4ac7-9c6f-b76b1c3d91b4"},"identitiesState@@_firefox-container-2":{"hiddenTabs":[],"macAddonUUID":"d7d9a177-6bd4-4558-9495-03a8fb69443c"},"identitiesState@@_firefox-container-3":{"hiddenTabs":[],"macAddonUUID":"e04fc120-53cb-4d96-b960-b5ef8d285eca"},"identitiesState@@_firefox-container-4":{"hiddenTabs":[],"macAddonUUID":"eaff1081-32df-4dcc-aac4-a378655671ae"},"identitiesState@@_firefox-container-6":{"hiddenTabs":[],"macAddonUUID":"c9069f2f-346f-43c1-a071-8bcb74fa3fc2"},"identitiesState@@_firefox-default":{"hiddenTabs":[]},"onboarding-stage":5,"siteContainerMap@@_developer.mozilla.org":{"userContextId":"6","neverAsk":!1},"siteContainerMap@@_www.hotjar.com":{"userContextId":"6","neverAsk":!0}};
+  const localData = {"beenSynced":!0,"browserActionBadgesClicked":["6.1.1"],"containerTabsOpened":7,"identitiesState@@_firefox-container-1":{"hiddenTabs":[],"macAddonUUID":"4dc76734-5b71-4f2e-85d0-1cb199ae3821"},"identitiesState@@_firefox-container-2":{"hiddenTabs":[],"macAddonUUID":"30308b8d-393c-4375-b9a1-afc59f0dea79"},"identitiesState@@_firefox-container-3":{"hiddenTabs":[],"macAddonUUID":"7419c94d-85d7-4d76-94c0-bacef1de722f"},"identitiesState@@_firefox-container-4":{"hiddenTabs":[],"macAddonUUID":"2b9fe881-e552-4df9-8cab-922f4688bb68"},"identitiesState@@_firefox-container-6":{"hiddenTabs":[],"macAddonUUID":"db7f622e-682b-4556-968a-6e2542ff3b26"},"identitiesState@@_firefox-default":{"hiddenTabs":[]},"onboarding-stage":5,"siteContainerMap@@_developer.mozilla.org":{"userContextId":"6","neverAsk":!1},"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":!0},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1}};
   browser.storage.local.set(localData);
 
 };
 
 async function restore(inSync) {
-  removeContextualIdentityListeners(backup);
-  browser.storage.onChanged.removeListener(runSync);
-  reconcileIdentitiesByUUID(inSync);
-  reconcileSiteAssignments(inSync);
-  addContextualIdentityListeners(backup);
-  //browser.storage.onChanged.addListener(runSync);
-  backup();
+  console.log("restore");
+  await reconcileIdentitiesByUUID(inSync);
+  await reconcileSiteAssignments(inSync);
+  await backup();
+}
+
+function syncOnChangedListener (changes, areaName) {
+  if (areaName == "sync") runSync();
 }
 
 /*
@@ -650,6 +658,7 @@ async function restore(inSync) {
  * If there is no match, it creates the new container.
  */
 async function reconcileIdentitiesByUUID(inSync) {
+  console.log("reconcileIdentitiesByUUID");
   const syncIdentities = inSync.identities;
   const syncCookieStoreIDmap = inSync.cookieStoreIDmap;
 
@@ -657,24 +666,27 @@ async function reconcileIdentitiesByUUID(inSync) {
     const syncUUID = syncCookieStoreIDmap[syncCookieStoreID];
     //find localCookiesStoreID by looking up the syncUUID
     const localCookieStoreID = await identityState.lookupCookieStoreId(syncUUID);
-    console.log("rIBU", localCookieStoreID);
     // get correct indentity info from sync
     identityInfo = findIdentityFromSync(syncCookieStoreID, syncIdentities);
-    console.log(identityInfo);
     if (localCookieStoreID) {
+      //for testing purposes:
+      const getIdent = await browser.contextualIdentities.get(localCookieStoreID);
+      if (getIdent.name !== identityInfo.name) {console.log(getIdent.name, "Change name: ", identityInfo.name)}
+      if (getIdent.color !== identityInfo.color) {console.log(getIdent.name, "Change color: ", identityInfo.color)}
+      if (getIdent.icon !== identityInfo.icon) {console.log(getIdent.name, "Change icon: ", identityInfo.icon)}
       // update the local container with the sync data
-      console.log(localCookieStoreID);
-      browser.contextualIdentities.update(localCookieStoreID, identityInfo);
+      await browser.contextualIdentities.update(localCookieStoreID, identityInfo);
       continue;
     }
     //not found, create new with same UUID
-    const newIdentity = browser.contextualIdentities.create(identityInfo);
-    indentityState.updateUUID(newIdentity.cookieStoreId, syncUUID);
+    console.log("new Identity: ", identityInfo.name)
+    const newIdentity = await browser.contextualIdentities.create(identityInfo);
+    console.log(newIdentity.cookieStoreId)
+    await identityState.updateUUID(newIdentity.cookieStoreId, syncUUID);
   }
 }
 
 function findIdentityFromSync(cookieStoreId, identitiesList){
-  console.log(cookieStoreId, identitiesList);
   for (const identity of identitiesList) {
     const { name, color, icon } = identity;
     if (identity.cookieStoreId === cookieStoreId) return { name, color, icon };
@@ -682,13 +694,10 @@ function findIdentityFromSync(cookieStoreId, identitiesList){
 }
 
 async function restoreFirstRun(inSync) {
-  removeContextualIdentityListeners(backup);
-  browser.storage.onChanged.removeListener(runSync);
+  console.log("restoreFirstRun");
   await reconcileIdentitiesByName(inSync);
   const firstRun = true;
   await reconcileSiteAssignments(inSync, firstRun);
-  addContextualIdentityListeners(backup);
-  browser.storage.onChanged.addListener(runSync);
   backup();
 }
 
@@ -697,6 +706,7 @@ async function restoreFirstRun(inSync) {
  * and the color and icon are overwritten from sync, if different.
  */
 async function reconcileIdentitiesByName(inSync){
+  console.log("reconcileIdentitiesByName");
   const localIdentities = await browser.contextualIdentities.query({});
   const syncIdentities = inSync.identities;
   const cookieStoreIDmap = inSync.cookieStoreIDmap;
@@ -705,18 +715,21 @@ async function reconcileIdentitiesByName(inSync){
     const compareNames = function (localIdentity) { return (localIdentity.name === syncIdentity.name); };
     const match = localIdentities.find(compareNames);
     if (!match) {
+      console.log("create new ident: ", syncIdentity.name)
       newIdentity = await browser.contextualIdentities.create({name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
-      identityState.updateUUID(newIdentity.cookieStoreId, syncIdentity.macAddonUUID);
+      await identityState.updateUUID(newIdentity.cookieStoreId, syncIdentity.macAddonUUID);
       continue;
     }
     if (syncIdentity.color === match.color && syncIdentity.icon === match.icon) {
-      console.log("everything is the same:", syncIdentity, match);
       identityState.updateUUID(match.cookieStoreId, syncIdentity.macAddonUUID);
       continue;
     }
-    console.log("somethings are different:", syncIdentity, match);
-    browser.contextualIdentities.update(match.cookieStoreId, {name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
-    identityState.updateUUID(match.cookieStoreId, syncIdentity.macAddonUUID);
+    //for testing purposes:
+    if (match.color !== syncIdentity.color) {console.log(match.name, "Change color: ", syncIdentity.color)}
+    if (match.icon !== syncIdentity.icon) {console.log(match.name, "Change icon: ", syncIdentity.icon)}
+    // end testing
+    await browser.contextualIdentities.update(match.cookieStoreId, {name: syncIdentity.name, color: syncIdentity.color, icon: syncIdentity.icon});
+    await identityState.updateUUID(match.cookieStoreId, syncIdentity.macAddonUUID);
   }
 }
 
@@ -726,27 +739,22 @@ async function reconcileIdentitiesByName(inSync){
  * (not yet implemented). If it does not exist, it is created.
  */
 async function reconcileSiteAssignments(inSync, firstSync = false) {
+  console.log("reconcileSiteAssignments");
   const assignedSitesLocal = await assignManager.storageArea.getAssignedSites();
-  console.log(assignedSitesLocal);
   const syncAssignedSites = inSync.assignedSites;
-  console.log(syncAssignedSites);
   for(const key of Object.keys(syncAssignedSites)) {
     if (assignedSitesLocal.hasOwnProperty(key)) {
       const syncCookieStoreId = "firefox-container-" + syncAssignedSites[key].userContextId;
       const syncUUID = await inSync.cookieStoreIDmap[syncCookieStoreId];
       const assignedSite = assignedSitesLocal[key];
       const localCookieStoreId = "firefox-container-" + assignedSite.userContextId;
-      if (syncUUID === identityState.storageArea.get(localCookieStoreId).macAddonUUID) {
+      const localIdentityUUID = await identityState.storageArea.get(localCookieStoreId).macAddonUUID
+      if (syncUUID === localIdentityUUID) {
         continue;
       }
       if (!firstSync) {
         // overwrite with Sync data
-        setAsignmentWithUUID(syncUUID, assignedSite);
-        // assignedSite.userContextId = identityState.lookupCookieStoreId(syncUUID).replace(/^firefox-container-/, ""); 
-        // assignManager.storageArea.set(
-        //   key.replace(/^siteContainerMap@@_/, "https://"),
-        //   assignedSite
-        // );
+        await setAsignmentWithUUID(syncUUID, assignedSite, key);
         continue;
       }
       // TODO: on First Sync only, if uuids are not the same, 
@@ -754,39 +762,29 @@ async function reconcileSiteAssignments(inSync, firstSync = false) {
       continue;
     }
     const assignedSite = syncAssignedSites[key];
-    console.log("assignedSite", assignedSite);
+    console.log("new assignment ", assignedSite, ": ", assignedSite.userContextId)
     const newUUID = await inSync.cookieStoreIDmap["firefox-container-" + assignedSite.userContextId];
-    console.log("newUUID", newUUID);
-    // setAsignmentWithUUID(newUUID, assignedSite);
-    const cookieStoreId = await identityState.lookupCookieStoreId(newUUID);
-    assignedSite.userContextId = cookieStoreId.replace(/^firefox-container-/, "");
-    assignManager.storageArea.set(
-      key.replace(/^siteContainerMap@@_/, "https://"),
-      assignedSite
-    );
+    await setAsignmentWithUUID(newUUID, assignedSite, key);
   }
 }
 
-async function setAsignmentWithUUID (newUUID, assignedSite) {
-  console.log("setAssingment UUID: ", newUUID);
+async function setAsignmentWithUUID (newUUID, assignedSite, key) {
   const cookieStoreId = await identityState.lookupCookieStoreId(newUUID);
-  console.log(cookieStoreId);
-  // if (cookieStoreId) {
-    assignedSite.userContextId = cookieStoreId.replace(/^firefox-container-/, "");
-    console.log(assignedSite.userContextId);
-    assignManager.storageArea.set(
-      key.replace(/^siteContainerMap@@_/, "https://"),
-      assignedSite
-    );
-  // }
+  assignedSite.userContextId = cookieStoreId.replace(/^firefox-container-/, "");
+  await assignManager.storageArea.set(
+    key.replace(/^siteContainerMap@@_/, "https://"),
+    assignedSite
+  );
 }
 
 async function runSync() {
+  browser.storage.onChanged.removeListener(syncOnChangedListener);
+  removeContextualIdentityListeners(backup);
   console.log("runSync");
   const inSync = await browser.storage.sync.get();
   if (Object.entries(inSync).length === 0){
     console.log("no sync storage, backing up...");
-    backup();
+    await backup();
     return;
   }
   console.log("storage found, attempting to restore ...");
@@ -808,20 +806,20 @@ function removeContextualIdentityListeners(listener) {
 async function runFirstSync() {
   console.log("runFirstSync");
   const localIdentities = await browser.contextualIdentities.query({});
-  addUUIDsToContainers(localIdentities);
+  await addUUIDsToContainers(localIdentities);
   const inSync = await browser.storage.sync.get();
   if (Object.entries(inSync).length === 0){
     console.log("no sync storage, backing up...");
     backup();
   } else {
     console.log("storage found, attempting to restore ...");
-    restoreFirstRun(inSync);
+    await restoreFirstRun(inSync);
   }
-  assignManager.storageArea.setSynced();
+  await assignManager.storageArea.setSynced();
 }
 
 async function addUUIDsToContainers(localIdentities) {
   for (const identity of localIdentities) {
-    identityState.addUUID(identity.cookieStoreId);
+    await identityState.addUUID(identity.cookieStoreId);
   }
 }
