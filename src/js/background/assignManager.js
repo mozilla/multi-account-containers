@@ -587,8 +587,8 @@ async function backup() {
   console.log("in sync: ", storage);
   const localStorage = await browser.storage.local.get();
   console.log("inLocal:", localStorage);
-  //browser.storage.onChanged.addListener(syncOnChangedListener);
-  //addContextualIdentityListeners(backup);
+  await browser.storage.onChanged.addListener(syncOnChangedListener);
+  await addContextualIdentityListeners(backup);
 }
 
 browser.resetMAC1 = async function () {
