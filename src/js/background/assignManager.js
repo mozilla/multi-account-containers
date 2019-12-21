@@ -65,23 +65,27 @@ const assignManager = {
       });
     },
 
-    set(pageUrl, data, exemptedTabIds) {
+    async set(pageUrl, data, exemptedTabIds) {
       const siteStoreKey = this.getSiteStoreKey(pageUrl);
       if (exemptedTabIds) {
         exemptedTabIds.forEach((tabId) => {
           this.setExempted(pageUrl, tabId);
         });
       }
-      return this.area.set({
+      await this.area.set({
         [siteStoreKey]: data
       });
+      await backup();
+      return;
     },
 
-    remove(pageUrl) {
+    async remove(pageUrl) {
       const siteStoreKey = this.getSiteStoreKey(pageUrl);
       // When we remove an assignment we should clear all the exemptions
       this.removeExempted(pageUrl);
-      return this.area.remove([siteStoreKey]);
+      await this.area.remove([siteStoreKey]);
+      await backup();
+      return;
     },
 
     async deleteContainer(userContextId) {
@@ -582,10 +586,7 @@ async function backup(options) {
   await updateSyncIdentities();
   await updateCookieStoreIdMap();
   await updateSyncSiteAssignments();
-  if (options) {
-    if (options.uuid) { updateDeletedIdentityList(options.uuid);}
-    if (options.siteURL) { updateDeletedSiteAssignmentList(options.siteURL);}
-  }
+  if (options && options.uuid) await updateDeletedIdentityList(options.uuid);
   // for testing
   const storage = await browser.storage.sync.get();
   console.log("in sync: ", storage);
@@ -613,17 +614,10 @@ async function updateSyncSiteAssignments() {
 }
 
 async function updateDeletedIdentityList(deletedIdentityUUID) {
-  let deletedIdentityList = await browser.storage.sync.get("deletedIdentityList");
-  if (Object.entries(deletedIdentityList).length === 0) deletedIdentityList = [];
+  let { deletedIdentityList } = await browser.storage.sync.get("deletedIdentityList");
+  if (!deletedIdentityList) deletedIdentityList = [];
   deletedIdentityList.push(deletedIdentityUUID);
   await browser.storage.sync.set({ deletedIdentityList });
-}
-
-async function updateDeletedSiteAssignmentList(deletedSiteURL) {
-  let deletedSiteAssignmentList = await browser.storage.sync.get("deletedSiteAssignmentList");
-  if (Object.entries(deletedSiteAssignmentList).length === 0) deletedSiteAssignmentList = [];
-  deletedSiteAssignmentList.push(deletedSiteURL);
-  await browser.storage.sync.set({ deletedSiteAssignmentList });  
 }
 
 browser.resetMAC1 = async function () {
@@ -846,9 +840,9 @@ async function runSync() {
   browser.storage.onChanged.removeListener(syncOnChangedListener);
   removeContextualIdentityListeners(syncCIListenerList);
   console.log("runSync");
-  identityState.storageArea.cleanup();
+  await identityState.storageArea.cleanup();
   const inSync = await browser.storage.sync.get();
-  cleanupSync(inSync);
+  await cleanupSync(inSync);
   if (Object.entries(inSync).length === 0){
     console.log("no sync storage, backing up...");
     await backup();
@@ -883,15 +877,15 @@ async function addToDeletedList(changeInfo) {
 
 async function runFirstSync() {
   console.log("runFirstSync");
-  identityState.storageArea.cleanup();
+  await identityState.storageArea.cleanup();
   const localIdentities = await browser.contextualIdentities.query({});
   await addUUIDsToContainers(localIdentities);
   const inSync = await browser.storage.sync.get();
-  cleanupSync(inSync);
   if (Object.entries(inSync).length === 0){
     console.log("no sync storage, backing up...");
     await backup();
   } else {
+    await cleanupSync(inSync);
     console.log("storage found, attempting to restore ...");
     await restoreFirstRun(inSync);
   }
@@ -905,13 +899,16 @@ async function addUUIDsToContainers(localIdentities) {
 }
 
 async function cleanupSync(inSync) {
+  console.log("cleanupSync")
   const identitiesList = inSync.identities;
+  console.log(identitiesList)
   const cookieStoreIDmap = inSync.cookieStoreIDmap;
+  console.log(cookieStoreIDmap)
   for(const cookieStoreId of Object.keys(cookieStoreIDmap)) {
     const match = identitiesList.find(syncIdentity => syncIdentity.cookieStoreId === cookieStoreId);
     if (!match) {
       delete inSync.cookieStoreIDmap[cookieStoreId];
-      browser.storage.sync.set({cookieStoreIDmap: inSync.cookieStoreIDmap});
+      await browser.storage.sync.set({cookieStoreIDmap: inSync.cookieStoreIDmap});
       console.log("removed ", cookieStoreId, " from sync list");
     }
   }
