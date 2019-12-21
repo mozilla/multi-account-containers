@@ -564,10 +564,10 @@ const assignManager = {
     console.log("inLocal: ", localInfo);
     const beenSynced = await assignManager.storageArea.getSynced();
     if (beenSynced){
-      await runSync();
+      runSync();
       return;
     }
-    await runFirstSync();
+    runFirstSync();
   },
 };
 
