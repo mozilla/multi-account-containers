@@ -38,7 +38,7 @@ const identityState = {
         if (configKey.includes("identitiesState@@_")) {
           const cookieStoreId = String(configKey).replace(/^identitiesState@@_/, "");
           const match = identitiesList.find(localIdentity => localIdentity.cookieStoreId === cookieStoreId);
-          if (!match) {
+          if (!match && cookieStoreId !== "firefox-default") {
             console.log("removed ", cookieStoreId, " from storage list");
             this.remove(cookieStoreId);
           }
