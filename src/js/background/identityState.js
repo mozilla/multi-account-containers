@@ -27,9 +27,23 @@ const identityState = {
       });
     },
 
-    remove(cookieStoreId) {
+    async remove(cookieStoreId) {
       const storeKey = this.getContainerStoreKey(cookieStoreId);
-      return this.area.remove([storeKey]);
+      return await this.area.remove([storeKey]);
+    },
+    async cleanup() {
+      const identitiesList = await browser.contextualIdentities.query({});
+      const macConfigs = await this.area.get();
+      for(const configKey of Object.keys(macConfigs)) {
+        if (configKey.includes("identitiesState@@_")) {
+          const cookieStoreId = String(configKey).replace(/^identitiesState@@_/, "");
+          const match = identitiesList.find(localIdentity => localIdentity.cookieStoreId === cookieStoreId);
+          if (!match) {
+            console.log("removed ", cookieStoreId, " from storage list");
+            this.remove(cookieStoreId);
+          }
+        }
+      }
     }
   },
 
@@ -83,12 +97,11 @@ const identityState = {
   },
 
   async lookupMACaddonUUID(cookieStoreId) {
+    console.log(cookieStoreId)
     const macConfigs = await this.storageArea.area.get();
     for(const configKey of Object.keys(macConfigs)) {
-      if (configKey.includes("identitiesState@@_")) {
-        if(macConfigs[configKey] === cookieStoreId) {
+      if (configKey == "identitiesState@@_" + cookieStoreId) {
           return macConfigs[configKey].macAddonUUID;
-        }
       }
     }
     return false;
