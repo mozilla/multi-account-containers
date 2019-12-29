@@ -30,18 +30,16 @@ module.exports = {
     async openNewTab(tab, options = {}) {
       return background.browser.tabs._create(tab, options);
     },
-
+    
     // https://github.com/mozilla/multi-account-containers/issues/847
-    async updateTab(tab, options = {}) {
-      const updatedTab = {};
-      for (const key in tab) {
-        updatedTab[key] = tab[key];
-      }
-      for (const key in options) {
-        updatedTab[key] = options[key];
-      }
-      return this.openNewTab(updatedTab);
-    },
+    async browseToURL(tabId, url) {
+      const [promise] = background.browser.webRequest.onBeforeRequest.addListener.yield({
+        frameId: 0,
+        tabId: tabId,
+        url: url
+      });
+      return promise;
+    }
   },
 
   popup: {

@@ -211,10 +211,13 @@ const assignManager = {
     }
 
     if (mustReloadPageInDefaultContainerDueToLocking) {
-      // Open new tab in default container
-      browser.tabs.create({url: options.url});
+      this.reloadPageInDefaultContainer(
+        options.url,
+        tab.index + 1,
+        tab.active,
+        openTabId
+      );
     } else {
-      // Open new tab in assigned container
       this.reloadPageInContainer(
         options.url,
         userContextId,
@@ -544,6 +547,28 @@ const assignManager = {
       const charCode = c.charCodeAt(0).toString(16);
       return `%${charCode}`;
     });
+  },
+  
+  reloadPageInDefaultContainer(url, index, active, openerTabId) {
+    // To create a new tab in the default container, it is easiest just to omit the
+    // cookieStoreId entirely.
+    // 
+    // Unfortunately, if you create a new tab WITHOUT a cookieStoreId but WITH an openerTabId,
+    // then the new tab automatically inherits the opener tab's cookieStoreId.
+    // I.e. it opens in the wrong container!
+    // 
+    // So we have to explicitly pass in a cookieStoreId when creating the tab, since we
+    // are specifying the openerTabId. There doesn't seem to be any way
+    // to look up the default container's cookieStoreId programatically, so sadly
+    // we have to hardcode it here as "firefox-default". This is potentially
+    // not cross-browser compatible.
+    // 
+    // Note that we could have just omitted BOTH cookieStoreId and openerTabId. But the
+    // drawback then is that if the user later closes the newly-created tab, the browser
+    // does not automatically return to the original opener tab. To get this desired behaviour,
+    // we MUST specify the openerTabId when creating the new tab.
+    const cookieStoreId = "firefox-default";
+    browser.tabs.create({url, cookieStoreId, index, active, openerTabId});
   },
 
   reloadPageInContainer(url, currentUserContextId, userContextId, index, active, neverAsk = false, openerTabId = null) {

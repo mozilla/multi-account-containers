@@ -4,7 +4,8 @@ describe("Lock Feature", () => {
     id: 1,
     cookieStoreId: "firefox-container-1",
     url: "http://example.com",
-    index: 0
+    index: 0,
+    active: true
   };
   beforeEach(async () => {
     await helper.browser.initializeWithTab(activeTab);
@@ -19,10 +20,7 @@ describe("Lock Feature", () => {
     describe("open different URL in same tab", () => {
       const differentURL = "http://example2.com";
       beforeEach(async () => {
-        await helper.browser.updateTab(activeTab, {
-          url: differentURL,
-          resetHistory: true
-        });
+        await helper.browser.browseToURL(activeTab.id, differentURL);
       });
 
       it("should not open a new tab", () => {
@@ -36,16 +34,17 @@ describe("Lock Feature", () => {
     
         describe("open different URL in same tab", () => {
           beforeEach(async () => {
-            await helper.browser.updateTab(activeTab, {
-              url: differentURL,
-              resetHistory: true
-            });
+            await helper.browser.browseToURL(activeTab.id, differentURL);
           });
 
           it("should open a new tab in the default container", () => {
-            background.browser.tabs.create.should.have.been.calledWith({
-              url: differentURL
-            });
+            background.browser.tabs.create.should.have.been.calledWith(sinon.match({
+              url: differentURL,
+              cookieStoreId: "firefox-default",
+              openerTabId: activeTab.id,
+              index: activeTab.index + 1,
+              active: activeTab.active
+            }));
           });
         });
       });
