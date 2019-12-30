@@ -53,21 +53,9 @@ module.exports = {
     
     // https://github.com/mozilla/multi-account-containers/issues/847
     async setContainerIsLocked(cookieStoreId, isLocked) {
-      const identityStateKey = this.getIdentityStateContainerStoreKey(cookieStoreId);
-      const identityState = await background.browser.storage.local.get([identityStateKey]) || {};
-      if (isLocked) {
-        identityState.isLocked = "locked";
-      } else {
-        delete identityState.isLocked;
-      }
-      // Must have valid 'hiddenTabs', otherwise backgroundLogic.showTabs() throws error
-      if (!identityState.hiddenTabs) { identityState.hiddenTabs = []; }
-      await background.browser.storage.local.set({[identityStateKey]: identityState});
-    },
-    
-    getIdentityStateContainerStoreKey(cookieStoreId) {
-      const storagePrefix = "identitiesState@@_";
-      return `${storagePrefix}${cookieStoreId}`;      
+      const Logic = popup.dom.window.eval("Logic");
+      const userContextId = Logic.userContextId(cookieStoreId);
+      await Logic.lockOrUnlockContainer(userContextId, isLocked);
     }
   }
 };

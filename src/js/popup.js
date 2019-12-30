@@ -370,6 +370,16 @@ const Logic = {
       value
     });
   },
+  
+  lockOrUnlockContainer(userContextId, isLocked) {
+    return browser.runtime.sendMessage({
+      method: "lockOrUnlockContainer",
+      message: {
+        userContextId: userContextId,
+        isLocked: !!isLocked
+      }
+    });
+  },
 
   generateIdentityName() {
     const defaultName = "Container #";
@@ -1041,16 +1051,10 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       
       Logic.addEnterHandler(lockElement, async () => {
         try {
-          await browser.runtime.sendMessage({
-            method: "lockOrUnlockContainer",
-            message: {
-              userContextId: Logic.currentUserContextId(),
-              isLocked: !isLocked
-            }
-          });
+          await Logic.lockOrUnlockContainer(Logic.currentUserContextId(), !isLocked);
           this.showAssignedContainers(assignments, !isLocked);
         } catch (e) {
-          throw new Error("Failed to lock/unlock. ", e.message);
+          throw new Error("Failed to lock/unlock container: " + e.message);
         }
       });
       /* Container locking end */
