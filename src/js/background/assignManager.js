@@ -75,7 +75,7 @@ const assignManager = {
       await this.area.set({
         [siteStoreKey]: data
       });
-      await backup();
+      await backup({undelete: siteStoreKey});
       return;
     },
 
@@ -84,7 +84,7 @@ const assignManager = {
       // When we remove an assignment we should clear all the exemptions
       this.removeExempted(pageUrl);
       await this.area.remove([siteStoreKey]);
-      await backup();
+      await backup({siteStoreKey});
       return;
     },
 
@@ -587,6 +587,8 @@ async function backup(options) {
   await updateCookieStoreIdMap();
   await updateSyncSiteAssignments();
   if (options && options.uuid) await updateDeletedIdentityList(options.uuid);
+  if (options && options.siteStoreKey) await addToDeletedSitesList(options.siteStoreKey);
+  if (options && options.undelete) await removeFromDeletedSitesList(options.undelete);
   // for testing
   const storage = await browser.storage.sync.get();
   console.log("in sync: ", storage);
@@ -616,8 +618,24 @@ async function updateSyncSiteAssignments() {
 async function updateDeletedIdentityList(deletedIdentityUUID) {
   let { deletedIdentityList } = await browser.storage.sync.get("deletedIdentityList");
   if (!deletedIdentityList) deletedIdentityList = [];
+  if (deletedIdentityList.find(element => element === deletedIdentityUUID)) return;
   deletedIdentityList.push(deletedIdentityUUID);
   await browser.storage.sync.set({ deletedIdentityList });
+}
+
+async function addToDeletedSitesList(siteStoreKey) {
+  let { deletedSiteList } = await browser.storage.sync.get("deletedSiteList");
+  if (!deletedSiteList) deletedSiteList = [];
+  if (deletedSiteList.find(element => element === siteStoreKey)) return;
+  deletedSiteList.push(siteStoreKey);
+  await browser.storage.sync.set({ deletedSiteList });
+}
+
+async function removeFromDeletedSitesList(siteStoreKey) {
+  let { deletedSiteList } = await browser.storage.sync.get("deletedSiteList");
+  if (!deletedSiteList) return;
+  deletedSiteList = deletedSiteList.filter(element => element !== siteStoreKey);
+  await browser.storage.sync.set({ deletedSiteList });
 }
 
 browser.resetMAC1 = async function () {
@@ -801,23 +819,25 @@ async function reconcileSiteAssignments(inSync, firstSync = false) {
   console.log("reconcileSiteAssignments");
   const assignedSitesLocal = await assignManager.storageArea.getAssignedSites();
   const assignedSitesFromSync = inSync.assignedSites;
+  if (inSync.hasOwnProperty("deletedSiteList")){
+    for(const siteStoreKey of inSync.deletedSiteList) {
+      if (assignedSitesLocal.hasOwnProperty(siteStoreKey)) {
+        assignManager.storageArea.remove(siteStoreKey.replace(/^siteContainerMap@@_/, "https://"));
+      }
+    }
+  }
   for(const urlKey of Object.keys(assignedSitesFromSync)) {
     if (assignedSitesLocal.hasOwnProperty(urlKey)) {
       const syncCookieStoreId = "firefox-container-" + assignedSitesFromSync[urlKey].userContextId;
       const syncUUID = await inSync.cookieStoreIDmap[syncCookieStoreId];
       const assignedSite = assignedSitesLocal[urlKey];
       const localCookieStoreId = "firefox-container-" + assignedSite.userContextId;
-      const localIdentityUUID = await identityState.storageArea.get(localCookieStoreId).macAddonUUID
+      const localIdentityUUID = await identityState.storageArea.get(localCookieStoreId).macAddonUUID;
       if (syncUUID === localIdentityUUID) {
         continue;
       }
-      if (!firstSync) {
-        // overwrite with Sync data
-        await setAsignmentWithUUID(syncUUID, assignedSite, urlKey);
-        continue;
-      }
-      // TODO: on First Sync only, if uuids are not the same, 
-      // ask user where to assign the site.
+      // overwrite with Sync data. Sync is the source of truth
+      await setAsignmentWithUUID(syncUUID, assignedSite, urlKey);
       continue;
     }
     const assignedSite = assignedSitesFromSync[urlKey];
@@ -829,11 +849,15 @@ async function reconcileSiteAssignments(inSync, firstSync = false) {
 
 async function setAsignmentWithUUID (newUUID, assignedSite, urlKey) {
   const cookieStoreId = await identityState.lookupCookieStoreId(newUUID);
-  assignedSite.userContextId = cookieStoreId.replace(/^firefox-container-/, "");
-  await assignManager.storageArea.set(
-    urlKey.replace(/^siteContainerMap@@_/, "https://"),
-    assignedSite
-  );
+  if (cookieStoreId) {
+    assignedSite.userContextId = cookieStoreId.replace(/^firefox-container-/, "");
+    await assignManager.storageArea.set(
+      urlKey.replace(/^siteContainerMap@@_/, "https://"),
+      assignedSite
+    );
+    return;
+  }
+  throw new Error ("No cookieStoreId found for: ", newUUID, assignedSite, urlKey);
 }
 
 async function runSync() {
