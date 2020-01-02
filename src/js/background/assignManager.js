@@ -1,4 +1,3 @@
-/* jshint esversion: 8*/
 const assignManager = {
   MENU_ASSIGN_ID: "open-in-this-container",
   MENU_REMOVE_ID: "remove-open-in-this-container",
@@ -14,11 +13,11 @@ const assignManager = {
       const beenSynced = await this.area.get("beenSynced");
       if (Object.entries(beenSynced).length === 0) return false;
       return true;
-     },
+    },
 
     setSynced() {
       this.area.set({beenSynced: true});
-     },
+    },
 
     getSiteStoreKey(pageUrl) {
       const url = new window.URL(pageUrl);
@@ -53,14 +52,18 @@ const assignManager = {
 
     get(pageUrl) {
       const siteStoreKey = this.getSiteStoreKey(pageUrl);
+      return this.getByUrlKey(siteStoreKey);
+    },
+
+    getByUrlKey(siteStoreKey) {
       return new Promise((resolve, reject) => {
         this.area.get([siteStoreKey]).then((storageResponse) => {
           if (storageResponse && siteStoreKey in storageResponse) {
             resolve(storageResponse[siteStoreKey]);
           }
-          resolve(null);
+          resolve(()=> { throw new Error (siteStoreKey, " does not exist"); });
         }).catch((e) => {
-          reject(e);
+          throw e; // reject(e);
         });
       });
     },
@@ -108,7 +111,7 @@ const assignManager = {
           site.hostname = urlKey.replace(/^siteContainerMap@@_/, "");
           sites[urlKey] = site;
         }
-      };
+      }
       return sites;
     },
   },
