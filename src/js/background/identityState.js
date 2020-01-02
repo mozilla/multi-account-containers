@@ -1,4 +1,3 @@
-/* jshint esversion: 8*/
 const identityState = {
   storageArea: {
     area: browser.storage.local,
@@ -14,10 +13,15 @@ const identityState = {
       if (storageResponse && storeKey in storageResponse) {
         return storageResponse[storeKey];
       }
-      const defaultContainerState = identityState._createIdentityState();
-      await this.set(cookieStoreId, defaultContainerState);
-
-      return defaultContainerState;
+      const identities = await browser.contextualIdentities.query({});
+      const match = identities.find(
+        (identity) => identity.cookieStoreId === cookieStoreId);
+      if (match) {
+        const defaultContainerState = identityState._createIdentityState();
+        await this.set(cookieStoreId, defaultContainerState);
+        return defaultContainerState;
+      }
+      throw new Error (`${cookieStoreId} not found`);
     },
 
     set(cookieStoreId, data) {
@@ -97,11 +101,11 @@ const identityState = {
   },
 
   async lookupMACaddonUUID(cookieStoreId) {
-    console.log(cookieStoreId)
+    console.log(cookieStoreId);
     const macConfigs = await this.storageArea.area.get();
     for(const configKey of Object.keys(macConfigs)) {
-      if (configKey == "identitiesState@@_" + cookieStoreId) {
-          return macConfigs[configKey].macAddonUUID;
+      if (configKey === "identitiesState@@_" + cookieStoreId) {
+        return macConfigs[configKey].macAddonUUID;
       }
     }
     return false;
