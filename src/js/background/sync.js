@@ -1,4 +1,4 @@
-const SYNC_DEBUG = true;
+const SYNC_DEBUG = false;
 
 const sync = {
   storageArea: {
@@ -153,8 +153,10 @@ const sync = {
   async initSync() {
     const syncInfo = await sync.storageArea.get();
     const localInfo = await browser.storage.local.get();
-    console.log("inSync: ", syncInfo);
-    console.log("inLocal: ", localInfo);
+    if (SYNC_DEBUG) {
+      console.log("inSync: ", syncInfo);
+      console.log("inLocal: ", localInfo);
+    }
     const beenSynced = await assignManager.storageArea.getSynced();
     if (beenSynced){
       runSync();
