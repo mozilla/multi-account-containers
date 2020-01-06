@@ -45,7 +45,7 @@
     "package": "rm -rf src/web-ext-artifacts && npm run build && mv src/web-ext-artifacts/firefox_multi-account_containers-*.zip addon.xpi",
     "test": "npm run lint && npm run coverage",
     "mocha": "mocha ./test/setup.js test/**/*.test.js",
-    "mochaSingle": "mocha",
+    "mochaSingle": "mocha ./test/setup.js",
     "test-watch": "mocha ./test/setup.js test/**/*.test.js --watch",
     "coverage": "nyc --reporter=html --reporter=text mocha ./test/setup.js test/**/*.test.js --timeout 60000"
   }
