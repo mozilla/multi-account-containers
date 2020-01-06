@@ -116,6 +116,13 @@ const assignManager = {
     this.storageArea.setExempted(pageUrl, m.tabId);
     return true;
   },
+  
+  _determineSetAssignmentDueToRecording(tabId, url, siteSettings) {
+    if (siteSettings) { return false; } // Assignment already set
+    if (!recordManager.isRecordingTabId(tabId)) { return false; }
+    if (!url.startsWith("http")) { return false; } // Exclude moz-extension:// requests
+    return true;
+  },
 
   // Before a request is handled by the browser we decide if we should route through a different container
   async onBeforeRequest(options) {
@@ -141,6 +148,12 @@ const assignManager = {
       return {};
     }
     const userContextId = this.getUserContextIdFromCookieStore(tab);
+    
+    // Recording
+    if (this._determineSetAssignmentDueToRecording(tab.id, options.url, siteSettings)) {
+      await this._setOrRemoveAssignment(tab.id, options.url, userContextId, false);
+    }
+    
     if (!siteSettings
         || userContextId === siteSettings.userContextId
         || this.storageArea.isExempted(options.url, tab.id)) {
@@ -374,7 +387,7 @@ const assignManager = {
     // Context menu has stored context IDs as strings, so we need to coerce
     // the value to a string for accurate checking
     userContextId = String(userContextId);
-
+    
     if (!remove) {
       const tabs = await browser.tabs.query({});
       const assignmentStoreKey = this.storageArea.getSiteStoreKey(pageUrl);
@@ -394,18 +407,20 @@ const assignManager = {
         userContextId,
         neverAsk: false
       }, exemptedTabIds);
-      actionName = "added";
+      actionName = "Successfully set to always open in this container";
     } else {
       await this.storageArea.remove(pageUrl);
-      actionName = "removed";
+      actionName = "Successfully removed from this container";
     }
-    browser.tabs.sendMessage(tabId, {
-      text: `Successfully ${actionName} site to always open in this container`
+    const hostname = new window.URL(pageUrl).hostname;
+    messageHandler.sendTabMessage(tabId, {
+      title: hostname,
+      text: actionName
     });
     const tab = await browser.tabs.get(tabId);
     this.calculateContextMenu(tab);
   },
-
+  
   async _getAssignment(tab) {
     const cookieStore = this.getUserContextIdFromCookieStore(tab);
     // Ensure we have a cookieStore to assign to
@@ -415,11 +430,11 @@ const assignManager = {
     }
     return false;
   },
-
+  
   _getByContainer(userContextId) {
     return this.storageArea.getByContainer(userContextId);
   },
-
+  
   removeContextMenu() {
     // There is a focus issue in this menu where if you change window with a context menu click
     // you get the wrong menu display because of async
