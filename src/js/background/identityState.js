@@ -11,6 +11,10 @@ const identityState = {
       const storeKey = this.getContainerStoreKey(cookieStoreId);
       const storageResponse = await this.area.get([storeKey]);
       if (storageResponse && storeKey in storageResponse) {
+        if (!storageResponse[storeKey].macAddonUUID){
+          await identityState.addUUID(cookieStoreId);
+          return this.get(cookieStoreId);
+        }
         return storageResponse[storeKey];
       }
       const identities = await browser.contextualIdentities.query({});
@@ -91,7 +95,7 @@ const identityState = {
       const containerState = await this.storageArea.get(cookieStoreId);
       containerState.macAddonUUID = uuid;
       await this.storageArea.set(cookieStoreId, containerState);
-      return;
+      return uuid;
     } 
     throw new Error ("cookieStoreId or uuid missing");
   },
