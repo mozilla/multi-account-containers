@@ -37,7 +37,7 @@ const sync = {
     },
 
     async backup(options) {
-      console.log("backup");
+      if (SYNC_DEBUG) console.log("backup");
       // remove listeners to avoid an infinite loop!
       browser.storage.onChanged.removeListener(sync.storageArea.onChangedListener);
       removeContextualIdentityListeners(syncCIListenerList);
@@ -281,51 +281,32 @@ async function reconcileSiteAssignments() {
 
   for(const urlKey of Object.keys(assignedSitesFromSync)) {
     const assignedSite = assignedSitesFromSync[urlKey];
-    if (assignedSitesLocal.hasOwnProperty(urlKey)) {
-      const syncUUID = 
-        await lookupSyncSiteAssigmentIdentityUUID(
-          assignedSite, cookieStoreIDmap, urlKey
-        );
-
-      const localIdentityUUID = 
-        await lookupLocalSiteAssignmentIdentityUUID(urlKey);
-
-      if (syncUUID === localIdentityUUID) {
-        continue;
-      }
-      // overwrite with Sync data. Sync is the source of truth
-      await setAssignmentWithUUID(syncUUID, assignedSite, urlKey);
+    const syncUUID = 
+      await lookupSyncSiteAssigmentIdentityUUID(
+        assignedSite, cookieStoreIDmap, urlKey
+      );
+    if (syncUUID) {
+      // Sync is truth.
+      // Not even looking it up. Just overwrite
+      console.log("new assignment ", assignedSite, ": ", 
+        assignedSite.userContextId);
+      const newUUID = cookieStoreIDmap[
+        "firefox-container-" + assignedSite.userContextId
+      ];
+      await setAssignmentWithUUID(newUUID, assignedSite, urlKey);
       continue;
     }
-    console.log("new assignment ", assignedSite, ": ", 
-      assignedSite.userContextId);
-    const newUUID = cookieStoreIDmap[
-      "firefox-container-" + assignedSite.userContextId
-    ];
-    await setAssignmentWithUUID(newUUID, assignedSite, urlKey);
-  }
 
-  async function lookupLocalSiteAssignmentIdentityUUID(urlKey){
-    const localAssignedSite = 
-      await assignManager.storageArea.getByUrlKey(urlKey);
-    if (!localAssignedSite || !localAssignedSite.userContextId) 
-      throw new Error (urlKey, "userContextId does not exist");
-    const localCookieStoreId = "firefox-container-" + 
-      localAssignedSite.userContextId;
-    return await identityState.storageArea
-      .get(localCookieStoreId).macAddonUUID;
+    // if there's no syncUUID, something is wrong, since these site
+    // assignments are from sync
+    throw new Error("Sync storage not aligned");
   }
 
   async function lookupSyncSiteAssigmentIdentityUUID(
     assignedSite,
     cookieStoreIDmap,
-    urlKey
   ){
-    if (!assignedSite.userContextId) 
-      throw new Error (`${urlKey} userContextId does not exist`);
     const syncCookieStoreId = "firefox-container-" + assignedSite.userContextId;
-    if (!cookieStoreIDmap[syncCookieStoreId]) 
-      throw new Error (syncCookieStoreId, " does not have a uuid");
     return cookieStoreIDmap[syncCookieStoreId];
   }
 }

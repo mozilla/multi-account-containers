@@ -26,6 +26,7 @@ describe("External Webextensions", () => {
       const [promise] = background.browser.runtime.onMessageExternal.addListener.yield(message, sender);
       const answer = await promise;
       expect(answer).to.deep.equal({
+        hostname: "example.com",
         userContextId: "1",
         neverAsk: false
       });
