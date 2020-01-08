@@ -1,4 +1,4 @@
-const SYNC_DEBUG = false;
+const SYNC_DEBUG = true;
 
 const sync = {
   storageArea: {
@@ -40,7 +40,7 @@ const sync = {
       if (SYNC_DEBUG) console.log("backup");
       // remove listeners to avoid an infinite loop!
       browser.storage.onChanged.removeListener(sync.storageArea.onChangedListener);
-      removeContextualIdentityListeners(syncCIListenerList);
+      removeContextualIdentityListeners();
 
       await updateSyncIdentities();
       await updateCookieStoreIdMap();
@@ -60,7 +60,7 @@ const sync = {
       }
 
       await browser.storage.onChanged.addListener(sync.storageArea.onChangedListener);
-      await addContextualIdentityListeners(syncCIListenerList);
+      await addContextualIdentityListeners();
 
       async function updateSyncIdentities() {
         const identities = await browser.contextualIdentities.query({});
@@ -146,8 +146,13 @@ const sync = {
   },
 
   init() {
-    browser.runtime.onInstalled.addListener(this.initSync);
-    browser.runtime.onStartup.addListener(this.initSync);
+    const errorHandledInitSync = () => {
+      this.initSync().catch((error)=> { 
+        console.error("Error from initSync", error);
+      });
+    };
+    browser.runtime.onInstalled.addListener(errorHandledInitSync);
+    browser.runtime.onStartup.addListener(errorHandledInitSync);
   },
 
   async initSync() {
@@ -159,10 +164,10 @@ const sync = {
     }
     const beenSynced = await assignManager.storageArea.getSynced();
     if (beenSynced){
-      runSync();
+      await runSync();
       return;
     }
-    runFirstSync();
+    await runFirstSync();
   },
 };
 
@@ -327,7 +332,7 @@ async function setAssignmentWithUUID (newUUID, assignedSite, urlKey) {
 
 async function runSync() {
   browser.storage.onChanged.removeListener(sync.storageArea.onChangedListener);
-  removeContextualIdentityListeners(syncCIListenerList);
+  removeContextualIdentityListeners();
   console.log("runSync");
   await identityState.storageArea.cleanup();
   await sync.storageArea.cleanup();
@@ -422,91 +427,15 @@ const syncCIListenerList = [
 ];
 
 function addContextualIdentityListeners(listenerList) {
+  if(!listenerList) listenerList = syncCIListenerList;
   browser.contextualIdentities.onCreated.addListener(listenerList[0]);
   browser.contextualIdentities.onRemoved.addListener(listenerList[1]);
   browser.contextualIdentities.onUpdated.addListener(listenerList[2]);
 }
 
 function removeContextualIdentityListeners(listenerList) {
+  if(!listenerList) listenerList = syncCIListenerList;
   browser.contextualIdentities.onCreated.removeListener(listenerList[0]);
   browser.contextualIdentities.onRemoved.removeListener(listenerList[1]);
   browser.contextualIdentities.onUpdated.removeListener(listenerList[2]);
-}
-
-
-
-
-
-
-if(SYNC_DEBUG) {
-  browser.resetMAC1 = async function () {
-    // for debugging and testing: remove all containers except the
-    // default 4 and the first one created
-    browser.storage.onChanged.removeListener(sync.storageArea.onChangedListener);
-
-    // sync state on install: no sync data
-    await browser.storage.sync.clear();
-
-    // FF1: no sync, Only default containers and 1 extra
-    browser.storage.local.clear();
-    const localData = {"browserActionBadgesClicked":["6.1.1"],"containerTabsOpened":6,"identitiesState@@_firefox-container-1":{"hiddenTabs":[]},"identitiesState@@_firefox-container-2":{"hiddenTabs":[]},"identitiesState@@_firefox-container-3":{"hiddenTabs":[]},"identitiesState@@_firefox-container-4":{"hiddenTabs":[]},"identitiesState@@_firefox-container-6":{"hiddenTabs":[]},"identitiesState@@_firefox-default":{"hiddenTabs":[]},"onboarding-stage":5,"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":true},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":true},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":false}};
-    browser.storage.local.set(localData);
-  };
-
-  browser.resetMAC2 = async function () {
-    // for debugging and testing: remove all containers except the default 4 and the first one created
-    browser.storage.onChanged.removeListener(sync.storageArea.onChangedListener);
-
-    // sync state after FF1 (default + 1)
-    await browser.storage.sync.clear();
-    const syncData = {"cookieStoreIDmap":{"firefox-container-1":"4dc76734-5b71-4f2e-85d0-1cb199ae3821","firefox-container-2":"30308b8d-393c-4375-b9a1-afc59f0dea79","firefox-container-3":"7419c94d-85d7-4d76-94c0-bacef1de722f","firefox-container-4":"2b9fe881-e552-4df9-8cab-922f4688bb68","firefox-container-6":"db7f622e-682b-4556-968a-6e2542ff3b26"},"assignedSites":{"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":!0},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1}},"identities":[{"name":"Personal","icon":"fingerprint","iconUrl":"resource://usercontext-content/fingerprint.svg","color":"blue","colorCode":"#37adff","cookieStoreId":"firefox-container-1"},{"name":"Work","icon":"briefcase","iconUrl":"resource://usercontext-content/briefcase.svg","color":"orange","colorCode":"#ff9f00","cookieStoreId":"firefox-container-2"},{"name":"Banking","icon":"dollar","iconUrl":"resource://usercontext-content/dollar.svg","color":"green","colorCode":"#51cd00","cookieStoreId":"firefox-container-3"},{"name":"Shopping","icon":"cart","iconUrl":"resource://usercontext-content/cart.svg","color":"pink","colorCode":"#ff4bda","cookieStoreId":"firefox-container-4"},{"name":"Container #01","icon":"chill","iconUrl":"resource://usercontext-content/chill.svg","color":"green","colorCode":"#51cd00","cookieStoreId":"firefox-container-6"}]};
-    sync.storageArea.set(syncData);
-
-    // FF2 (intial sync w/ default 4 + 1 with some changes)
-    removeContextualIdentityListeners(syncCIListenerList);
-    browser.contextualIdentities.update("firefox-container-2", {color:"purple"});
-    browser.contextualIdentities.update("firefox-container-4", {icon:"pet"});
-    browser.storage.local.clear();
-    const localData = {"browserActionBadgesClicked":["6.1.1"],"containerTabsOpened":7,"identitiesState@@_firefox-container-1":{"hiddenTabs":[]},"identitiesState@@_firefox-container-2":{"hiddenTabs":[]},"identitiesState@@_firefox-container-3":{"hiddenTabs":[]},"identitiesState@@_firefox-container-4":{"hiddenTabs":[]},"identitiesState@@_firefox-container-6":{"hiddenTabs":[]},"identitiesState@@_firefox-default":{"hiddenTabs":[]},"onboarding-stage":5,"siteContainerMap@@_developer.mozilla.org":{"userContextId":"6","neverAsk":!1},"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1}};
-    browser.storage.local.set(localData);
-
-  };
-
-  browser.resetMAC3 = async function () {
-    // for debugging and testing: remove all containers except the default 4 and the first one created
-    browser.storage.onChanged.removeListener(sync.storageArea.onChangedListener);
-
-    // sync state after FF2 synced
-    await browser.storage.sync.clear();
-    const syncData = {"assignedSites":{"siteContainerMap@@_developer.mozilla.org":{"userContextId":"6","neverAsk":!1,"hostname":"developer.mozilla.org"},"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0,"hostname":"twitter.com"},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":!0,"hostname":"www.facebook.com"},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1,"hostname":"www.linkedin.com"},"siteContainerMap@@_reddit.com": {"userContextId": "7","neverAsk": true}},"cookieStoreIDmap":{"firefox-container-1":"4dc76734-5b71-4f2e-85d0-1cb199ae3821","firefox-container-2":"30308b8d-393c-4375-b9a1-afc59f0dea79","firefox-container-3":"7419c94d-85d7-4d76-94c0-bacef1de722f","firefox-container-4":"2b9fe881-e552-4df9-8cab-922f4688bb68","firefox-container-6":"db7f622e-682b-4556-968a-6e2542ff3b26","firefox-container-7":"ceb06672-76c0-48c4-959e-f3a3ee8358b6"},"identities":[{"name":"Personal","icon":"fingerprint","iconUrl":"resource://usercontext-content/fingerprint.svg","color":"blue","colorCode":"#37adff","cookieStoreId":"firefox-container-1"},{"name":"Work","icon":"briefcase","iconUrl":"resource://usercontext-content/briefcase.svg","color":"orange","colorCode":"#ff9f00","cookieStoreId":"firefox-container-2"},{"name":"Banking","icon":"dollar","iconUrl":"resource://usercontext-content/dollar.svg","color":"purple","colorCode":"#af51f5","cookieStoreId":"firefox-container-3"},{"name":"Shopping","icon":"cart","iconUrl":"resource://usercontext-content/cart.svg","color":"pink","colorCode":"#ff4bda","cookieStoreId":"firefox-container-4"},{"name":"Container #01","icon":"chill","iconUrl":"resource://usercontext-content/chill.svg","color":"green","colorCode":"#51cd00","cookieStoreId":"firefox-container-6"},{"name":"Container #02","icon":"vacation","iconUrl":"resource://usercontext-content/vacation.svg","color":"yellow","colorCode":"#ffcb00","cookieStoreId":"firefox-container-7"}]};
-    sync.storageArea.set(syncData);
-
-    // FF1 with updates from FF2 (intial sync w/ default 4 + 1 with some changes)
-    removeContextualIdentityListeners(syncCIListenerList);
-    browser.contextualIdentities.update("firefox-container-3", {color:"purple", icon:"fruit"});
-    browser.contextualIdentities.create({name: "Container #02", icon: "vacation", color: "yellow"});
-    browser.storage.local.clear();
-    const localData = {"beenSynced":!0,"browserActionBadgesClicked":["6.1.1"],"containerTabsOpened":7,"identitiesState@@_firefox-container-1":{"hiddenTabs":[],"macAddonUUID":"4dc76734-5b71-4f2e-85d0-1cb199ae3821"},"identitiesState@@_firefox-container-2":{"hiddenTabs":[],"macAddonUUID":"30308b8d-393c-4375-b9a1-afc59f0dea79"},"identitiesState@@_firefox-container-3":{"hiddenTabs":[],"macAddonUUID":"7419c94d-85d7-4d76-94c0-bacef1de722f"},"identitiesState@@_firefox-container-4":{"hiddenTabs":[],"macAddonUUID":"2b9fe881-e552-4df9-8cab-922f4688bb68"},"identitiesState@@_firefox-container-6":{"hiddenTabs":[],"macAddonUUID":"db7f622e-682b-4556-968a-6e2542ff3b26"},"identitiesState@@_firefox-default":{"hiddenTabs":[]},"onboarding-stage":5,"siteContainerMap@@_developer.mozilla.org":{"userContextId":"6","neverAsk":!1},"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":!0},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1}};
-    browser.storage.local.set(localData);
-
-  };
-
-  browser.resetMAC4 = async function () {
-    // for debugging and testing: remove all containers except the default 4 and the first one created
-    browser.storage.onChanged.removeListener(sync.storageArea.onChangedListener);
-
-    // sync state after FF2 synced
-    await browser.storage.sync.clear();
-    const syncData = {"assignedSites":{"siteContainerMap@@_developer.mozilla.org":{"userContextId":"6","neverAsk":!1,"hostname":"developer.mozilla.org"},"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0,"hostname":"twitter.com"},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":!0,"hostname":"www.facebook.com"},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1,"hostname":"www.linkedin.com"},"siteContainerMap@@_reddit.com": {"userContextId": "7","neverAsk": true}},"cookieStoreIDmap":{"firefox-container-1":"4dc76734-5b71-4f2e-85d0-1cb199ae3821","firefox-container-2":"30308b8d-393c-4375-b9a1-afc59f0dea79","firefox-container-3":"7419c94d-85d7-4d76-94c0-bacef1de722f","firefox-container-4":"2b9fe881-e552-4df9-8cab-922f4688bb68","firefox-container-6":"db7f622e-682b-4556-968a-6e2542ff3b26","firefox-container-7":"ceb06672-76c0-48c4-959e-f3a3ee8358b6"},"identities":[{"name":"Personal","icon":"fingerprint","iconUrl":"resource://usercontext-content/fingerprint.svg","color":"blue","colorCode":"#37adff","cookieStoreId":"firefox-container-1"},{"name":"Work","icon":"briefcase","iconUrl":"resource://usercontext-content/briefcase.svg","color":"orange","colorCode":"#ff9f00","cookieStoreId":"firefox-container-2"},{"name":"Banking","icon":"dollar","iconUrl":"resource://usercontext-content/dollar.svg","color":"purple","colorCode":"#af51f5","cookieStoreId":"firefox-container-3"},{"name":"Shopping","icon":"cart","iconUrl":"resource://usercontext-content/cart.svg","color":"pink","colorCode":"#ff4bda","cookieStoreId":"firefox-container-4"},{"name":"Container #01","icon":"chill","iconUrl":"resource://usercontext-content/chill.svg","color":"green","colorCode":"#51cd00","cookieStoreId":"firefox-container-6"},{"name":"Container #02","icon":"vacation","iconUrl":"resource://usercontext-content/vacation.svg","color":"yellow","colorCode":"#ffcb00","cookieStoreId":"firefox-container-7"}]};
-    sync.storageArea.set(syncData);
-
-    // FF1 with updates from FF2 (intial sync w/ default 4 + 1 with some changes)
-    removeContextualIdentityListeners(syncCIListenerList);
-    browser.contextualIdentities.update("firefox-container-3", {color:"purple", icon:"fruit"});
-    //browser.contextualIdentities.create({name: "Container #02", icon: "vacation", color: "yellow"});
-    browser.storage.local.clear();
-    const localData = {"beenSynced":!0,"browserActionBadgesClicked":["6.1.1"],"containerTabsOpened":7,"identitiesState@@_firefox-container-1":{"hiddenTabs":[],"macAddonUUID":"4dc76734-5b71-4f2e-85d0-1cb199ae3821"},"identitiesState@@_firefox-container-2":{"hiddenTabs":[],"macAddonUUID":"30308b8d-393c-4375-b9a1-afc59f0dea79"},"identitiesState@@_firefox-container-3":{"hiddenTabs":[],"macAddonUUID":"7419c94d-85d7-4d76-94c0-bacef1de722f"},"identitiesState@@_firefox-container-4":{"hiddenTabs":[],"macAddonUUID":"2b9fe881-e552-4df9-8cab-922f4688bb68"},"identitiesState@@_firefox-container-6":{"hiddenTabs":[],"macAddonUUID":"db7f622e-682b-4556-968a-6e2542ff3b26"},"identitiesState@@_firefox-default":{"hiddenTabs":[]},"onboarding-stage":5,"siteContainerMap@@_developer.mozilla.org":{"userContextId":"6","neverAsk":!1},"siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":!0},"siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":!0},"siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":!1}};
-    browser.storage.local.set(localData);
-
-  };
 }
