@@ -65,44 +65,4 @@ describe("Sync", () => {
     console.log("!!!b");
   });
 
-  it("should sync for the first time", async () => {
-    const mozContainer = await background.browser.contextualIdentities.create({
-      name:"Test", 
-      color:"green", 
-      icon:"pet"
-    });
-    console.log(await background.browser.contextualIdentities.query({}));
-    await helper.browser.initSyncTest({localStorage:SYNC_TEST_1_LOCAL});
-    console.log(await background.browser.storage.local.get());
-    for (const containerName of SYNC_TEST_CONTAINERS) {
-      const storageKeyString = "identitiesState@@_" + containerName;
-      const answer = await background.browser.storage.local.get(storageKeyString);
-      expect(answer[storageKeyString].hasOwnProperty("macAddonUUID")).to.be.true;
-    }
-    const storageKeyString = "identitiesState@@_" + mozContainer.cookieStoreId;
-    const answer = await background.browser.storage.local.get(storageKeyString);
-    expect(answer[storageKeyString].hasOwnProperty("macAddonUUID")).to.be.true;
-  });
 });
-
-const SYNC_TEST_1_LOCAL = {
-  "browserActionBadgesClicked":["6.1.1"],
-  "containerTabsOpened":6,
-  "identitiesState@@_firefox-container-1":{"hiddenTabs":[]},
-  "identitiesState@@_firefox-container-2":{"hiddenTabs":[]},
-  "identitiesState@@_firefox-container-3":{"hiddenTabs":[]},
-  "identitiesState@@_firefox-container-4":{"hiddenTabs":[]},
-  "identitiesState@@_firefox-container-6":{"hiddenTabs":[]},
-  "identitiesState@@_firefox-default":{"hiddenTabs":[]},
-  "onboarding-stage":5,
-  "siteContainerMap@@_twitter.com":{"userContextId":"1","neverAsk":true},
-  "siteContainerMap@@_www.facebook.com":{"userContextId":"2","neverAsk":true},
-  "siteContainerMap@@_www.linkedin.com":{"userContextId":"4","neverAsk":false}
-};
-
-const SYNC_TEST_CONTAINERS = [
-  "firefox-container-1", 
-  "firefox-container-2", 
-  "firefox-container-3", 
-  "firefox-container-4"
-];
