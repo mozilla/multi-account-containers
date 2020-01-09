@@ -1,24 +1,54 @@
 browser.tests = {
   async runAll() {
+    await this.testIdentityStateCleanup();
     await this.test1();
     await this.test2();
   },
 
+  async testIdentityStateCleanup() {
+    await browser.tests.stopSyncListeners();
+    console.log("Testing the cleanup of local storage");
+    await this.removeAllContainers();
+    const localData = {
+      "browserActionBadgesClicked": [ "6.1.1" ],
+      "containerTabsOpened": 7,
+      "identitiesState@@_firefox-default": { "hiddenTabs": [] },
+      "onboarding-stage": 5,
+      "identitiesState@@_firefox-container-7": { "hiddenTabs": [] }
+    };
+    await browser.storage.local.clear();
+    await browser.storage.local.set(localData);
+    // async function assignIdentities () {
+    for (const containerInputSet of TEST_CONTAINERS) {
+      await browser.contextualIdentities.create(containerInputSet);
+    }
+    // }
+    // await assignIdentities();
+    await identityState.storageArea.cleanup();
+    const macConfigs = await browser.storage.local.get();
+    const identities = [];
+
+    for(const configKey of Object.keys(macConfigs)) {
+      if (configKey.includes("identitiesState@@_") && !configKey.includes("default")) {
+        identities.push(macConfigs[configKey]);
+      }
+    }
+
+    console.assert(identities.length === 5, "There should be 5 identity entries");
+    for (const identity of identities) {
+      console.assert(!!identity.macAddonUUID, `${identity.name} should have a uuid`);
+    }
+    console.log("Finished!");
+  },
   async test1() {
     await browser.tests.stopSyncListeners();
     console.log("Testing new install with no sync");
 
     // sync state on install: no sync data
     await browser.storage.sync.clear();
-    await this.removeAllContainers();
     await browser.storage.local.clear();
-    const localData = {
-      "browserActionBadgesClicked": [ "6.1.1" ],
-      "containerTabsOpened": 7,
-      "identitiesState@@_firefox-default": { "hiddenTabs": [] },
-      "onboarding-stage": 5
-    };
-    await browser.storage.local.set(localData);
+    await browser.storage.local.set(LOCAL_DATA);
+    await this.removeAllContainers();
     for (const containerInputSet of TEST_CONTAINERS) {
       await browser.contextualIdentities.create(containerInputSet);
     }
@@ -56,72 +86,13 @@ browser.tests = {
 
   async test2() {
     await browser.tests.stopSyncListeners();
-    console.log("Testing sync differing");
+    console.log("Testing sync differing from local");
 
-    // sync state on install: no sync data
-    await browser.storage.sync.clear();
-    const syncData = {
-      "identities": [
-        {
-          "name": "Personal",
-          "icon": "fingerprint",
-          "iconUrl": "resource://usercontext-content/fingerprint.svg",
-          "color": "red",
-          "colorCode": "#37adff",
-          "cookieStoreId": "firefox-container-146"
-        },
-        {
-          "name": "Oscar",
-          "icon": "dollar",
-          "iconUrl": "resource://usercontext-content/dollar.svg",
-          "color": "green",
-          "colorCode": "#51cd00",
-          "cookieStoreId": "firefox-container-147"
-        },
-        {
-          "name": "Mozilla",
-          "icon": "pet",
-          "iconUrl": "resource://usercontext-content/briefcase.svg",
-          "color": "red",
-          "colorCode": "#ff613d",
-          "cookieStoreId": "firefox-container-148"
-        },
-        {
-          "name": "Groceries, obviously",
-          "icon": "cart",
-          "iconUrl": "resource://usercontext-content/cart.svg",
-          "color": "pink",
-          "colorCode": "#ffcb00",
-          "cookieStoreId": "firefox-container-149"
-        },
-        {
-          "name": "Facebook",
-          "icon": "fence",
-          "iconUrl": "resource://usercontext-content/fence.svg",
-          "color": "toolbar",
-          "colorCode": "#7c7c7d",
-          "cookieStoreId": "firefox-container-150"
-        }
-      ],
-      "cookieStoreIDmap": {
-        "firefox-container-146": "22ded543-5173-44a5-a47a-8813535945ca",
-        "firefox-container-147": "63e5212f-0858-418e-b5a3-09c2dea61fcd",
-        "firefox-container-148": "71335417-158e-4d74-a55b-e9e9081601ec",
-        "firefox-container-149": "59c4e5f7-fe3b-435a-ae60-1340db31a91b",
-        "firefox-container-150": "3dc916fb-8c0a-4538-9758-73ef819a45f7"
-      },
-      "assignedSites": {}
-    };
-    await browser.storage.sync.set(syncData);
-    await browser.storage.local.clear();
-    const localData = {
-      "browserActionBadgesClicked": [ "6.1.1" ],
-      "containerTabsOpened": 7,
-      "identitiesState@@_firefox-default": { "hiddenTabs": [] },
-      "onboarding-stage": 5
-    };
     await this.removeAllContainers();
-    console.log("TEST_CONTAINERS.length", TEST_CONTAINERS.length);
+    await browser.storage.sync.clear();
+    await browser.storage.sync.set(SYNC_DATA);
+    await browser.storage.local.clear();
+    const localData = LOCAL_DATA;
     for (let i=0; i < TEST_CONTAINERS.length; i++) {
       //build identities
       const newIdentity = 
@@ -141,14 +112,16 @@ browser.tests = {
     console.log("local storage set: ", await browser.storage.local.get());
 
     await sync.initSync();
-
+    
     const getSync = await browser.storage.sync.get();
     const getAssignedSites = 
       await assignManager.storageArea.getAssignedSites();
+
     const identities = await browser.contextualIdentities.query({});
+
     const localCookieStoreIDmap = 
       await identityState.getCookieStoreIDuuidMap();
-    console.log(getSync.cookieStoreIDmap);
+
     console.assert(
       Object.keys(getSync.cookieStoreIDmap).length === 6, 
       "cookieStoreIDmap should have 6 entries"
@@ -225,7 +198,65 @@ const TEST_ASSIGNMENTS = [
   "siteContainerMap@@_www.linkedin.com",
   "siteContainerMap@@_reddit.com"
 ];
+const LOCAL_DATA = {
+  "browserActionBadgesClicked": [ "6.1.1" ],
+  "containerTabsOpened": 7,
+  "identitiesState@@_firefox-default": { "hiddenTabs": [] },
+  "onboarding-stage": 5
+};
 
+const SYNC_DATA = {
+  "identities": [
+    {
+      "name": "Personal",
+      "icon": "fingerprint",
+      "iconUrl": "resource://usercontext-content/fingerprint.svg",
+      "color": "red",
+      "colorCode": "#37adff",
+      "cookieStoreId": "firefox-container-146"
+    },
+    {
+      "name": "Oscar",
+      "icon": "dollar",
+      "iconUrl": "resource://usercontext-content/dollar.svg",
+      "color": "green",
+      "colorCode": "#51cd00",
+      "cookieStoreId": "firefox-container-147"
+    },
+    {
+      "name": "Mozilla",
+      "icon": "pet",
+      "iconUrl": "resource://usercontext-content/briefcase.svg",
+      "color": "red",
+      "colorCode": "#ff613d",
+      "cookieStoreId": "firefox-container-148"
+    },
+    {
+      "name": "Groceries, obviously",
+      "icon": "cart",
+      "iconUrl": "resource://usercontext-content/cart.svg",
+      "color": "pink",
+      "colorCode": "#ffcb00",
+      "cookieStoreId": "firefox-container-149"
+    },
+    {
+      "name": "Facebook",
+      "icon": "fence",
+      "iconUrl": "resource://usercontext-content/fence.svg",
+      "color": "toolbar",
+      "colorCode": "#7c7c7d",
+      "cookieStoreId": "firefox-container-150"
+    }
+  ],
+  "cookieStoreIDmap": {
+    "firefox-container-146": "22ded543-5173-44a5-a47a-8813535945ca",
+    "firefox-container-147": "63e5212f-0858-418e-b5a3-09c2dea61fcd",
+    "firefox-container-148": "71335417-158e-4d74-a55b-e9e9081601ec",
+    "firefox-container-149": "59c4e5f7-fe3b-435a-ae60-1340db31a91b",
+    "firefox-container-150": "3dc916fb-8c0a-4538-9758-73ef819a45f7"
+  },
+  "assignedSites": {}
+};
 browser.resetMAC2 = async function () {
   // for debugging and testing: remove all containers except the default 4 and the first one created
   browser.tests.stopSyncListeners();

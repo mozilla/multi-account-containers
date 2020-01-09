@@ -39,18 +39,36 @@ const identityState = {
       const storeKey = this.getContainerStoreKey(cookieStoreId);
       return await this.area.remove([storeKey]);
     },
+
+    /*
+     * Looks for abandoned identities keys in local storage, and makes sure all
+     * identities registered in the browser are also in local storage. (this
+     * appears to not always be the case based on how this.get() is written)
+     */
     async cleanup() {
       const identitiesList = await browser.contextualIdentities.query({});
       const macConfigs = await this.area.get();
       for(const configKey of Object.keys(macConfigs)) {
         if (configKey.includes("identitiesState@@_")) {
           const cookieStoreId = String(configKey).replace(/^identitiesState@@_/, "");
-          const match = identitiesList.find(localIdentity => localIdentity.cookieStoreId === cookieStoreId);
-          if (!match && cookieStoreId !== "firefox-default") {
-            console.log("removed ", cookieStoreId, " from storage list");
+          const match = identitiesList.find(
+            localIdentity => localIdentity.cookieStoreId === cookieStoreId
+          );
+          if (cookieStoreId === "firefox-default") continue;
+          if (!match) {
             this.remove(cookieStoreId);
+            continue;
+          }
+          if (!macConfigs[configKey].macAddonUUID) {
+            await identityState.addUUID(cookieStoreId);
           }
         }
+      }
+
+      for (const identity of identitiesList) {
+        // ensure all identities have an entry in local storage
+        const data = await this.get(identity.cookieStoreId);
+        await this.set(identity.cookieStoreId, data);
       }
     }
   },
