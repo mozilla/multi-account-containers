@@ -352,10 +352,13 @@ const Logic = {
   },
 
   getAssignmentObjectByContainer(userContextId) {
-    return browser.runtime.sendMessage({
-      method: "getAssignmentObjectByContainer",
-      message: { userContextId }
-    });
+    if (userContextId) {
+      return browser.runtime.sendMessage({
+        method: "getAssignmentObjectByContainer",
+        message: { userContextId }
+      });
+    }
+    return {};
   },
 
   setOrRemoveAssignment(tabId, url, userContextId, value) {
@@ -1022,6 +1025,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       while (tableElement.firstChild) {
         tableElement.firstChild.remove();
       }
+
       assignmentKeys.forEach((siteKey) => {
         const site = assignments[siteKey];
         const trElement = document.createElement("div");
