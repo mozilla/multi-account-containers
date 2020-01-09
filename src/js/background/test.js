@@ -12,22 +12,6 @@ browser.tests = {
 
     await this.setState({}, LOCAL_DATA, TEST_CONTAINERS);
 
-    // await this.removeAllContainers();
-    // const localData = {
-    //   "browserActionBadgesClicked": [ "6.1.1" ],
-    //   "containerTabsOpened": 7,
-    //   "identitiesState@@_firefox-default": { "hiddenTabs": [] },
-    //   "onboarding-stage": 5,
-    //   "identitiesState@@_firefox-container-7": { "hiddenTabs": [] }
-    // };
-    // await browser.storage.local.clear();
-    // await browser.storage.local.set(localData);
-    // // async function assignIdentities () {
-    // for (const containerInputSet of TEST_CONTAINERS) {
-    //   await browser.contextualIdentities.create(containerInputSet);
-    // }
-    // }
-    // await assignIdentities();
     await identityState.storageArea.cleanup();
 
     const macConfigs = await browser.storage.local.get();
@@ -50,7 +34,7 @@ browser.tests = {
 
     await this.setState({}, LOCAL_DATA, TEST_CONTAINERS);
 
-    await sync.initSync();
+    await sync.runSync();
 
     const getSync = await browser.storage.sync.get();
     const getAssignedSites = 
@@ -87,7 +71,7 @@ browser.tests = {
 
     await this.setState(SYNC_DATA, LOCAL_DATA, TEST_CONTAINERS, TEST_ASSIGNMENTS);
 
-    await sync.initSync();
+    await sync.runSync();
 
     const getSync = await browser.storage.sync.get();
     const getAssignedSites = 
@@ -131,7 +115,7 @@ browser.tests = {
       DUPE_TEST_ASSIGNMENTS
     );
 
-    await sync.initSync();
+    await sync.runSync();
 
     const getSync = await browser.storage.sync.get();
     const getAssignedSites = 

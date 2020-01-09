@@ -37,11 +37,9 @@ const sync = {
     },
 
     async backup(options) {
-      if (SYNC_DEBUG) console.log("backup");
       // remove listeners to avoid an infinite loop!
       await browser.storage.onChanged.removeListener(
         sync.storageArea.onChangedListener);
-
       await removeContextualIdentityListeners();
 
       await updateSyncIdentities();
@@ -55,10 +53,10 @@ const sync = {
         await removeFromDeletedSitesList(options.undelete);
       if (SYNC_DEBUG) {
         const storage = await sync.storageArea.get();
-        console.log("in sync: ", storage);
+        console.log("inSync: ", storage);
         const localStorage = await browser.storage.local.get();
         console.log("inLocal:", localStorage);
-        console.log("indents: ", await browser.contextualIdentities.query({}));
+        console.log("idents: ", await browser.contextualIdentities.query({}));
       }
       browser.storage.onChanged.addListener(
         sync.storageArea.onChangedListener);
@@ -139,7 +137,7 @@ const sync = {
     },
 
     onChangedListener(changes, areaName) {
-      if (areaName === "sync") runSync();
+      if (areaName === "sync") sync.runSync();
     },
 
     async addToDeletedList(changeInfo) {
@@ -154,80 +152,44 @@ const sync = {
   },
 
   init() {
-    const errorHandledInitSync = () => {
-      this.initSync().catch((error)=> { 
-        console.error("Error from initSync", error);
+    const errorHandledRunSync = () => {
+      this.runSync().catch((error)=> { 
+        console.error("Error from runSync", error);
       });
     };
-    browser.runtime.onInstalled.addListener(errorHandledInitSync);
-    browser.runtime.onStartup.addListener(errorHandledInitSync);
+    browser.runtime.onInstalled.addListener(errorHandledRunSync);
+    browser.runtime.onStartup.addListener(errorHandledRunSync);
   },
 
-  async initSync() {
-    const syncInfo = await sync.storageArea.get();
-    const localInfo = await browser.storage.local.get();
+  async runSync() {
     if (SYNC_DEBUG) {
+      const syncInfo = await sync.storageArea.get();
+      const localInfo = await browser.storage.local.get();
       console.log("inSync: ", syncInfo);
       console.log("inLocal: ", localInfo);
       console.log("indents: ", await browser.contextualIdentities.query({}));
     }
-    const beenSynced = await assignManager.storageArea.getSynced();
-    if (beenSynced){
-      await runSync();
+    browser.storage.onChanged.removeListener(
+      sync.storageArea.onChangedListener);
+    removeContextualIdentityListeners();
+    console.log("runSync");
+    await identityState.storageArea.cleanup();
+
+    if (await sync.storageArea.hasSyncStorage()){
+      await sync.storageArea.cleanup();
+      console.log("storage found, attempting to restore ...");
+      await restore();
       return;
     }
-    await runFirstSync();
-  },
+    console.log("no sync storage, backing up...");
+    await sync.storageArea.backup();
+    return;  },
 };
 
 sync.init();
 
-
-async function runSync() {
-  browser.storage.onChanged.removeListener(
-    sync.storageArea.onChangedListener);
-  removeContextualIdentityListeners();
-  console.log("runSync");
-  await identityState.storageArea.cleanup();
-
-
-  if (await sync.storageArea.hasSyncStorage()){
-    await sync.storageArea.cleanup();
-    console.log("storage found, attempting to restore ...");
-    await restore();
-    return;
-  }
-  console.log("no sync storage, backing up...");
-  await sync.storageArea.backup();
-  return;
-}
-
 async function restore() {
   console.log("restore");
-  await reconcileIdentities();
-  await reconcileSiteAssignments();
-  await sync.storageArea.backup();
-}
-
-async function runFirstSync() {
-  console.log("runFirstSync");
-  // looks for abandoned identities keys in local storage, and identities
-  // not in localstorage (which also adds a uuid)
-  await identityState.storageArea.cleanup();
-
-  if (await sync.storageArea.hasSyncStorage()){
-    await sync.storageArea.cleanup();
-    console.log("storage found, attempting to restore ...");
-    await restoreFirstRun();
-  }else {
-    console.log("no sync storage, backing up...");
-    await sync.storageArea.backup();
-  }
-  await assignManager.storageArea.setSynced();
-}
-
-async function restoreFirstRun() {
-  console.log("restoreFirstRun");
   await reconcileIdentities();
   await reconcileSiteAssignments();
   await sync.storageArea.backup();
@@ -419,74 +381,6 @@ async function setAssignmentWithUUID (newUUID, assignedSite, urlKey) {
     return;
   }
   throw new Error (`No cookieStoreId found for: ${newUUID}, ${urlKey}`);
-}
-
-/*
- * Matches uuids in sync to uuids locally, and updates containers accordingly.
- * If there is no match, it creates the new container.
- */
-async function reconcileIdentitiesByUUID() {
-  console.log("reconcileIdentitiesByUUID");
-  const syncIdentities = await sync.storageArea.getStoredObject("identities");
-  const cookieStoreIDmap = 
-    await sync.storageArea.getStoredObject("cookieStoreIDmap");
-
-  const deletedIdentityList =
-    await sync.storageArea.getStoredArray("deletedIdentityList");
-  // first remove any deleted identities
-  for (const deletedUUID of deletedIdentityList) {
-    const deletedCookieStoreId = 
-      await identityState.lookupCookieStoreId(deletedUUID);
-    if (deletedCookieStoreId){
-      await browser.contextualIdentities.remove(deletedCookieStoreId);
-    }
-  }
-
-  // Lookup all identities in teh cookieStoreIDmap and make sure they
-  // exist locally
-  for (const syncCookieStoreID of Object.keys(cookieStoreIDmap)) {
-    const syncUUID = cookieStoreIDmap[syncCookieStoreID];
-    //find localCookiesStoreID by looking up the syncUUID
-    const localCookieStoreID = 
-      await identityState.lookupCookieStoreId(syncUUID);
-    // get correct indentity info from sync
-    const identityInfo = 
-      findIdentityFromSync(syncCookieStoreID, syncIdentities);
-    if (localCookieStoreID) {
-      if (SYNC_DEBUG) {
-        const getIdent = 
-          await browser.contextualIdentities.get(localCookieStoreID);
-        if (getIdent.name !== identityInfo.name) {
-          console.log(getIdent.name, "Change name: ", identityInfo.name);
-        }
-        if (getIdent.color !== identityInfo.color) {
-          console.log(getIdent.name, "Change color: ", identityInfo.color);
-        }
-        if (getIdent.icon !== identityInfo.icon) {
-          console.log(getIdent.name, "Change icon: ", identityInfo.icon);
-        }
-      }
-
-      // update the local container with the sync data
-      await browser.contextualIdentities
-        .update(localCookieStoreID, identityInfo);
-      continue;
-    }
-    //not found, create new with same UUID
-    console.log("new Identity: ", identityInfo.name);
-    const newIdentity = 
-      await browser.contextualIdentities.create(identityInfo);
-    await identityState.updateUUID(newIdentity.cookieStoreId, syncUUID);
-  }
-  return;
-}
-
-function findIdentityFromSync(cookieStoreId, identitiesList){
-  for (const identity of identitiesList) {
-    const { name, color, icon } = identity;
-    if (identity.cookieStoreId === cookieStoreId) 
-      return { name, color, icon };
-  }
 }
 
 const syncCIListenerList = [
