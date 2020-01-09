@@ -1,6 +1,6 @@
 describe("Sync", () => {
 
-  it.only("should init sync on startup", async () => {
+  it("should init sync on startup", async () => {
     console.log("!!!a")
     const tab = await helper.browser.initializeWithTab();
     console.log(await background.browser.storage.local.get());
