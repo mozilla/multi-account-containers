@@ -12,22 +12,35 @@ const sync = {
       return await this.area.set(options);
     },
 
-    async getStoredArray(objectKey) {
-      const storedArray = await this.getStoredItem(objectKey);
+    async getDeletedIdentityList() {
+      const storedArray = await this.getStoredItem("deletedIdentityList");
       return (storedArray) ?  storedArray : [];
     },
 
-    async getStoredObject(objectKey) {
-      const storedObject = await this.getStoredItem(objectKey);
-      return (storedObject) ?  storedObject : {};
+    async getIdentities() {
+      const storedArray = await this.getStoredItem("identities");
+      return (storedArray) ?  storedArray : [];
+    },
+
+    async getDeletedSiteList() { 
+      const storedArray = await this.getStoredItem("deletedSiteList");
+      return (storedArray) ?  storedArray : [];
+    },
+
+    async getCookieStoreIDMap() {
+      const storedArray = await this.getStoredItem("cookieStoreIDmap");
+      return (storedArray) ?  storedArray : {};
+    },
+
+    async getAssignedSites() {
+      const storedArray = await this.getStoredItem("assignedSites");
+      return (storedArray) ?  storedArray : {};
     },
 
     async getStoredItem(objectKey) {
       const outputObject = await this.get(objectKey);
       if (outputObject && outputObject[objectKey]) 
         return outputObject[objectKey];
-      if (SYNC_DEBUG) 
-        console.warn(objectKey, " was requested and is not available.");
       return false;
     },
 
@@ -118,9 +131,9 @@ const sync = {
       browser.storage.onChanged.removeListener(
         sync.storageArea.onChangedListener);
       const identitiesList = 
-        await sync.storageArea.getStoredObject("identities");
+        await sync.storageArea.getIdentities();
       const cookieStoreIDmap = 
-        await sync.storageArea.getStoredObject("cookieStoreIDmap");
+        await sync.storageArea.getCookieStoreIDMap();
       for(const cookieStoreId of Object.keys(cookieStoreIDmap)) {
         const match = identitiesList
           .find(syncIdentity => 
@@ -205,7 +218,7 @@ async function reconcileIdentities(){
 
   // first delete any from the deleted list
   const deletedIdentityList =
-    await sync.storageArea.getStoredArray("deletedIdentityList");
+    await sync.storageArea.getDeletedIdentityList();
   // first remove any deleted identities
   for (const deletedUUID of deletedIdentityList) {
     const deletedCookieStoreId = 
@@ -217,9 +230,9 @@ async function reconcileIdentities(){
 
   const localIdentities = await browser.contextualIdentities.query({});
   const syncIdentities = 
-    await sync.storageArea.getStoredArray("identities");
+    await sync.storageArea.getIdentities();
   const cookieStoreIDmap = 
-    await sync.storageArea.getStoredObject("cookieStoreIDmap");
+    await sync.storageArea.getCookieStoreIDMap();
   // now compare all containers for matching names.
   for (const syncIdentity of syncIdentities) {
     syncIdentity.macAddonUUID = cookieStoreIDmap[syncIdentity.cookieStoreId];
@@ -323,9 +336,9 @@ async function reconcileSiteAssignments() {
   const assignedSitesLocal = 
     await assignManager.storageArea.getAssignedSites();
   const assignedSitesFromSync = 
-    await sync.storageArea.getStoredObject("assignedSites");
+    await sync.storageArea.getAssignedSites();
   const deletedSiteList = 
-    await sync.storageArea.getStoredArray("deletedSiteList");
+    await sync.storageArea.getDeletedSiteList();
   for(const siteStoreKey of deletedSiteList) {
     if (assignedSitesLocal.hasOwnProperty(siteStoreKey)) {
       assignManager
@@ -334,7 +347,7 @@ async function reconcileSiteAssignments() {
     }
   }
   const cookieStoreIDmap =
-    await sync.storageArea.getStoredObject("cookieStoreIDmap");
+    await sync.storageArea.getCookieStoreIDMap();
 
   for(const urlKey of Object.keys(assignedSitesFromSync)) {
     const assignedSite = assignedSitesFromSync[urlKey];

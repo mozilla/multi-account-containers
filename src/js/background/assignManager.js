@@ -9,16 +9,6 @@ const assignManager = {
     area: browser.storage.local,
     exemptedTabs: {},
 
-    async getSynced() {
-      const beenSynced = await this.area.get("beenSynced");
-      if (Object.entries(beenSynced).length === 0) return false;
-      return true;
-    },
-
-    setSynced() {
-      this.area.set({beenSynced: true});
-    },
-
     getSiteStoreKey(pageUrl) {
       const url = new window.URL(pageUrl);
       const storagePrefix = "siteContainerMap@@_";
