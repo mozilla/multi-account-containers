@@ -724,8 +724,12 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
        however it allows us to have a tabindex before the first selected item
      */
     const focusHandler = () => {
-      list.querySelector("tr .clickable").focus();
-      document.removeEventListener("focus", focusHandler);
+      const identityList = list.querySelector("tr .clickable");
+      if (identityList) {
+        // otherwise this throws an error when there are no containers present.
+        identityList.focus();
+        document.removeEventListener("focus", focusHandler);
+      }
     };
     document.addEventListener("focus", focusHandler);
     /* If the user mousedown's first then remove the focus handler */

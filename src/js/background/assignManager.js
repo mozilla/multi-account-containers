@@ -107,6 +107,31 @@ const assignManager = {
       }
       return sites;
     },
+
+    /*
+     * Looks for abandoned site assignments. If there is no identity with 
+     * the site assignment's userContextId (cookieStoreId), then the assignment
+     * is removed.
+     */
+    async cleanup() {
+      const identitiesList = await browser.contextualIdentities.query({});
+      const macConfigs = await this.area.get();
+      for(const configKey of Object.keys(macConfigs)) {
+        if (configKey.includes("siteContainerMap@@_")) {
+          const cookieStoreId = 
+            "firefox-container-" + macConfigs[configKey].userContextId;
+          const match = identitiesList.find(
+            localIdentity => localIdentity.cookieStoreId === cookieStoreId
+          );
+          if (!match) {
+            await this.remove(configKey.replace(/^siteContainerMap@@_/, "https://"));
+            continue;
+          }
+        }
+      }
+
+    }
+
   },
 
   _neverAsk(m) {

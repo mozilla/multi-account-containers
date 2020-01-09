@@ -51,9 +51,7 @@ const sync = {
 
     async backup(options) {
       // remove listeners to avoid an infinite loop!
-      await browser.storage.onChanged.removeListener(
-        sync.storageArea.onChangedListener);
-      await removeContextualIdentityListeners();
+      await sync.checkForListenersMaybeRemove();
 
       await updateSyncIdentities();
       await updateCookieStoreIdMap();
@@ -71,9 +69,8 @@ const sync = {
         console.log("inLocal:", localStorage);
         console.log("idents: ", await browser.contextualIdentities.query({}));
       }
-      browser.storage.onChanged.addListener(
-        sync.storageArea.onChangedListener);
-      addContextualIdentityListeners();
+
+      await sync.checkForListenersMaybeAdd();
 
       async function updateSyncIdentities() {
         const identities = await browser.contextualIdentities.query({});
@@ -93,9 +90,8 @@ const sync = {
       }
 
       async function updateDeletedIdentityList(deletedIdentityUUID) {
-        let { deletedIdentityList } = 
-          await sync.storageArea.get("deletedIdentityList");
-        if (!deletedIdentityList) deletedIdentityList = [];
+        const deletedIdentityList = 
+          await sync.storageArea.getDeletedIdentityList();
         if (
           deletedIdentityList.find(element => element === deletedIdentityUUID)
         ) return;
@@ -104,74 +100,91 @@ const sync = {
       }
 
       async function addToDeletedSitesList(siteStoreKey) {
-        let { deletedSiteList } = 
-          await sync.storageArea.get("deletedSiteList");
-        if (!deletedSiteList) deletedSiteList = [];
+        const deletedSiteList = 
+          await sync.storageArea.getDeletedSiteList();
         if (deletedSiteList.find(element => element === siteStoreKey)) return;
         deletedSiteList.push(siteStoreKey);
         await sync.storageArea.set({ deletedSiteList });
       }
 
       async function removeFromDeletedSitesList(siteStoreKey) {
-        let { deletedSiteList } = 
-          await sync.storageArea.get("deletedSiteList");
-        if (!deletedSiteList) return;
-        deletedSiteList = deletedSiteList
+        const deletedSiteList = 
+          await sync.storageArea.getDeletedSiteList();
+        const newDeletedSiteList = deletedSiteList
           .filter(element => element !== siteStoreKey);
-        await sync.storageArea.set({ deletedSiteList });
+        await sync.storageArea.set({ deletedSiteList: newDeletedSiteList });
       }
-    },
-
-    /*
-     * Ensures all sync info matches. But maybe we shouldn't even use
-     * sync info that doesn't match.
-     */
-    async cleanup() {
-      console.log("cleanupSync");
-      browser.storage.onChanged.removeListener(
-        sync.storageArea.onChangedListener);
-      const identitiesList = 
-        await sync.storageArea.getIdentities();
-      const cookieStoreIDmap = 
-        await sync.storageArea.getCookieStoreIDMap();
-      for(const cookieStoreId of Object.keys(cookieStoreIDmap)) {
-        const match = identitiesList
-          .find(syncIdentity => 
-            syncIdentity.cookieStoreId === cookieStoreId
-          );
-        if (!match) {
-          delete cookieStoreIDmap[cookieStoreId];
-          await sync.storageArea.set({ cookieStoreIDmap });
-          console.log("removed ", cookieStoreId, " from sync list");
-        }
-      }
-      await browser.storage.onChanged.addListener(
-        sync.storageArea.onChangedListener);
     },
 
     onChangedListener(changes, areaName) {
-      if (areaName === "sync") sync.runSync();
+      if (areaName === "sync") sync.errorHandledRunSync();
     },
 
     async addToDeletedList(changeInfo) {
       const identity = changeInfo.contextualIdentity;
-      console.log("addToDeletedList", identity.cookieStoreId);
       const deletedUUID = 
         await identityState.lookupMACaddonUUID(identity.cookieStoreId);
       await identityState.storageArea.remove(identity.cookieStoreId);
-      console.log(deletedUUID);
       sync.storageArea.backup({uuid: deletedUUID});
+    },
+
+    async checkSyncForMismatches() {
+      const cookieStoreIDmap = await this.getCookieStoreIDMap();
+      const identities = await this.getIdentities();
+      for (const cookieStoreId of Object.keys(cookieStoreIDmap)) {
+        const match = identities.find(identity => 
+          identity.cookieStoreId === cookieStoreId
+        );
+        if (!match) return false;
+        // if one has no match, this is bad data.
+        console.log("Bad Data, skipping");
+      }
+      return !(Object.entries(cookieStoreIDmap).length === 0);
     }
   },
 
   init() {
-    const errorHandledRunSync = () => {
-      this.runSync().catch((error)=> { 
-        console.error("Error from runSync", error);
-      });
-    };
-    browser.runtime.onInstalled.addListener(errorHandledRunSync);
-    browser.runtime.onStartup.addListener(errorHandledRunSync);
+    browser.runtime.onInstalled.addListener(this.errorHandledRunSync);
+    browser.runtime.onStartup.addListener(this.errorHandledRunSync);
+  },
+
+  async errorHandledRunSync () {
+    sync.runSync().catch(async (error)=> { 
+      console.error("Error from runSync", error);
+      sync.checkForListenersMaybeAdd();
+    });
+  },
+
+  async checkForListenersMaybeAdd() {
+    const hasStorageListener =  
+      await browser.storage.onChanged.hasListener(
+        sync.storageArea.onChangedListener
+      );
+        
+    if (! await hasContextualIdentityListeners()) {
+      addContextualIdentityListeners();
+    }
+
+    if (! hasStorageListener) {
+      browser.storage.onChanged.addListener(
+        sync.storageArea.onChangedListener);
+    }
+  },
+
+  async checkForListenersMaybeRemove() {
+    const hasStorageListener =  
+      await browser.storage.onChanged.hasListener(
+        sync.storageArea.onChangedListener
+      );
+        
+    if (await hasContextualIdentityListeners()) {
+      removeContextualIdentityListeners();
+    }
+
+    if (hasStorageListener) {
+      browser.storage.onChanged.removeListener(
+        sync.storageArea.onChangedListener);
+    }
   },
 
   async runSync() {
@@ -182,21 +195,19 @@ const sync = {
       console.log("inLocal: ", localInfo);
       console.log("indents: ", await browser.contextualIdentities.query({}));
     }
-    browser.storage.onChanged.removeListener(
-      sync.storageArea.onChangedListener);
-    removeContextualIdentityListeners();
+    await sync.checkForListenersMaybeRemove();
     console.log("runSync");
-    await identityState.storageArea.cleanup();
 
-    if (await sync.storageArea.hasSyncStorage()){
-      await sync.storageArea.cleanup();
-      console.log("storage found, attempting to restore ...");
-      await restore();
-      return;
-    }
-    console.log("no sync storage, backing up...");
+    await identityState.storageArea.cleanup();
+    await assignManager.storageArea.cleanup();
+
+    const hasSyncStorage = await sync.storageArea.hasSyncStorage();
+    const dataIsReliable = await sync.storageArea.checkSyncForMismatches();
+    if (hasSyncStorage && dataIsReliable) await restore();
+
     await sync.storageArea.backup();
-    return;  },
+    return;  
+  },
 };
 
 sync.init();
@@ -205,7 +216,7 @@ async function restore() {
   console.log("restore");
   await reconcileIdentities();
   await reconcileSiteAssignments();
-  await sync.storageArea.backup();
+  return;
 }
 
 /*
@@ -224,7 +235,13 @@ async function reconcileIdentities(){
     const deletedCookieStoreId = 
       await identityState.lookupCookieStoreId(deletedUUID);
     if (deletedCookieStoreId){
-      await browser.contextualIdentities.remove(deletedCookieStoreId);
+      try{
+        await browser.contextualIdentities.remove(deletedCookieStoreId);
+      } catch (error) {
+        // if the identity we are deleting is not there, that's fine.
+        console.error("Error deleting contextualIdentity", deletedCookieStoreId);
+        continue;
+      }
     }
   }
 
@@ -291,23 +308,32 @@ async function ifUUIDMatch(syncIdentity, localCookieStoreID) {
     icon: syncIdentity.icon
   };
   if (SYNC_DEBUG) {
-    const getIdent = 
+    try {
+      const getIdent = 
             await browser.contextualIdentities.get(localCookieStoreID);
-    if (getIdent.name !== identityInfo.name) {
-      console.log(getIdent.name, "Change name: ", identityInfo.name);
-    }
-    if (getIdent.color !== identityInfo.color) {
-      console.log(getIdent.name, "Change color: ", identityInfo.color);
-    }
-    if (getIdent.icon !== identityInfo.icon) {
-      console.log(getIdent.name, "Change icon: ", identityInfo.icon);
+      if (getIdent.name !== identityInfo.name) {
+        console.log(getIdent.name, "Change name: ", identityInfo.name);
+      }
+      if (getIdent.color !== identityInfo.color) {
+        console.log(getIdent.name, "Change color: ", identityInfo.color);
+      }
+      if (getIdent.icon !== identityInfo.icon) {
+        console.log(getIdent.name, "Change icon: ", identityInfo.icon);
+      }
+    } catch (error) {
+      //if this fails, there is probably differing sync info.
+      console.error("Error getting info on CI", error);
     }
   }
-
+  try {
   // update the local container with the sync data
-  await browser.contextualIdentities
-    .update(localCookieStoreID, identityInfo);
-  return;
+    await browser.contextualIdentities
+      .update(localCookieStoreID, identityInfo);
+    return;
+  } catch (error) {
+    // If this fails, sync info is off.
+    console.error("Error udpating CI", error);
+  }
 }
 
 async function ifNoMatch(syncIdentity){
@@ -351,34 +377,43 @@ async function reconcileSiteAssignments() {
 
   for(const urlKey of Object.keys(assignedSitesFromSync)) {
     const assignedSite = assignedSitesFromSync[urlKey];
-    const syncUUID = 
-      await lookupSyncSiteAssigmentIdentityUUID(
-        assignedSite, cookieStoreIDmap, urlKey
-      );
-    if (syncUUID) {
+    try{
+      const syncUUID = 
+        await lookupSyncSiteAssigmentIdentityUUID(
+          assignedSite, cookieStoreIDmap, urlKey
+        );
+      if (syncUUID) {
       // Sync is truth.
       // Not even looking it up. Just overwrite
-      console.log("new assignment ", assignedSite, ": ", 
-        assignedSite.userContextId);
-      const newUUID = cookieStoreIDmap[
-        "firefox-container-" + assignedSite.userContextId
-      ];
-      await setAssignmentWithUUID(newUUID, assignedSite, urlKey);
-      continue;
-    }
+        console.log("new assignment ", assignedSite, ": ", 
+          assignedSite.userContextId);
+        const newUUID = cookieStoreIDmap[
+          "firefox-container-" + assignedSite.userContextId
+        ];
 
-    // if there's no syncUUID, something is wrong, since these site
-    // assignments are from sync
-    throw new Error("Sync storage not aligned");
+        await setAssignmentWithUUID(newUUID, assignedSite, urlKey);
+
+        continue;
+      }
+
+    } catch (error) {
+      // this is probably old or incorrect site info in Sync
+      // skip and move on.
+      //console.error("Error assigning site", error);
+
+    }
   }
 
   async function lookupSyncSiteAssigmentIdentityUUID(
     assignedSite,
     cookieStoreIDmap,
+    urlKey
   ){
     const syncCookieStoreId = 
       "firefox-container-" + assignedSite.userContextId;
-    return cookieStoreIDmap[syncCookieStoreId];
+    const uuid = cookieStoreIDmap[syncCookieStoreId];
+    if (!uuid) throw new Error (`No syncUUID found for : ${urlKey}`);
+    return uuid;
   }
 }
 
@@ -414,4 +449,13 @@ function removeContextualIdentityListeners(listenerList) {
   browser.contextualIdentities.onCreated.removeListener(listenerList[0]);
   browser.contextualIdentities.onRemoved.removeListener(listenerList[1]);
   browser.contextualIdentities.onUpdated.removeListener(listenerList[2]);
+}
+
+async function hasContextualIdentityListeners(listenerList) {
+  if(!listenerList) listenerList = syncCIListenerList;
+  return (
+    await browser.contextualIdentities.onCreated.hasListener(listenerList[0]) &&
+    await browser.contextualIdentities.onRemoved.hasListener(listenerList[1]) &&
+    await browser.contextualIdentities.onUpdated.hasListener(listenerList[2])
+  );
 }
