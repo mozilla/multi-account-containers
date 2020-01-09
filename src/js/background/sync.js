@@ -58,6 +58,7 @@ const sync = {
         console.log("in sync: ", storage);
         const localStorage = await browser.storage.local.get();
         console.log("inLocal:", localStorage);
+        console.log("indents: ", await browser.contextualIdentities.query({}));
       }
       browser.storage.onChanged.addListener(
         sync.storageArea.onChangedListener);
@@ -168,6 +169,7 @@ const sync = {
     if (SYNC_DEBUG) {
       console.log("inSync: ", syncInfo);
       console.log("inLocal: ", localInfo);
+      console.log("indents: ", await browser.contextualIdentities.query({}));
     }
     const beenSynced = await assignManager.storageArea.getSynced();
     if (beenSynced){
@@ -202,7 +204,7 @@ async function runSync() {
 
 async function restore() {
   console.log("restore");
-  await reconcileIdentitiesByUUID();
+  await reconcileIdentities();
   await reconcileSiteAssignments();
   await sync.storageArea.backup();
 }
@@ -250,57 +252,104 @@ async function reconcileIdentities(){
       await browser.contextualIdentities.remove(deletedCookieStoreId);
     }
   }
-  
+
   const localIdentities = await browser.contextualIdentities.query({});
   const syncIdentities = 
-    await sync.storageArea.getStoredObject("identities");
+    await sync.storageArea.getStoredArray("identities");
   const cookieStoreIDmap = 
     await sync.storageArea.getStoredObject("cookieStoreIDmap");
+  // now compare all containers for matching names.
   for (const syncIdentity of syncIdentities) {
     syncIdentity.macAddonUUID = cookieStoreIDmap[syncIdentity.cookieStoreId];
-    const match = localIdentities.find(
+    const localMatch = localIdentities.find(
       localIdentity => localIdentity.name === syncIdentity.name
     );
-    if (!match) {
-      console.log("create new ident: ", syncIdentity.name);
-      const newIdentity = 
+    if (!localMatch) {
+      // if there's no name match found, check on uuid,
+      const localCookieStoreID = 
+        await identityState.lookupCookieStoreId(syncIdentity.macAddonUUID);
+      if (localCookieStoreID) {
+        await ifUUIDMatch(syncIdentity, localCookieStoreID);
+        continue;
+      }
+      await ifNoMatch(syncIdentity);
+      continue;
+    }
+    await ifNamesMatch(syncIdentity, localMatch);
+    continue;
+  }
+}
+
+async function ifNamesMatch(syncIdentity, localMatch) {
+  // Sync is truth. if there is a match, compare data and update as needed
+  if (syncIdentity.color !== localMatch.color 
+      || syncIdentity.icon !== localMatch.icon) {
+    await browser.contextualIdentities.update(
+      localMatch.cookieStoreId, {
+        name: syncIdentity.name, 
+        color: syncIdentity.color, 
+        icon: syncIdentity.icon
+      });
+
+    if (SYNC_DEBUG) {
+      if (localMatch.color !== syncIdentity.color) {
+        console.log(localMatch.name, "Change color: ", syncIdentity.color);
+      }
+      if (localMatch.icon !== syncIdentity.icon) {
+        console.log(localMatch.name, "Change icon: ", syncIdentity.icon);
+      }
+    }
+  }
+
+  // Sync is truth. If all is the same, update the local uuid to match sync
+  await identityState.updateUUID(
+    localMatch.cookieStoreId, 
+    syncIdentity.macAddonUUID
+  );
+}
+
+async function ifUUIDMatch(syncIdentity, localCookieStoreID) {
+  // if there's a local uuid, it's the same container. Sync is truth
+  const identityInfo = {
+    name: syncIdentity.name,
+    color: syncIdentity.color, 
+    icon: syncIdentity.icon
+  };
+  if (SYNC_DEBUG) {
+    const getIdent = 
+            await browser.contextualIdentities.get(localCookieStoreID);
+    if (getIdent.name !== identityInfo.name) {
+      console.log(getIdent.name, "Change name: ", identityInfo.name);
+    }
+    if (getIdent.color !== identityInfo.color) {
+      console.log(getIdent.name, "Change color: ", identityInfo.color);
+    }
+    if (getIdent.icon !== identityInfo.icon) {
+      console.log(getIdent.name, "Change icon: ", identityInfo.icon);
+    }
+  }
+
+  // update the local container with the sync data
+  await browser.contextualIdentities
+    .update(localCookieStoreID, identityInfo);
+  return;
+}
+
+async function ifNoMatch(syncIdentity){
+  // if no uuid match either, make new identity
+  console.log("create new ident: ", syncIdentity.name);
+  const newIdentity = 
         await browser.contextualIdentities.create({
           name: syncIdentity.name, 
           color: syncIdentity.color, 
           icon: syncIdentity.icon
         });
-      await identityState.updateUUID(
-        newIdentity.cookieStoreId, 
-        syncIdentity.macAddonUUID
-      );
-      continue;
-    }
-    if (syncIdentity.color !== match.color 
-      || syncIdentity.icon !== match.icon) {
-      await browser.contextualIdentities.update(
-        match.cookieStoreId, {
-          name: syncIdentity.name, 
-          color: syncIdentity.color, 
-          icon: syncIdentity.icon
-        });
-      continue;
-    }
-    if (SYNC_DEBUG) {
-      if (match.color !== syncIdentity.color) {
-        console.log(match.name, "Change color: ", syncIdentity.color);
-      }
-      if (match.icon !== syncIdentity.icon) {
-        console.log(match.name, "Change icon: ", syncIdentity.icon);
-      }
-    }
-    // end testing
-    await identityState.updateUUID(
-      match.cookieStoreId, 
-      cookieStoreIDmap[syncIdentity.cookieStoreId]
-    );
-  }
+  await identityState.updateUUID(
+    newIdentity.cookieStoreId, 
+    syncIdentity.macAddonUUID
+  );
+  return;
 }
-
 /*
  * Checks for site previously assigned. If it exists, and has the same
  * container assignment, the assignment is kept. If it exists, but has
@@ -381,7 +430,7 @@ async function reconcileIdentitiesByUUID() {
   const syncIdentities = await sync.storageArea.getStoredObject("identities");
   const cookieStoreIDmap = 
     await sync.storageArea.getStoredObject("cookieStoreIDmap");
-    
+
   const deletedIdentityList =
     await sync.storageArea.getStoredArray("deletedIdentityList");
   // first remove any deleted identities

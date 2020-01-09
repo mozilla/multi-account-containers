@@ -3,31 +3,35 @@ browser.tests = {
     await this.testIdentityStateCleanup();
     await this.test1();
     await this.test2();
+    await this.dupeTest();
   },
 
   async testIdentityStateCleanup() {
     await browser.tests.stopSyncListeners();
     console.log("Testing the cleanup of local storage");
-    await this.removeAllContainers();
-    const localData = {
-      "browserActionBadgesClicked": [ "6.1.1" ],
-      "containerTabsOpened": 7,
-      "identitiesState@@_firefox-default": { "hiddenTabs": [] },
-      "onboarding-stage": 5,
-      "identitiesState@@_firefox-container-7": { "hiddenTabs": [] }
-    };
-    await browser.storage.local.clear();
-    await browser.storage.local.set(localData);
-    // async function assignIdentities () {
-    for (const containerInputSet of TEST_CONTAINERS) {
-      await browser.contextualIdentities.create(containerInputSet);
-    }
+
+    await this.setState({}, LOCAL_DATA, TEST_CONTAINERS);
+
+    // await this.removeAllContainers();
+    // const localData = {
+    //   "browserActionBadgesClicked": [ "6.1.1" ],
+    //   "containerTabsOpened": 7,
+    //   "identitiesState@@_firefox-default": { "hiddenTabs": [] },
+    //   "onboarding-stage": 5,
+    //   "identitiesState@@_firefox-container-7": { "hiddenTabs": [] }
+    // };
+    // await browser.storage.local.clear();
+    // await browser.storage.local.set(localData);
+    // // async function assignIdentities () {
+    // for (const containerInputSet of TEST_CONTAINERS) {
+    //   await browser.contextualIdentities.create(containerInputSet);
+    // }
     // }
     // await assignIdentities();
     await identityState.storageArea.cleanup();
+
     const macConfigs = await browser.storage.local.get();
     const identities = [];
-
     for(const configKey of Object.keys(macConfigs)) {
       if (configKey.includes("identitiesState@@_") && !configKey.includes("default")) {
         identities.push(macConfigs[configKey]);
@@ -44,14 +48,7 @@ browser.tests = {
     await browser.tests.stopSyncListeners();
     console.log("Testing new install with no sync");
 
-    // sync state on install: no sync data
-    await browser.storage.sync.clear();
-    await browser.storage.local.clear();
-    await browser.storage.local.set(LOCAL_DATA);
-    await this.removeAllContainers();
-    for (const containerInputSet of TEST_CONTAINERS) {
-      await browser.contextualIdentities.create(containerInputSet);
-    }
+    await this.setState({}, LOCAL_DATA, TEST_CONTAINERS);
 
     await sync.initSync();
 
@@ -88,31 +85,10 @@ browser.tests = {
     await browser.tests.stopSyncListeners();
     console.log("Testing sync differing from local");
 
-    await this.removeAllContainers();
-    await browser.storage.sync.clear();
-    await browser.storage.sync.set(SYNC_DATA);
-    await browser.storage.local.clear();
-    const localData = LOCAL_DATA;
-    for (let i=0; i < TEST_CONTAINERS.length; i++) {
-      //build identities
-      const newIdentity = 
-        await browser.contextualIdentities.create(TEST_CONTAINERS[i]);
-      // fill identies with site assignments
-      if (TEST_ASSIGNMENTS[i]) {
-        localData[TEST_ASSIGNMENTS[i]] =  { 
-          "userContextId": 
-            String(
-              newIdentity.cookieStoreId.replace(/^firefox-container-/, "")
-            ),
-          "neverAsk": true
-        };
-      }
-    }
-    await browser.storage.local.set(localData);
-    console.log("local storage set: ", await browser.storage.local.get());
+    await this.setState(SYNC_DATA, LOCAL_DATA, TEST_CONTAINERS, TEST_ASSIGNMENTS);
 
     await sync.initSync();
-    
+
     const getSync = await browser.storage.sync.get();
     const getAssignedSites = 
       await assignManager.storageArea.getAssignedSites();
@@ -144,6 +120,102 @@ browser.tests = {
     console.log("Finished!");
   },
 
+  async dupeTest() {
+    await browser.tests.stopSyncListeners();
+    console.log("Test state from duped sync");
+
+    await this.setState(
+      DUPE_TEST_SYNC, 
+      DUPE_TEST_LOCAL, 
+      DUPE_TEST_IDENTS, 
+      DUPE_TEST_ASSIGNMENTS
+    );
+
+    await sync.initSync();
+
+    const getSync = await browser.storage.sync.get();
+    const getAssignedSites = 
+      await assignManager.storageArea.getAssignedSites();
+
+    const identities = await browser.contextualIdentities.query({});
+
+    const localCookieStoreIDmap = 
+      await identityState.getCookieStoreIDuuidMap();
+
+    console.assert(
+      Object.keys(getSync.cookieStoreIDmap).length === 7, 
+      "cookieStoreIDmap should have 7 entries"
+    );
+
+    console.assert(
+      Object.keys(localCookieStoreIDmap).length === 8, 
+      "localCookieStoreIDmap should have 8 entries"
+    );
+
+    console.assert(
+      identities.length === 7,
+      "There should be 7 identities"
+    );
+
+    console.assert(
+      Object.keys(getAssignedSites).length === 5,
+      "There should be 5 site assignments"
+    );
+
+    const personalContainer = 
+      this.lookupIdentityBy(identities, {name: "Personal"});
+    console.log(personalContainer);
+    console.assert(
+      personalContainer.color === "red",
+      "Personal Container should be red"
+    );
+    const mozillaContainer =
+      this.lookupIdentityBy(identities, {name: "Mozilla"});
+    console.assert(
+      mozillaContainer.icon === "pet",
+      "Mozilla Container should be pet"
+    );
+    console.log("Finished!");
+  },
+
+  lookupIdentityBy(identities, options) {
+    for (const identity of identities) {
+      if (options && options.name) {
+        if (identity.name === options.name) return identity;
+      }
+      if (options && options.color) {
+        if (identity.color === options.color) return identity;
+      }
+      if (options && options.color) {
+        if (identity.color === options.color) return identity;
+      }
+    }
+    return false;
+  },
+  async setState(syncData, localData, indentityData, assignmentData){
+    await this.removeAllContainers();
+    await browser.storage.sync.clear();
+    await browser.storage.sync.set(syncData);
+    await browser.storage.local.clear();
+    for (let i=0; i < indentityData.length; i++) {
+      //build identities
+      const newIdentity = 
+        await browser.contextualIdentities.create(indentityData[i]);
+      // fill identies with site assignments
+      if (assignmentData && assignmentData[i]) {
+        localData[assignmentData[i]] =  { 
+          "userContextId": 
+            String(
+              newIdentity.cookieStoreId.replace(/^firefox-container-/, "")
+            ),
+          "neverAsk": true
+        };
+      }
+    }
+    await browser.storage.local.set(localData);
+    console.log("local storage set: ", await browser.storage.local.get());
+    return;
+  },
   async removeAllContainers() {
     const identities = await browser.contextualIdentities.query({});
     for (const identity of identities) {
@@ -275,6 +347,146 @@ browser.resetMAC2 = async function () {
 
 };
 
+const DUPE_TEST_SYNC = {
+  "identities": [
+    {
+      "name": "Personal",
+      "icon": "fingerprint",
+      "iconUrl": "resource://usercontext-content/fingerprint.svg",
+      "color": "red",
+      "colorCode": "#ff613d",
+      "cookieStoreId": "firefox-container-588"
+    },
+    {
+      "name": "Banking",
+      "icon": "dollar",
+      "iconUrl": "resource://usercontext-content/dollar.svg",
+      "color": "green",
+      "colorCode": "#51cd00",
+      "cookieStoreId": "firefox-container-589"
+    },
+    {
+      "name": "Mozilla",
+      "icon": "pet",
+      "iconUrl": "resource://usercontext-content/pet.svg",
+      "color": "red",
+      "colorCode": "#ff613d",
+      "cookieStoreId": "firefox-container-590"
+    },
+    {
+      "name": "Groceries, obviously",
+      "icon": "cart",
+      "iconUrl": "resource://usercontext-content/cart.svg",
+      "color": "pink",
+      "colorCode": "#ff4bda",
+      "cookieStoreId": "firefox-container-591"
+    },
+    {
+      "name": "Facebook",
+      "icon": "fence",
+      "iconUrl": "resource://usercontext-content/fence.svg",
+      "color": "toolbar",
+      "colorCode": "#7c7c7d",
+      "cookieStoreId": "firefox-container-592"
+    },
+    {
+      "name": "Oscar",
+      "icon": "dollar",
+      "iconUrl": "resource://usercontext-content/dollar.svg",
+      "color": "green",
+      "colorCode": "#51cd00",
+      "cookieStoreId": "firefox-container-593"
+    }
+  ],
+  "cookieStoreIDmap": {
+    "firefox-container-588": "d20d7af2-9866-468e-bb43-541efe8c2c2e",
+    "firefox-container-589": "cdd73c20-c26a-4c06-9b17-735c1f5e9187",
+    "firefox-container-590": "32cc4a9b-05ed-4e54-8e11-732468de62f4",
+    "firefox-container-591": "9ff381e3-4c11-420d-8e12-e352a3318be1",
+    "firefox-container-592": "3dc916fb-8c0a-4538-9758-73ef819a45f7",
+    "firefox-container-593": "63e5212f-0858-418e-b5a3-09c2dea61fcd"
+  },
+  "assignedSites": {
+    "siteContainerMap@@_developer.mozilla.org": {
+      "userContextId": "588",
+      "neverAsk": true,
+      "hostname": "developer.mozilla.org"
+    },
+    "siteContainerMap@@_reddit.com": {
+      "userContextId": "592",
+      "neverAsk": true,
+      "hostname": "reddit.com"
+    },
+    "siteContainerMap@@_twitter.com": {
+      "userContextId": "589",
+      "neverAsk": true,
+      "hostname": "twitter.com"
+    },
+    "siteContainerMap@@_www.facebook.com": {
+      "userContextId": "590",
+      "neverAsk": true,
+      "hostname": "www.facebook.com"
+    },
+    "siteContainerMap@@_www.linkedin.com": {
+      "userContextId": "591",
+      "neverAsk": true,
+      "hostname": "www.linkedin.com"
+    }
+  }
+};
+
+const DUPE_TEST_LOCAL = {
+  "beenSynced": true,
+  "browserActionBadgesClicked": [
+    "6.1.1"
+  ],
+  "containerTabsOpened": 7,
+  "identitiesState@@_firefox-default": {
+    "hiddenTabs": []
+  },
+  "onboarding-stage": 5,
+};
+
+const DUPE_TEST_ASSIGNMENTS = [
+  "siteContainerMap@@_developer.mozilla.org",
+  "siteContainerMap@@_reddit.com",
+  "siteContainerMap@@_twitter.com",
+  "siteContainerMap@@_www.facebook.com",
+  "siteContainerMap@@_www.linkedin.com"
+];
+
+const DUPE_TEST_IDENTS = [
+  {
+    "name": "Personal",
+    "icon": "fingerprint",
+    "color": "blue",
+  },
+  {
+    "name": "Banking",
+    "icon": "pet",
+    "color": "green",
+  },
+  {
+    "name": "Mozilla",
+    "icon": "briefcase",
+    "color": "red",
+  },
+  {
+    "name": "Groceries, obviously",
+    "icon": "cart",
+    "color": "orange",
+  },
+  {
+    "name": "Facebook",
+    "icon": "fence",
+    "color": "toolbar",
+  },
+  {
+    "name": "Big Bird",
+    "icon": "dollar",
+    "color": "yellow",
+  }
+];
 browser.resetMAC3 = async function () {
   // for debugging and testing: remove all containers except the default 4 and the first one created
   browser.tests.stopSyncListeners();
