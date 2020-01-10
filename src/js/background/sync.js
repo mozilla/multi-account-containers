@@ -128,16 +128,15 @@ const sync = {
       sync.storageArea.backup({uuid: deletedUUID});
     },
 
-    async checkSyncForMismatches() {
+    async dataIsReliable() {
       const cookieStoreIDmap = await this.getCookieStoreIDMap();
       const identities = await this.getIdentities();
       for (const cookieStoreId of Object.keys(cookieStoreIDmap)) {
         const match = identities.find(identity => 
           identity.cookieStoreId === cookieStoreId
         );
-        if (!match) return false;
         // if one has no match, this is bad data.
-        console.log("Bad Data, skipping");
+        if (!match) return false;
       }
       return !(Object.entries(cookieStoreIDmap).length === 0);
     }
@@ -202,7 +201,7 @@ const sync = {
     await assignManager.storageArea.cleanup();
 
     const hasSyncStorage = await sync.storageArea.hasSyncStorage();
-    const dataIsReliable = await sync.storageArea.checkSyncForMismatches();
+    const dataIsReliable = await sync.storageArea.dataIsReliable();
     if (hasSyncStorage && dataIsReliable) await restore();
 
     await sync.storageArea.backup();
