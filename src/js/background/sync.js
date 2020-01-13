@@ -62,14 +62,14 @@ const sync = {
         await addToDeletedSitesList(options.siteStoreKey);
       if (options && options.undelete) 
         await removeFromDeletedSitesList(options.undelete);
-      if (SYNC_DEBUG) {
-        const storage = await sync.storageArea.get();
-        console.log("inSync: ", storage);
-        const localStorage = await browser.storage.local.get();
-        console.log("inLocal:", localStorage);
-        console.log("idents: ", await browser.contextualIdentities.query({}));
-      }
-
+      // if (SYNC_DEBUG) {
+      //   const storage = await sync.storageArea.get();
+      //   console.log("inSync: ", storage);
+      //   const localStorage = await browser.storage.local.get();
+      //   console.log("inLocal:", localStorage);
+      //   console.log("idents: ", await browser.contextualIdentities.query({}));
+      // }
+      console.log("Backed up!");
       await sync.checkForListenersMaybeAdd();
 
       async function updateSyncIdentities() {
@@ -159,12 +159,14 @@ const sync = {
       await browser.storage.onChanged.hasListener(
         sync.storageArea.onChangedListener
       );
+
+    const hasCIListener = await hasContextualIdentityListeners();
         
-    if (! await hasContextualIdentityListeners()) {
+    if (!hasCIListener) {
       addContextualIdentityListeners();
     }
 
-    if (! hasStorageListener) {
+    if (!hasStorageListener) {
       browser.storage.onChanged.addListener(
         sync.storageArea.onChangedListener);
     }
@@ -175,8 +177,10 @@ const sync = {
       await browser.storage.onChanged.hasListener(
         sync.storageArea.onChangedListener
       );
-        
-    if (await hasContextualIdentityListeners()) {
+      
+    const hasCIListener = await hasContextualIdentityListeners();
+            
+    if (hasCIListener) {
       removeContextualIdentityListeners();
     }
 
@@ -190,9 +194,8 @@ const sync = {
     if (SYNC_DEBUG) {
       const syncInfo = await sync.storageArea.get();
       const localInfo = await browser.storage.local.get();
-      console.log("inSync: ", syncInfo);
-      console.log("inLocal: ", localInfo);
-      console.log("indents: ", await browser.contextualIdentities.query({}));
+      const idents = await browser.contextualIdentities.query({});
+      console.log("Initial State:", {syncInfo, localInfo, idents});
     }
     await sync.checkForListenersMaybeRemove();
     console.log("runSync");
@@ -252,22 +255,25 @@ async function reconcileIdentities(){
   // now compare all containers for matching names.
   for (const syncIdentity of syncIdentities) {
     syncIdentity.macAddonUUID = cookieStoreIDmap[syncIdentity.cookieStoreId];
-    const localMatch = localIdentities.find(
-      localIdentity => localIdentity.name === syncIdentity.name
-    );
-    if (!localMatch) {
-      // if there's no name match found, check on uuid,
-      const localCookieStoreID = 
-        await identityState.lookupCookieStoreId(syncIdentity.macAddonUUID);
-      if (localCookieStoreID) {
-        await ifUUIDMatch(syncIdentity, localCookieStoreID);
+    if (syncIdentity.macAddonUUID){
+      const localMatch = localIdentities.find(
+        localIdentity => localIdentity.name === syncIdentity.name
+      );
+      if (!localMatch) {
+        // if there's no name match found, check on uuid,
+        const localCookieStoreID = 
+          await identityState.lookupCookieStoreId(syncIdentity.macAddonUUID);
+        if (localCookieStoreID) {
+          await ifUUIDMatch(syncIdentity, localCookieStoreID);
+          continue;
+        }
+        await ifNoMatch(syncIdentity);
         continue;
       }
-      await ifNoMatch(syncIdentity);
+      await ifNamesMatch(syncIdentity, localMatch);
       continue;
     }
-    await ifNamesMatch(syncIdentity, localMatch);
-    continue;
+    // if no macAddonUUID, there is a problem with the sync info and it needs to be ignored.
   }
 }
 
@@ -291,7 +297,6 @@ async function ifNamesMatch(syncIdentity, localMatch) {
       }
     }
   }
-
   // Sync is truth. If all is the same, update the local uuid to match sync
   await identityState.updateUUID(
     localMatch.cookieStoreId, 
