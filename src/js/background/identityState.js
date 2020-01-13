@@ -79,13 +79,10 @@ const identityState = {
 
   async getCookieStoreIDuuidMap() {
     const containers = {};
-    const containerInfo = await identityState.storageArea.area.get();
-    for(const configKey of Object.keys(containerInfo)) {
-      if (configKey.includes("identitiesState@@_")) {
-        const container = containerInfo[configKey];
-        const cookieStoreId = configKey.replace(/^identitiesState@@_/, "");
-        containers[cookieStoreId] = container.macAddonUUID;
-      }
+    const identities = await browser.contextualIdentities.query({});
+    for(const identity of identities) {
+      const containerInfo = await this.storageArea.get(identity.cookieStoreId);
+      containers[identity.cookieStoreId] = containerInfo.macAddonUUID;
     }
     return containers;
   },
