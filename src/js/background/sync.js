@@ -150,7 +150,7 @@ const sync = {
   async errorHandledRunSync () {
     sync.runSync().catch(async (error)=> { 
       console.error("Error from runSync", error);
-      sync.checkForListenersMaybeAdd();
+      await sync.checkForListenersMaybeAdd();
     });
   },
 
@@ -161,13 +161,13 @@ const sync = {
       );
 
     const hasCIListener = await hasContextualIdentityListeners();
-        
+
     if (!hasCIListener) {
-      addContextualIdentityListeners();
+      await addContextualIdentityListeners();
     }
 
     if (!hasStorageListener) {
-      browser.storage.onChanged.addListener(
+      await browser.storage.onChanged.addListener(
         sync.storageArea.onChangedListener);
     }
   },
@@ -177,15 +177,15 @@ const sync = {
       await browser.storage.onChanged.hasListener(
         sync.storageArea.onChangedListener
       );
-      
+
     const hasCIListener = await hasContextualIdentityListeners();
             
     if (hasCIListener) {
-      removeContextualIdentityListeners();
+      await removeContextualIdentityListeners();
     }
 
     if (hasStorageListener) {
-      browser.storage.onChanged.removeListener(
+      await browser.storage.onChanged.removeListener(
         sync.storageArea.onChangedListener);
     }
   },
@@ -200,8 +200,8 @@ const sync = {
     await sync.checkForListenersMaybeRemove();
     console.log("runSync");
 
-    await identityState.storageArea.cleanup();
-    await assignManager.storageArea.cleanup();
+    await identityState.storageArea.upgradeData();
+    await assignManager.storageArea.upgradeData();
 
     const hasSyncStorage = await sync.storageArea.hasSyncStorage();
     const dataIsReliable = await sync.storageArea.dataIsReliable();
@@ -275,6 +275,15 @@ async function reconcileIdentities(){
     }
     // if no macAddonUUID, there is a problem with the sync info and it needs to be ignored.
   }
+
+  await updateSiteAssignmentUUIDs();
+
+  async function updateSiteAssignmentUUIDs(){
+    const sites = assignManager.storageArea.getAssignedSites();
+    for (const siteKey of Object.keys(sites)) {
+      await assignManager.storageArea.set(siteKey, sites[siteKey]);
+    }
+  }
 }
 
 async function ifNamesMatch(syncIdentity, localMatch) {
@@ -302,10 +311,12 @@ async function ifNamesMatch(syncIdentity, localMatch) {
     localMatch.cookieStoreId, 
     syncIdentity.macAddonUUID
   );
+
+  // TODOkmw: update any site assignment UUIDs
 }
 
 async function ifUUIDMatch(syncIdentity, localCookieStoreID) {
-  // if there's a local uuid, it's the same container. Sync is truth
+  // if there's an identical local uuid, it's the same container. Sync is truth
   const identityInfo = {
     name: syncIdentity.name,
     color: syncIdentity.color, 
@@ -376,63 +387,46 @@ async function reconcileSiteAssignments() {
         .remove(siteStoreKey.replace(/^siteContainerMap@@_/, "https://"));
     }
   }
-  const cookieStoreIDmap =
-    await sync.storageArea.getCookieStoreIDMap();
 
   for(const urlKey of Object.keys(assignedSitesFromSync)) {
     const assignedSite = assignedSitesFromSync[urlKey];
     try{
-      const syncUUID = 
-        await lookupSyncSiteAssigmentIdentityUUID(
-          assignedSite, cookieStoreIDmap, urlKey
-        );
-      if (syncUUID) {
+      const syncUUID = assignedSite.identityMacAddonUUID;
+      console.log("syncUUID, ", syncUUID);
+      if (assignedSite.identityMacAddonUUID) {
       // Sync is truth.
       // Not even looking it up. Just overwrite
-        console.log("new assignment ", assignedSite, ": ", 
-          assignedSite.userContextId);
-        const newUUID = cookieStoreIDmap[
-          "firefox-container-" + assignedSite.userContextId
-        ];
+        if (SYNC_DEBUG){ 
+          const isInStorage = await assignManager.storageArea.getByUrlKey(urlKey);
+          if (!isInStorage)
+            console.log("new assignment ", assignedSite);
+        }
 
-        await setAssignmentWithUUID(newUUID, assignedSite, urlKey);
-
+        await setAssignmentWithUUID(assignedSite, urlKey);
         continue;
       }
-
     } catch (error) {
       // this is probably old or incorrect site info in Sync
       // skip and move on.
-      //console.error("Error assigning site", error);
-
     }
-  }
-
-  async function lookupSyncSiteAssigmentIdentityUUID(
-    assignedSite,
-    cookieStoreIDmap,
-    urlKey
-  ){
-    const syncCookieStoreId = 
-      "firefox-container-" + assignedSite.userContextId;
-    const uuid = cookieStoreIDmap[syncCookieStoreId];
-    if (!uuid) throw new Error (`No syncUUID found for : ${urlKey}`);
-    return uuid;
   }
 }
 
-async function setAssignmentWithUUID (newUUID, assignedSite, urlKey) {
-  const cookieStoreId = await identityState.lookupCookieStoreId(newUUID);
+async function setAssignmentWithUUID (assignedSite, urlKey) {
+  const uuid = assignedSite.identityMacAddonUUID;
+  const cookieStoreId = await identityState.lookupCookieStoreId(uuid);
   if (cookieStoreId) {
     assignedSite.userContextId = cookieStoreId
       .replace(/^firefox-container-/, "");
     await assignManager.storageArea.set(
       urlKey.replace(/^siteContainerMap@@_/, "https://"),
-      assignedSite
+      assignedSite,
+      false,
+      false
     );
     return;
   }
-  throw new Error (`No cookieStoreId found for: ${newUUID}, ${urlKey}`);
+  throw new Error (`No cookieStoreId found for: ${uuid}, ${urlKey}`);
 }
 
 const syncCIListenerList = [
@@ -441,18 +435,18 @@ const syncCIListenerList = [
   sync.storageArea.backup
 ];
 
-function addContextualIdentityListeners(listenerList) {
+async function addContextualIdentityListeners(listenerList) {
   if(!listenerList) listenerList = syncCIListenerList;
-  browser.contextualIdentities.onCreated.addListener(listenerList[0]);
-  browser.contextualIdentities.onRemoved.addListener(listenerList[1]);
-  browser.contextualIdentities.onUpdated.addListener(listenerList[2]);
+  await browser.contextualIdentities.onCreated.addListener(listenerList[0]);
+  await browser.contextualIdentities.onRemoved.addListener(listenerList[1]);
+  await browser.contextualIdentities.onUpdated.addListener(listenerList[2]);
 }
 
-function removeContextualIdentityListeners(listenerList) {
+async function removeContextualIdentityListeners(listenerList) {
   if(!listenerList) listenerList = syncCIListenerList;
-  browser.contextualIdentities.onCreated.removeListener(listenerList[0]);
-  browser.contextualIdentities.onRemoved.removeListener(listenerList[1]);
-  browser.contextualIdentities.onUpdated.removeListener(listenerList[2]);
+  await browser.contextualIdentities.onCreated.removeListener(listenerList[0]);
+  await browser.contextualIdentities.onRemoved.removeListener(listenerList[1]);
+  await browser.contextualIdentities.onUpdated.removeListener(listenerList[2]);
 }
 
 async function hasContextualIdentityListeners(listenerList) {

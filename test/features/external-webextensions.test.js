@@ -25,11 +25,9 @@ describe("External Webextensions", () => {
 
       const [promise] = background.browser.runtime.onMessageExternal.addListener.yield(message, sender);
       const answer = await promise;
-      expect(answer).to.deep.equal({
-        hostname: "example.com",
-        userContextId: "1",
-        neverAsk: false
-      });
+      expect(answer.userContextId === "1").to.be.true;
+      expect(answer.neverAsk === false).to.be.true;
+      expect(answer.hasOwnProperty("identityMacAddonUUID")).to.be.true;
     });
   });
 

@@ -41,11 +41,11 @@ const identityState = {
     },
 
     /*
-     * Looks for abandoned identities keys in local storage, and makes sure all
+     * Looks for abandoned identity keys in local storage, and makes sure all
      * identities registered in the browser are also in local storage. (this
      * appears to not always be the case based on how this.get() is written)
      */
-    async cleanup() {
+    async upgradeData() {
       const identitiesList = await browser.contextualIdentities.query({});
       const macConfigs = await this.area.get();
       for(const configKey of Object.keys(macConfigs)) {
@@ -120,10 +120,13 @@ const identityState = {
   },
 
   async lookupMACaddonUUID(cookieStoreId) {
-    console.log(cookieStoreId);
+    // This stays a lookup, because if the cookieStoreId doesn't 
+    // exist, this.get() will create it, which is not what we want.
+    const cookieStoreIdKey = cookieStoreId.includes("firefox-container-") ? 
+      cookieStoreId : "firefox-container-" + cookieStoreId;
     const macConfigs = await this.storageArea.area.get();
     for(const configKey of Object.keys(macConfigs)) {
-      if (configKey === "identitiesState@@_" + cookieStoreId) {
+      if (configKey === "identitiesState@@_" + cookieStoreIdKey) {
         return macConfigs[configKey].macAddonUUID;
       }
     }

@@ -1,6 +1,7 @@
 browser.tests = {
   async runAll() {
     await this.testIdentityStateCleanup();
+    await this.testAssignManagerCleanup();
     await this.testReconcileSiteAssignments();
     await this.testInitialSync();
     await this.test2();
@@ -28,7 +29,7 @@ browser.tests = {
     });
     console.log("local storage set: ", await browser.storage.local.get());
 
-    await identityState.storageArea.cleanup();
+    await identityState.storageArea.upgradeData();
 
     const macConfigs = await browser.storage.local.get();
     const identities = [];
@@ -42,71 +43,106 @@ browser.tests = {
     for (const identity of identities) {
       console.assert(!!identity.macAddonUUID, `${identity.name} should have a uuid`);
     }
-    console.log("Finished!");
+    console.log("!!!Finished!!!");
   },
 
   async testAssignManagerCleanup() {
     await browser.tests.stopSyncListeners();
     console.log("Testing the cleanup of local storage");
 
-    await this.setState({}, LOCAL_DATA, TEST_CONTAINERS, []);
+    await this.setState({}, LOCAL_DATA, TEST_CONTAINERS, TEST_ASSIGNMENTS);
 
     await browser.storage.local.set({
       "siteContainerMap@@_www.goop.com": { 
-        "userContextId": "5",
+        "userContextId": "6",
         "neverAsk": true,
         "hostname": "www.goop.com"
       }
     });
     console.log("local storage set: ", await browser.storage.local.get());
 
-    await assignManager.storageArea.cleanup();
-
-    await browser.storage.local.set({
-      "identitiesState@@_firefox-container-5": { 
-        "hiddenTabs": [] 
-      }
-    });
+    await identityState.storageArea.upgradeData();
+    await assignManager.storageArea.upgradeData();
 
     const macConfigs = await browser.storage.local.get();
     const assignments = [];
     for(const configKey of Object.keys(macConfigs)) {
       if (configKey.includes("siteContainerMap@@_")) {
-        assignments.push(configKey);
+        macConfigs[configKey].configKey = configKey;
+        assignments.push(macConfigs[configKey]);
       }
     }
 
-    console.assert(assignments.length === 0, "There should be 0 identity entries");
-
-    console.log("Finished!");
+    console.assert(assignments.length === 5, "There should be 5 identity entries");
+    for (const assignment of assignments) {
+      console.log(assignment);
+      console.assert(!!assignment.identityMacAddonUUID, `${assignment.configKey} should have a uuid`);
+    }
+    console.log("!!!Finished!!!");
   },
 
   async testReconcileSiteAssignments() {
     await browser.tests.stopSyncListeners();
     console.log("Testing reconciling Site Assignments");
 
-    const newSyncData = DUPE_TEST_SYNC;
-    // add some bad data.
-    newSyncData.assignedSites["siteContainerMap@@_www.linkedin.com"] = {
-      "userContextId": "1",
-      "neverAsk": true,
-      "hostname": "www.linkedin.com"
-    };
-
-    newSyncData.deletedSiteList = ["siteContainerMap@@_www.google.com"];
-
     await this.setState(
-      newSyncData, 
+      DUPE_TEST_SYNC, 
       LOCAL_DATA, 
       TEST_CONTAINERS, 
       SITE_ASSIGNMENT_TEST
     );
 
+    // add 200ok (bad data).
+    await browser.storage.sync.set({  
+      "assignedSites": {
+        "siteContainerMap@@_developer.mozilla.org": {
+          "userContextId": "588",
+          "neverAsk": true,
+          "identityMacAddonUUID": "d20d7af2-9866-468e-bb43-541efe8c2c2e",
+          "hostname": "developer.mozilla.org"
+        },
+        "siteContainerMap@@_reddit.com": {
+          "userContextId": "592",
+          "neverAsk": true,
+          "identityMacAddonUUID": "3dc916fb-8c0a-4538-9758-73ef819a45f7",
+          "hostname": "reddit.com"
+        },
+        "siteContainerMap@@_twitter.com": {
+          "userContextId": "589",
+          "neverAsk": true,
+          "identityMacAddonUUID": "cdd73c20-c26a-4c06-9b17-735c1f5e9187",
+          "hostname": "twitter.com"
+        },
+        "siteContainerMap@@_www.facebook.com": {
+          "userContextId": "590",
+          "neverAsk": true,
+          "identityMacAddonUUID": "32cc4a9b-05ed-4e54-8e11-732468de62f4",
+          "hostname": "www.facebook.com"
+        },
+        "siteContainerMap@@_www.linkedin.com": {
+          "userContextId": "591",
+          "neverAsk": true,
+          "identityMacAddonUUID": "9ff381e3-4c11-420d-8e12-e352a3318be1",
+          "hostname": "www.linkedin.com"
+        },
+        "siteContainerMap@@_200ok.us": {
+          "userContextId": "1",
+          "neverAsk": true,
+          "identityMacAddonUUID": "b5f5f794-b37e-4cec-9f4e-6490df620336",
+          "hostname": "www.linkedin.com"
+        }
+      }
+    });
+
+    await browser.storage.sync.set({
+      deletedSiteList: ["siteContainerMap@@_www.google.com"]
+    });
+
     await sync.runSync();
 
     const assignedSites = await assignManager.storageArea.getAssignedSites();
-    console.assert(Object.keys(assignedSites).length === 5, "There should be 5 assigned sites");
-    console.log("Finished!");
+    console.assert(Object.keys(assignedSites).length === 6, "There should be 6 assigned sites");
+    console.log("!!!Finished!!!");
   },
 
   async testInitialSync() {
@@ -121,17 +157,10 @@ browser.tests = {
     const getAssignedSites = 
       await assignManager.storageArea.getAssignedSites();
     const identities = await browser.contextualIdentities.query({});
-    const localCookieStoreIDmap = 
-      await identityState.getCookieStoreIDuuidMap();
 
     console.assert(
       Object.keys(getSync.cookieStoreIDmap).length === 5, 
       "cookieStoreIDmap should have 5 entries"
-    );
-
-    console.assert(
-      Object.keys(localCookieStoreIDmap).length === 6, 
-      "localCookieStoreIDmap should have 6 entries"
     );
 
     console.assert(
@@ -143,7 +172,7 @@ browser.tests = {
       Object.keys(getAssignedSites).length === 0,
       "There should be no site assignments"
     );
-    console.log("Finished!");
+    console.log("!!!Finished!!!");
   },
 
   async test2() {
@@ -160,17 +189,9 @@ browser.tests = {
 
     const identities = await browser.contextualIdentities.query({});
 
-    const localCookieStoreIDmap = 
-      await identityState.getCookieStoreIDuuidMap();
-
     console.assert(
       Object.keys(getSync.cookieStoreIDmap).length === 6, 
       "cookieStoreIDmap should have 6 entries"
-    );
-
-    console.assert(
-      Object.keys(localCookieStoreIDmap).length === 7, 
-      "localCookieStoreIDmap should have 7 entries"
     );
 
     console.assert(
@@ -182,7 +203,7 @@ browser.tests = {
       Object.keys(getAssignedSites).length === 5,
       "There should be 5 site assignments"
     );
-    console.log("Finished!");
+    console.log("!!!Finished!!!");
   },
 
   async dupeTest() {
@@ -204,17 +225,9 @@ browser.tests = {
 
     const identities = await browser.contextualIdentities.query({});
 
-    const localCookieStoreIDmap = 
-      await identityState.getCookieStoreIDuuidMap();
-
     console.assert(
       Object.keys(getSync.cookieStoreIDmap).length === 7, 
       "cookieStoreIDmap should have 7 entries"
-    );
-
-    console.assert(
-      Object.keys(localCookieStoreIDmap).length === 8, 
-      "localCookieStoreIDmap should have 8 entries"
     );
 
     console.assert(
@@ -240,7 +253,7 @@ browser.tests = {
       mozillaContainer.icon === "pet",
       "Mozilla Container should be pet"
     );
-    console.log("Finished!");
+    console.log("!!!Finished!!!");
   },
 
   async CIerrorTest() {
@@ -262,17 +275,9 @@ browser.tests = {
 
     const identities = await browser.contextualIdentities.query({});
 
-    const localCookieStoreIDmap = 
-      await identityState.getCookieStoreIDuuidMap();
-
     console.assert(
       Object.keys(getSync.cookieStoreIDmap).length === 7, 
       "cookieStoreIDmap should have 7 entries"
-    );
-
-    console.assert(
-      Object.keys(localCookieStoreIDmap).length === 8, 
-      "localCookieStoreIDmap should have 8 entries"
     );
 
     console.assert(
@@ -298,7 +303,7 @@ browser.tests = {
       mozillaContainer.icon === "pet",
       "Mozilla Container should be pet"
     );
-    console.log("Finished!");
+    console.log("!!!Finished!!!");
   },
 
   lookupIdentityBy(identities, options) {
@@ -358,14 +363,14 @@ browser.tests = {
     }
   },
 
-  stopSyncListeners() {
-    browser.storage.onChanged.removeListener(sync.storageArea.onChangedListener);
-    removeContextualIdentityListeners();
+  async stopSyncListeners() {
+    await browser.storage.onChanged.removeListener(sync.storageArea.onChangedListener);
+    await removeContextualIdentityListeners();
   },
 
-  startListeners() {
-    browser.storage.onChanged.addListener(sync.storageArea.onChangedListener);
-    addContextualIdentityListeners();
+  async startListeners() {
+    await browser.storage.onChanged.addListener(sync.storageArea.onChangedListener);
+    await addContextualIdentityListeners();
   },
 
 };
@@ -529,26 +534,31 @@ const DUPE_TEST_SYNC = {
     "siteContainerMap@@_developer.mozilla.org": {
       "userContextId": "588",
       "neverAsk": true,
+      "identityMacAddonUUID": "d20d7af2-9866-468e-bb43-541efe8c2c2e",
       "hostname": "developer.mozilla.org"
     },
     "siteContainerMap@@_reddit.com": {
       "userContextId": "592",
       "neverAsk": true,
+      "identityMacAddonUUID": "3dc916fb-8c0a-4538-9758-73ef819a45f7",
       "hostname": "reddit.com"
     },
     "siteContainerMap@@_twitter.com": {
       "userContextId": "589",
       "neverAsk": true,
+      "identityMacAddonUUID": "cdd73c20-c26a-4c06-9b17-735c1f5e9187",
       "hostname": "twitter.com"
     },
     "siteContainerMap@@_www.facebook.com": {
       "userContextId": "590",
       "neverAsk": true,
+      "identityMacAddonUUID": "32cc4a9b-05ed-4e54-8e11-732468de62f4",
       "hostname": "www.facebook.com"
     },
     "siteContainerMap@@_www.linkedin.com": {
       "userContextId": "591",
       "neverAsk": true,
+      "identityMacAddonUUID": "9ff381e3-4c11-420d-8e12-e352a3318be1",
       "hostname": "www.linkedin.com"
     }
   }
@@ -682,11 +692,13 @@ const CI_ERROR_TEST_SYNC = {
     "siteContainerMap@@_bugzilla.mozilla.org": {
       "userContextId": "11",
       "neverAsk": true,
+      "identityMacAddonUUID": "0269558d-6be7-487b-beb1-b720b346d09b",
       "hostname": "bugzilla.mozilla.org"
     },
     "siteContainerMap@@_www.amazon.com": {
       "userContextId": "14",
       "neverAsk": false,
+      "identityMacAddonUUID": "e48d04cf-6277-4236-8f3d-611287d0caf2",
       "hostname": "www.amazon.com"
     }
   },

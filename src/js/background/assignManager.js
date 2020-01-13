@@ -9,8 +9,9 @@ const assignManager = {
     area: browser.storage.local,
     exemptedTabs: {},
 
-    getSiteStoreKey(pageUrl) {
-      const url = new window.URL(pageUrl);
+    getSiteStoreKey(pageUrlorUrlKey) {
+      if (pageUrlorUrlKey.includes("siteContainerMap@@_")) return pageUrlorUrlKey;
+      const url = new window.URL(pageUrlorUrlKey);
       const storagePrefix = "siteContainerMap@@_";
       if (url.port === "80" || url.port === "443") {
         return `${storagePrefix}${url.hostname}`;
@@ -19,29 +20,29 @@ const assignManager = {
       }
     },
 
-    setExempted(pageUrl, tabId) {
-      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+    setExempted(pageUrlorUrlKey, tabId) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       if (!(siteStoreKey in this.exemptedTabs)) {
         this.exemptedTabs[siteStoreKey] = [];
       }
       this.exemptedTabs[siteStoreKey].push(tabId);
     },
 
-    removeExempted(pageUrl) {
-      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+    removeExempted(pageUrlorUrlKey) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       this.exemptedTabs[siteStoreKey] = [];
     },
 
-    isExempted(pageUrl, tabId) {
-      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+    isExempted(pageUrlorUrlKey, tabId) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       if (!(siteStoreKey in this.exemptedTabs)) {
         return false;
       }
       return this.exemptedTabs[siteStoreKey].includes(tabId);
     },
 
-    get(pageUrl) {
-      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+    get(pageUrlorUrlKey) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       return this.getByUrlKey(siteStoreKey);
     },
 
@@ -58,24 +59,26 @@ const assignManager = {
       });
     },
 
-    async set(pageUrl, data, exemptedTabIds) {
-      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+    async set(pageUrlorUrlKey, data, exemptedTabIds, backup = true) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       if (exemptedTabIds) {
         exemptedTabIds.forEach((tabId) => {
-          this.setExempted(pageUrl, tabId);
+          this.setExempted(pageUrlorUrlKey, tabId);
         });
       }
+      data.identityMacAddonUUID =
+        await identityState.lookupMACaddonUUID(data.userContextId);
       await this.area.set({
         [siteStoreKey]: data
       });
-      await sync.storageArea.backup({undelete: siteStoreKey});
+      if (backup) await sync.storageArea.backup({undelete: siteStoreKey});
       return;
     },
 
-    async remove(pageUrl) {
-      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+    async remove(pageUrlorUrlKey) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       // When we remove an assignment we should clear all the exemptions
-      this.removeExempted(pageUrl);
+      this.removeExempted(pageUrlorUrlKey);
       await this.area.remove([siteStoreKey]);
       await sync.storageArea.backup({siteStoreKey});
       return;
@@ -108,12 +111,14 @@ const assignManager = {
       return sites;
     },
 
+    // TODOkmw: Change site assignment UUID
+
     /*
      * Looks for abandoned site assignments. If there is no identity with 
      * the site assignment's userContextId (cookieStoreId), then the assignment
      * is removed.
      */
-    async cleanup() {
+    async upgradeData() {
       const identitiesList = await browser.contextualIdentities.query({});
       const macConfigs = await this.area.get();
       for(const configKey of Object.keys(macConfigs)) {
@@ -126,6 +131,15 @@ const assignManager = {
           if (!match) {
             await this.remove(configKey.replace(/^siteContainerMap@@_/, "https://"));
             continue;
+          }
+          const updatedSideAssignment = macConfigs[configKey];
+          if (!macConfigs[configKey].identityMacAddonUUID) {
+            await this.set(
+              configKey.replace(/^siteContainerMap@@_/, "https://"),
+              updatedSideAssignment,
+              false,
+              false
+            );
           }
         }
       }
