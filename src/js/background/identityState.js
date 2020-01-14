@@ -12,11 +12,13 @@ const identityState = {
       const storageResponse = await this.area.get([storeKey]);
       if (storageResponse && storeKey in storageResponse) {
         if (!storageResponse[storeKey].macAddonUUID){
-          await identityState.addUUID(cookieStoreId);
-          return this.get(cookieStoreId);
+          storageResponse[storeKey].macAddonUUID = uuidv4();
+          await this.set(cookieStoreId, storageResponse[cookieStoreId]);
         }
         return storageResponse[storeKey];
       }
+      // If local storage doesn't have an entry, look it up to make sure it's
+      // an in-use identity.
       const identities = await browser.contextualIdentities.query({});
       const match = identities.find(
         (identity) => identity.cookieStoreId === cookieStoreId);
@@ -60,15 +62,14 @@ const identityState = {
             continue;
           }
           if (!macConfigs[configKey].macAddonUUID) {
-            await identityState.addUUID(cookieStoreId);
+            await identityState.storageArea.get(cookieStoreId);
           }
         }
       }
 
       for (const identity of identitiesList) {
         // ensure all identities have an entry in local storage
-        const data = await this.get(identity.cookieStoreId);
-        await this.set(identity.cookieStoreId, data);
+        await identityState.addUUID(identity.cookieStoreId);
       }
     }
   },
@@ -116,7 +117,7 @@ const identityState = {
   },
 
   async addUUID(cookieStoreId) {
-    return await this.updateUUID(cookieStoreId, uuidv4());
+    await this.storageArea.get(cookieStoreId);
   },
 
   async lookupMACaddonUUID(cookieStoreId) {
