@@ -27,7 +27,9 @@ describe("External Webextensions", () => {
       const answer = await promise;
       expect(answer.userContextId === "1").to.be.true;
       expect(answer.neverAsk === false).to.be.true;
-      expect(answer.hasOwnProperty("identityMacAddonUUID")).to.be.true;
+      expect(
+        Object.prototype.hasOwnProperty.call(
+          answer, "identityMacAddonUUID")).to.be.true;
     });
   });
 

@@ -365,12 +365,12 @@ browser.tests = {
 
   async stopSyncListeners() {
     await browser.storage.onChanged.removeListener(sync.storageArea.onChangedListener);
-    await removeContextualIdentityListeners();
+    await sync.removeContextualIdentityListeners();
   },
 
   async startListeners() {
     await browser.storage.onChanged.addListener(sync.storageArea.onChangedListener);
-    await addContextualIdentityListeners();
+    await sync.addContextualIdentityListeners();
   },
 
 };

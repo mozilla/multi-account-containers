@@ -66,6 +66,7 @@ const assignManager = {
           this.setExempted(pageUrlorUrlKey, tabId);
         });
       }
+      // eslint-disable-next-line require-atomic-updates
       data.identityMacAddonUUID =
         await identityState.lookupMACaddonUUID(data.userContextId);
       await this.area.set({
@@ -124,7 +125,7 @@ const assignManager = {
       for(const configKey of Object.keys(macConfigs)) {
         if (configKey.includes("siteContainerMap@@_")) {
           const cookieStoreId = 
-            "firefox-container-" + macConfigs[configKey].userContextId;
+            "firefox-container-" + macConfigs[configKey].userContextId; 
           const match = identitiesList.find(
             localIdentity => localIdentity.cookieStoreId === cookieStoreId
           );

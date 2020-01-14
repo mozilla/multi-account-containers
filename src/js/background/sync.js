@@ -160,10 +160,10 @@ const sync = {
         sync.storageArea.onChangedListener
       );
 
-    const hasCIListener = await hasContextualIdentityListeners();
+    const hasCIListener = await sync.hasContextualIdentityListeners();
 
     if (!hasCIListener) {
-      await addContextualIdentityListeners();
+      await sync.addContextualIdentityListeners();
     }
 
     if (!hasStorageListener) {
@@ -178,10 +178,10 @@ const sync = {
         sync.storageArea.onChangedListener
       );
 
-    const hasCIListener = await hasContextualIdentityListeners();
+    const hasCIListener = await sync.hasContextualIdentityListeners();
             
     if (hasCIListener) {
-      await removeContextualIdentityListeners();
+      await sync.removeContextualIdentityListeners();
     }
 
     if (hasStorageListener) {
@@ -210,6 +210,30 @@ const sync = {
     await sync.storageArea.backup();
     return;  
   },
+
+  async addContextualIdentityListeners(listenerList) {
+    if(!listenerList) listenerList = syncCIListenerList;
+    await browser.contextualIdentities.onCreated.addListener(listenerList[0]);
+    await browser.contextualIdentities.onRemoved.addListener(listenerList[1]);
+    await browser.contextualIdentities.onUpdated.addListener(listenerList[2]);
+  },
+
+  async removeContextualIdentityListeners(listenerList) {
+    if(!listenerList) listenerList = syncCIListenerList;
+    await browser.contextualIdentities.onCreated.removeListener(listenerList[0]);
+    await browser.contextualIdentities.onRemoved.removeListener(listenerList[1]);
+    await browser.contextualIdentities.onUpdated.removeListener(listenerList[2]);
+  },
+
+  async hasContextualIdentityListeners(listenerList) {
+    if(!listenerList) listenerList = syncCIListenerList;
+    return (
+      await browser.contextualIdentities.onCreated.hasListener(listenerList[0]) &&
+      await browser.contextualIdentities.onRemoved.hasListener(listenerList[1]) &&
+      await browser.contextualIdentities.onUpdated.hasListener(listenerList[2])
+    );
+  }
+
 };
 
 sync.init();
@@ -381,7 +405,7 @@ async function reconcileSiteAssignments() {
   const deletedSiteList = 
     await sync.storageArea.getDeletedSiteList();
   for(const siteStoreKey of deletedSiteList) {
-    if (assignedSitesLocal.hasOwnProperty(siteStoreKey)) {
+    if (Object.prototype.hasOwnProperty.call(assignedSitesLocal,siteStoreKey)) {
       assignManager
         .storageArea
         .remove(siteStoreKey.replace(/^siteContainerMap@@_/, "https://"));
@@ -416,6 +440,7 @@ async function setAssignmentWithUUID (assignedSite, urlKey) {
   const uuid = assignedSite.identityMacAddonUUID;
   const cookieStoreId = await identityState.lookupCookieStoreId(uuid);
   if (cookieStoreId) {
+    // eslint-disable-next-line require-atomic-updates
     assignedSite.userContextId = cookieStoreId
       .replace(/^firefox-container-/, "");
     await assignManager.storageArea.set(
@@ -434,26 +459,3 @@ const syncCIListenerList = [
   sync.storageArea.addToDeletedList, 
   sync.storageArea.backup
 ];
-
-async function addContextualIdentityListeners(listenerList) {
-  if(!listenerList) listenerList = syncCIListenerList;
-  await browser.contextualIdentities.onCreated.addListener(listenerList[0]);
-  await browser.contextualIdentities.onRemoved.addListener(listenerList[1]);
-  await browser.contextualIdentities.onUpdated.addListener(listenerList[2]);
-}
-
-async function removeContextualIdentityListeners(listenerList) {
-  if(!listenerList) listenerList = syncCIListenerList;
-  await browser.contextualIdentities.onCreated.removeListener(listenerList[0]);
-  await browser.contextualIdentities.onRemoved.removeListener(listenerList[1]);
-  await browser.contextualIdentities.onUpdated.removeListener(listenerList[2]);
-}
-
-async function hasContextualIdentityListeners(listenerList) {
-  if(!listenerList) listenerList = syncCIListenerList;
-  return (
-    await browser.contextualIdentities.onCreated.hasListener(listenerList[0]) &&
-    await browser.contextualIdentities.onRemoved.hasListener(listenerList[1]) &&
-    await browser.contextualIdentities.onUpdated.hasListener(listenerList[2])
-  );
-}
