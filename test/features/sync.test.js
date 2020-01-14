@@ -1,7 +1,6 @@
 describe("Sync", () => {
 
   it("should init sync on startup", async () => {
-    console.log("!!!a")
     const tab = await helper.browser.initializeWithTab();
     console.log(await background.browser.storage.local.get());
     const mozContainer = await background.browser.contextualIdentities.create({
@@ -54,7 +53,6 @@ describe("Sync", () => {
         });
       }
     }));
-    console.log("!!!c");
     await background.browser.runtime.onStartup.addListener.yield();
     await nextTick();
 
@@ -62,7 +60,6 @@ describe("Sync", () => {
     console.log(await background.browser.storage.local.get());
 
     expect(sync.identities.length).to.equal(5);
-    console.log("!!!b");
   });
 
 });
