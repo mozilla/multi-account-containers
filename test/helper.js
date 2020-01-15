@@ -11,6 +11,8 @@ module.exports = {
           }
         },
         popup: {
+          // Required to access variables, because nyc messes up 'eval'
+          script: "function evalScript(v) { return eval(v); }",
           jsdom: {
             beforeParse(window) {
               window.browser.storage.local.set({
@@ -31,7 +33,6 @@ module.exports = {
       return background.browser.tabs._create(tab, options);
     },
     
-    // https://github.com/mozilla/multi-account-containers/issues/847
     async browseToURL(tabId, url) {
       const [promise] = background.browser.webRequest.onBeforeRequest.addListener.yield({
         frameId: 0,
@@ -53,7 +54,7 @@ module.exports = {
     
     // https://github.com/mozilla/multi-account-containers/issues/847
     async setContainerIsLocked(cookieStoreId, isLocked) {
-      const Logic = popup.dom.window.eval("Logic");
+      const Logic = popup.window.evalScript("Logic");
       const userContextId = Logic.userContextId(cookieStoreId);
       await Logic.lockOrUnlockContainer(userContextId, isLocked);
     }
