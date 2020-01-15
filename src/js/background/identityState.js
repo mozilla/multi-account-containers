@@ -58,7 +58,7 @@ const identityState = {
           );
           if (cookieStoreId === "firefox-default") continue;
           if (!match) {
-            this.remove(cookieStoreId);
+            await this.remove(cookieStoreId);
             continue;
           }
           if (!macConfigs[configKey].macAddonUUID) {

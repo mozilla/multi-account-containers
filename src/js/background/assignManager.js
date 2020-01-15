@@ -112,8 +112,6 @@ const assignManager = {
       return sites;
     },
 
-    // TODOkmw: Change site assignment UUID
-
     /*
      * Looks for abandoned site assignments. If there is no identity with 
      * the site assignment's userContextId (cookieStoreId), then the assignment
@@ -133,15 +131,15 @@ const assignManager = {
             await this.remove(configKey.replace(/^siteContainerMap@@_/, "https://"));
             continue;
           }
-          const updatedSideAssignment = macConfigs[configKey];
-          if (!macConfigs[configKey].identityMacAddonUUID) {
-            await this.set(
-              configKey.replace(/^siteContainerMap@@_/, "https://"),
-              updatedSideAssignment,
-              false,
-              false
-            );
-          }
+          const updatedSiteAssignment = macConfigs[configKey];
+          updatedSiteAssignment.identityMacAddonUUID = 
+            await identityState.lookupMACaddonUUID(match.cookieStoreId);
+          await this.set(
+            configKey,
+            updatedSiteAssignment,
+            false,
+            false
+          );
         }
       }
 
@@ -168,7 +166,7 @@ const assignManager = {
   // We return here so the confirm page can load the tab when exempted
   async _exemptTab(m) {
     const pageUrl = m.pageUrl;
-    this.storageArea.setExempted(pageUrl, m.tabId);
+    await this.storageArea.setExempted(pageUrl, m.tabId);
     return true;
   },
 
