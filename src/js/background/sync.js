@@ -148,7 +148,7 @@ const sync = {
   },
 
   async errorHandledRunSync () {
-    sync.runSync().catch(async (error)=> { 
+    await sync.runSync().catch( async (error)=> { 
       console.error("Error from runSync", error);
       await sync.checkForListenersMaybeAdd();
     });
