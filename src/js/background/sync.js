@@ -12,14 +12,40 @@ const sync = {
       return await this.area.set(options);
     },
 
+    async deleteIdentity(deletedIdentityUUID) {
+      const deletedIdentityList = 
+        await sync.storageArea.getDeletedIdentityList();
+      if (
+        deletedIdentityList.find(element => element === deletedIdentityUUID)
+      ) return;
+      deletedIdentityList.push(deletedIdentityUUID);
+      await sync.storageArea.set({ deletedIdentityList });
+      await sync.storageArea.area.remove( "identity@@_" + deletedIdentityUUID);
+    },
+
+    async deleteSite(siteStoreKey) {
+      const deletedSiteList = 
+        await sync.storageArea.getDeletedSiteList();
+      if (deletedSiteList.find(element => element === siteStoreKey)) return;
+      deletedSiteList.push(siteStoreKey);
+      await sync.storageArea.set({ deletedSiteList });
+      await sync.storageArea.area.remove(siteStoreKey);
+    },
+
     async getDeletedIdentityList() {
       const storedArray = await this.getStoredItem("deletedIdentityList");
       return (storedArray) ?  storedArray : [];
     },
 
     async getIdentities() {
-      const storedArray = await this.getStoredItem("identities");
-      return (storedArray) ?  storedArray : [];
+      const allSyncStorage = await this.get();
+      const identities = [];
+      for (const storageKey of Object.keys(allSyncStorage)) {
+        if (storageKey.includes("identity@@_")) {
+          identities.push(allSyncStorage[storageKey]);
+        }
+      }
+      return identities;
     },
 
     async getDeletedSiteList() { 
@@ -27,14 +53,15 @@ const sync = {
       return (storedArray) ?  storedArray : [];
     },
 
-    async getCookieStoreIDMap() {
-      const storedArray = await this.getStoredItem("cookieStoreIDmap");
-      return (storedArray) ?  storedArray : {};
-    },
-
     async getAssignedSites() {
-      const storedArray = await this.getStoredItem("assignedSites");
-      return (storedArray) ?  storedArray : {};
+      const allSyncStorage = await this.get();
+      const sites = {};
+      for (const storageKey of Object.keys(allSyncStorage)) {
+        if (storageKey.includes("siteContainerMap@@_")) {
+          sites[storageKey] = allSyncStorage[storageKey];
+        }
+      }
+      return sites;
     },
 
     async getStoredItem(objectKey) {
@@ -54,6 +81,23 @@ const sync = {
       return instanceList;
     },
 
+    getInstanceKey() {
+      return browser.runtime.getURL("")
+        .replace(/moz-extension:\/\//, "MACinstance:")
+        .replace(/\//, "");
+    },
+    async removeInstance(installUUID) {
+      console.log("removing", installUUID);
+      await this.area.remove(installUUID);
+      return;
+    },
+
+    async removeThisInstanceFromSync() {
+      const installUUID = this.getInstanceKey();
+      await this.removeInstance(installUUID);
+      return;
+    },
+
     async hasSyncStorage(){
       const inSync = await this.get();
       return !(Object.entries(inSync).length === 0);
@@ -64,24 +108,16 @@ const sync = {
       await sync.checkForListenersMaybeRemove();
 
       const identities = await updateSyncIdentities();
-      await updateCookieStoreIdMap();
       const siteAssignments = await updateSyncSiteAssignments();
       await updateInstanceInfo(identities, siteAssignments);
       if (options && options.uuid) 
-        await updateDeletedIdentityList(options.uuid);
+        await this.deleteIdentity(options.uuid);
       if (options && options.undeleteUUID) 
         await removeFromDeletedIdentityList(options.undeleteUUID);
       if (options && options.siteStoreKey) 
-        await addToDeletedSitesList(options.siteStoreKey);
+        await this.deleteSite(options.siteStoreKey);
       if (options && options.undeleteSiteStoreKey) 
         await removeFromDeletedSitesList(options.undeleteSiteStoreKey);
-      // if (SYNC_DEBUG) {
-      //   const storage = await sync.storageArea.get();
-      //   console.log("inSync: ", storage);
-      //   const localStorage = await browser.storage.local.get();
-      //   console.log("inLocal:", localStorage);
-      //   console.log("idents: ", await browser.contextualIdentities.query({}));
-      // }
       console.log("Backed up!");
       await sync.checkForListenersMaybeAdd();
 
@@ -92,28 +128,29 @@ const sync = {
           delete identity.colorCode;
           delete identity.iconUrl;
           identity.macAddonUUID = await identityState.lookupMACaddonUUID(identity.cookieStoreId);
+          if(identity.macAddonUUID) {
+            const storageKey = "identity@@_" + identity.macAddonUUID;
+            await sync.storageArea.set({ [storageKey]: identity });
+          }
         }
-        await sync.storageArea.set({ identities });
+        //await sync.storageArea.set({ identities });
         return identities;
-      }
-
-      async function updateCookieStoreIdMap() {
-        const cookieStoreIDmap = 
-          await identityState.getCookieStoreIDuuidMap();
-        await sync.storageArea.set({ cookieStoreIDmap });
       }
 
       async function updateSyncSiteAssignments() {
         const assignedSites = 
           await assignManager.storageArea.getAssignedSites();
-        await sync.storageArea.set({ assignedSites });
+        for (const siteKey of Object.keys(assignedSites)) {
+          await sync.storageArea.set({ [siteKey]: assignedSites[siteKey] });
+        }
         return assignedSites;
       }
 
       async function updateInstanceInfo(identitiesInput, siteAssignmentsInput) {
-        const installUUID = browser.runtime.getURL("")
-          .replace(/moz-extension:\/\//, "MACinstance:")
-          .replace(/\//, "");
+        const date = new Date();
+        const timestamp = date.getTime();
+        const installUUID = sync.storageArea.getInstanceKey();
+        console.log("adding", installUUID);
         const identities = [];
         const siteAssignments = [];
         for (const identity of identitiesInput) {
@@ -122,17 +159,7 @@ const sync = {
         for (const siteAssignmentKey of Object.keys(siteAssignmentsInput)) {
           siteAssignments.push(siteAssignmentKey);
         }
-        await sync.storageArea.set({ [installUUID]: { identities, siteAssignments } });
-      }
-
-      async function updateDeletedIdentityList(deletedIdentityUUID) {
-        const deletedIdentityList = 
-          await sync.storageArea.getDeletedIdentityList();
-        if (
-          deletedIdentityList.find(element => element === deletedIdentityUUID)
-        ) return;
-        deletedIdentityList.push(deletedIdentityUUID);
-        await sync.storageArea.set({ deletedIdentityList });
+        await sync.storageArea.set({ [installUUID]: { timestamp, identities, siteAssignments } });
       }
 
       async function removeFromDeletedIdentityList(identityUUID) {
@@ -141,14 +168,6 @@ const sync = {
         const newDeletedIdentityList = deletedIdentityList
           .filter(element => element !== identityUUID);
         await sync.storageArea.set({ deletedIdentityList: newDeletedIdentityList });
-      }
-
-      async function addToDeletedSitesList(siteStoreKey) {
-        const deletedSiteList = 
-          await sync.storageArea.getDeletedSiteList();
-        if (deletedSiteList.find(element => element === siteStoreKey)) return;
-        deletedSiteList.push(siteStoreKey);
-        await sync.storageArea.set({ deletedSiteList });
       }
 
       async function removeFromDeletedSitesList(siteStoreKey) {
@@ -170,28 +189,20 @@ const sync = {
         await identityState.lookupMACaddonUUID(identity.cookieStoreId);
       await identityState.storageArea.remove(identity.cookieStoreId);
       sync.storageArea.backup({uuid: deletedUUID});
-    },
-
-    async dataIsReliable() {
-      const cookieStoreIDmap = await this.getCookieStoreIDMap();
-      const identities = await this.getIdentities();
-      for (const cookieStoreId of Object.keys(cookieStoreIDmap)) {
-        const match = identities.find(identity => 
-          identity.cookieStoreId === cookieStoreId
-        );
-        // if one has no match, this is bad data.
-        if (!match) return false;
-      }
-      return !(Object.entries(cookieStoreIDmap).length === 0);
     }
   },
 
-  init() {
-    // Add listener to sync storage and containers.
-    // Works for all installs that have any sync storage.
-    // Waits for sync storage change before kicking off the restore/backup
-    // initial sync must be kicked off by user.
-    this.checkForListenersMaybeAdd();
+  async init() {
+    const syncEnabled = await assignManager.storageArea.getSyncEnabled();
+    if (syncEnabled) {
+      // Add listener to sync storage and containers.
+      // Works for all installs that have any sync storage.
+      // Waits for sync storage change before kicking off the restore/backup
+      // initial sync must be kicked off by user.
+      this.checkForListenersMaybeAdd();
+      return;
+    }
+    this.checkForListenersMaybeRemove();
 
   },
 
@@ -252,8 +263,7 @@ const sync = {
     await assignManager.storageArea.upgradeData();
 
     const hasSyncStorage = await sync.storageArea.hasSyncStorage();
-    const dataIsReliable = await sync.storageArea.dataIsReliable();
-    if (hasSyncStorage && dataIsReliable) await restore();
+    if (hasSyncStorage) await restore();
 
     await sync.storageArea.backup();
     await removeOldDeletedItems();
@@ -282,6 +292,16 @@ const sync = {
       await browser.contextualIdentities.onUpdated.hasListener(listenerList[2])
     );
   },
+
+  async resetSync() {
+    const syncEnabled = await assignManager.storageArea.getSyncEnabled();
+    if (syncEnabled) {
+      this.errorHandledRunSync();
+      return;
+    }
+    await this.checkForListenersMaybeRemove();
+    await this.storageArea.removeThisInstanceFromSync();
+  }
 
 };
 
@@ -323,11 +343,8 @@ async function reconcileIdentities(){
   const localIdentities = await browser.contextualIdentities.query({});
   const syncIdentities = 
     await sync.storageArea.getIdentities();
-  const cookieStoreIDmap = 
-    await sync.storageArea.getCookieStoreIDMap();
   // now compare all containers for matching names.
   for (const syncIdentity of syncIdentities) {
-    syncIdentity.macAddonUUID = cookieStoreIDmap[syncIdentity.cookieStoreId];
     if (syncIdentity.macAddonUUID){
       const localMatch = localIdentities.find(
         localIdentity => localIdentity.name === syncIdentity.name
@@ -483,10 +500,22 @@ async function reconcileSiteAssignments() {
   }
 }
 
+const MILISECONDS_IN_THIRTY_DAYS = 2592000000;
+
 async function removeOldDeletedItems() {
   const instanceList = await sync.storageArea.getAllInstanceInfo();
   const deletedSiteList = await sync.storageArea.getDeletedSiteList();
   const deletedIdentityList = await sync.storageArea.getDeletedIdentityList();
+
+  for (const instanceKey of Object.keys(instanceList)) {
+    const date = new Date();
+    const currentTimestamp = date.getTime();
+    if (instanceList[instanceKey].timestamp < currentTimestamp - MILISECONDS_IN_THIRTY_DAYS) {
+      delete instanceList[instanceKey];
+      sync.storageArea.removeInstance(instanceKey);
+      continue;
+    }
+  }
   for (const siteStoreKey of deletedSiteList) {
     let hasMatch = false;
     for (const instance of Object.values(instanceList)) {
