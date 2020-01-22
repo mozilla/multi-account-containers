@@ -44,6 +44,16 @@ const sync = {
       return false;
     },
 
+    async getAllInstanceInfo() {
+      const instanceList = {};
+      const allSyncInfo = await this.get();
+      for (const objectKey of Object.keys(allSyncInfo)) {
+        if (objectKey.includes("MACinstance")) {
+          instanceList[objectKey] = allSyncInfo[objectKey]; }
+      }
+      return instanceList;
+    },
+
     async hasSyncStorage(){
       const inSync = await this.get();
       return !(Object.entries(inSync).length === 0);
@@ -53,15 +63,18 @@ const sync = {
       // remove listeners to avoid an infinite loop!
       await sync.checkForListenersMaybeRemove();
 
-      await updateSyncIdentities();
+      const identities = await updateSyncIdentities();
       await updateCookieStoreIdMap();
-      await updateSyncSiteAssignments();
+      const siteAssignments = await updateSyncSiteAssignments();
+      await updateInstanceInfo(identities, siteAssignments);
       if (options && options.uuid) 
         await updateDeletedIdentityList(options.uuid);
+      if (options && options.undeleteUUID) 
+        await removeFromDeletedIdentityList(options.undeleteUUID);
       if (options && options.siteStoreKey) 
         await addToDeletedSitesList(options.siteStoreKey);
-      if (options && options.undelete) 
-        await removeFromDeletedSitesList(options.undelete);
+      if (options && options.undeleteSiteStoreKey) 
+        await removeFromDeletedSitesList(options.undeleteSiteStoreKey);
       // if (SYNC_DEBUG) {
       //   const storage = await sync.storageArea.get();
       //   console.log("inSync: ", storage);
@@ -74,7 +87,14 @@ const sync = {
 
       async function updateSyncIdentities() {
         const identities = await browser.contextualIdentities.query({});
+
+        for (const identity of identities) {
+          delete identity.colorCode;
+          delete identity.iconUrl;
+          identity.macAddonUUID = await identityState.lookupMACaddonUUID(identity.cookieStoreId);
+        }
         await sync.storageArea.set({ identities });
+        return identities;
       }
 
       async function updateCookieStoreIdMap() {
@@ -87,6 +107,22 @@ const sync = {
         const assignedSites = 
           await assignManager.storageArea.getAssignedSites();
         await sync.storageArea.set({ assignedSites });
+        return assignedSites;
+      }
+
+      async function updateInstanceInfo(identitiesInput, siteAssignmentsInput) {
+        const installUUID = browser.runtime.getURL("")
+          .replace(/moz-extension:\/\//, "MACinstance:")
+          .replace(/\//, "");
+        const identities = [];
+        const siteAssignments = [];
+        for (const identity of identitiesInput) {
+          identities.push(identity.macAddonUUID);
+        }
+        for (const siteAssignmentKey of Object.keys(siteAssignmentsInput)) {
+          siteAssignments.push(siteAssignmentKey);
+        }
+        await sync.storageArea.set({ [installUUID]: { identities, siteAssignments } });
       }
 
       async function updateDeletedIdentityList(deletedIdentityUUID) {
@@ -97,6 +133,14 @@ const sync = {
         ) return;
         deletedIdentityList.push(deletedIdentityUUID);
         await sync.storageArea.set({ deletedIdentityList });
+      }
+
+      async function removeFromDeletedIdentityList(identityUUID) {
+        const deletedIdentityList = 
+          await sync.storageArea.getDeletedIdentityList();
+        const newDeletedIdentityList = deletedIdentityList
+          .filter(element => element !== identityUUID);
+        await sync.storageArea.set({ deletedIdentityList: newDeletedIdentityList });
       }
 
       async function addToDeletedSitesList(siteStoreKey) {
@@ -143,8 +187,12 @@ const sync = {
   },
 
   init() {
-    browser.runtime.onInstalled.addListener(this.errorHandledRunSync);
-    browser.runtime.onStartup.addListener(this.errorHandledRunSync);
+    // Add listener to sync storage and containers.
+    // Works for all installs that have any sync storage.
+    // Waits for sync storage change before kicking off the restore/backup
+    // initial sync must be kicked off by user.
+    this.checkForListenersMaybeAdd();
+
   },
 
   async errorHandledRunSync () {
@@ -208,7 +256,8 @@ const sync = {
     if (hasSyncStorage && dataIsReliable) await restore();
 
     await sync.storageArea.backup();
-    return;  
+    await removeOldDeletedItems();
+    return;
   },
 
   async addContextualIdentityListeners(listenerList) {
@@ -232,7 +281,7 @@ const sync = {
       await browser.contextualIdentities.onRemoved.hasListener(listenerList[1]) &&
       await browser.contextualIdentities.onUpdated.hasListener(listenerList[2])
     );
-  }
+  },
 
 };
 
@@ -415,8 +464,6 @@ async function reconcileSiteAssignments() {
   for(const urlKey of Object.keys(assignedSitesFromSync)) {
     const assignedSite = assignedSitesFromSync[urlKey];
     try{
-      const syncUUID = assignedSite.identityMacAddonUUID;
-      console.log("syncUUID, ", syncUUID);
       if (assignedSite.identityMacAddonUUID) {
       // Sync is truth.
       // Not even looking it up. Just overwrite
@@ -432,6 +479,34 @@ async function reconcileSiteAssignments() {
     } catch (error) {
       // this is probably old or incorrect site info in Sync
       // skip and move on.
+    }
+  }
+}
+
+async function removeOldDeletedItems() {
+  const instanceList = await sync.storageArea.getAllInstanceInfo();
+  const deletedSiteList = await sync.storageArea.getDeletedSiteList();
+  const deletedIdentityList = await sync.storageArea.getDeletedIdentityList();
+  for (const siteStoreKey of deletedSiteList) {
+    let hasMatch = false;
+    for (const instance of Object.values(instanceList)) {
+      const match = instance.siteAssignments.find(element => element === siteStoreKey);
+      if (!match) continue;
+      hasMatch = true;
+    }
+    if (!hasMatch) {
+      await sync.storageArea.backup({undeleteSiteStoreKey: siteStoreKey});
+    }
+  }
+  for (const identityUUID of deletedIdentityList) {
+    let hasMatch = false;
+    for (const instance of Object.values(instanceList)) {
+      const match = instance.identities.find(element => element === identityUUID);
+      if (!match) continue;
+      hasMatch = true;
+    }
+    if (!hasMatch) {
+      await sync.storageArea.backup({undeleteUUID: identityUUID});
     }
   }
 }
