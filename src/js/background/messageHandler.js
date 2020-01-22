@@ -10,6 +10,9 @@ const messageHandler = {
       let response;
 
       switch (m.method) {
+      case "resetSync":
+        response = sync.resetSync();
+        break;
       case "resetBookmarksContext":
         response = assignManager.resetBookmarksMenuItem();
         break;

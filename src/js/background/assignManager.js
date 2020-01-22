@@ -46,6 +46,11 @@ const assignManager = {
       return this.getByUrlKey(siteStoreKey);
     },
 
+    async getSyncEnabled() {
+      const { syncEnabled } = await browser.storage.local.get("syncEnabled");
+      return !!syncEnabled;
+    },
+
     getByUrlKey(siteStoreKey) {
       return new Promise((resolve, reject) => {
         this.area.get([siteStoreKey]).then((storageResponse) => {
@@ -72,7 +77,8 @@ const assignManager = {
       await this.area.set({
         [siteStoreKey]: data
       });
-      if (backup) await sync.storageArea.backup({undeleteSiteStoreKey: siteStoreKey});
+      const syncEnabled = await this.getSyncEnabled();
+      if (backup && syncEnabled) await sync.storageArea.backup({undeleteSiteStoreKey: siteStoreKey});
       return;
     },
 
@@ -81,7 +87,8 @@ const assignManager = {
       // When we remove an assignment we should clear all the exemptions
       this.removeExempted(pageUrlorUrlKey);
       await this.area.remove([siteStoreKey]);
-      await sync.storageArea.backup({siteStoreKey});
+      const syncEnabled = await this.getSyncEnabled();
+      if (syncEnabled) await sync.storageArea.backup({siteStoreKey});
       return;
     },
 
