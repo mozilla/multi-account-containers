@@ -72,7 +72,7 @@ const assignManager = {
       await this.area.set({
         [siteStoreKey]: data
       });
-      if (backup) await sync.storageArea.backup({undelete: siteStoreKey});
+      if (backup) await sync.storageArea.backup({undeleteSiteStoreKey: siteStoreKey});
       return;
     },
 
