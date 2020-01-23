@@ -93,51 +93,53 @@ browser.tests = {
     );
 
     // add 200ok (bad data).
-    await browser.storage.sync.set({  
-      "assignedSites": {
-        "siteContainerMap@@_developer.mozilla.org": {
-          "userContextId": "588",
-          "neverAsk": true,
-          "identityMacAddonUUID": "d20d7af2-9866-468e-bb43-541efe8c2c2e",
-          "hostname": "developer.mozilla.org"
-        },
-        "siteContainerMap@@_reddit.com": {
-          "userContextId": "592",
-          "neverAsk": true,
-          "identityMacAddonUUID": "3dc916fb-8c0a-4538-9758-73ef819a45f7",
-          "hostname": "reddit.com"
-        },
-        "siteContainerMap@@_twitter.com": {
-          "userContextId": "589",
-          "neverAsk": true,
-          "identityMacAddonUUID": "cdd73c20-c26a-4c06-9b17-735c1f5e9187",
-          "hostname": "twitter.com"
-        },
-        "siteContainerMap@@_www.facebook.com": {
-          "userContextId": "590",
-          "neverAsk": true,
-          "identityMacAddonUUID": "32cc4a9b-05ed-4e54-8e11-732468de62f4",
-          "hostname": "www.facebook.com"
-        },
-        "siteContainerMap@@_www.linkedin.com": {
-          "userContextId": "591",
-          "neverAsk": true,
-          "identityMacAddonUUID": "9ff381e3-4c11-420d-8e12-e352a3318be1",
-          "hostname": "www.linkedin.com"
-        },
-        "siteContainerMap@@_200ok.us": {
-          "userContextId": "1",
-          "neverAsk": true,
-          "identityMacAddonUUID": "b5f5f794-b37e-4cec-9f4e-6490df620336",
-          "hostname": "www.linkedin.com"
-        }
+    const testSites = {
+      "siteContainerMap@@_developer.mozilla.org": {
+        "userContextId": "588",
+        "neverAsk": true,
+        "identityMacAddonUUID": "d20d7af2-9866-468e-bb43-541efe8c2c2e",
+        "hostname": "developer.mozilla.org"
+      },
+      "siteContainerMap@@_reddit.com": {
+        "userContextId": "592",
+        "neverAsk": true,
+        "identityMacAddonUUID": "3dc916fb-8c0a-4538-9758-73ef819a45f7",
+        "hostname": "reddit.com"
+      },
+      "siteContainerMap@@_twitter.com": {
+        "userContextId": "589",
+        "neverAsk": true,
+        "identityMacAddonUUID": "cdd73c20-c26a-4c06-9b17-735c1f5e9187",
+        "hostname": "twitter.com"
+      },
+      "siteContainerMap@@_www.facebook.com": {
+        "userContextId": "590",
+        "neverAsk": true,
+        "identityMacAddonUUID": "32cc4a9b-05ed-4e54-8e11-732468de62f4",
+        "hostname": "www.facebook.com"
+      },
+      "siteContainerMap@@_www.linkedin.com": {
+        "userContextId": "591",
+        "neverAsk": true,
+        "identityMacAddonUUID": "9ff381e3-4c11-420d-8e12-e352a3318be1",
+        "hostname": "www.linkedin.com"
+      },
+      "siteContainerMap@@_200ok.us": {
+        "userContextId": "1",
+        "neverAsk": true,
+        "identityMacAddonUUID": "b5f5f794-b37e-4cec-9f4e-6490df620336",
+        "hostname": "www.linkedin.com"
       }
-    });
+    };
+
+    for (const site of Object.keys(testSites)) {
+      await browser.storage.sync.set({[site]:testSites[site]});
+    }
 
     await browser.storage.sync.set({
       deletedSiteList: ["siteContainerMap@@_www.google.com"]
     });
-
+    console.log(await browser.storage.sync.get());
     await sync.runSync();
 
     const assignedSites = await assignManager.storageArea.getAssignedSites();
@@ -153,15 +155,9 @@ browser.tests = {
 
     await sync.runSync();
 
-    const getSync = await browser.storage.sync.get();
     const getAssignedSites = 
       await assignManager.storageArea.getAssignedSites();
     const identities = await browser.contextualIdentities.query({});
-
-    console.assert(
-      Object.keys(getSync.cookieStoreIDmap).length === 5, 
-      "cookieStoreIDmap should have 5 entries"
-    );
 
     console.assert(
       identities.length === 5,
@@ -183,16 +179,10 @@ browser.tests = {
 
     await sync.runSync();
 
-    const getSync = await browser.storage.sync.get();
     const getAssignedSites = 
       await assignManager.storageArea.getAssignedSites();
 
     const identities = await browser.contextualIdentities.query({});
-
-    console.assert(
-      Object.keys(getSync.cookieStoreIDmap).length === 6, 
-      "cookieStoreIDmap should have 6 entries"
-    );
 
     console.assert(
       identities.length === 6,
@@ -219,16 +209,10 @@ browser.tests = {
 
     await sync.runSync();
 
-    const getSync = await browser.storage.sync.get();
     const getAssignedSites = 
       await assignManager.storageArea.getAssignedSites();
 
     const identities = await browser.contextualIdentities.query({});
-
-    console.assert(
-      Object.keys(getSync.cookieStoreIDmap).length === 7, 
-      "cookieStoreIDmap should have 7 entries"
-    );
 
     console.assert(
       identities.length === 7,
@@ -419,148 +403,115 @@ const LOCAL_DATA = {
 };
 
 const SYNC_DATA = {
-  "identities": [
-    {
-      "name": "Personal",
-      "icon": "fingerprint",
-      "iconUrl": "resource://usercontext-content/fingerprint.svg",
-      "color": "red",
-      "colorCode": "#37adff",
-      "cookieStoreId": "firefox-container-146"
-    },
-    {
-      "name": "Oscar",
-      "icon": "dollar",
-      "iconUrl": "resource://usercontext-content/dollar.svg",
-      "color": "green",
-      "colorCode": "#51cd00",
-      "cookieStoreId": "firefox-container-147"
-    },
-    {
-      "name": "Mozilla",
-      "icon": "pet",
-      "iconUrl": "resource://usercontext-content/briefcase.svg",
-      "color": "red",
-      "colorCode": "#ff613d",
-      "cookieStoreId": "firefox-container-148"
-    },
-    {
-      "name": "Groceries, obviously",
-      "icon": "cart",
-      "iconUrl": "resource://usercontext-content/cart.svg",
-      "color": "pink",
-      "colorCode": "#ffcb00",
-      "cookieStoreId": "firefox-container-149"
-    },
-    {
-      "name": "Facebook",
-      "icon": "fence",
-      "iconUrl": "resource://usercontext-content/fence.svg",
-      "color": "toolbar",
-      "colorCode": "#7c7c7d",
-      "cookieStoreId": "firefox-container-150"
-    }
-  ],
-  "cookieStoreIDmap": {
-    "firefox-container-146": "22ded543-5173-44a5-a47a-8813535945ca",
-    "firefox-container-147": "63e5212f-0858-418e-b5a3-09c2dea61fcd",
-    "firefox-container-148": "71335417-158e-4d74-a55b-e9e9081601ec",
-    "firefox-container-149": "59c4e5f7-fe3b-435a-ae60-1340db31a91b",
-    "firefox-container-150": "3dc916fb-8c0a-4538-9758-73ef819a45f7"
+  "identity@@_22ded543-5173-44a5-a47a-8813535945ca": {
+    "name": "Personal",
+    "icon": "fingerprint",
+    "color": "red",
+    "cookieStoreId": "firefox-container-146",
+    "macAddonUUID": "22ded543-5173-44a5-a47a-8813535945ca"
   },
-  "assignedSites": {}
+  "identity@@_63e5212f-0858-418e-b5a3-09c2dea61fcd": {
+    "name": "Oscar",
+    "icon": "dollar",
+    "color": "green",
+    "cookieStoreId": "firefox-container-147",
+    "macAddonUUID": "3e5212f-0858-418e-b5a3-09c2dea61fcd"
+  },
+  "identity@@_71335417-158e-4d74-a55b-e9e9081601ec": {
+    "name": "Mozilla",
+    "icon": "pet",
+    "color": "red",
+    "cookieStoreId": "firefox-container-148",
+    "macAddonUUID": "71335417-158e-4d74-a55b-e9e9081601ec"
+  },
+  "identity@@_59c4e5f7-fe3b-435a-ae60-1340db31a91b": {
+    "name": "Groceries, obviously",
+    "icon": "cart",
+    "color": "pink",
+    "cookieStoreId": "firefox-container-149",
+    "macAddonUUID": "59c4e5f7-fe3b-435a-ae60-1340db31a91b"
+  },
+  "identity@@_3dc916fb-8c0a-4538-9758-73ef819a45f7": {
+    "name": "Facebook",
+    "icon": "fence",
+    "color": "toolbar",
+    "cookieStoreId": "firefox-container-150",
+    "macAddonUUID": "3dc916fb-8c0a-4538-9758-73ef819a45f7"
+  }
 };
 
 const DUPE_TEST_SYNC = {
-  "identities": [
-    {
-      "name": "Personal",
-      "icon": "fingerprint",
-      "iconUrl": "resource://usercontext-content/fingerprint.svg",
-      "color": "red",
-      "colorCode": "#ff613d",
-      "cookieStoreId": "firefox-container-588"
-    },
-    {
-      "name": "Banking",
-      "icon": "dollar",
-      "iconUrl": "resource://usercontext-content/dollar.svg",
-      "color": "green",
-      "colorCode": "#51cd00",
-      "cookieStoreId": "firefox-container-589"
-    },
-    {
-      "name": "Mozilla",
-      "icon": "pet",
-      "iconUrl": "resource://usercontext-content/pet.svg",
-      "color": "red",
-      "colorCode": "#ff613d",
-      "cookieStoreId": "firefox-container-590"
-    },
-    {
-      "name": "Groceries, obviously",
-      "icon": "cart",
-      "iconUrl": "resource://usercontext-content/cart.svg",
-      "color": "pink",
-      "colorCode": "#ff4bda",
-      "cookieStoreId": "firefox-container-591"
-    },
-    {
-      "name": "Facebook",
-      "icon": "fence",
-      "iconUrl": "resource://usercontext-content/fence.svg",
-      "color": "toolbar",
-      "colorCode": "#7c7c7d",
-      "cookieStoreId": "firefox-container-592"
-    },
-    {
-      "name": "Oscar",
-      "icon": "dollar",
-      "iconUrl": "resource://usercontext-content/dollar.svg",
-      "color": "green",
-      "colorCode": "#51cd00",
-      "cookieStoreId": "firefox-container-593"
-    }
-  ],
-  "cookieStoreIDmap": {
-    "firefox-container-588": "d20d7af2-9866-468e-bb43-541efe8c2c2e",
-    "firefox-container-589": "cdd73c20-c26a-4c06-9b17-735c1f5e9187",
-    "firefox-container-590": "32cc4a9b-05ed-4e54-8e11-732468de62f4",
-    "firefox-container-591": "9ff381e3-4c11-420d-8e12-e352a3318be1",
-    "firefox-container-592": "3dc916fb-8c0a-4538-9758-73ef819a45f7",
-    "firefox-container-593": "63e5212f-0858-418e-b5a3-09c2dea61fcd"
+  "identity@@_d20d7af2-9866-468e-bb43-541efe8c2c2e": {
+    "name": "Personal",
+    "icon": "fingerprint",
+    "color": "red",
+    "cookieStoreId": "firefox-container-588",
+    "macAddonUUID": "d20d7af2-9866-468e-bb43-541efe8c2c2e"
   },
-  "assignedSites": {
-    "siteContainerMap@@_developer.mozilla.org": {
-      "userContextId": "588",
-      "neverAsk": true,
-      "identityMacAddonUUID": "d20d7af2-9866-468e-bb43-541efe8c2c2e",
-      "hostname": "developer.mozilla.org"
-    },
-    "siteContainerMap@@_reddit.com": {
-      "userContextId": "592",
-      "neverAsk": true,
-      "identityMacAddonUUID": "3dc916fb-8c0a-4538-9758-73ef819a45f7",
-      "hostname": "reddit.com"
-    },
-    "siteContainerMap@@_twitter.com": {
-      "userContextId": "589",
-      "neverAsk": true,
-      "identityMacAddonUUID": "cdd73c20-c26a-4c06-9b17-735c1f5e9187",
-      "hostname": "twitter.com"
-    },
-    "siteContainerMap@@_www.facebook.com": {
-      "userContextId": "590",
-      "neverAsk": true,
-      "identityMacAddonUUID": "32cc4a9b-05ed-4e54-8e11-732468de62f4",
-      "hostname": "www.facebook.com"
-    },
-    "siteContainerMap@@_www.linkedin.com": {
-      "userContextId": "591",
-      "neverAsk": true,
-      "identityMacAddonUUID": "9ff381e3-4c11-420d-8e12-e352a3318be1",
-      "hostname": "www.linkedin.com"
-    }
+  "identity@@_cdd73c20-c26a-4c06-9b17-735c1f5e9187": {
+    "name": "Big Bird",
+    "icon": "pet",
+    "color": "yellow",
+    "cookieStoreId": "firefox-container-589",
+    "macAddonUUID": "cdd73c20-c26a-4c06-9b17-735c1f5e9187"
+  },
+  "identity@@_32cc4a9b-05ed-4e54-8e11-732468de62f4": {
+    "name": "Mozilla",
+    "icon": "pet",
+    "color": "red",
+    "cookieStoreId": "firefox-container-590",
+    "macAddonUUID": "32cc4a9b-05ed-4e54-8e11-732468de62f4"
+  },
+  "identity@@_9ff381e3-4c11-420d-8e12-e352a3318be1": {
+    "name": "Groceries, obviously",
+    "icon": "cart",
+    "color": "pink",
+    "cookieStoreId": "firefox-container-591",
+    "macAddonUUID": "9ff381e3-4c11-420d-8e12-e352a3318be1"
+  },
+  "identity@@_3dc916fb-8c0a-4538-9758-73ef819a45f7": {
+    "name": "Facebook",
+    "icon": "fence",
+    "color": "toolbar",
+    "cookieStoreId": "firefox-container-592",
+    "macAddonUUID": "3dc916fb-8c0a-4538-9758-73ef819a45f7"
+  },
+  "identity@@_63e5212f-0858-418e-b5a3-09c2dea61fcd": {
+    "name": "Oscar",
+    "icon": "dollar",
+    "color": "green",
+    "cookieStoreId": "firefox-container-593",
+    "macAddonUUID": "63e5212f-0858-418e-b5a3-09c2dea61fcd"
+  },
+  "siteContainerMap@@_developer.mozilla.org": {
+    "userContextId": "588",
+    "neverAsk": true,
+    "identityMacAddonUUID": "d20d7af2-9866-468e-bb43-541efe8c2c2e",
+    "hostname": "developer.mozilla.org"
+  },
+  "siteContainerMap@@_reddit.com": {
+    "userContextId": "592",
+    "neverAsk": true,
+    "identityMacAddonUUID": "3dc916fb-8c0a-4538-9758-73ef819a45f7",
+    "hostname": "reddit.com"
+  },
+  "siteContainerMap@@_twitter.com": {
+    "userContextId": "589",
+    "neverAsk": true,
+    "identityMacAddonUUID": "cdd73c20-c26a-4c06-9b17-735c1f5e9187",
+    "hostname": "twitter.com"
+  },
+  "siteContainerMap@@_www.facebook.com": {
+    "userContextId": "590",
+    "neverAsk": true,
+    "identityMacAddonUUID": "32cc4a9b-05ed-4e54-8e11-732468de62f4",
+    "hostname": "www.facebook.com"
+  },
+  "siteContainerMap@@_www.linkedin.com": {
+    "userContextId": "591",
+    "neverAsk": true,
+    "identityMacAddonUUID": "9ff381e3-4c11-420d-8e12-e352a3318be1",
+    "hostname": "www.linkedin.com"
   }
 };
 
