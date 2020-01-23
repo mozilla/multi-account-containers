@@ -34,7 +34,7 @@ const sync = {
 
     async getDeletedIdentityList() {
       const storedArray = await this.getStoredItem("deletedIdentityList");
-      return (storedArray) ?  storedArray : [];
+      return storedArray || [];
     },
 
     async getIdentities() {
