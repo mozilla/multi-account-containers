@@ -78,7 +78,9 @@ const assignManager = {
         [siteStoreKey]: data
       });
       const syncEnabled = await this.getSyncEnabled();
-      if (backup && syncEnabled) await sync.storageArea.backup({undeleteSiteStoreKey: siteStoreKey});
+      if (backup && syncEnabled) {
+        await sync.storageArea.backup({undeleteSiteStoreKey: siteStoreKey});
+      }
       return;
     },
 
@@ -135,7 +137,7 @@ const assignManager = {
             localIdentity => localIdentity.cookieStoreId === cookieStoreId
           );
           if (!match) {
-            await this.remove(configKey.replace(/^siteContainerMap@@_/, "https://"));
+            await this.remove(configKey);
             continue;
           }
           const updatedSiteAssignment = macConfigs[configKey];

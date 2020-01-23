@@ -118,6 +118,7 @@ const sync = {
         await this.deleteSite(options.siteStoreKey);
       if (options && options.undeleteSiteStoreKey) 
         await removeFromDeletedSitesList(options.undeleteSiteStoreKey);
+
       if (SYNC_DEBUG) console.log("Backed up!");
       await sync.checkForListenersMaybeAdd();
 
@@ -270,26 +271,23 @@ const sync = {
     return;
   },
 
-  async addContextualIdentityListeners(listenerList) {
-    if(!listenerList) listenerList = syncCIListenerList;
-    await browser.contextualIdentities.onCreated.addListener(listenerList[0]);
-    await browser.contextualIdentities.onRemoved.addListener(listenerList[1]);
-    await browser.contextualIdentities.onUpdated.addListener(listenerList[2]);
+  async addContextualIdentityListeners() {
+    await browser.contextualIdentities.onCreated.addListener(sync.storageArea.backup);
+    await browser.contextualIdentities.onRemoved.addListener(sync.storageArea.addToDeletedList);
+    await browser.contextualIdentities.onUpdated.addListener(sync.storageArea.backup);
   },
 
-  async removeContextualIdentityListeners(listenerList) {
-    if(!listenerList) listenerList = syncCIListenerList;
-    await browser.contextualIdentities.onCreated.removeListener(listenerList[0]);
-    await browser.contextualIdentities.onRemoved.removeListener(listenerList[1]);
-    await browser.contextualIdentities.onUpdated.removeListener(listenerList[2]);
+  async removeContextualIdentityListeners() {
+    await browser.contextualIdentities.onCreated.removeListener(sync.storageArea.backup);
+    await browser.contextualIdentities.onRemoved.removeListener(sync.storageArea.addToDeletedList);
+    await browser.contextualIdentities.onUpdated.removeListener(sync.storageArea.backup);
   },
 
-  async hasContextualIdentityListeners(listenerList) {
-    if(!listenerList) listenerList = syncCIListenerList;
+  async hasContextualIdentityListeners() {
     return (
-      await browser.contextualIdentities.onCreated.hasListener(listenerList[0]) &&
-      await browser.contextualIdentities.onRemoved.hasListener(listenerList[1]) &&
-      await browser.contextualIdentities.onUpdated.hasListener(listenerList[2])
+      await browser.contextualIdentities.onCreated.hasListener(sync.storageArea.backup) &&
+      await browser.contextualIdentities.onRemoved.hasListener(sync.storageArea.addToDeletedList) &&
+      await browser.contextualIdentities.onUpdated.hasListener(sync.storageArea.backup)
     );
   },
 
@@ -360,7 +358,9 @@ async function reconcileIdentities(){
         await ifNoMatch(syncIdentity);
         continue;
       }
-      await ifNamesMatch(syncIdentity, localMatch);
+
+      // Names match, so use the info from Sync
+      await updateIdentityWithSyncInfo(syncIdentity, localMatch);
       continue;
     }
     // if no macAddonUUID, there is a problem with the sync info and it needs to be ignored.
@@ -376,7 +376,7 @@ async function reconcileIdentities(){
   }
 }
 
-async function ifNamesMatch(syncIdentity, localMatch) {
+async function updateIdentityWithSyncInfo(syncIdentity, localMatch) {
   // Sync is truth. if there is a match, compare data and update as needed
   if (syncIdentity.color !== localMatch.color 
       || syncIdentity.icon !== localMatch.icon) {
@@ -474,7 +474,7 @@ async function reconcileSiteAssignments() {
     if (Object.prototype.hasOwnProperty.call(assignedSitesLocal,siteStoreKey)) {
       assignManager
         .storageArea
-        .remove(siteStoreKey.replace(/^siteContainerMap@@_/, "https://"));
+        .remove(siteStoreKey);
     }
   }
 
@@ -548,7 +548,7 @@ async function setAssignmentWithUUID(assignedSite, urlKey) {
     assignedSite.userContextId = cookieStoreId
       .replace(/^firefox-container-/, "");
     await assignManager.storageArea.set(
-      urlKey.replace(/^siteContainerMap@@_/, "https://"),
+      urlKey,
       assignedSite,
       false,
       false
@@ -557,9 +557,3 @@ async function setAssignmentWithUUID(assignedSite, urlKey) {
   }
   throw new Error (`No cookieStoreId found for: ${uuid}, ${urlKey}`);
 }
-
-const syncCIListenerList = [
-  sync.storageArea.backup, 
-  sync.storageArea.addToDeletedList, 
-  sync.storageArea.backup
-];
