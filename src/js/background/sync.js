@@ -540,7 +540,7 @@ async function removeOldDeletedItems() {
   }
 }
 
-async function setAssignmentWithUUID (assignedSite, urlKey) {
+async function setAssignmentWithUUID(assignedSite, urlKey) {
   const uuid = assignedSite.identityMacAddonUUID;
   const cookieStoreId = await identityState.lookupCookieStoreId(uuid);
   if (cookieStoreId) {
