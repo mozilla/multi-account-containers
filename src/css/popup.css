@@ -974,3 +974,9 @@ span ~ .panel-header-text {
 .amo-rate-cta {
   background: #0f1126;
 }
+
+.no-sync {
+  margin-left: 160px;
+  line-height: 0px;
+  text-decoration: underline;
+}
