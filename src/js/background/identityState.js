@@ -127,7 +127,7 @@ const identityState = {
       cookieStoreId : "firefox-container-" + cookieStoreId;
     const macConfigs = await this.storageArea.area.get();
     for(const configKey of Object.keys(macConfigs)) {
-      if (configKey === "identitiesState@@_" + cookieStoreIdKey) {
+      if (configKey === this.getContainerStoreKey(cookieStoreIdKey)) {
         return macConfigs[configKey].macAddonUUID;
       }
     }
