@@ -5,11 +5,11 @@ const sync = {
     area: browser.storage.sync,
 
     async get(){
-      return await this.area.get();
+      return this.area.get();
     },
 
     async set(options) {
-      return await this.area.set(options);
+      return this.area.set(options);
     },
 
     async deleteIdentity(deletedIdentityUUID) {
@@ -87,7 +87,7 @@ const sync = {
         .replace(/\//, "");
     },
     async removeInstance(installUUID) {
-      console.log("removing", installUUID);
+      if (SYNC_DEBUG) console.log("removing", installUUID);
       await this.area.remove(installUUID);
       return;
     },
@@ -118,7 +118,7 @@ const sync = {
         await this.deleteSite(options.siteStoreKey);
       if (options && options.undeleteSiteStoreKey) 
         await removeFromDeletedSitesList(options.undeleteSiteStoreKey);
-      console.log("Backed up!");
+      if (SYNC_DEBUG) console.log("Backed up!");
       await sync.checkForListenersMaybeAdd();
 
       async function updateSyncIdentities() {
@@ -150,7 +150,7 @@ const sync = {
         const date = new Date();
         const timestamp = date.getTime();
         const installUUID = sync.storageArea.getInstanceKey();
-        console.log("adding", installUUID);
+        if (SYNC_DEBUG) console.log("adding", installUUID);
         const identities = [];
         const siteAssignments = [];
         for (const identity of identitiesInput) {
@@ -208,7 +208,7 @@ const sync = {
 
   async errorHandledRunSync () {
     await sync.runSync().catch( async (error)=> { 
-      console.error("Error from runSync", error);
+      if (SYNC_DEBUG) console.error("Error from runSync", error);
       await sync.checkForListenersMaybeAdd();
     });
   },
@@ -257,7 +257,7 @@ const sync = {
       console.log("Initial State:", {syncInfo, localInfo, idents});
     }
     await sync.checkForListenersMaybeRemove();
-    console.log("runSync");
+    if (SYNC_DEBUG) console.log("runSync");
 
     await identityState.storageArea.upgradeData();
     await assignManager.storageArea.upgradeData();
@@ -308,7 +308,7 @@ const sync = {
 sync.init();
 
 async function restore() {
-  console.log("restore");
+  if (SYNC_DEBUG) console.log("restore");
   await reconcileIdentities();
   await reconcileSiteAssignments();
   return;
@@ -320,7 +320,7 @@ async function restore() {
  * different.
  */
 async function reconcileIdentities(){
-  console.log("reconcileIdentities");
+  if (SYNC_DEBUG) console.log("reconcileIdentities");
 
   // first delete any from the deleted list
   const deletedIdentityList =
@@ -443,7 +443,7 @@ async function ifUUIDMatch(syncIdentity, localCookieStoreID) {
 
 async function ifNoMatch(syncIdentity){
   // if no uuid match either, make new identity
-  console.log("create new ident: ", syncIdentity.name);
+  if (SYNC_DEBUG) console.log("create new ident: ", syncIdentity.name);
   const newIdentity = 
         await browser.contextualIdentities.create({
           name: syncIdentity.name, 
@@ -463,7 +463,7 @@ async function ifNoMatch(syncIdentity){
  * If it does not exist, it is created.
  */
 async function reconcileSiteAssignments() {
-  console.log("reconcileSiteAssignments");
+  if (SYNC_DEBUG) console.log("reconcileSiteAssignments");
   const assignedSitesLocal = 
     await assignManager.storageArea.getAssignedSites();
   const assignedSitesFromSync = 

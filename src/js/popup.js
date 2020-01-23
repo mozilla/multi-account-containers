@@ -187,7 +187,7 @@ const Logic = {
     };
     // Handle old style rejection with null and also Promise.reject new style
     try {
-      return await browser.contextualIdentities.get(cookieStoreId) || defaultContainer;
+      return browser.contextualIdentities.get(cookieStoreId) || defaultContainer;
     } catch (e) {
       return defaultContainer;
     }
@@ -357,12 +357,12 @@ const Logic = {
 
   getAssignmentObjectByContainer(userContextId) {
     if (userContextId) {
-      return browser.runtime.sendMessage({
-        method: "getAssignmentObjectByContainer",
-        message: { userContextId }
-      });
+      return {};
     }
-    return {};
+    return browser.runtime.sendMessage({
+      method: "getAssignmentObjectByContainer",
+      message: { userContextId }
+    });
   },
 
   setOrRemoveAssignment(tabId, url, userContextId, value) {

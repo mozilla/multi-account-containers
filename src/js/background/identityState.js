@@ -39,7 +39,7 @@ const identityState = {
 
     async remove(cookieStoreId) {
       const storeKey = this.getContainerStoreKey(cookieStoreId);
-      return await this.area.remove([storeKey]);
+      return this.area.remove([storeKey]);
     },
 
     /*
@@ -107,13 +107,13 @@ const identityState = {
   },
 
   async updateUUID(cookieStoreId, uuid) {
-    if (cookieStoreId && uuid) {
-      const containerState = await this.storageArea.get(cookieStoreId);
-      containerState.macAddonUUID = uuid;
-      await this.storageArea.set(cookieStoreId, containerState);
-      return uuid;
-    } 
-    throw new Error ("cookieStoreId or uuid missing");
+    if (!cookieStoreId || !uuid) {
+      throw new Error ("cookieStoreId or uuid missing");
+    }
+    const containerState = await this.storageArea.get(cookieStoreId);
+    containerState.macAddonUUID = uuid;
+    await this.storageArea.set(cookieStoreId, containerState);
+    return uuid;
   },
 
   async addUUID(cookieStoreId) {
