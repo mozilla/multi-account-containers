@@ -15,8 +15,9 @@ module.exports = {
             beforeParse(window) {
               window.browser.storage.local.set({
                 "browserActionBadgesClicked": [],
-                "onboarding-stage": 5,
-                "achievements": []
+                "onboarding-stage": 6,
+                "achievements": [], 
+                "syncEnabled": true
               });
               window.browser.storage.local.set.resetHistory();
               window.browser.storage.sync.clear();
@@ -37,8 +38,9 @@ module.exports = {
       if (!details.localStorage) { 
         details.localStorage = {
           "browserActionBadgesClicked": [],
-          "onboarding-stage": 5,
-          "achievements": []
+          "onboarding-stage": 6,
+          "achievements": [],
+          "syncEnabled": true
         };
       }
       if (!details.syncStorage) details.syncStorage = {};

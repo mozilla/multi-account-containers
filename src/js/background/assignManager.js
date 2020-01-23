@@ -418,7 +418,7 @@ const assignManager = {
       const [bookmarkTreeNode] = 
         await browser.bookmarks.get(info.bookmarkId);
       if (bookmarkTreeNode.type === "folder") {
-        return await browser.bookmarks.getChildren(bookmarkTreeNode.id);
+        return browser.bookmarks.getChildren(bookmarkTreeNode.id);
       }
       return [bookmarkTreeNode];
     }
@@ -515,7 +515,7 @@ const assignManager = {
     // Ensure we have a cookieStore to assign to
     if (cookieStore
         && this.isTabPermittedAssign(tab)) {
-      return await this.storageArea.get(tab.url);
+      return this.storageArea.get(tab.url);
     }
     return false;
   },

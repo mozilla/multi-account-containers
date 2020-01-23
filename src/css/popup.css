@@ -976,7 +976,7 @@ span ~ .panel-header-text {
 }
 
 .no-sync {
+  line-height: 0;
   margin-left: 160px;
-  line-height: 0px;
   text-decoration: underline;
 }
