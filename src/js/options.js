@@ -25,7 +25,6 @@ async function enableDisableSync() {
 async function restoreOptions() {
   const hasPermission = await browser.permissions.contains({permissions: ["bookmarks"]});
   const { syncEnabled } = await browser.storage.local.get("syncEnabled");
-  console.log(syncEnabled);
   if (hasPermission) {
     document.querySelector("#bookmarksPermissions").checked = true;
   }

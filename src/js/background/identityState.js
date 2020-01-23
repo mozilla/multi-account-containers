@@ -49,6 +49,12 @@ const identityState = {
      */
     async upgradeData() {
       const identitiesList = await browser.contextualIdentities.query({});
+
+      for (const identity of identitiesList) {
+        // ensure all identities have an entry in local storage
+        await identityState.addUUID(identity.cookieStoreId);
+      }
+      
       const macConfigs = await this.area.get();
       for(const configKey of Object.keys(macConfigs)) {
         if (configKey.includes("identitiesState@@_")) {
@@ -61,15 +67,11 @@ const identityState = {
             await this.remove(cookieStoreId);
             continue;
           }
+          console.log(macConfigs, configKey);
           if (!macConfigs[configKey].macAddonUUID) {
             await identityState.storageArea.get(cookieStoreId);
           }
         }
-      }
-
-      for (const identity of identitiesList) {
-        // ensure all identities have an entry in local storage
-        await identityState.addUUID(identity.cookieStoreId);
       }
     }
   },
@@ -127,7 +129,7 @@ const identityState = {
       cookieStoreId : "firefox-container-" + cookieStoreId;
     const macConfigs = await this.storageArea.area.get();
     for(const configKey of Object.keys(macConfigs)) {
-      if (configKey === this.getContainerStoreKey(cookieStoreIdKey)) {
+      if (configKey === this.storageArea.getContainerStoreKey(cookieStoreIdKey)) {
         return macConfigs[configKey].macAddonUUID;
       }
     }
