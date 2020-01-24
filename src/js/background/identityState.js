@@ -13,7 +13,7 @@ const identityState = {
       if (storageResponse && storeKey in storageResponse) {
         if (!storageResponse[storeKey].macAddonUUID){
           storageResponse[storeKey].macAddonUUID = uuidv4();
-          await this.set(cookieStoreId, storageResponse[cookieStoreId]);
+          await this.set(cookieStoreId, storageResponse[storeKey]);
         }
         return storageResponse[storeKey];
       }
@@ -67,7 +67,6 @@ const identityState = {
             await this.remove(cookieStoreId);
             continue;
           }
-          console.log(macConfigs, configKey);
           if (!macConfigs[configKey].macAddonUUID) {
             await identityState.storageArea.get(cookieStoreId);
           }
