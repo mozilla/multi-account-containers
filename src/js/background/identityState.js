@@ -1,4 +1,4 @@
-const identityState = {
+window.identityState = {
   storageArea: {
     area: browser.storage.local,
 
