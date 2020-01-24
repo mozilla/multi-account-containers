@@ -2,15 +2,16 @@ if (!process.listenerCount("unhandledRejection")) {
   // eslint-disable-next-line no-console
   process.on("unhandledRejection", r => console.log(r));
 }
+
 const path = require("path");
 const chai = require("chai");
 const sinonChai = require("sinon-chai");
 const crypto = require("crypto");
-global.sinon = require("sinon");
-global.expect = chai.expect;
+const sinon = require("sinon");
+const expect = chai.expect;
 chai.should();
 chai.use(sinonChai);
-global.nextTick = () => {
+const nextTick = () => {
   return new Promise(resolve => {
     setTimeout(() => {
       process.nextTick(resolve);
@@ -18,12 +19,10 @@ global.nextTick = () => {
   });
 };
 
-global.helper = require("./helper");
-
 const webExtensionsJSDOM = require("webextensions-jsdom");
 const manifestPath = path.resolve(path.join(__dirname, "../src/manifest.json"));
 
-global.buildDom = async ({background = {}, popup = {}}) => {
+const buildDom = async ({background = {}, popup = {}}) => {
   background = {
     ...background,
     jsdom: {
@@ -53,33 +52,60 @@ global.buildDom = async ({background = {}, popup = {}}) => {
     popup
   });
 
-  // eslint-disable-next-line require-atomic-updates
-  global.background = webExtension.background;
-  // eslint-disable-next-line require-atomic-updates
-  global.popup = webExtension.popup;
+  webExtension.browser = webExtension.background.browser;
+  return webExtension;
 };
 
-global.buildBackgroundDom = async background => {
-  await global.buildDom({
+const buildBackgroundDom = background => {
+  return buildDom({
     background,
     popup: false
   });
 };
 
-global.buildPopupDom = async popup => {
-  await global.buildDom({
+const buildPopupDom = popup => {
+  return buildDom({
     popup,
     background: false
   });
 };
 
+const initializeWithTab = async (details = {
+  cookieStoreId: "firefox-default"
+}) => {
+  let tab;
+  const webExtension = await buildDom({
+    background: {
+      async afterBuild(background) {
+        tab = await background.browser.tabs._create(details);
+      }
+    },
+    popup: {
+      jsdom: {
+        beforeParse(window) {
+          window.browser.storage.local.set({
+            "browserActionBadgesClicked": [],
+            "onboarding-stage": 6,
+            "achievements": [], 
+            "syncEnabled": true
+          });
+          window.browser.storage.local.set.resetHistory();
+          window.browser.storage.sync.clear();
+        }
+      }
+    }
+  });
+  webExtension.tab = tab;
 
-global.afterEach(() => {
-  if (global.background) {
-    global.background.destroy();
-  }
+  return webExtension;
+};
 
-  if (global.popup) {
-    global.popup.destroy();
-  }
-});
+module.exports = {
+  buildDom,
+  buildBackgroundDom,
+  buildPopupDom,
+  initializeWithTab,
+  sinon,
+  expect,
+  nextTick,
+};
