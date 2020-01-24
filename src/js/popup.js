@@ -81,7 +81,7 @@ const Env = {
       this.tabId = parseInt(tabId, 10);
       this.isBrowserActionPopup = false;
     } else {
-      this.tabId = null;
+      this.tabId = -1;
       this.isBrowserActionPopup = this.hasFullBrowserAPI;
     }
   }
@@ -106,15 +106,16 @@ const Logic = {
     
     // API methods are ready, can continue with init
     const initializingPanels = this.initializePanels();
-  
+
     // Retrieve the list of identities.
     const identitiesPromise = this.refreshIdentities();
+
     try {
       await identitiesPromise;
     } catch (e) {
       throw new Error("Failed to retrieve the identities or variation. We cannot continue. ", e.message);
     }
-    
+
     // Remove browserAction "upgraded" badge when opening panel
     const clearingBadge = this.clearBrowserActionBadge();
     
@@ -175,7 +176,7 @@ const Logic = {
       }
     }
   },
-  
+
   // Used when popup is running within iframe on a webpage, so lacks privileged API
   async injectAPI() {
     const script = document.createElement("script");
@@ -257,7 +258,7 @@ const Logic = {
   },
 
   async currentTab() {
-    if (Env.tabId) {
+    if (Env.tabId >= 0) {
       return await browser.tabs.get(Env.tabId);
     } else {
       const activeTabs = await browser.tabs.query({ active: true, windowId: browser.windows.WINDOW_ID_CURRENT });
@@ -267,7 +268,7 @@ const Logic = {
       return false;
     }
   },
-  
+
   async numTabs() {
     const activeTabs = await browser.tabs.query({ windowId: browser.windows.WINDOW_ID_CURRENT });
     return activeTabs.length;
@@ -732,19 +733,19 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
   
     if (!isEnabled) {
       recordIconElement.src = CONTAINER_RECORD_DISABLED_SRC;
-      recordLinkElement.classList.remove("active");      
+      recordLinkElement.classList.remove("active");
       recordLinkElement.classList.add("disabled");
     } else {
       recordIconElement.src = CONTAINER_RECORD_ENABLED_SRC;
       recordLinkElement.classList.remove("disabled");
       if (isActive) {
-        recordLinkElement.classList.add("active");      
+        recordLinkElement.classList.add("active");
       } else {
-        recordLinkElement.classList.remove("active");      
+        recordLinkElement.classList.remove("active");
       }
     }
   },
-  
+
   async prepareCurrentTabHeader() {
     const currentTab = await Logic.currentTab();
     const currentTabElement = document.getElementById("current-tab");
@@ -774,7 +775,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         try { await showingPanel; } catch (e) { /* Ignore show error, as we're immediately going to change panel */ }
         Logic.showPanel(P_CONTAINERS_LIST);
         throw new Error("Failed to " + (newRecordingTab ? "start" : "stop") + " recording: " + e.message);
-      }  
+      }
     });
     currentTabElement.hidden = !currentTab;
     this.setupAssignmentCheckbox(false, currentTabUserContextId);
@@ -1339,7 +1340,7 @@ Logic.registerPanel(P_CONTAINER_RECORD, {
     const editPanel = Logic.getPanel(P_CONTAINER_EDIT);
     editPanel.showAssignedContainers(assignments, { elementId: "record-sites-assigned", sticky: true });
 
-    return Promise.resolve(null);    
+    return Promise.resolve(null);
   },
 });
 

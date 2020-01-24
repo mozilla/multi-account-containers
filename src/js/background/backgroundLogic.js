@@ -7,7 +7,7 @@ const backgroundLogic = {
     "about:blank"
   ]),
   unhideQueue: [],
-  
+
   async getExtensionInfo() {
     const manifestPath = browser.extension.getURL("manifest.json");
     const response = await fetch(manifestPath);
@@ -93,7 +93,7 @@ const backgroundLogic = {
       }
     });
   },
-  
+
   asPromise(value) {
     if (value === undefined) { return value; }
     if (value instanceof Promise) { return value; }
@@ -115,7 +115,7 @@ const backgroundLogic = {
       } catch(e) { /* Assume tabId is invalid */ }
     }
     return null;
-  },  
+  },
 
   async getTabs(options) {
     const requiredArguments = ["cookieStoreId", "windowId"];

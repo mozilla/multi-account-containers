@@ -420,7 +420,7 @@ const assignManager = {
     const tab = await browser.tabs.get(tabId);
     this.calculateContextMenu(tab);
   },
-  
+
   async _getAssignment(tab) {
     const cookieStore = this.getUserContextIdFromCookieStore(tab);
     // Ensure we have a cookieStore to assign to
@@ -430,11 +430,11 @@ const assignManager = {
     }
     return false;
   },
-  
+
   _getByContainer(userContextId) {
     return this.storageArea.getByContainer(userContextId);
   },
-  
+
   removeContextMenu() {
     // There is a focus issue in this menu where if you change window with a context menu click
     // you get the wrong menu display because of async

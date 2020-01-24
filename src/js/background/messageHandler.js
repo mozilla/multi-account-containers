@@ -3,7 +3,7 @@ const messageHandler = {
   // We use this to catch redirected tabs that have just opened
   // If this were in platform we would change how the tab opens based on "new tab" link navigations such as ctrl+click
   LAST_CREATED_TAB_TIMER: 2000,
-  
+
   init() {
     // Handles messages from webextension code
     browser.runtime.onMessage.addListener((m) => {
@@ -80,7 +80,6 @@ const messageHandler = {
         response = backgroundLogic.asPromise(backgroundLogic.invokeBrowserMethod(m.name, m.args));
         break;
       }
-      
       return response;
     });
     
@@ -264,32 +263,36 @@ const messageHandler = {
       } while (!succeeded);
     }
   
-    handleTabChangedStatus(status) {
-      if (status === "loading") {
-        if (!this.tabLoading) {
-          this.tabLoading = {};
-          this.tabLoading.promise = new Promise((resolve) => {
-            this.tabLoading.resolve = resolve;
-          });
-        }
-      } else {
-        if (this.tabLoading) {
-          this.tabLoading.resolve();
-          this.tabLoading = null;
-        }
+    handleTabStatusLoading() {
+      if (!this.tabLoading) {
+        this.tabLoading = {};
+        this.tabLoading.promise = new Promise((resolve) => {
+          this.tabLoading.resolve = resolve;
+        });
+      }
+    }
+    
+    handleTabStatusComplete() {
+      if (this.tabLoading) {
+        this.tabLoading.resolve();
+        this.tabLoading = null;
       }
     }
   
     handleTabRemoved() {
       this.tabRemoved = true;
       this.removeTabListeners();
-      this.handleTabChangedStatus("complete");
+      this.handleTabStatusComplete();
     }
   
     addTabListeners() {
       this.onTabsUpdated = (eventTabId, info) => {
         if (this.tabId === eventTabId) {
-          this.handleTabChangedStatus(info.status);
+          if (info.status === "loading") {
+            this.handleTabStatusLoading();
+          } else {
+            this.handleTabStatusComplete();
+          }
         }
       };
       
