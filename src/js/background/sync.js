@@ -1,6 +1,6 @@
 const SYNC_DEBUG = true;
 
-const sync = {
+window.sync = {
   storageArea: {
     area: browser.storage.sync,
 
