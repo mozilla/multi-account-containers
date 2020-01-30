@@ -16,10 +16,15 @@ const sync = {
       const deletedIdentityList = 
         await sync.storageArea.getDeletedIdentityList();
       if (
-        deletedIdentityList.find(element => element === deletedIdentityUUID)
-      ) return;
-      deletedIdentityList.push(deletedIdentityUUID);
-      await sync.storageArea.set({ deletedIdentityList });
+        ! deletedIdentityList.find(element => element === deletedIdentityUUID)
+      ) {
+        deletedIdentityList.push(deletedIdentityUUID);
+        await sync.storageArea.set({ deletedIdentityList });
+      }
+      await this.removeIdentityKeyFromSync(deletedIdentityUUID);
+    },
+
+    async removeIdentityKeyFromSync(deletedIdentityUUID) {
       await sync.storageArea.area.remove( "identity@@_" + deletedIdentityUUID);
     },
 
@@ -337,8 +342,20 @@ async function reconcileIdentities(){
       }
     }
   }
-
   const localIdentities = await browser.contextualIdentities.query({});
+  const syncIdentitiesRemoveDupes = 
+    await sync.storageArea.getIdentities();
+  // find any local dupes created on sync storage and delete from sync storage
+  for (const localIdentity of localIdentities) {
+    const syncIdentitiesOfName = syncIdentitiesRemoveDupes
+      .filter(identity => identity.name === localIdentity.name);
+    if (syncIdentitiesOfName.length > 1) {
+      const identityMatchingContextId = syncIdentitiesOfName
+        .find(identity => identity.cookieStoreId === localIdentity.cookieStoreId);
+      if (identityMatchingContextId) 
+        await sync.storageArea.removeIdentityKeyFromSync(identityMatchingContextId.macAddonUUID);
+    }
+  }
   const syncIdentities = 
     await sync.storageArea.getIdentities();
   // now compare all containers for matching names.
@@ -397,11 +414,12 @@ async function updateIdentityWithSyncInfo(syncIdentity, localMatch) {
     }
   }
   // Sync is truth. If all is the same, update the local uuid to match sync
-  await identityState.updateUUID(
-    localMatch.cookieStoreId, 
-    syncIdentity.macAddonUUID
-  );
-
+  if (localMatch.macAddonUUID !== syncIdentity.macAddonUUID) {
+    await identityState.updateUUID(
+      localMatch.cookieStoreId, 
+      syncIdentity.macAddonUUID
+    );
+  }
   // TODOkmw: update any site assignment UUIDs
 }
 
