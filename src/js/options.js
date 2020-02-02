@@ -24,6 +24,6 @@ window.addEventListener("load", () => {
       };
       reader.readAsText(restoreInput.files.item(0));
     }
-    restoreInput.reset();
+    restoreInput.value = "";
   });
 });
