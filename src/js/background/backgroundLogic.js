@@ -46,15 +46,13 @@ const backgroundLogic = {
       donePromise = browser.contextualIdentities.create(options.params);
     }
     await donePromise;
-    browser.runtime.sendMessage({
-      method: "refreshNeeded"
-    });
   },
 
   async openNewTab(options) {
     let url = options.url || undefined;
     const userContextId = ("userContextId" in options) ? options.userContextId : 0;
     const active = ("nofocus" in options) ? options.nofocus : true;
+    const discarded = ("noload" in options) ? options.noload : false;
 
     const cookieStoreId = backgroundLogic.cookieStoreId(userContextId);
     // Autofocus url bar will happen in 54: https://bugzilla.mozilla.org/show_bug.cgi?id=1295072
@@ -71,6 +69,7 @@ const backgroundLogic = {
     return browser.tabs.create({
       url,
       active,
+      discarded,
       pinned: options.pinned || false,
       cookieStoreId
     });
@@ -113,11 +112,12 @@ const backgroundLogic = {
     return list.concat(containerState.hiddenTabs);
   },
 
-  async unhideContainer(cookieStoreId) {
+  async unhideContainer(cookieStoreId, alreadyShowingUrl) {
     if (!this.unhideQueue.includes(cookieStoreId)) {
       this.unhideQueue.push(cookieStoreId);
       await this.showTabs({
-        cookieStoreId
+        cookieStoreId,
+        alreadyShowingUrl
       });
       this.unhideQueue.splice(this.unhideQueue.indexOf(cookieStoreId), 1);
     }
@@ -369,12 +369,16 @@ const backgroundLogic = {
     const containerState = await identityState.storageArea.get(options.cookieStoreId);
 
     for (let object of containerState.hiddenTabs) { // eslint-disable-line prefer-const
-      promises.push(this.openNewTab({
-        userContextId: userContextId,
-        url: object.url,
-        nofocus: options.nofocus || false,
-        pinned: object.pinned,
-      }));
+      // do not show already opened url
+      if (object.url !== options.alreadyShowingUrl) {
+        promises.push(this.openNewTab({
+          userContextId: userContextId,
+          url: object.url,
+          nofocus: options.nofocus || false,
+          noload: true,
+          pinned: object.pinned,
+        }));
+      }
     }
 
     containerState.hiddenTabs = [];

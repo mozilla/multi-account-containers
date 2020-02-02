@@ -1,12 +1,12 @@
 describe("Assignment Feature", () => {
-  const activeTab = {
-    id: 1,
-    cookieStoreId: "firefox-container-1",
-    url: "http://example.com",
-    index: 0
-  };
+  const url = "http://example.com";
+
+  let activeTab;
   beforeEach(async () => {
-    await helper.browser.initializeWithTab(activeTab);
+    activeTab = await helper.browser.initializeWithTab({
+      cookieStoreId: "firefox-container-1",
+      url
+    });
   });
 
   describe("click the 'Always open in' checkbox in the popup", () => {
@@ -16,23 +16,24 @@ describe("Assignment Feature", () => {
     });
 
     describe("open new Tab with the assigned URL in the default container", () => {
-      const newTab = {
-        id: 2,
-        cookieStoreId: "firefox-default",
-        url: activeTab.url,
-        index: 1,
-        active: true
-      };
+      let newTab;
       beforeEach(async () => {
         // new Tab opening activeTab.url in default container
-        await helper.browser.openNewTab(newTab);
+        newTab = await helper.browser.openNewTab({
+          cookieStoreId: "firefox-default",
+          url
+        }, {
+          options: {
+            webRequestError: true // because request is canceled due to reopening
+          }
+        });
       });
 
       it("should open the confirm page", async () => {
         // should have created a new tab with the confirm page
-        background.browser.tabs.create.should.have.been.calledWith({
-          url: "moz-extension://multi-account-containers/confirm-page.html?" +
-               `url=${encodeURIComponent(activeTab.url)}` +
+        background.browser.tabs.create.should.have.been.calledWithMatch({
+          url: "moz-extension://fake/confirm-page.html?" +
+               `url=${encodeURIComponent(url)}` +
                `&cookieStoreId=${activeTab.cookieStoreId}`,
           cookieStoreId: undefined,
           openerTabId: null,
@@ -53,16 +54,12 @@ describe("Assignment Feature", () => {
       });
 
       describe("open new Tab with the no longer assigned URL in the default container", () => {
-        const newTab = {
-          id: 3,
-          cookieStoreId: "firefox-default",
-          url: activeTab.url,
-          index: 3,
-          active: true
-        };
         beforeEach(async () => {
           // new Tab opening activeTab.url in default container
-          await helper.browser.openNewTab(newTab);
+          await helper.browser.openNewTab({
+            cookieStoreId: "firefox-default",
+            url
+          });
         });
 
         it("should not open the confirm page", async () => {

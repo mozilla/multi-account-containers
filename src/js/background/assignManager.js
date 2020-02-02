@@ -4,7 +4,7 @@ const assignManager = {
   MENU_SEPARATOR_ID: "separator",
   MENU_HIDE_ID: "hide-container",
   MENU_MOVE_ID: "move-to-new-window-container",
-
+  OPEN_IN_CONTAINER: "open-bookmark-in-container-tab",
   storageArea: {
     area: browser.storage.local,
     exemptedTabs: {},
@@ -143,7 +143,6 @@ const assignManager = {
     const userContextId = this.getUserContextIdFromCookieStore(tab);
     if (!siteSettings
         || userContextId === siteSettings.userContextId
-        || tab.incognito
         || this.storageArea.isExempted(options.url, tab.id)) {
       return {};
     }
@@ -221,7 +220,7 @@ const assignManager = {
 
   init() {
     browser.contextMenus.onClicked.addListener((info, tab) => {
-      this._onClickedHandler(info, tab);
+      info.bookmarkId ? this._onClickedBookmark(info) : this._onClickedHandler(info, tab);
     });
 
     // Before a request is handled by the browser we decide if we should route through a different container
@@ -241,7 +240,46 @@ const assignManager = {
         delete this.canceledRequests[options.tabId];
       }
     },{urls: ["<all_urls>"], types: ["main_frame"]});
+    this.resetBookmarksMenuItem();
+  },
 
+  async resetBookmarksMenuItem() {
+    const hasPermission = await browser.permissions.contains({permissions: ["bookmarks"]});
+    if (this.hadBookmark === hasPermission) {
+      return;
+    }
+    this.hadBookmark = hasPermission;
+    if (hasPermission) {
+      this.initBookmarksMenu();
+      browser.contextualIdentities.onCreated.addListener(this.contextualIdentityCreated);
+      browser.contextualIdentities.onUpdated.addListener(this.contextualIdentityUpdated);
+      browser.contextualIdentities.onRemoved.addListener(this.contextualIdentityRemoved);
+    } else {
+      this.removeBookmarksMenu();
+      browser.contextualIdentities.onCreated.removeListener(this.contextualIdentityCreated);
+      browser.contextualIdentities.onUpdated.removeListener(this.contextualIdentityUpdated);
+      browser.contextualIdentities.onRemoved.removeListener(this.contextualIdentityRemoved);
+    }
+  },
+
+  contextualIdentityCreated(changeInfo) {
+    browser.contextMenus.create({
+      parentId: assignManager.OPEN_IN_CONTAINER,
+      id: changeInfo.contextualIdentity.cookieStoreId,
+      title: changeInfo.contextualIdentity.name,
+      icons: { "16": `img/usercontext.svg#${changeInfo.contextualIdentity.icon}` }
+    });
+  },
+
+  contextualIdentityUpdated(changeInfo) {
+    browser.contextMenus.update(changeInfo.contextualIdentity.cookieStoreId, {
+      title: changeInfo.contextualIdentity.name,
+      icons: { "16": `img/usercontext.svg#${changeInfo.contextualIdentity.icon}` }
+    });
+  },
+
+  contextualIdentityRemoved(changeInfo) {
+    browser.contextMenus.remove(changeInfo.contextualIdentity.cookieStoreId);
   },
 
   async _onClickedHandler(info, tab) {
@@ -275,6 +313,38 @@ const assignManager = {
     }
   },
 
+  async _onClickedBookmark(info) {
+
+    async function _getBookmarksFromInfo(info) {
+      const [bookmarkTreeNode] = await browser.bookmarks.get(info.bookmarkId);
+      if (bookmarkTreeNode.type === "folder") {
+        return await browser.bookmarks.getChildren(bookmarkTreeNode.id);
+      }
+      return [bookmarkTreeNode];
+    }
+
+    const bookmarks = await _getBookmarksFromInfo(info);
+    for (const bookmark of bookmarks) {
+      // Some checks on the urls from https://github.com/Rob--W/bookmark-container-tab/ thanks!
+      if ( !/^(javascript|place):/i.test(bookmark.url) && bookmark.type !== "folder") {
+        const openInReaderMode = bookmark.url.startsWith("about:reader");
+        if(openInReaderMode) {
+          try {
+            const parsed = new URL(bookmark.url);
+            bookmark.url = parsed.searchParams.get("url") + parsed.hash;
+          } catch (err) {
+            return err.message;
+          }
+        }
+        browser.tabs.create({
+          cookieStoreId: info.menuItemId,
+          url: bookmark.url,
+          openInReaderMode: openInReaderMode
+        });
+      }
+    }
+  },
+
 
   deleteContainer(userContextId) {
     this.storageArea.deleteContainer(userContextId);
@@ -289,11 +359,9 @@ const assignManager = {
 
   isTabPermittedAssign(tab) {
     // Ensure we are not an important about url
-    // Ensure we are not in incognito mode
     const url = new URL(tab.url);
     if (url.protocol === "about:"
-        || url.protocol === "moz-extension:"
-        || tab.incognito) {
+        || url.protocol === "moz-extension:") {
       return false;
     }
     return true;
@@ -441,6 +509,32 @@ const assignManager = {
       }).catch((e) => {
         throw e;
       });
+    }
+  },
+
+  async initBookmarksMenu() {
+    browser.contextMenus.create({
+      id: this.OPEN_IN_CONTAINER,
+      title: "Open Bookmark in Container Tab",
+      contexts: ["bookmark"],
+    });
+
+    const identities = await browser.contextualIdentities.query({});
+    for (const identity of identities) {
+      browser.contextMenus.create({
+        parentId: this.OPEN_IN_CONTAINER,
+        id: identity.cookieStoreId,
+        title: identity.name,
+        icons: { "16": `img/usercontext.svg#${identity.icon}` }
+      });
+    }
+  },
+
+  async removeBookmarksMenu() {
+    browser.contextMenus.remove(this.OPEN_IN_CONTAINER);
+    const identities = await browser.contextualIdentities.query({});
+    for (const identity of identities) {
+      browser.contextMenus.remove(identity.cookieStoreId);
     }
   }
 };
