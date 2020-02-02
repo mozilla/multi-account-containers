@@ -217,33 +217,60 @@ const backgroundLogic = {
 
   async backupIdentitiesState() {
     const identities = await browser.contextualIdentities.query({});
-    return identities.map(({ color, icon, name }) => ({ color, icon, name }));
+    return Promise.all(
+      identities.map(async ({ cookieStoreId, color, icon, name }) => {
+        const userContextId = this.getUserContextIdFromCookieStoreId(cookieStoreId);
+        const sitesByContainer = await assignManager.storageArea.getByContainer(userContextId);
+        const sites = Object.values(sitesByContainer).map(site => {
+          site = Object.assign({}, site); // create a copy
+          delete site.userContextId;
+          return site;
+        });
+        return ({ color, icon, name, sites });
+      })
+    );
   },
 
   async restoreIdentitiesState(identities) {
     const backup = await browser.contextualIdentities.query({});
     let allSucceed = true;
-    const identitiesPromise = identities.map(({ color, icon, name }) =>
-      browser.contextualIdentities.create({ color, icon, name }).catch(() => {
+    const identitiesPromise = identities.map(async ({ color, icon, name, sites }) => {
+      try {
+        const identity = await browser.contextualIdentities.create({ color, icon, name });
+        try {
+          await identityState.storageArea.get(identity.cookieStoreId);
+          const userContextId = this.getUserContextIdFromCookieStoreId(identity.cookieStoreId);
+          for (const site of sites) {
+            const pageUrl = `http://${site.hostname}`; // protocol doesn't really matter here
+            const data = Object.assign({}, site, { userContextId });
+            delete data.hostname;
+            await assignManager.storageArea.set(pageUrl, data);
+          }
+        } catch (err) {
+          // TODO warn the user some associations of sites could not be recovered
+        }
+        return identity;
+      } catch (err) {
         allSucceed = false;
         return null;
-      })
-    );
+      }
+    });
     const created = await Promise.all(identitiesPromise);
     if (!allSucceed) { // Importation failed, restore previous state
       await Promise.all(
-        created.map((identityOrNull) => {
+        created.map(async (identityOrNull) => {
           if (identityOrNull) {
-            return browser.contextualIdentities.remove(identityOrNull.cookieStoreId);
+            await identityState.storageArea.remove(identityOrNull.cookieStoreId);
+            await browser.contextualIdentities.remove(identityOrNull.cookieStoreId);
           }
-          return Promise.resolve();
         })
       );
     } else { // Importation succeed, remove old identities
       await Promise.all(
-        backup.map((identity) =>
-          browser.contextualIdentities.remove(identity.cookieStoreId)
-        )
+        backup.map(async (identity) => {
+          await identityState.storageArea.remove(identity.cookieStoreId);
+          await browser.contextualIdentities.remove(identity.cookieStoreId);
+        })
       );
     }
   },
