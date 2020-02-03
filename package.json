@@ -19,14 +19,14 @@
     "json": "^9.0.6",
     "mocha": "^6.2.2",
     "npm-run-all": "^4.0.0",
-    "nyc": "^14.1.1",
+    "nyc": "^15.0.0",
     "sinon": "^7.5.0",
     "sinon-chai": "^3.3.0",
     "stylelint": "^7.9.0",
     "stylelint-config-standard": "^16.0.0",
     "stylelint-order": "^0.3.0",
     "web-ext": "^2.9.3",
-    "webextensions-jsdom": "^1.1.0"
+    "webextensions-jsdom": "^1.2.1"
   },
   "homepage": "https://github.com/mozilla/multi-account-containers#readme",
   "license": "MPL-2.0",
@@ -44,9 +44,8 @@
     "lint:js": "eslint .",
     "package": "rm -rf src/web-ext-artifacts && npm run build && mv src/web-ext-artifacts/firefox_multi-account_containers-*.zip addon.xpi",
     "test": "npm run lint && npm run coverage",
-    "mocha": "mocha ./test/setup.js test/**/*.test.js",
-    "mochaSingle": "mocha ./test/setup.js",
-    "test-watch": "mocha ./test/setup.js test/**/*.test.js --watch",
-    "coverage": "nyc --reporter=html --reporter=text mocha ./test/setup.js test/**/*.test.js --timeout 60000"
+    "test:once": "mocha test/**/*.test.js",
+    "test:watch": "npm run test:once -- --watch",
+    "coverage": "nyc --reporter=html --reporter=text mocha test/**/*.test.js --timeout 60000"
   }
 }

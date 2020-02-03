@@ -1,4 +1,4 @@
-const assignManager = {
+window.assignManager = {
   MENU_ASSIGN_ID: "open-in-this-container",
   MENU_REMOVE_ID: "remove-open-in-this-container",
   MENU_SEPARATOR_ID: "separator",
