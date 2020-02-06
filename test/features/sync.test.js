@@ -13,7 +13,6 @@ describe("Sync", function() {
 
   it("testIdentityStateCleanup", async function() {
     await this.syncHelper.stopSyncListeners();
-    console.log("Testing the cleanup of local storage");
 
     await this.syncHelper.setState({}, LOCAL_DATA, TEST_CONTAINERS, []);
 
@@ -22,7 +21,6 @@ describe("Sync", function() {
         "hiddenTabs": [] 
       }
     });
-    console.log("local storage set: ", await this.webExt.browser.storage.local.get());
 
     await this.webExt.background.window.identityState.storageArea.upgradeData();
 
@@ -34,31 +32,27 @@ describe("Sync", function() {
       }
     }
 
-    console.assert(identities.length === 5, "There should be 5 identity entries");
+    identities.should.have.lengthOf(5, "There should be 5 identity entries");
     for (const identity of identities) {
-      console.assert(!!identity.macAddonUUID, `${identity.name} should have a uuid`);
+      (!!identity.macAddonUUID).should.be.true;
+
     }
-    console.log("!!!Finished!!!");
   });
 
   it("testAssignManagerCleanup", async function() {
     await this.syncHelper.stopSyncListeners();
-    console.log("Testing the cleanup of local storage");
 
     await this.syncHelper.setState({}, LOCAL_DATA, TEST_CONTAINERS, TEST_ASSIGNMENTS);
 
     await this.webExt.browser.storage.local.set({
       "siteContainerMap@@_www.goop.com": { 
-        "userContextId": "6",
-        "neverAsk": true,
-        "hostname": "www.goop.com"
+        "userContextId": "999",
+        "neverAsk": true
       }
     });
-    console.log("local storage set: ", await this.webExt.browser.storage.local.get());
 
     await this.webExt.background.window.identityState.storageArea.upgradeData();
     await this.webExt.background.window.assignManager.storageArea.upgradeData();
-
     const macConfigs = await this.webExt.browser.storage.local.get();
     const assignments = [];
     for(const configKey of Object.keys(macConfigs)) {
@@ -67,18 +61,14 @@ describe("Sync", function() {
         assignments.push(macConfigs[configKey]);
       }
     }
-
-    console.assert(assignments.length === 5, "There should be 5 identity entries");
+    assignments.should.have.lengthOf(5, "There should be 5 site assignments");
     for (const assignment of assignments) {
-      console.log(assignment);
-      console.assert(!!assignment.identityMacAddonUUID, `${assignment.configKey} should have a uuid`);
+      (!!assignment.identityMacAddonUUID).should.be.true;
     }
-    console.log("!!!Finished!!!");
   });
 
   it("testReconcileSiteAssignments", async function() {
     await this.syncHelper.stopSyncListeners();
-    console.log("Testing reconciling Site Assignments");
 
     await this.syncHelper.setState(
       DUPE_TEST_SYNC, 
@@ -134,41 +124,27 @@ describe("Sync", function() {
     await this.webExt.browser.storage.sync.set({
       deletedSiteList: ["siteContainerMap@@_www.google.com"]
     });
-    console.log(await this.webExt.browser.storage.sync.get());
     await this.webExt.background.window.sync.runSync();
 
     const assignedSites = await this.webExt.background.window.assignManager.storageArea.getAssignedSites();
     Object.keys(assignedSites).should.have.lengthOf(6);
-    console.log("!!!Finished!!!");
   });
 
   it("testInitialSync", async function() {
     await this.syncHelper.stopSyncListeners();
-    console.log("Testing new install with no sync");
-
     await this.syncHelper.setState({}, LOCAL_DATA, TEST_CONTAINERS, []);
-
     await this.webExt.background.window.sync.runSync();
 
     const getAssignedSites = 
       await this.webExt.background.window.assignManager.storageArea.getAssignedSites();
     const identities = await this.webExt.browser.contextualIdentities.query({});
 
-    console.assert(
-      identities.length === 5,
-      "There should be 5 identities"
-    );
-
-    console.assert(
-      Object.keys(getAssignedSites).length === 0,
-      "There should be no site assignments"
-    );
-    console.log("!!!Finished!!!");
+    identities.should.have.lengthOf(5, "There should be 5 identity entries");
+    Object.keys(getAssignedSites).should.have.lengthOf(0, "There should be no site assignments");
   });
 
   it("test2", async function() {
     await this.syncHelper.stopSyncListeners();
-    console.log("Testing sync differing from local");
 
     await this.syncHelper.setState(SYNC_DATA, LOCAL_DATA, TEST_CONTAINERS, TEST_ASSIGNMENTS);
 
@@ -179,22 +155,12 @@ describe("Sync", function() {
 
     const identities = await this.webExt.browser.contextualIdentities.query({});
 
-    console.assert(
-      identities.length === 6,
-      "There should be 6 identities"
-    );
-
-    console.assert(
-      Object.keys(getAssignedSites).length === 5,
-      "There should be 5 site assignments"
-    );
-    console.log("!!!Finished!!!");
+    identities.should.have.lengthOf(6, "There should be 6 identity entries");
+    Object.keys(getAssignedSites).should.have.lengthOf(5, "There should be 5 site assignments");
   });
 
   it("dupeTest", async function() {
     await this.syncHelper.stopSyncListeners();
-    console.log("Test state from sync that duped everything initially");
-
     await this.syncHelper.setState(
       DUPE_TEST_SYNC, 
       DUPE_TEST_LOCAL, 
@@ -209,80 +175,17 @@ describe("Sync", function() {
 
     const identities = await this.webExt.browser.contextualIdentities.query({});
 
-    console.assert(
-      identities.length === 7,
-      "There should be 7 identities"
-    );
+    identities.should.have.lengthOf(7, "There should be 7 identity entries");
 
-    console.assert(
-      Object.keys(getAssignedSites).length === 5,
-      "There should be 5 site assignments"
-    );
+    Object.keys(getAssignedSites).should.have.lengthOf(5, "There should be 5 identity entries");
 
     const personalContainer = 
       this.syncHelper.lookupIdentityBy(identities, {name: "Personal"});
-    console.log(personalContainer);
-    console.assert(
-      personalContainer.color === "red",
-      "Personal Container should be red"
-    );
+    (personalContainer.color === "red").should.be.true;
+
     const mozillaContainer =
       this.syncHelper.lookupIdentityBy(identities, {name: "Mozilla"});
-    console.assert(
-      mozillaContainer.icon === "pet",
-      "Mozilla Container should be pet"
-    );
-    console.log("!!!Finished!!!");
-  });
-
-  it("CIerrorTest", async function() {
-    await this.syncHelper.stopSyncListeners();
-    console.log("Test state from sync that duped everything initially");
-
-    await this.syncHelper.setState(
-      CI_ERROR_TEST_SYNC, 
-      CI_ERROR_TEST_LOCAL, 
-      CI_ERROR_TEST_IDENTS, 
-      CI_ERROR_TEST_SITES
-    );
-
-    await this.webExt.background.window.sync.runSync();
-
-    const getSync = await this.webExt.browser.storage.sync.get();
-    const getAssignedSites = 
-      await this.webExt.background.window.assignManager.storageArea.getAssignedSites();
-
-    const identities = await this.webExt.browser.contextualIdentities.query({});
-
-    console.assert(
-      Object.keys(getSync.cookieStoreIDmap).length === 7, 
-      "cookieStoreIDmap should have 7 entries"
-    );
-
-    console.assert(
-      identities.length === 7,
-      "There should be 7 identities"
-    );
-
-    console.assert(
-      Object.keys(getAssignedSites).length === 5,
-      "There should be 5 site assignments"
-    );
-
-    const personalContainer = 
-      this.syncHelper.lookupIdentityBy(identities, {name: "Personal"});
-    console.log(personalContainer);
-    console.assert(
-      personalContainer.color === "red",
-      "Personal Container should be red"
-    );
-    const mozillaContainer =
-      this.syncHelper.lookupIdentityBy(identities, {name: "Mozilla"});
-    console.assert(
-      mozillaContainer.icon === "pet",
-      "Mozilla Container should be pet"
-    );
-    console.log("!!!Finished!!!");
+    (mozillaContainer.icon === "pet").should.be.true;
   });
 });
 
@@ -319,13 +222,11 @@ class SyncTestHelper {
         await this.webExt.browser.storage.local.set({[assignmentData[i]]: data});
       }
     }
-    console.log("local storage set: ", await this.webExt.browser.storage.local.get());
     return;
   }
   
   async removeAllContainers() {
     const identities = await this.webExt.browser.contextualIdentities.query({});
-    console.log(identities);
     for (const identity of identities) {
       await this.webExt.browser.contextualIdentities.remove(identity.cookieStoreId);
     }
@@ -560,136 +461,5 @@ const DUPE_TEST_IDENTS = [
     "name": "Big Bird",
     "icon": "dollar",
     "color": "yellow",
-  }
-];
-  
-const CI_ERROR_TEST_SYNC = {
-  "identities": [
-    {
-      "name": "Personal",
-      "icon": "fingerprint",
-      "iconUrl": "resource://usercontext-content/fingerprint.svg",
-      "color": "blue",
-      "colorCode": "#37adff",
-      "cookieStoreId": "firefox-container-6"
-    },
-    {
-      "name": "Mozilla",
-      "icon": "fruit",
-      "iconUrl": "resource://usercontext-content/fruit.svg",
-      "color": "purple",
-      "colorCode": "#af51f5",
-      "cookieStoreId": "firefox-container-8"
-    },
-    {
-      "name": "Groceries, obviously",
-      "icon": "cart",
-      "iconUrl": "resource://usercontext-content/cart.svg",
-      "color": "yellow",
-      "colorCode": "#ffcb00",
-      "cookieStoreId": "firefox-container-9"
-    },
-    {
-      "name": "Facebook",
-      "icon": "circle",
-      "iconUrl": "resource://usercontext-content/circle.svg",
-      "color": "blue",
-      "colorCode": "#37adff",
-      "cookieStoreId": "firefox-container-10"
-    },
-    {
-      "name": "Work",
-      "icon": "briefcase",
-      "iconUrl": "resource://usercontext-content/briefcase.svg",
-      "color": "orange",
-      "colorCode": "#ff9f00",
-      "cookieStoreId": "firefox-container-11"
-    },
-    {
-      "name": "Greg's container",
-      "icon": "vacation",
-      "iconUrl": "resource://usercontext-content/vacation.svg",
-      "color": "yellow",
-      "colorCode": "#ffcb00",
-      "cookieStoreId": "firefox-container-14"
-    }
-  ],
-  "deletedIdentityList": [
-    "8098140e-d406-4321-b4f5-24763b4f9513",
-    "73aebc7a-286f-408a-9a94-a06d29b288e0",
-    "8f153224-bbe8-4664-ba02-0293ddec3e78"
-  ],
-  "cookieStoreIDmap": {
-    "firefox-container-10": "58956e95-43fb-44af-95c0-1ec8d83e1e13",
-    "firefox-container-11": "0269558d-6be7-487b-beb1-b720b346d09b",
-    "firefox-container-14": "e48d04cf-6277-4236-8f3d-611287d0caf2",
-    "firefox-container-6": "869a7563-030d-4a63-8a84-209270561d3c",
-    "firefox-container-8": "73aebc7a-286f-408a-9a94-a06d29b288e0",
-    "firefox-container-9": "4831fef4-6f43-47fb-a578-ccdc3ee7f883"
-  },
-  "assignedSites": {
-    "siteContainerMap@@_bugzilla.mozilla.org": {
-      "userContextId": "11",
-      "neverAsk": true,
-      "identityMacAddonUUID": "0269558d-6be7-487b-beb1-b720b346d09b",
-      "hostname": "bugzilla.mozilla.org"
-    },
-    "siteContainerMap@@_www.amazon.com": {
-      "userContextId": "14",
-      "neverAsk": false,
-      "identityMacAddonUUID": "e48d04cf-6277-4236-8f3d-611287d0caf2",
-      "hostname": "www.amazon.com"
-    }
-  },
-  "deletedSiteList": [
-    "siteContainerMap@@_www.facebook.com"
-  ]
-};
-  
-const CI_ERROR_TEST_LOCAL = {
-  "browserActionBadgesClicked": [
-    "6.1.1"
-  ],
-  "containerTabsOpened": 6,
-  "onboarding-stage": 5,
-};
-  
-const CI_ERROR_TEST_SITES = [
-  "siteContainerMap@@_bugzilla.mozilla.org",
-  "siteContainerMap@@_www.bankofoklahoma.com",
-  "siteContainerMap@@_www.mozilla.org",
-  "siteContainerMap@@_www.reddit.com"
-];
-  
-const CI_ERROR_TEST_IDENTS = [
-  {
-    "name": "Personal",
-    "icon": "fingerprint",
-    "color": "blue",
-  },
-  {
-    "name": "Work",
-    "icon": "briefcase",
-    "color": "orange",
-  },
-  {
-    "name": "Banking",
-    "icon": "dollar",
-    "color": "green",
-  },
-  {
-    "name": "Mozilla",
-    "icon": "fruit",
-    "color": "purple",
-  },
-  {
-    "name": "Groceries, obviously",
-    "icon": "cart",
-    "color": "yellow",
-  },
-  {
-    "name": "Facebook",
-    "icon": "circle",
-    "color": "blue",
   }
 ];
