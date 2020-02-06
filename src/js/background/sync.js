@@ -1,4 +1,4 @@
-const SYNC_DEBUG = true;
+const SYNC_DEBUG = false;
 
 window.sync = {
   storageArea: {
