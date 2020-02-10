@@ -18,6 +18,7 @@ const P_ONBOARDING_3 = "onboarding3";
 const P_ONBOARDING_4 = "onboarding4";
 const P_ONBOARDING_5 = "onboarding5";
 const P_ONBOARDING_6 = "onboarding6";
+const P_ONBOARDING_7 = "onboarding7";
 const P_CONTAINERS_LIST = "containersList";
 const P_CONTAINERS_EDIT = "containersEdit";
 const P_CONTAINER_INFO = "containerInfo";
@@ -100,8 +101,11 @@ const Logic = {
     }
 
     switch (onboarded) {
-    case 6:
+    case 7:
       this.showAchievementOrContainersListPanel();
+      break;
+    case 6:
+      this.showPanel(P_ONBOARDING_7);
       break;
     case 5:
       this.showPanel(P_ONBOARDING_6);
@@ -532,10 +536,10 @@ Logic.registerPanel(P_ONBOARDING_6, {
       await browser.runtime.sendMessage({
         method: "resetSync"
       });
-      Logic.showPanel(P_CONTAINERS_LIST);
+      Logic.showPanel(P_ONBOARDING_7);
     });
     Logic.addEnterHandler(document.querySelector("#no-sync"), async () => {
-      await Logic.setOnboardingStage(6);
+      await Logic.setOnboardingStage(7);
       await browser.storage.local.set({syncEnabled: false});
       await browser.runtime.sendMessage({
         method: "resetSync"
@@ -550,6 +554,33 @@ Logic.registerPanel(P_ONBOARDING_6, {
   },
 });
 
+// P_ONBOARDING_6: Sixth page for Onboarding: new tab long-press behavior
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_ONBOARDING_7, {
+  panelSelector: ".onboarding-panel-7",
+
+  // This method is called when the object is registered.
+  initialize() {
+    // Let's move to the containers list panel.
+    Logic.addEnterHandler(document.querySelector("#sign-in"), async () => {
+      browser.tabs.create({
+        url: "https://accounts.firefox.com/?service=sync&utm_source=addon&utm_medium=panel&utm_campaign=container-sync",
+      });
+      await Logic.setOnboardingStage(7);
+      Logic.showPanel(P_CONTAINERS_LIST);
+    });
+    Logic.addEnterHandler(document.querySelector("#no-sign-in"), async () => {
+      await Logic.setOnboardingStage(7);
+      Logic.showPanel(P_CONTAINERS_LIST);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    return Promise.resolve(null);
+  },
+});
 // P_CONTAINERS_LIST: The list of containers. The main page.
 // ----------------------------------------------------------------------------
 
