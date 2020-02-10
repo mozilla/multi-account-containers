@@ -1,6 +1,6 @@
 const SYNC_DEBUG = false;
 
-window.sync = {
+const sync = {
   storageArea: {
     area: browser.storage.sync,
 
@@ -307,6 +307,9 @@ window.sync = {
   }
 
 };
+
+// attaching to window for use in mocha tests
+window.sync = sync;
 
 sync.init();
 
