@@ -285,7 +285,7 @@ const TEST_ASSIGNMENTS = [
 ];
   
 const LOCAL_DATA = {
-  "browserActionBadgesClicked": [ "6.1.1" ],
+  "browserActionBadgesClicked": [ "6.2.0" ],
   "containerTabsOpened": 7,
   "identitiesState@@_firefox-default": { "hiddenTabs": [] },
   "onboarding-stage": 5
@@ -407,7 +407,7 @@ const DUPE_TEST_SYNC = {
 const DUPE_TEST_LOCAL = {
   "beenSynced": true,
   "browserActionBadgesClicked": [
-    "6.1.1"
+    "6.2.0"
   ],
   "containerTabsOpened": 7,
   "identitiesState@@_firefox-default": {
