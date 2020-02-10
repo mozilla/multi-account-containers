@@ -357,11 +357,11 @@ table {
 }
 
 .half-button-wrapper {
-  width: 100%;
-  flex-direction: row;
-  display: flex;
   align-items: center;
+  display: flex;
+  flex-direction: row;
   height: 44px;
+  inline-size: 100%;
 }
 
 .half-onboarding-button {
@@ -370,18 +370,18 @@ table {
   border-radius: 3px;
   color: white;
   display: flex;
+  flex: 1 0 auto;
   font-size: 14px;
+  height: 44px;
   inline-size: 50%;
   justify-content: center;
+  margin-inline-end: 4px;
   text-decoration: none;
   transition: background-color 75ms;
-  flex: 1 0 auto;
-  height: 44px;
-  margin: 0 4px 0 0;
 }
 
 .grey-button {
-  background-color: #E3E3E3;
+  background-color: #e3e3e3;
   color: #000;
 }
 
