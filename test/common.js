@@ -85,7 +85,7 @@ const initializeWithTab = async (details = {
         beforeParse(window) {
           window.browser.storage.local.set({
             "browserActionBadgesClicked": [],
-            "onboarding-stage": 6,
+            "onboarding-stage": 7,
             "achievements": [], 
             "syncEnabled": true
           });
