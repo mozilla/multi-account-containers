@@ -17,6 +17,8 @@ const P_ONBOARDING_2 = "onboarding2";
 const P_ONBOARDING_3 = "onboarding3";
 const P_ONBOARDING_4 = "onboarding4";
 const P_ONBOARDING_5 = "onboarding5";
+const P_ONBOARDING_6 = "onboarding6";
+const P_ONBOARDING_7 = "onboarding7";
 const P_CONTAINERS_LIST = "containersList";
 const P_CONTAINERS_EDIT = "containersEdit";
 const P_CONTAINER_INFO = "containerInfo";
@@ -99,8 +101,14 @@ const Logic = {
     }
 
     switch (onboarded) {
-    case 5:
+    case 7:
       this.showAchievementOrContainersListPanel();
+      break;
+    case 6:
+      this.showPanel(P_ONBOARDING_7);
+      break;
+    case 5:
+      this.showPanel(P_ONBOARDING_6);
       break;
     case 4:
       this.showPanel(P_ONBOARDING_5);
@@ -352,6 +360,9 @@ const Logic = {
   },
 
   getAssignmentObjectByContainer(userContextId) {
+    if (!userContextId) {
+      return {};
+    }
     return browser.runtime.sendMessage({
       method: "getAssignmentObjectByContainer",
       message: { userContextId }
@@ -500,6 +511,39 @@ Logic.registerPanel(P_ONBOARDING_5, {
     // Let's move to the containers list panel.
     Logic.addEnterHandler(document.querySelector("#onboarding-longpress-button"), async () => {
       await Logic.setOnboardingStage(5);
+      Logic.showPanel(P_ONBOARDING_6);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    return Promise.resolve(null);
+  },
+});
+
+// P_ONBOARDING_6: Sixth page for Onboarding: new tab long-press behavior
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_ONBOARDING_6, {
+  panelSelector: ".onboarding-panel-6",
+
+  // This method is called when the object is registered.
+  initialize() {
+    // Let's move to the containers list panel.
+    Logic.addEnterHandler(document.querySelector("#start-sync-button"), async () => {
+      await Logic.setOnboardingStage(6);
+      await browser.storage.local.set({syncEnabled: true});
+      await browser.runtime.sendMessage({
+        method: "resetSync"
+      });
+      Logic.showPanel(P_ONBOARDING_7);
+    });
+    Logic.addEnterHandler(document.querySelector("#no-sync"), async () => {
+      await Logic.setOnboardingStage(7);
+      await browser.storage.local.set({syncEnabled: false});
+      await browser.runtime.sendMessage({
+        method: "resetSync"
+      });
       Logic.showPanel(P_CONTAINERS_LIST);
     });
   },
@@ -510,6 +554,33 @@ Logic.registerPanel(P_ONBOARDING_5, {
   },
 });
 
+// P_ONBOARDING_6: Sixth page for Onboarding: new tab long-press behavior
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_ONBOARDING_7, {
+  panelSelector: ".onboarding-panel-7",
+
+  // This method is called when the object is registered.
+  initialize() {
+    // Let's move to the containers list panel.
+    Logic.addEnterHandler(document.querySelector("#sign-in"), async () => {
+      browser.tabs.create({
+        url: "https://accounts.firefox.com/?service=sync&action=email&context=fx_desktop_v3&entrypoint=multi-account-containers&utm_source=addon&utm_medium=panel&utm_campaign=container-sync",
+      });
+      await Logic.setOnboardingStage(7);
+      Logic.showPanel(P_CONTAINERS_LIST);
+    });
+    Logic.addEnterHandler(document.querySelector("#no-sign-in"), async () => {
+      await Logic.setOnboardingStage(7);
+      Logic.showPanel(P_CONTAINERS_LIST);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    return Promise.resolve(null);
+  },
+});
 // P_CONTAINERS_LIST: The list of containers. The main page.
 // ----------------------------------------------------------------------------
 
@@ -721,8 +792,12 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
        however it allows us to have a tabindex before the first selected item
      */
     const focusHandler = () => {
-      list.querySelector("tr .clickable").focus();
-      document.removeEventListener("focus", focusHandler);
+      const identityList = list.querySelector("tr .clickable");
+      if (identityList) {
+        // otherwise this throws an error when there are no containers present.
+        identityList.focus();
+        document.removeEventListener("focus", focusHandler);
+      }
     };
     document.addEventListener("focus", focusHandler);
     /* If the user mousedown's first then remove the focus handler */
@@ -1022,6 +1097,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       while (tableElement.firstChild) {
         tableElement.firstChild.remove();
       }
+
       assignmentKeys.forEach((siteKey) => {
         const site = assignments[siteKey];
         const trElement = document.createElement("div");
