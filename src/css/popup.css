@@ -356,6 +356,35 @@ table {
   transition: background-color 75ms;
 }
 
+.half-button-wrapper {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  height: 44px;
+  inline-size: 100%;
+}
+
+.half-onboarding-button {
+  align-items: center;
+  background-color: #0996f8;
+  border-radius: 3px;
+  color: white;
+  display: flex;
+  flex: 1 0 auto;
+  font-size: 14px;
+  height: 44px;
+  inline-size: 50%;
+  justify-content: center;
+  margin-inline-end: 4px;
+  text-decoration: none;
+  transition: background-color 75ms;
+}
+
+.grey-button {
+  background-color: #e3e3e3;
+  color: #000;
+}
+
 .onboarding-button:hover,
 .onboarding-button:active {
   background-color: #0675d3;
