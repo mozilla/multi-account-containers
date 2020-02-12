@@ -91,7 +91,7 @@ table {
 }
 
 .scrollable {
-  border-block-start: 1px solid #f1f1f1;
+/*  border-block-start: 1px solid #f1f1f1;*/
   inline-size: 100%;
   max-block-size: 400px;
   overflow: auto;
@@ -488,24 +488,6 @@ manage things like container crud */
   margin-inline-start: var(--inline-item-space-size);
 }
 
-#container-panel #sort-containers-link {
-  align-items: center;
-  block-size: var(--block-url-label-size);
-  border: 1px solid #d8d8d8;
-  border-radius: var(--small-radius);
-  color: var(--title-text-color);
-  display: flex;
-  font-size: var(--small-text-size);
-  inline-size: var(--inline-button-size);
-  justify-content: center;
-  text-decoration: none;
-}
-
-#container-panel #sort-containers-link:hover,
-#container-panel #sort-containers-link:focus {
-  background: #f2f2f2;
-}
-
 span ~ .panel-header-text {
   padding-block-end: 0;
   padding-block-start: 0;
@@ -644,7 +626,7 @@ span ~ .panel-header-text {
   background-image: var(--identity-icon);
   background-position: center center;
   background-repeat: no-repeat;
-  background-size: 20px 20px;
+  background-size: 16px 16px;
   block-size: 100%;
   fill: var(--identity-icon-color);
   filter: url('/img/filters.svg#fill');
@@ -1002,4 +984,122 @@ span ~ .panel-header-text {
 
 .amo-rate-cta {
   background: #0f1126;
+}
+
+body {
+  font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: #000000;
+  font-size: 13px;
+  letter-spacing: -0.1px;
+  width: 320px;
+  /* remove  in prodcution*/
+}
+
+h3.title {
+  width: 100%;
+  color: #000000;
+  font-size: 13px;
+  letter-spacing: -0.1px;
+  font-weight: bold;
+  line-height: 40px;
+  text-align: center;
+  height: 40px;
+}
+
+.menu {
+  width: 100%;
+  border-style: none;
+}
+
+.menu-item {
+  height: 24px;
+  line-height: 24px;
+  width: 100%;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: #1296F8;
+  color: #FFFFFF;
+}
+
+.hover-highlight {
+
+}
+
+.menu-text {
+  line-height: 24px;
+}
+
+.menu-icon {
+  float: left;
+  text-align: center;
+  width: 40px;
+  display: block;
+  height: 24px;
+  padding: 0 8px 0 16px;
+}
+
+.menu-right-float {
+  float: right;
+  text-align: right;
+  width: 60px;
+  display: inline-block;
+  height: 24px;
+}
+
+.container-count {
+  opacity: 0.6;
+  padding: 0 6px 0 0;
+  text-align: right;
+}
+
+.menu-arrow {
+  float: right;
+  text-align: center;
+  width: 18px;
+  display: inline-block;
+  height: 24px;
+  padding: 6px 12px 6px 0;
+}
+
+.menu-arrow img {
+  padding: 2 2 2 2;
+  height: 12px;
+  width: 12px;
+}
+
+hr {
+  display: block;
+  border: 0;
+  border-top: 1px solid #e3e3e3;
+  padding: 0 0 6px 0;
+  margin: 6px 0 0 0;
+}
+
+.sub-header {
+  height: 24px;
+  color: #737373;
+  line-height: 24px;
+  padding: 0 16px 0 16px;
+}
+
+.identities-list {
+  margin: 0 0 41px 0;
+}
+
+.bottom-btn {
+  height: 41px;
+  line-height: 41px;
+  background-color: #e3e3e3;
+  padding: 0 16px 0 16px;
+  border: solid 1px #d9d9d9;
+  cursor: pointer;
+  position: fixed;
+  bottom: 0px;
+  width: 100%;
+}
+
+.menu-panel {
+  justify-content: flex-start;
 }

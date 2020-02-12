@@ -115,34 +115,79 @@
     <a href="#" id="achievement-done-button" class="onboarding-button">Done</a>
   </div>
 
-  <div class="panel container-panel hide" id="container-panel">
-    <div id="current-tab">
-      <h3>Current Tab</h3>
-      <div id="current-page"></div>
-      <label for="container-page-assigned">
-        <input type="checkbox" id="container-page-assigned" />
-        <span class="truncate-text">
-          Always open in
-          <span id="current-container"></span>
-        </span>
-      </label>
+  <div class="panel menu-panel container-panel hide" id="container-panel">
+    <h3 class="title">
+      Multi-Account Containers
+    </h3>
+    <hr>
+    <table class="menu">
+      <tr class="menu-item" id="open-new-tab-in">
+        <td>
+          <img class="menu-icon" alt="Open in New Tab" src="/img/tab-new-16.svg" />
+          <span class="menu-text">Open New Tab in...</span>
+            <span class="menu-arrow">
+              <img alt="Container Info" src="/img/arrow-icon-right.svg" />
+            </span>
+        </td>
+      </tr>
+      <tr class="menu-item" id="reopen-site-in">
+        <td>
+          <img class="menu-icon" alt="Open in New Tab" src="/img/refresh-16.svg" />
+          <span class="menu-text">Reopen This Site in...</span>
+            <span class="menu-arrow">
+              <img alt="Container Info" src="/img/arrow-icon-right.svg" />
+            </span>
+        </td>
+      </tr>
+    </table>
+    <hr>
+    <table class="menu">
+      <tr class="menu-item" id="sort-containers-link">
+        <td>
+          <img class="menu-icon" alt="Open in New Tab" src="/img/sort-16_1.svg" />
+          <span class="menu-text">Sort Tabs by Container</span>
+            <span class="menu-arrow">
+            </span>
+        </td>
+      </tr>
+      <tr class="menu-item" id="always-open-in">
+        <td>
+          <img class="menu-icon" alt="Open in New Tab" src="/img/open-in-new-16.svg" />
+          <span class="menu-text">Always Open This Site in...</span>
+            <span class="menu-arrow">
+              <img alt="Container Info" src="/img/arrow-icon-right.svg" />
+            </span>
+        </td>
+      </tr>
+    </table>
+    <hr>
+    <div class="sub-header">
+    Containers
     </div>
-    <div class="container-panel-controls">
-      <a href="#" class="action-link" id="sort-containers-link" title="Sort tabs into container order">Sort Tabs</a>
-    </div>
-    <div class="scrollable panel-content" tabindex="-1">
-      <table class="identities-list">
-        <tbody></tbody>
+    <div class="scrollable identities-list">
+      <table class="menu" id="identities-list">
+        <tr class="menu-item">
+          <td>
+            <div class="menu-icon">
+              <div class="usercontext-icon"
+                data-identity-icon="pet"
+                data-identity-color="blue">
+              </div>
+            </div>
+            <span class="menu-text">Default</span>
+            <span class="menu-right-float">
+              <span class="container-count">22</span>
+              <span class="menu-arrow">
+                <img alt="Container Info" src="/img/arrow-icon-right.svg" />
+              </span>
+            </span>
+          </td>
+        </tr>
       </table>
     </div>
-    <div class="panel-footer edit-identities">
-      <div class="edit-containers-text panel-footer-secondary">
-        <a href="#" tabindex="0" id="edit-containers-link">Edit Containers</a>
-      </div>
-      <a href="#" tabindex="0" class="add-container-link pop-button" id="container-add-link" title="Create new container">
-        <img class="pop-button-image-small icon" alt="Create new container icon" src="/img/container-add.svg" />
-      </a>
-    </div>
+    <div class="bottom-btn" id="manage-containers-link">
+      Manage Containers
+    </div> 
   </div>
 
 
@@ -170,19 +215,26 @@
   </div>
 
 
-  <div class="panel edit-containers-panel hide" id="edit-containers-panel">
-    <div class="panel-header">
-      <h3 class="panel-header-text">Edit Containers</h3>
-    </div>
-    <div class="scrollable panel-content">
-      <table class="unstriped">
-        <tbody id="edit-identities-list"></tbody>
+  <div class="panel container-picker-panel hide" id="container-picker-panel">
+    <h3 class="title">
+      Multi-Account Containers
+    </h3>
+    <hr>
+    <div class="scrollable identities-list">
+      <table class="menu" id="picker-identities-list">
+        <tr class="menu-item">
+          <td>
+            <div class="menu-icon">
+              <div class="usercontext-icon"
+                data-identity-icon="pet"
+                data-identity-color="blue">
+              </div>
+            </div>
+            <span class="menu-text">Default</span>
+          </td>
+        </tr>
       </table>
     </div>
-    <div class="panel-footer edit-containers-panel-footer">
-      <a href="#" id="exit-edit-mode-link" class="exit-edit-mode-link edit-containers-exit-text">
-      <img src="/img/container-arrow.svg"/>Exit Edit Mode</a>
-  </div>
   </div>
 
 
