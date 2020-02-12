@@ -20,7 +20,11 @@ const P_ONBOARDING_5 = "onboarding5";
 const P_ONBOARDING_6 = "onboarding6";
 const P_ONBOARDING_7 = "onboarding7";
 const P_CONTAINERS_LIST = "containersList";
-const P_CONTAINERS_EDIT = "containersEdit";
+const P_CONTAINER_PICKER = "containerPicker";
+const OPEN_NEW_CONTAINER_PICKER = "new-tab";
+const MANAGE_CONTAINERS_PICKER = "manage";
+const REOPEN_IN_CONTAINER = "reopen-in";
+const ALWAYS_OPEN_IN_PICKER = "always-open-in";
 const P_CONTAINER_INFO = "containerInfo";
 const P_CONTAINER_EDIT = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
@@ -275,7 +279,7 @@ const Logic = {
     }
   },
 
-  async showPanel(panel, currentIdentity = null) {
+  async showPanel(panel, currentIdentity = null, pickerType = null) {
     // Invalid panel... ?!?
     if (!(panel in this._panels)) {
       throw new Error("Something really bad happened. Unknown panel: " + panel);
@@ -283,6 +287,7 @@ const Logic = {
 
     this._previousPanel = this._currentPanel;
     this._currentPanel = panel;
+    this.pickerType = pickerType;
 
     this._currentIdentity = currentIdentity;
 
@@ -589,16 +594,20 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
   // This method is called when the object is registered.
   async initialize() {
-    Logic.addEnterHandler(document.querySelector("#container-add-link"), () => {
-      Logic.showPanel(P_CONTAINER_EDIT, { name: Logic.generateIdentityName() });
-    });
-
-    Logic.addEnterHandler(document.querySelector("#edit-containers-link"), (e) => {
+    Logic.addEnterHandler(document.querySelector("#manage-containers-link"), (e) => {
       if (!e.target.classList.contains("disable-edit-containers")) {
-        Logic.showPanel(P_CONTAINERS_EDIT);
+        Logic.showPanel(P_CONTAINER_PICKER, null, MANAGE_CONTAINERS_PICKER);
       }
     });
-
+    Logic.addEnterHandler(document.querySelector("#open-new-tab-in"), () => {
+      Logic.showPanel(P_CONTAINER_PICKER, null, OPEN_NEW_CONTAINER_PICKER);
+    });
+    Logic.addEnterHandler(document.querySelector("#reopen-site-in"), () => {
+      Logic.showPanel(P_CONTAINER_PICKER, null, REOPEN_IN_CONTAINER);
+    });
+    Logic.addEnterHandler(document.querySelector("#always-open-in"), () => {
+      Logic.showPanel(P_CONTAINER_PICKER, null, ALWAYS_OPEN_IN_PICKER);
+    });
     Logic.addEnterHandler(document.querySelector("#sort-containers-link"), async () => {
       try {
         await browser.runtime.sendMessage({
@@ -660,123 +669,47 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         break;
       }
     });
-
-    // When the popup is open sometimes the tab will still be updating it's state
-    this.tabUpdateHandler = (tabId, changeInfo) => {
-      const propertiesToUpdate = ["title", "favIconUrl"];
-      const hasChanged = Object.keys(changeInfo).find((changeInfoKey) => {
-        if (propertiesToUpdate.includes(changeInfoKey)) {
-          return true;
-        }
-      });
-      if (hasChanged) {
-        this.prepareCurrentTabHeader();
-      }
-    };
-    browser.tabs.onUpdated.addListener(this.tabUpdateHandler);
   },
 
   unregister() {
-    browser.tabs.onUpdated.removeListener(this.tabUpdateHandler);
-  },
 
-  setupAssignmentCheckbox(siteSettings, currentUserContextId) {
-    const assignmentCheckboxElement = document.getElementById("container-page-assigned");
-    let checked = false;
-    if (siteSettings && Number(siteSettings.userContextId) === currentUserContextId) {
-      checked = true;
-    }
-    assignmentCheckboxElement.checked = checked;
-    let disabled = false;
-    if (siteSettings === false) {
-      disabled = true;
-    }
-    assignmentCheckboxElement.disabled = disabled;
-  },
-
-  async prepareCurrentTabHeader() {
-    const currentTab = await Logic.currentTab();
-    const currentTabElement = document.getElementById("current-tab");
-    const assignmentCheckboxElement = document.getElementById("container-page-assigned");
-    const currentTabUserContextId = Logic.userContextId(currentTab.cookieStoreId);
-    assignmentCheckboxElement.addEventListener("change", () => {
-      Logic.setOrRemoveAssignment(currentTab.id, currentTab.url, currentTabUserContextId, !assignmentCheckboxElement.checked);
-    });
-    currentTabElement.hidden = !currentTab;
-    this.setupAssignmentCheckbox(false, currentTabUserContextId);
-    if (currentTab) {
-      const identity = await Logic.identity(currentTab.cookieStoreId);
-      const siteSettings = await Logic.getAssignment(currentTab);
-      this.setupAssignmentCheckbox(siteSettings, currentTabUserContextId);
-      const currentPage = document.getElementById("current-page");
-      currentPage.innerHTML = escaped`<span class="page-title truncate-text">${currentTab.title}</span>`;
-      const favIconElement = Utils.createFavIconElement(currentTab.favIconUrl || "");
-      currentPage.prepend(favIconElement);
-
-      const currentContainer = document.getElementById("current-container");
-      currentContainer.innerText = identity.name;
-
-      currentContainer.setAttribute("data-identity-color", identity.color);
-    }
   },
 
   // This method is called when the panel is shown.
   async prepare() {
     const fragment = document.createDocumentFragment();
 
-    this.prepareCurrentTabHeader();
-
     Logic.identities().forEach(identity => {
-      const hasTabs = (identity.hasHiddenTabs || identity.hasOpenTabs);
       const tr = document.createElement("tr");
-      const context = document.createElement("td");
-      const manage = document.createElement("td");
+      tr.classList.add("menu-item");
+      const td = document.createElement("td");
+      const openTabs = identity.numberOfOpenTabs || "" ;
 
-      tr.classList.add("container-panel-row");
-
-      context.classList.add("userContext-wrapper", "open-newtab", "clickable", "firstTabindex");
-      manage.classList.add("show-tabs", "pop-button");
-      manage.setAttribute("title", `View ${identity.name} container`);
-      context.setAttribute("tabindex", "0");
-      context.setAttribute("title", `Create ${identity.name} tab`);
-      context.innerHTML = escaped`
-        <div class="userContext-icon-wrapper open-newtab">
+      td.innerHTML = escaped`          
+        <div class="menu-icon">
           <div class="usercontext-icon"
             data-identity-icon="${identity.icon}"
             data-identity-color="${identity.color}">
           </div>
         </div>
-        <div class="container-name truncate-text"></div>`;
-      context.querySelector(".container-name").textContent = identity.name;
-      manage.innerHTML = "<img src='/img/container-arrow.svg' class='show-tabs pop-button-image-small' />";
+        <span class="menu-text">${identity.name}</span>
+        <span class="menu-right-float">
+          <span class="container-count">${openTabs}</span>
+          <span class="menu-arrow">
+            <img alt="Container Info" src="/img/arrow-icon-right.svg" />
+          </span>
+        </span>`;
 
       fragment.appendChild(tr);
 
-      tr.appendChild(context);
+      tr.appendChild(td);
 
-      if (hasTabs) {
-        tr.appendChild(manage);
-      }
-
-      Logic.addEnterHandler(tr, async (e) => {
-        if (e.target.matches(".open-newtab")
-          || e.target.parentNode.matches(".open-newtab")
-          || e.type === "keydown") {
-          try {
-            browser.tabs.create({
-              cookieStoreId: identity.cookieStoreId
-            });
-            window.close();
-          } catch (e) {
-            window.close();
-          }
-        } else if (hasTabs) {
-          Logic.showPanel(P_CONTAINER_INFO, identity);
-        }
+      Logic.addEnterHandler(tr, () => {
+        Logic.showPanel(P_CONTAINER_INFO, identity);
       });
     });
 
-    const list = document.querySelector(".identities-list tbody");
+    const list = document.querySelector("#identities-list");
 
     list.innerHTML = "";
     list.appendChild(fragment);
@@ -796,14 +729,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     document.addEventListener("mousedown", () => {
       document.removeEventListener("focus", focusHandler);
     });
-    /*  If no container is present disable the Edit Containers button */
-    const editContainer = document.querySelector("#edit-containers-link");
-    if (Logic.identities().length === 0) {
-      editContainer.classList.add("disable-edit-containers");
-    } else {
-      editContainer.classList.remove("disable-edit-containers");
-    }
-
     return Promise.resolve();
   },
 });
@@ -955,68 +880,100 @@ Logic.registerPanel(P_CONTAINER_INFO, {
   },
 });
 
-// P_CONTAINERS_EDIT: Makes the list editable.
+// P_CONTAINER_PICKER: Makes the list editable.
 // ----------------------------------------------------------------------------
 
-Logic.registerPanel(P_CONTAINERS_EDIT, {
-  panelSelector: "#edit-containers-panel",
+Logic.registerPanel(P_CONTAINER_PICKER, {
+  panelSelector: "#container-picker-panel",
 
   // This method is called when the object is registered.
   initialize() {
-    Logic.addEnterHandler(document.querySelector("#exit-edit-mode-link"), () => {
-      Logic.showPanel(P_CONTAINERS_LIST);
-    });
+    // Logic.addEnterHandler(document.querySelector("#exit-edit-mode-link"), () => {
+    //   Logic.showPanel(P_CONTAINERS_LIST);
+    // });
   },
 
   // This method is called when the panel is shown.
   prepare() {
     const fragment = document.createDocumentFragment();
+    let pickedFunction;
+    switch (Logic.pickerType) {
+    case OPEN_NEW_CONTAINER_PICKER:
+      pickedFunction = function (identity) {
+        try {
+          browser.tabs.create({
+            cookieStoreId: identity.cookieStoreId
+          });
+          window.close();
+        } catch (e) {
+          window.close();
+        }
+      };
+      break;
+    case MANAGE_CONTAINERS_PICKER:
+      pickedFunction = function (identity) {
+        Logic.showPanel(P_CONTAINER_EDIT, identity);
+      };
+      break;
+    case REOPEN_IN_CONTAINER:
+      pickedFunction = function (identity) {
+        try {
+          browser.tabs.create({
+            cookieStoreId: identity.cookieStoreId
+          });
+          window.close();
+        } catch (e) {
+          window.close();
+        }
+      };
+      break;
+    case ALWAYS_OPEN_IN_PICKER:
+    default:
+      pickedFunction = async function (identity) {
+        const currentTab = await Logic.currentTab();
+        console.log(identity.cookieStoreId)
+        console.log(identity)
+        Logic.setOrRemoveAssignment(
+          currentTab.id, 
+          currentTab.url, 
+          identity.cookieStoreId, 
+          false
+        );
+        window.close();
+      };
+      break;
+    }
+
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
-      fragment.appendChild(tr);
-      tr.classList.add("container-panel-row");
-      tr.innerHTML = escaped`
-        <td class="userContext-wrapper">
-          <div class="userContext-icon-wrapper">
-            <div class="usercontext-icon"
-              data-identity-icon="${identity.icon}"
-              data-identity-color="${identity.color}">
-            </div>
+      tr.classList.add("menu-item");
+      const td = document.createElement("td");
+
+      td.innerHTML = escaped`          
+        <div class="menu-icon">
+          <div class="usercontext-icon"
+            data-identity-icon="${identity.icon}"
+            data-identity-color="${identity.color}">
           </div>
-          <div class="container-name truncate-text"></div>
-        </td>
-        <td class="edit-container pop-button edit-container-icon">
-          <img
-            src="/img/container-edit.svg"
-            class="pop-button-image" />
-        </td>
-        <td class="remove-container pop-button delete-container-icon">
-          <img
-            class="pop-button-image"
-            src="/img/container-delete.svg"
-          />
-        </td>`;
-      tr.querySelector(".container-name").textContent = identity.name;
-      tr.querySelector(".edit-container").setAttribute("title", `Edit ${identity.name} container`);
-      tr.querySelector(".remove-container").setAttribute("title", `Remove ${identity.name} container`);
+        </div>
+        <span class="menu-text">${identity.name}</span>`;
 
+      fragment.appendChild(tr);
 
-      Logic.addEnterHandler(tr, e => {
-        if (e.target.matches(".edit-container-icon") || e.target.parentNode.matches(".edit-container-icon")) {
-          Logic.showPanel(P_CONTAINER_EDIT, identity);
-        } else if (e.target.matches(".delete-container-icon") || e.target.parentNode.matches(".delete-container-icon")) {
-          Logic.showPanel(P_CONTAINER_DELETE, identity);
-        }
+      tr.appendChild(td);
+
+      Logic.addEnterHandler(tr, () => {
+        pickedFunction(identity);
       });
     });
 
-    const list = document.querySelector("#edit-identities-list");
+    const list = document.querySelector("#picker-identities-list");
 
     list.innerHTML = "";
     list.appendChild(fragment);
 
     return Promise.resolve(null);
-  },
+  }
 });
 
 // P_CONTAINER_EDIT: Editor for a container.
