@@ -39,6 +39,18 @@
         "mac": "MacCtrl+Period"
       },
       "description": "Open containers panel"
+    },
+    "open_container_1": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+1"
+      },
+      "description": "Container Shortcut 1"
+    },
+    "open_container_2": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+2"
+      },
+      "description": "Container Shortcut 2"
     }
   },
   "browser_action": {
