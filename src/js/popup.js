@@ -910,26 +910,29 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       };
       break;
     case REOPEN_IN_CONTAINER:
-      pickedFunction = function (identity) {
-        try {
-          browser.tabs.create({
-            cookieStoreId: identity.cookieStoreId
-          });
-          window.close();
-        } catch (e) {
-          window.close();
-        }
+      pickedFunction = async function (identity) {
+        const currentTab = await Utils.currentTab();
+        const newUserContextId = Utils.userContextId(identity.cookieStoreId);
+        console.log(currentTab);
+        Utils.reloadInContainer(
+          currentTab.url, 
+          false, 
+          newUserContextId,
+          currentTab.index + 1, 
+          currentTab.active
+        );
+        window.close();
       };
       break;
     case ALWAYS_OPEN_IN_PICKER:
     default:
       pickedFunction = async function (identity) {
-        const userContextId = Utils.userContextId(identity.cookieStoreId);
         const currentTab = await Utils.currentTab();
+        const assignedUserContextId = Utils.userContextId(identity.cookieStoreId);
         Utils.setOrRemoveAssignment(
           currentTab.id, 
           currentTab.url, 
-          userContextId, 
+          assignedUserContextId, 
           false
         );
         window.close();

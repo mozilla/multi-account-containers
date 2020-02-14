@@ -30,7 +30,6 @@ async function init() {
         assignedUserContextId, 
         false
       );
-      console.log(currentTab);
       Utils.reloadInContainer(
         currentTab.url, 
         false, 
