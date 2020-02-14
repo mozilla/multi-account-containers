@@ -1,4 +1,4 @@
-const assignManager = {
+window.assignManager = {
   MENU_ASSIGN_ID: "open-in-this-container",
   MENU_REMOVE_ID: "remove-open-in-this-container",
   MENU_SEPARATOR_ID: "separator",
@@ -9,8 +9,9 @@ const assignManager = {
     area: browser.storage.local,
     exemptedTabs: {},
 
-    getSiteStoreKey(pageUrl) {
-      const url = new window.URL(pageUrl);
+    getSiteStoreKey(pageUrlorUrlKey) {
+      if (pageUrlorUrlKey.includes("siteContainerMap@@_")) return pageUrlorUrlKey;
+      const url = new window.URL(pageUrlorUrlKey);
       const storagePrefix = "siteContainerMap@@_";
       if (url.port === "80" || url.port === "443") {
         return `${storagePrefix}${url.hostname}`;
@@ -19,29 +20,38 @@ const assignManager = {
       }
     },
 
-    setExempted(pageUrl, tabId) {
-      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+    setExempted(pageUrlorUrlKey, tabId) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       if (!(siteStoreKey in this.exemptedTabs)) {
         this.exemptedTabs[siteStoreKey] = [];
       }
       this.exemptedTabs[siteStoreKey].push(tabId);
     },
 
-    removeExempted(pageUrl) {
-      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+    removeExempted(pageUrlorUrlKey) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       this.exemptedTabs[siteStoreKey] = [];
     },
 
-    isExempted(pageUrl, tabId) {
-      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+    isExempted(pageUrlorUrlKey, tabId) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       if (!(siteStoreKey in this.exemptedTabs)) {
         return false;
       }
       return this.exemptedTabs[siteStoreKey].includes(tabId);
     },
 
-    get(pageUrl) {
-      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+    get(pageUrlorUrlKey) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
+      return this.getByUrlKey(siteStoreKey);
+    },
+
+    async getSyncEnabled() {
+      const { syncEnabled } = await browser.storage.local.get("syncEnabled");
+      return !!syncEnabled;
+    },
+
+    getByUrlKey(siteStoreKey) {
       return new Promise((resolve, reject) => {
         this.area.get([siteStoreKey]).then((storageResponse) => {
           if (storageResponse && siteStoreKey in storageResponse) {
@@ -54,51 +64,103 @@ const assignManager = {
       });
     },
 
-    set(pageUrl, data, exemptedTabIds) {
-      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+    async set(pageUrlorUrlKey, data, exemptedTabIds, backup = true) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       if (exemptedTabIds) {
         exemptedTabIds.forEach((tabId) => {
-          this.setExempted(pageUrl, tabId);
+          this.setExempted(pageUrlorUrlKey, tabId);
         });
       }
-      return this.area.set({
+      // eslint-disable-next-line require-atomic-updates
+      data.identityMacAddonUUID =
+        await identityState.lookupMACaddonUUID(data.userContextId);
+      await this.area.set({
         [siteStoreKey]: data
       });
+      const syncEnabled = await this.getSyncEnabled();
+      if (backup && syncEnabled) {
+        await sync.storageArea.backup({undeleteSiteStoreKey: siteStoreKey});
+      }
+      return;
     },
 
-    remove(pageUrl) {
-      const siteStoreKey = this.getSiteStoreKey(pageUrl);
+    async remove(pageUrlorUrlKey) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       // When we remove an assignment we should clear all the exemptions
-      this.removeExempted(pageUrl);
-      return this.area.remove([siteStoreKey]);
+      this.removeExempted(pageUrlorUrlKey);
+      await this.area.remove([siteStoreKey]);
+      const syncEnabled = await this.getSyncEnabled();
+      if (syncEnabled) await sync.storageArea.backup({siteStoreKey});
+      return;
     },
 
     async deleteContainer(userContextId) {
-      const sitesByContainer = await this.getByContainer(userContextId);
+      const sitesByContainer = await this.getAssignedSites(userContextId);
       this.area.remove(Object.keys(sitesByContainer));
     },
 
-    async getByContainer(userContextId) {
+    async getAssignedSites(userContextId = null) {
       const sites = {};
       const siteConfigs = await this.area.get();
-      Object.keys(siteConfigs).forEach((key) => {
-        // For some reason this is stored as string... lets check them both as that
-        if (String(siteConfigs[key].userContextId) === String(userContextId)) {
-          const site = siteConfigs[key];
+      for(const urlKey of Object.keys(siteConfigs)) {
+        if (urlKey.includes("siteContainerMap@@_")) {
+        // For some reason this is stored as string... lets check 
+        // them both as that
+          if (!!userContextId && 
+              String(siteConfigs[urlKey].userContextId) 
+                !== String(userContextId)) {
+            continue;
+          }
+          const site = siteConfigs[urlKey];
           // In hindsight we should have stored this
           // TODO file a follow up to clean the storage onLoad
-          site.hostname = key.replace(/^siteContainerMap@@_/, "");
-          sites[key] = site;
+          site.hostname = urlKey.replace(/^siteContainerMap@@_/, "");
+          sites[urlKey] = site;
         }
-      });
+      }
       return sites;
+    },
+
+    /*
+     * Looks for abandoned site assignments. If there is no identity with 
+     * the site assignment's userContextId (cookieStoreId), then the assignment
+     * is removed.
+     */
+    async upgradeData() {
+      const identitiesList = await browser.contextualIdentities.query({});
+      const macConfigs = await this.area.get();
+      for(const configKey of Object.keys(macConfigs)) {
+        if (configKey.includes("siteContainerMap@@_")) {
+          const cookieStoreId = 
+            "firefox-container-" + macConfigs[configKey].userContextId; 
+          const match = identitiesList.find(
+            localIdentity => localIdentity.cookieStoreId === cookieStoreId
+          );
+          if (!match) {
+            await this.remove(configKey);
+            continue;
+          }
+          const updatedSiteAssignment = macConfigs[configKey];
+          updatedSiteAssignment.identityMacAddonUUID = 
+            await identityState.lookupMACaddonUUID(match.cookieStoreId);
+          await this.set(
+            configKey,
+            updatedSiteAssignment,
+            false,
+            false
+          );
+        }
+      }
+
     }
+
   },
 
   _neverAsk(m) {
     const pageUrl = m.pageUrl;
     if (m.neverAsk === true) {
-      // If we have existing data and for some reason it hasn't been deleted etc lets update it
+      // If we have existing data and for some reason it hasn't been 
+      // deleted etc lets update it
       this.storageArea.get(pageUrl).then((siteSettings) => {
         if (siteSettings) {
           siteSettings.neverAsk = true;
@@ -113,11 +175,12 @@ const assignManager = {
   // We return here so the confirm page can load the tab when exempted
   async _exemptTab(m) {
     const pageUrl = m.pageUrl;
-    this.storageArea.setExempted(pageUrl, m.tabId);
+    await this.storageArea.setExempted(pageUrl, m.tabId);
     return true;
   },
 
-  // Before a request is handled by the browser we decide if we should route through a different container
+  // Before a request is handled by the browser we decide if we should
+  // route through a different container
   async onBeforeRequest(options) {
     if (options.frameId !== 0 || options.tabId === -1) {
       return {};
@@ -129,13 +192,14 @@ const assignManager = {
     ]);
     let container;
     try {
-      container = await browser.contextualIdentities.get(backgroundLogic.cookieStoreId(siteSettings.userContextId));
+      container = await browser.contextualIdentities
+        .get(backgroundLogic.cookieStoreId(siteSettings.userContextId));
     } catch (e) {
       container = false;
     }
 
-    // The container we have in the assignment map isn't present any more so lets remove it
-    //   then continue the existing load
+    // The container we have in the assignment map isn't present any
+    // more so lets remove it then continue the existing load
     if (siteSettings && !container) {
       this.deleteContainer(siteSettings.userContextId);
       return {};
@@ -152,7 +216,8 @@ const assignManager = {
     const openTabId = removeTab ? tab.openerTabId : tab.id;
 
     if (!this.canceledRequests[tab.id]) {
-      // we decided to cancel the request at this point, register canceled request
+      // we decided to cancel the request at this point, register 
+      // canceled request
       this.canceledRequests[tab.id] = {
         requestIds: {
           [options.requestId]: true
@@ -162,8 +227,10 @@ const assignManager = {
         }
       };
 
-      // since webRequest onCompleted and onErrorOccurred are not 100% reliable (see #1120)
-      // we register a timer here to cleanup canceled requests, just to make sure we don't
+      // since webRequest onCompleted and onErrorOccurred are not 100%
+      // reliable (see #1120)
+      // we register a timer here to cleanup canceled requests, just to
+      // make sure we don't
       // end up in a situation where certain urls in a tab.id stay canceled
       setTimeout(() => {
         if (this.canceledRequests[tab.id]) {
@@ -175,10 +242,12 @@ const assignManager = {
       if (this.canceledRequests[tab.id].requestIds[options.requestId] ||
           this.canceledRequests[tab.id].urls[options.url]) {
         // same requestId or url from the same tab
-        // this is a redirect that we have to cancel early to prevent opening two tabs
+        // this is a redirect that we have to cancel early to prevent
+        // opening two tabs
         cancelEarly = true;
       }
-      // we decided to cancel the request at this point, register canceled request
+      // we decided to cancel the request at this point, register canceled
+      // request
       this.canceledRequests[tab.id].requestIds[options.requestId] = true;
       this.canceledRequests[tab.id].urls[options.url] = true;
       if (cancelEarly) {
@@ -200,15 +269,27 @@ const assignManager = {
     this.calculateContextMenu(tab);
 
     /* Removal of existing tabs:
-        We aim to open the new assigned container tab / warning prompt in it's own tab:
-          - As the history won't span from one container to another it seems most sane to not try and reopen a tab on history.back()
-          - When users open a new tab themselves we want to make sure we don't end up with three tabs as per: https://github.com/mozilla/testpilot-containers/issues/421
-        If we are coming from an internal url that are used for the new tab page (NEW_TAB_PAGES), we can safely close as user is unlikely losing history
-        Detecting redirects on "new tab" opening actions is pretty hard as we don't get tab history:
-        - Redirects happen from Short URLs and tracking links that act as a gateway
-        - Extensions don't provide a way to history crawl for tabs, we could inject content scripts to do this
-            however they don't run on about:blank so this would likely be just as hacky.
-        We capture the time the tab was created and close if it was within the timeout to try to capture pages which haven't had user interaction or history.
+        We aim to open the new assigned container tab / warning prompt in
+        it's own tab:
+          - As the history won't span from one container to another it
+            seems most sane to not try and reopen a tab on history.back()
+          - When users open a new tab themselves we want to make sure we
+            don't end up with three tabs as per: 
+            https://github.com/mozilla/testpilot-containers/issues/421
+        If we are coming from an internal url that are used for the new
+        tab page (NEW_TAB_PAGES), we can safely close as user is unlikely
+        losing history
+        Detecting redirects on "new tab" opening actions is pretty hard
+        as we don't get tab history:
+        - Redirects happen from Short URLs and tracking links that act as
+          a gateway
+        - Extensions don't provide a way to history crawl for tabs, we
+          could inject content scripts to do this
+            however they don't run on about:blank so this would likely be
+            just as hacky.
+        We capture the time the tab was created and close if it was within
+        the timeout to try to capture pages which haven't had user
+        interaction or history.
     */
     if (removeTab) {
       browser.tabs.remove(tab.id);
@@ -220,10 +301,13 @@ const assignManager = {
 
   init() {
     browser.contextMenus.onClicked.addListener((info, tab) => {
-      info.bookmarkId ? this._onClickedBookmark(info) : this._onClickedHandler(info, tab);
+      info.bookmarkId ? 
+        this._onClickedBookmark(info) : 
+        this._onClickedHandler(info, tab);
     });
 
-    // Before a request is handled by the browser we decide if we should route through a different container
+    // Before a request is handled by the browser we decide if we should
+    // route through a different container
     this.canceledRequests = {};
     browser.webRequest.onBeforeRequest.addListener((options) => {
       return this.onBeforeRequest(options);
@@ -240,25 +324,34 @@ const assignManager = {
         delete this.canceledRequests[options.tabId];
       }
     },{urls: ["<all_urls>"], types: ["main_frame"]});
+
     this.resetBookmarksMenuItem();
   },
 
   async resetBookmarksMenuItem() {
-    const hasPermission = await browser.permissions.contains({permissions: ["bookmarks"]});
+    const hasPermission = await browser.permissions.contains({
+      permissions: ["bookmarks"]
+    });
     if (this.hadBookmark === hasPermission) {
       return;
     }
     this.hadBookmark = hasPermission;
     if (hasPermission) {
       this.initBookmarksMenu();
-      browser.contextualIdentities.onCreated.addListener(this.contextualIdentityCreated);
-      browser.contextualIdentities.onUpdated.addListener(this.contextualIdentityUpdated);
-      browser.contextualIdentities.onRemoved.addListener(this.contextualIdentityRemoved);
+      browser.contextualIdentities.onCreated
+        .addListener(this.contextualIdentityCreated);
+      browser.contextualIdentities.onUpdated
+        .addListener(this.contextualIdentityUpdated);
+      browser.contextualIdentities.onRemoved
+        .addListener(this.contextualIdentityRemoved);
     } else {
       this.removeBookmarksMenu();
-      browser.contextualIdentities.onCreated.removeListener(this.contextualIdentityCreated);
-      browser.contextualIdentities.onUpdated.removeListener(this.contextualIdentityUpdated);
-      browser.contextualIdentities.onRemoved.removeListener(this.contextualIdentityRemoved);
+      browser.contextualIdentities.onCreated
+        .removeListener(this.contextualIdentityCreated);
+      browser.contextualIdentities.onUpdated
+        .removeListener(this.contextualIdentityUpdated);
+      browser.contextualIdentities.onRemoved
+        .removeListener(this.contextualIdentityRemoved);
     }
   },
 
@@ -267,19 +360,25 @@ const assignManager = {
       parentId: assignManager.OPEN_IN_CONTAINER,
       id: changeInfo.contextualIdentity.cookieStoreId,
       title: changeInfo.contextualIdentity.name,
-      icons: { "16": `img/usercontext.svg#${changeInfo.contextualIdentity.icon}` }
+      icons: { "16": `img/usercontext.svg#${
+        changeInfo.contextualIdentity.icon
+      }` }
     });
   },
 
   contextualIdentityUpdated(changeInfo) {
-    browser.contextMenus.update(changeInfo.contextualIdentity.cookieStoreId, {
-      title: changeInfo.contextualIdentity.name,
-      icons: { "16": `img/usercontext.svg#${changeInfo.contextualIdentity.icon}` }
-    });
+    browser.contextMenus.update(
+      changeInfo.contextualIdentity.cookieStoreId, {
+        title: changeInfo.contextualIdentity.name,
+        icons: { "16": `img/usercontext.svg#${
+          changeInfo.contextualIdentity.icon}` }
+      });
   },
 
   contextualIdentityRemoved(changeInfo) {
-    browser.contextMenus.remove(changeInfo.contextualIdentity.cookieStoreId);
+    browser.contextMenus.remove(
+      changeInfo.contextualIdentity.cookieStoreId
+    );
   },
 
   async _onClickedHandler(info, tab) {
@@ -295,7 +394,9 @@ const assignManager = {
         } else {
           remove = true;
         }
-        await this._setOrRemoveAssignment(tab.id, info.pageUrl, userContextId, remove);
+        await this._setOrRemoveAssignment(
+          tab.id, info.pageUrl, userContextId, remove
+        );
         break;
       case this.MENU_MOVE_ID:
         backgroundLogic.moveTabsToWindow({
@@ -316,17 +417,20 @@ const assignManager = {
   async _onClickedBookmark(info) {
 
     async function _getBookmarksFromInfo(info) {
-      const [bookmarkTreeNode] = await browser.bookmarks.get(info.bookmarkId);
+      const [bookmarkTreeNode] = 
+        await browser.bookmarks.get(info.bookmarkId);
       if (bookmarkTreeNode.type === "folder") {
-        return await browser.bookmarks.getChildren(bookmarkTreeNode.id);
+        return browser.bookmarks.getChildren(bookmarkTreeNode.id);
       }
       return [bookmarkTreeNode];
     }
 
     const bookmarks = await _getBookmarksFromInfo(info);
     for (const bookmark of bookmarks) {
-      // Some checks on the urls from https://github.com/Rob--W/bookmark-container-tab/ thanks!
-      if ( !/^(javascript|place):/i.test(bookmark.url) && bookmark.type !== "folder") {
+      // Some checks on the urls from 
+      // https://github.com/Rob--W/bookmark-container-tab/ thanks!
+      if ( !/^(javascript|place):/i.test(bookmark.url) && 
+          bookmark.type !== "folder") {
         const openInReaderMode = bookmark.url.startsWith("about:reader");
         if(openInReaderMode) {
           try {
@@ -354,7 +458,9 @@ const assignManager = {
     if (!("cookieStoreId" in tab)) {
       return false;
     }
-    return backgroundLogic.getUserContextIdFromCookieStoreId(tab.cookieStoreId);
+    return backgroundLogic.getUserContextIdFromCookieStoreId(
+      tab.cookieStoreId
+    );
   },
 
   isTabPermittedAssign(tab) {
@@ -411,13 +517,13 @@ const assignManager = {
     // Ensure we have a cookieStore to assign to
     if (cookieStore
         && this.isTabPermittedAssign(tab)) {
-      return await this.storageArea.get(tab.url);
+      return this.storageArea.get(tab.url);
     }
     return false;
   },
 
   _getByContainer(userContextId) {
-    return this.storageArea.getByContainer(userContextId);
+    return this.storageArea.getAssignedSites(userContextId);
   },
 
   removeContextMenu() {
@@ -536,7 +642,7 @@ const assignManager = {
     for (const identity of identities) {
       browser.contextMenus.remove(identity.cookieStoreId);
     }
-  }
+  },
 };
 
 assignManager.init();
