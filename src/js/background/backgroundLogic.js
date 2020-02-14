@@ -332,3 +332,13 @@ const backgroundLogic = {
     return `firefox-container-${userContextId}`;
   }
 };
+
+browser.commands.onCommand.addListener(function (command) {
+  if (command === "open_container_2") {
+    browser.tabs.create({cookieStoreId: "firefox-container-2"});
+  }
+  if (command === "open_container_1") {
+    console.log("Toggling the feature!");
+    browser.tabs.create({cookieStoreId: "firefox-container-1"});
+  }
+});
