@@ -30,41 +30,6 @@ const P_CONTAINER_EDIT = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
 const P_CONTAINERS_ACHIEVEMENT = "containersAchievement";
 
-/**
- * Escapes any occurances of &, ", <, > or / with XML entities.
- *
- * @param {string} str
- *        The string to escape.
- * @return {string} The escaped string.
- */
-function escapeXML(str) {
-  const replacements = { "&": "&amp;", "\"": "&quot;", "'": "&apos;", "<": "&lt;", ">": "&gt;", "/": "&#x2F;" };
-  return String(str).replace(/[&"'<>/]/g, m => replacements[m]);
-}
-
-/**
- * A tagged template function which escapes any XML metacharacters in
- * interpolated values.
- *
- * @param {Array<string>} strings
- *        An array of literal strings extracted from the templates.
- * @param {Array} values
- *        An array of interpolated values extracted from the template.
- * @returns {string}
- *        The result of the escaped values interpolated with the literal
- *        strings.
- */
-function escaped(strings, ...values) {
-  const result = [];
-
-  for (const [i, string] of strings.entries()) {
-    result.push(string);
-    if (i < values.length)
-      result.push(escapeXML(values[i]));
-  }
-
-  return result.join("");
-}
 
 async function getExtensionInfo() {
   const manifestPath = browser.extension.getURL("manifest.json");
@@ -201,31 +166,6 @@ const Logic = {
     }
   },
 
-  addEnterHandler(element, handler) {
-    element.addEventListener("click", (e) => {
-      handler(e);
-    });
-    element.addEventListener("keydown", (e) => {
-      if (e.keyCode === 13) {
-        e.preventDefault();
-        handler(e);
-      }
-    });
-  },
-
-  userContextId(cookieStoreId = "") {
-    const userContextId = cookieStoreId.replace("firefox-container-", "");
-    return (userContextId !== cookieStoreId) ? Number(userContextId) : false;
-  },
-
-  async currentTab() {
-    const activeTabs = await browser.tabs.query({ active: true, windowId: browser.windows.WINDOW_ID_CURRENT });
-    if (activeTabs.length > 0) {
-      return activeTabs[0];
-    }
-    return false;
-  },
-
   async numTabs() {
     const activeTabs = await browser.tabs.query({ windowId: browser.windows.WINDOW_ID_CURRENT });
     return activeTabs.length;
@@ -338,7 +278,7 @@ const Logic = {
 
   currentUserContextId() {
     const identity = Logic.currentIdentity();
-    return Logic.userContextId(identity.cookieStoreId);
+    return Utils.userContextId(identity.cookieStoreId);
   },
 
   currentCookieStoreId() {
@@ -371,16 +311,6 @@ const Logic = {
     return browser.runtime.sendMessage({
       method: "getAssignmentObjectByContainer",
       message: { userContextId }
-    });
-  },
-
-  setOrRemoveAssignment(tabId, url, userContextId, value) {
-    return browser.runtime.sendMessage({
-      method: "setOrRemoveAssignment",
-      tabId,
-      url,
-      userContextId,
-      value
     });
   },
 
@@ -423,7 +353,7 @@ Logic.registerPanel(P_ONBOARDING_1, {
   initialize() {
     // Let's move to the next panel.
     [...document.querySelectorAll(".onboarding-start-button")].forEach(startElement => {
-      Logic.addEnterHandler(startElement, async () => {
+      Utils.addEnterHandler(startElement, async () => {
         await Logic.setOnboardingStage(1);
         Logic.showPanel(P_ONBOARDING_2);
       });
@@ -447,7 +377,7 @@ Logic.registerPanel(P_ONBOARDING_2, {
   initialize() {
     // Let's move to the containers list panel.
     [...document.querySelectorAll(".onboarding-next-button")].forEach(nextElement => {
-      Logic.addEnterHandler(nextElement, async () => {
+      Utils.addEnterHandler(nextElement, async () => {
         await Logic.setOnboardingStage(2);
         Logic.showPanel(P_ONBOARDING_3);
       });
@@ -471,7 +401,7 @@ Logic.registerPanel(P_ONBOARDING_3, {
   initialize() {
     // Let's move to the containers list panel.
     [...document.querySelectorAll(".onboarding-almost-done-button")].forEach(almostElement => {
-      Logic.addEnterHandler(almostElement, async () => {
+      Utils.addEnterHandler(almostElement, async () => {
         await Logic.setOnboardingStage(3);
         Logic.showPanel(P_ONBOARDING_4);
       });
@@ -493,7 +423,7 @@ Logic.registerPanel(P_ONBOARDING_4, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    Logic.addEnterHandler(document.querySelector("#onboarding-done-button"), async () => {
+    Utils.addEnterHandler(document.querySelector("#onboarding-done-button"), async () => {
       await Logic.setOnboardingStage(4);
       Logic.showPanel(P_ONBOARDING_5);
     });
@@ -514,7 +444,7 @@ Logic.registerPanel(P_ONBOARDING_5, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    Logic.addEnterHandler(document.querySelector("#onboarding-longpress-button"), async () => {
+    Utils.addEnterHandler(document.querySelector("#onboarding-longpress-button"), async () => {
       await Logic.setOnboardingStage(5);
       Logic.showPanel(P_ONBOARDING_6);
     });
@@ -535,7 +465,7 @@ Logic.registerPanel(P_ONBOARDING_6, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    Logic.addEnterHandler(document.querySelector("#start-sync-button"), async () => {
+    Utils.addEnterHandler(document.querySelector("#start-sync-button"), async () => {
       await Logic.setOnboardingStage(6);
       await browser.storage.local.set({syncEnabled: true});
       await browser.runtime.sendMessage({
@@ -543,7 +473,7 @@ Logic.registerPanel(P_ONBOARDING_6, {
       });
       Logic.showPanel(P_ONBOARDING_7);
     });
-    Logic.addEnterHandler(document.querySelector("#no-sync"), async () => {
+    Utils.addEnterHandler(document.querySelector("#no-sync"), async () => {
       await Logic.setOnboardingStage(7);
       await browser.storage.local.set({syncEnabled: false});
       await browser.runtime.sendMessage({
@@ -568,14 +498,14 @@ Logic.registerPanel(P_ONBOARDING_7, {
   // This method is called when the object is registered.
   initialize() {
     // Let's move to the containers list panel.
-    Logic.addEnterHandler(document.querySelector("#sign-in"), async () => {
+    Utils.addEnterHandler(document.querySelector("#sign-in"), async () => {
       browser.tabs.create({
         url: "https://accounts.firefox.com/?service=sync&action=email&context=fx_desktop_v3&entrypoint=multi-account-containers&utm_source=addon&utm_medium=panel&utm_campaign=container-sync",
       });
       await Logic.setOnboardingStage(7);
       Logic.showPanel(P_CONTAINERS_LIST);
     });
-    Logic.addEnterHandler(document.querySelector("#no-sign-in"), async () => {
+    Utils.addEnterHandler(document.querySelector("#no-sign-in"), async () => {
       await Logic.setOnboardingStage(7);
       Logic.showPanel(P_CONTAINERS_LIST);
     });
@@ -594,21 +524,21 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
   // This method is called when the object is registered.
   async initialize() {
-    Logic.addEnterHandler(document.querySelector("#manage-containers-link"), (e) => {
+    Utils.addEnterHandler(document.querySelector("#manage-containers-link"), (e) => {
       if (!e.target.classList.contains("disable-edit-containers")) {
         Logic.showPanel(P_CONTAINER_PICKER, null, MANAGE_CONTAINERS_PICKER);
       }
     });
-    Logic.addEnterHandler(document.querySelector("#open-new-tab-in"), () => {
+    Utils.addEnterHandler(document.querySelector("#open-new-tab-in"), () => {
       Logic.showPanel(P_CONTAINER_PICKER, null, OPEN_NEW_CONTAINER_PICKER);
     });
-    Logic.addEnterHandler(document.querySelector("#reopen-site-in"), () => {
+    Utils.addEnterHandler(document.querySelector("#reopen-site-in"), () => {
       Logic.showPanel(P_CONTAINER_PICKER, null, REOPEN_IN_CONTAINER);
     });
-    Logic.addEnterHandler(document.querySelector("#always-open-in"), () => {
+    Utils.addEnterHandler(document.querySelector("#always-open-in"), () => {
       Logic.showPanel(P_CONTAINER_PICKER, null, ALWAYS_OPEN_IN_PICKER);
     });
-    Logic.addEnterHandler(document.querySelector("#sort-containers-link"), async () => {
+    Utils.addEnterHandler(document.querySelector("#sort-containers-link"), async () => {
       try {
         await browser.runtime.sendMessage({
           method: "sortTabs"
@@ -685,7 +615,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       const td = document.createElement("td");
       const openTabs = identity.numberOfOpenTabs || "" ;
 
-      td.innerHTML = escaped`          
+      td.innerHTML = Utils.escaped`          
         <div class="menu-icon">
           <div class="usercontext-icon"
             data-identity-icon="${identity.icon}"
@@ -704,7 +634,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
       tr.appendChild(td);
 
-      Logic.addEnterHandler(tr, () => {
+      Utils.addEnterHandler(tr, () => {
         Logic.showPanel(P_CONTAINER_INFO, identity);
       });
     });
@@ -744,12 +674,12 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     const closeContEl = document.querySelector("#close-container-info-panel");
     closeContEl.setAttribute("tabindex", "0");
     closeContEl.classList.add("firstTabindex");
-    Logic.addEnterHandler(closeContEl, () => {
+    Utils.addEnterHandler(closeContEl, () => {
       Logic.showPreviousPanel();
     });
     const hideContEl = document.querySelector("#container-info-hideorshow");
     hideContEl.setAttribute("tabindex", "0");
-    Logic.addEnterHandler(hideContEl, async () => {
+    Utils.addEnterHandler(hideContEl, async () => {
       const identity = Logic.currentIdentity();
       try {
         browser.runtime.sendMessage({
@@ -782,7 +712,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       Logic._disableMoveTabs("Cannot move a tab from a single-tab window.");
       return;
     }
-    Logic.addEnterHandler(moveTabsEl, async () => {
+    Utils.addEnterHandler(moveTabsEl, async () => {
       await browser.runtime.sendMessage({
         method: "moveTabsToWindow",
         windowId: browser.windows.WINDOW_ID_CURRENT,
@@ -836,7 +766,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       const tr = document.createElement("tr");
       fragment.appendChild(tr);
       tr.classList.add("container-info-tab-row");
-      tr.innerHTML = escaped`
+      tr.innerHTML = Utils.escaped`
         <td></td>
         <td class="container-info-tab-title truncate-text" title="${tab.url}" ><div class="container-tab-title">${tab.title}</div></td>`;
       tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favIconUrl));
@@ -863,14 +793,14 @@ Logic.registerPanel(P_CONTAINER_INFO, {
         tr.addEventListener("mouseout", tabTitleHoverEvent);
 
         tr.classList.add("clickable");
-        Logic.addEnterHandler(tr, async () => {
+        Utils.addEnterHandler(tr, async () => {
           await browser.tabs.update(tab.id, { active: true });
           window.close();
         });
 
         const closeTab = document.getElementById(tab.id);
         if (closeTab) {
-          Logic.addEnterHandler(closeTab, async (e) => {
+          Utils.addEnterHandler(closeTab, async (e) => {
             await browser.tabs.remove(Number(e.target.id));
             window.close();
           });
@@ -888,7 +818,7 @@ Logic.registerPanel(P_CONTAINER_PICKER, {
 
   // This method is called when the object is registered.
   initialize() {
-    // Logic.addEnterHandler(document.querySelector("#exit-edit-mode-link"), () => {
+    // Utils.addEnterHandler(document.querySelector("#exit-edit-mode-link"), () => {
     //   Logic.showPanel(P_CONTAINERS_LIST);
     // });
   },
@@ -930,13 +860,12 @@ Logic.registerPanel(P_CONTAINER_PICKER, {
     case ALWAYS_OPEN_IN_PICKER:
     default:
       pickedFunction = async function (identity) {
-        const currentTab = await Logic.currentTab();
-        console.log(identity.cookieStoreId)
-        console.log(identity)
-        Logic.setOrRemoveAssignment(
+        const userContextId = Utils.userContextId(identity.cookieStoreId);
+        const currentTab = await Utils.currentTab();
+        Utils.setOrRemoveAssignment(
           currentTab.id, 
           currentTab.url, 
-          identity.cookieStoreId, 
+          userContextId, 
           false
         );
         window.close();
@@ -949,7 +878,7 @@ Logic.registerPanel(P_CONTAINER_PICKER, {
       tr.classList.add("menu-item");
       const td = document.createElement("td");
 
-      td.innerHTML = escaped`          
+      td.innerHTML = Utils.escaped`          
         <div class="menu-icon">
           <div class="usercontext-icon"
             data-identity-icon="${identity.icon}"
@@ -962,7 +891,7 @@ Logic.registerPanel(P_CONTAINER_PICKER, {
 
       tr.appendChild(td);
 
-      Logic.addEnterHandler(tr, () => {
+      Utils.addEnterHandler(tr, () => {
         pickedFunction(identity);
       });
     });
@@ -986,7 +915,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   initialize() {
     this.initializeRadioButtons();
 
-    Logic.addEnterHandler(document.querySelector("#edit-container-panel-back-arrow"), () => {
+    Utils.addEnterHandler(document.querySelector("#edit-container-panel-back-arrow"), () => {
       const formValues = new FormData(this._editForm);
       if (formValues.get("container-id") !== NEW_CONTAINER_ID) {
         this._submitForm();
@@ -995,13 +924,13 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       }
     });
 
-    Logic.addEnterHandler(document.querySelector("#edit-container-cancel-link"), () => {
+    Utils.addEnterHandler(document.querySelector("#edit-container-cancel-link"), () => {
       Logic.showPreviousPanel();
     });
 
     this._editForm = document.getElementById("edit-container-panel-form");
     const editLink = document.querySelector("#edit-container-ok-link");
-    Logic.addEnterHandler(editLink, () => {
+    Utils.addEnterHandler(editLink, () => {
       this._submitForm();
     });
     editLink.addEventListener("submit", () => {
@@ -1053,7 +982,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
            This is pending a better solution for favicons from web extensions */
         const assumedUrl = `https://${site.hostname}/favicon.ico`;
-        trElement.innerHTML = escaped`
+        trElement.innerHTML = Utils.escaped`
         <div class="favicon"></div>
         <div title="${site.hostname}" class="truncate-text hostname">
           ${site.hostname}
@@ -1065,12 +994,12 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
         const deleteButton = trElement.querySelector(".delete-assignment");
         const that = this;
-        Logic.addEnterHandler(deleteButton, async () => {
+        Utils.addEnterHandler(deleteButton, async () => {
           const userContextId = Logic.currentUserContextId();
           // Lets show the message to the current tab
           // TODO remove then when firefox supports arrow fn async
-          const currentTab = await Logic.currentTab();
-          Logic.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
+          const currentTab = await Utils.currentTab();
+          Utils.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
           delete assignments[siteKey];
           that.showAssignedContainers(assignments);
         });
@@ -1082,7 +1011,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
   initializeRadioButtons() {
     const colorRadioTemplate = (containerColor) => {
-      return escaped`<input type="radio" value="${containerColor}" name="container-color" id="edit-container-panel-choose-color-${containerColor}" />
+      return Utils.escaped`<input type="radio" value="${containerColor}" name="container-color" id="edit-container-panel-choose-color-${containerColor}" />
      <label for="edit-container-panel-choose-color-${containerColor}" class="usercontext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="${containerColor}">`;
     };
     const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"];
@@ -1096,7 +1025,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     });
 
     const iconRadioTemplate = (containerIcon) => {
-      return escaped`<input type="radio" value="${containerIcon}" name="container-icon" id="edit-container-panel-choose-icon-${containerIcon}" />
+      return Utils.escaped`<input type="radio" value="${containerIcon}" name="container-icon" id="edit-container-panel-choose-icon-${containerIcon}" />
      <label for="edit-container-panel-choose-icon-${containerIcon}" class="usercontext-icon choose-color-icon" data-identity-color="grey" data-identity-icon="${containerIcon}">`;
     };
     const icons = ["fingerprint", "briefcase", "dollar", "cart", "vacation", "gift", "food", "fruit", "pet", "tree", "chill", "circle"];
@@ -1146,18 +1075,18 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
 
   // This method is called when the object is registered.
   initialize() {
-    Logic.addEnterHandler(document.querySelector("#delete-container-cancel-link"), () => {
+    Utils.addEnterHandler(document.querySelector("#delete-container-cancel-link"), () => {
       Logic.showPreviousPanel();
     });
 
-    Logic.addEnterHandler(document.querySelector("#delete-container-ok-link"), async () => {
+    Utils.addEnterHandler(document.querySelector("#delete-container-ok-link"), async () => {
       /* This promise wont resolve if the last tab was removed from the window.
           as the message async callback stops listening, this isn't an issue for us however it might be in future
           if you want to do anything post delete do it in the background script.
           Browser console currently warns about not listening also.
       */
       try {
-        await Logic.removeIdentity(Logic.userContextId(Logic.currentIdentity().cookieStoreId));
+        await Logic.removeIdentity(Utils.userContextId(Logic.currentIdentity().cookieStoreId));
         await Logic.refreshIdentities();
         Logic.showPreviousPanel();
       } catch (e) {
@@ -1198,7 +1127,7 @@ Logic.registerPanel(P_CONTAINERS_ACHIEVEMENT, {
   // This method is called when the object is registered.
   initialize() {
     // Set done and move to the containers list panel.
-    Logic.addEnterHandler(document.querySelector("#achievement-done-button"), async () => {
+    Utils.addEnterHandler(document.querySelector("#achievement-done-button"), async () => {
       await Logic.setAchievementDone("manyContainersOpened");
       Logic.showPanel(P_CONTAINERS_LIST);
     });

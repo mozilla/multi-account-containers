@@ -73,6 +73,16 @@ const messageHandler = {
       case "exemptContainerAssignment":
         response = assignManager._exemptTab(m);
         break;
+      case "reloadInContainer":
+        response = assignManager.reloadPageInContainer(
+          m.url, 
+          m.currentUserContextId, 
+          m.newUserContextId, 
+          m.tabIndex, 
+          m.active,
+          true
+        );
+        break;
       }
       return response;
     });

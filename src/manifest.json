@@ -66,6 +66,14 @@
       }
     ]
   },
+  "page_action": {
+    "browser_style": true,
+    "default_icon": "img/container-site.svg",
+    "default_title": "Always open this in a Container",
+    "default_popup": "pageActionPopup.html",
+    "pinned": false,
+    "show_matches": ["*://*/*"]
+  },
   "background": {
     "page": "js/background/index.html"
   },
