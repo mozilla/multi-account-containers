@@ -310,12 +310,13 @@ const backgroundLogic = {
 
     for (let object of containerState.hiddenTabs) { // eslint-disable-line prefer-const
       // do not show already opened url
+      const noload = !object.pinned;
       if (object.url !== options.alreadyShowingUrl) {
         promises.push(this.openNewTab({
           userContextId: userContextId,
           url: object.url,
           nofocus: options.nofocus || false,
-          noload: true,
+          noload: noload,
           pinned: object.pinned,
         }));
       }
