@@ -25,6 +25,7 @@ const P_CONTAINER_INFO = "containerInfo";
 const P_CONTAINER_EDIT = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
 const P_CONTAINERS_ACHIEVEMENT = "containersAchievement";
+const P_CONTAINER_ASSIGNMENTS = "containerAssignments";
 
 
 async function getExtensionInfo() {
@@ -168,19 +169,19 @@ const Logic = {
   },
 
   _disableMoveTabs(message) {
-    const moveTabsEl = document.querySelector("#container-info-movetabs");
+    // const moveTabsEl = document.querySelector("#container-info-movetabs");
     const fragment = document.createDocumentFragment();
     const incompatEl = document.createElement("div");
 
-    moveTabsEl.classList.remove("clickable");
-    moveTabsEl.setAttribute("title", message);
+    // moveTabsEl.classList.remove("clickable");
+    // moveTabsEl.setAttribute("title", message);
 
     fragment.appendChild(incompatEl);
     incompatEl.setAttribute("id", "container-info-movetabs-incompat");
     incompatEl.textContent = message;
     incompatEl.classList.add("container-info-tab-row");
 
-    moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
+    // moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
   },
 
   async refreshIdentities() {
@@ -741,21 +742,6 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     Utils.addEnterHandler(closeContEl, () => {
       Logic.showPreviousPanel();
     });
-    // const hideContEl = document.querySelector("#container-info-hideorshow");
-    // hideContEl.setAttribute("tabindex", "0");
-    // Utils.addEnterHandler(hideContEl, async () => {
-    //   const identity = Logic.currentIdentity();
-    //   try {
-    //     browser.runtime.sendMessage({
-    //       method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
-    //       windowId: browser.windows.WINDOW_ID_CURRENT,
-    //       cookieStoreId: Logic.currentCookieStoreId()
-    //     });
-    //     window.close();
-    //   } catch (e) {
-    //     window.close();
-    //   }
-    // });
 
     // Check if the user has incompatible add-ons installed
     let incompatible = false;
@@ -766,8 +752,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     } catch (e) {
       throw new Error("Could not check for incompatible add-ons.");
     }
-    // const moveTabsEl = document.querySelector("#container-info-movetabs");
-    // moveTabsEl.setAttribute("tabindex","0");
+
     const numTabs = await Logic.numTabs();
     if (incompatible) {
       Logic._disableMoveTabs("Moving container tabs is incompatible with Pulse, PageShot, and SnoozeTabs.");
@@ -776,14 +761,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       Logic._disableMoveTabs("Cannot move a tab from a single-tab window.");
       return;
     }
-    // Utils.addEnterHandler(moveTabsEl, async () => {
-    //   await browser.runtime.sendMessage({
-    //     method: "moveTabsToWindow",
-    //     windowId: browser.windows.WINDOW_ID_CURRENT,
-    //     cookieStoreId: Logic.currentIdentity().cookieStoreId,
-    //   });
-    //   window.close();
-    // });
+
     const manageContainer = document.querySelector("#manage-container-link");
     Utils.addEnterHandler(manageContainer, async () => {
       Logic.showPanel(P_CONTAINER_EDIT, Logic.currentIdentity());
@@ -797,20 +775,10 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     // Populating the panel: name and icon
     document.getElementById("container-info-title").textContent = identity.name;
 
-    // const icon = document.getElementById("container-info-icon");
-    // icon.setAttribute("data-identity-icon", identity.icon);
-    // icon.setAttribute("data-identity-color", identity.color);
-
     // Show or not the has-tabs section.
     for (let trHasTabs of document.getElementsByClassName("container-info-has-tabs")) { // eslint-disable-line prefer-const
       trHasTabs.style.display = !identity.hasHiddenTabs && !identity.hasOpenTabs ? "none" : "";
     }
-
-    // const hideShowIcon = document.getElementById("container-info-hideorshow-icon");
-    // hideShowIcon.src = identity.hasHiddenTabs ? CONTAINER_UNHIDE_SRC : CONTAINER_HIDE_SRC;
-
-    // const hideShowLabel = document.getElementById("container-info-hideorshow-label");
-    // hideShowLabel.textContent = identity.hasHiddenTabs ? "Show this container" : "Hide this container";
 
     // Let's remove all the previous tabs.
     const table = document.getElementById("container-info-table");
@@ -886,9 +854,12 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
 
   // This method is called when the object is registered.
   initialize() {
-    // Utils.addEnterHandler(document.querySelector("#exit-edit-mode-link"), () => {
-    //   Logic.showPanel(P_CONTAINERS_LIST);
-    // });
+    const closeContEl = document.querySelector("#close-container-picker-panel");
+    closeContEl.setAttribute("tabindex", "0");
+    closeContEl.classList.add("firstTabindex");
+    Utils.addEnterHandler(closeContEl, () => {
+      Logic.showPreviousPanel();
+    });
   },
 
   // This method is called when the panel is shown.
@@ -897,6 +868,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
     let pickedFunction;
     switch (Logic.pickerType) {
     case OPEN_NEW_CONTAINER_PICKER:
+      document.getElementById("picker-title").textContent = "Open a New Tab in";
       pickedFunction = function (identity) {
         try {
           browser.tabs.create({
@@ -909,11 +881,13 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       };
       break;
     case MANAGE_CONTAINERS_PICKER:
+      document.getElementById("picker-title").textContent = "Manage Containers";
       pickedFunction = function (identity) {
         Logic.showPanel(P_CONTAINER_EDIT, identity);
       };
       break;
     case REOPEN_IN_CONTAINER:
+      document.getElementById("picker-title").textContent = "Reopen This Site in";
       pickedFunction = async function (identity) {
         const currentTab = await Utils.currentTab();
         const newUserContextId = Utils.userContextId(identity.cookieStoreId);
@@ -930,6 +904,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       break;
     case ALWAYS_OPEN_IN_PICKER:
     default:
+      document.getElementById("picker-title").textContent = "Always Open This Site in";
       pickedFunction = async function (identity) {
         const currentTab = await Utils.currentTab();
         const assignedUserContextId = Utils.userContextId(identity.cookieStoreId);
@@ -976,63 +951,45 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
   },
 });
 
-// P_CONTAINER_EDIT: Editor for a container.
-// ----------------------------------------------------------------------------
-
-Logic.registerPanel(P_CONTAINER_EDIT, {
-  panelSelector: "#edit-container-panel",
+Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
+  panelSelector: "#edit-container-assignments",
 
   // This method is called when the object is registered.
   initialize() {
-    this.initializeRadioButtons();
-
-    Utils.addEnterHandler(document.querySelector("#edit-container-panel-back-arrow"), () => {
-      const formValues = new FormData(this._editForm);
-      if (formValues.get("container-id") !== NEW_CONTAINER_ID) {
-        this._submitForm();
-      } else {
-        Logic.showPreviousPanel();
-      }
-    });
-
-    Utils.addEnterHandler(document.querySelector("#edit-container-cancel-link"), () => {
+    const closeContEl = document.querySelector("#close-container-assignment-panel");
+    closeContEl.setAttribute("tabindex", "0");
+    closeContEl.classList.add("firstTabindex");
+    Utils.addEnterHandler(closeContEl, () => {
       Logic.showPreviousPanel();
     });
-
-    this._editForm = document.getElementById("edit-container-panel-form");
-    const editLink = document.querySelector("#edit-container-ok-link");
-    Utils.addEnterHandler(editLink, () => {
-      this._submitForm();
-    });
-    editLink.addEventListener("submit", () => {
-      this._submitForm();
-    });
-    this._editForm.addEventListener("submit", () => {
-      this._submitForm();
-    });
-
-
   },
 
-  async _submitForm() {
-    const formValues = new FormData(this._editForm);
-    try {
-      await browser.runtime.sendMessage({
-        method: "createOrUpdateContainer",
-        message: {
-          userContextId: formValues.get("container-id") || NEW_CONTAINER_ID,
-          params: {
-            name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
-            icon: formValues.get("container-icon") || DEFAULT_ICON,
-            color: formValues.get("container-color") || DEFAULT_COLOR,
-          }
-        }
-      });
-      await Logic.refreshIdentities();
-      Logic.showPreviousPanel();
-    } catch (e) {
-      Logic.showPanel(P_CONTAINERS_LIST);
-    }
+  // This method is called when the panel is shown.
+  async prepare() {
+    const identity = Logic.currentIdentity();
+
+    // Populating the panel: name and icon
+    document.getElementById("container-assignments-title").textContent = identity.name;
+
+    const userContextId = Logic.currentUserContextId();
+    const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
+    this.showAssignedContainers(assignments);
+
+    document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
+    document.querySelector("#edit-container-panel-usercontext-input").value = userContextId || NEW_CONTAINER_ID;
+    const containerName = document.querySelector("#edit-container-panel-name-input");
+    window.requestAnimationFrame(() => {
+      containerName.select();
+      containerName.focus();
+    });
+    [...document.querySelectorAll("[name='container-color']")].forEach(colorInput => {
+      colorInput.checked = colorInput.value === identity.color;
+    });
+    [...document.querySelectorAll("[name='container-icon']")].forEach(iconInput => {
+      iconInput.checked = iconInput.value === identity.icon;
+    });
+
+    return Promise.resolve(null);
   },
 
   showAssignedContainers(assignments) {
@@ -1079,6 +1036,52 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       });
     }
   },
+});
+
+// P_CONTAINER_EDIT: Editor for a container.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_CONTAINER_EDIT, {
+  panelSelector: "#edit-container-panel",
+
+  // This method is called when the object is registered.
+  initialize() {
+    this.initializeRadioButtons();
+    Utils.addEnterHandler(document.querySelector("#close-container-edit-panel"), () => {
+      const formValues = new FormData(this._editForm);
+      if (formValues.get("container-id") !== NEW_CONTAINER_ID) {
+        this._submitForm();
+      } else {
+        Logic.showPreviousPanel();
+      }
+    });
+
+    this._editForm = document.getElementById("edit-container-panel-form");
+    this._editForm.addEventListener("submit", () => {
+      this._submitForm();
+    });
+  },
+
+  async _submitForm() {
+    const formValues = new FormData(this._editForm);
+    try {
+      await browser.runtime.sendMessage({
+        method: "createOrUpdateContainer",
+        message: {
+          userContextId: formValues.get("container-id") || NEW_CONTAINER_ID,
+          params: {
+            name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
+            icon: formValues.get("container-icon") || DEFAULT_ICON,
+            color: formValues.get("container-color") || DEFAULT_COLOR,
+          }
+        }
+      });
+      await Logic.refreshIdentities();
+      Logic.showPreviousPanel();
+    } catch (e) {
+      Logic.showPanel(P_CONTAINERS_LIST);
+    }
+  },
 
   initializeRadioButtons() {
     const colorRadioTemplate = (containerColor) => {
@@ -1114,11 +1117,16 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   async prepare() {
     const identity = Logic.currentIdentity();
 
-    const userContextId = Logic.currentUserContextId();
-    const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
-    this.showAssignedContainers(assignments);
-    document.querySelector("#edit-container-panel .panel-footer").hidden = !!userContextId;
+    // Populating the panel: name and icon
+    document.getElementById("container-edit-title").textContent = identity.name;
 
+    const userContextId = Logic.currentUserContextId();
+    // const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
+    // this.showAssignedContainers(assignments);
+    // document.querySelector("#edit-container-panel .panel-footer").hidden = !!userContextId;
+    Utils.addEnterHandler(document.querySelector("#manage-assigned-sites-list"), () => {
+      Logic.showPanel(P_CONTAINER_ASSIGNMENTS, identity);
+    });
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
     document.querySelector("#edit-container-panel-usercontext-input").value = userContextId || NEW_CONTAINER_ID;
     const containerName = document.querySelector("#edit-container-panel-name-input");
