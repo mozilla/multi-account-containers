@@ -170,13 +170,24 @@
   </div>
 
 
-  <div class="panel edit-containers-panel hide" id="edit-containers-panel">
-    <div class="panel-header">
-      <h3 class="panel-header-text">Edit Containers</h3>
-    </div>
-    <div class="scrollable panel-content">
-      <table class="unstriped">
-        <tbody id="edit-identities-list"></tbody>
+  <div class="panel menu-panel container-picker-panel hide" id="container-picker-panel">
+    <h3 class="title">
+      Multi-Account Containers
+    </h3>
+    <hr>
+    <div class="scrollable identities-list">
+      <table class="menu" id="picker-identities-list">
+        <tr class="menu-item">
+          <td>
+            <div class="menu-icon">
+              <div class="usercontext-icon"
+                data-identity-icon="pet"
+                data-identity-color="blue">
+              </div>
+            </div>
+            <span class="menu-text">Default</span>
+          </td>
+        </tr>
       </table>
     </div>
     <div class="panel-footer edit-containers-panel-footer">
