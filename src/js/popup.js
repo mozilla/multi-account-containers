@@ -741,21 +741,21 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     Utils.addEnterHandler(closeContEl, () => {
       Logic.showPreviousPanel();
     });
-    const hideContEl = document.querySelector("#container-info-hideorshow");
-    hideContEl.setAttribute("tabindex", "0");
-    Utils.addEnterHandler(hideContEl, async () => {
-      const identity = Logic.currentIdentity();
-      try {
-        browser.runtime.sendMessage({
-          method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
-          windowId: browser.windows.WINDOW_ID_CURRENT,
-          cookieStoreId: Logic.currentCookieStoreId()
-        });
-        window.close();
-      } catch (e) {
-        window.close();
-      }
-    });
+    // const hideContEl = document.querySelector("#container-info-hideorshow");
+    // hideContEl.setAttribute("tabindex", "0");
+    // Utils.addEnterHandler(hideContEl, async () => {
+    //   const identity = Logic.currentIdentity();
+    //   try {
+    //     browser.runtime.sendMessage({
+    //       method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
+    //       windowId: browser.windows.WINDOW_ID_CURRENT,
+    //       cookieStoreId: Logic.currentCookieStoreId()
+    //     });
+    //     window.close();
+    //   } catch (e) {
+    //     window.close();
+    //   }
+    // });
 
     // Check if the user has incompatible add-ons installed
     let incompatible = false;
@@ -766,8 +766,8 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     } catch (e) {
       throw new Error("Could not check for incompatible add-ons.");
     }
-    const moveTabsEl = document.querySelector("#container-info-movetabs");
-    moveTabsEl.setAttribute("tabindex","0");
+    // const moveTabsEl = document.querySelector("#container-info-movetabs");
+    // moveTabsEl.setAttribute("tabindex","0");
     const numTabs = await Logic.numTabs();
     if (incompatible) {
       Logic._disableMoveTabs("Moving container tabs is incompatible with Pulse, PageShot, and SnoozeTabs.");
@@ -776,13 +776,17 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       Logic._disableMoveTabs("Cannot move a tab from a single-tab window.");
       return;
     }
-    Utils.addEnterHandler(moveTabsEl, async () => {
-      await browser.runtime.sendMessage({
-        method: "moveTabsToWindow",
-        windowId: browser.windows.WINDOW_ID_CURRENT,
-        cookieStoreId: Logic.currentIdentity().cookieStoreId,
-      });
-      window.close();
+    // Utils.addEnterHandler(moveTabsEl, async () => {
+    //   await browser.runtime.sendMessage({
+    //     method: "moveTabsToWindow",
+    //     windowId: browser.windows.WINDOW_ID_CURRENT,
+    //     cookieStoreId: Logic.currentIdentity().cookieStoreId,
+    //   });
+    //   window.close();
+    // });
+    const manageContainer = document.querySelector("#manage-container-link");
+    Utils.addEnterHandler(manageContainer, async () => {
+      Logic.showPanel(P_CONTAINER_EDIT, Logic.currentIdentity());
     });
   },
 
@@ -791,22 +795,22 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     const identity = Logic.currentIdentity();
 
     // Populating the panel: name and icon
-    document.getElementById("container-info-name").textContent = identity.name;
+    document.getElementById("container-info-title").textContent = identity.name;
 
-    const icon = document.getElementById("container-info-icon");
-    icon.setAttribute("data-identity-icon", identity.icon);
-    icon.setAttribute("data-identity-color", identity.color);
+    // const icon = document.getElementById("container-info-icon");
+    // icon.setAttribute("data-identity-icon", identity.icon);
+    // icon.setAttribute("data-identity-color", identity.color);
 
     // Show or not the has-tabs section.
     for (let trHasTabs of document.getElementsByClassName("container-info-has-tabs")) { // eslint-disable-line prefer-const
       trHasTabs.style.display = !identity.hasHiddenTabs && !identity.hasOpenTabs ? "none" : "";
     }
 
-    const hideShowIcon = document.getElementById("container-info-hideorshow-icon");
-    hideShowIcon.src = identity.hasHiddenTabs ? CONTAINER_UNHIDE_SRC : CONTAINER_HIDE_SRC;
+    // const hideShowIcon = document.getElementById("container-info-hideorshow-icon");
+    // hideShowIcon.src = identity.hasHiddenTabs ? CONTAINER_UNHIDE_SRC : CONTAINER_HIDE_SRC;
 
-    const hideShowLabel = document.getElementById("container-info-hideorshow-label");
-    hideShowLabel.textContent = identity.hasHiddenTabs ? "Show this container" : "Hide this container";
+    // const hideShowLabel = document.getElementById("container-info-hideorshow-label");
+    // hideShowLabel.textContent = identity.hasHiddenTabs ? "Show this container" : "Hide this container";
 
     // Let's remove all the previous tabs.
     const table = document.getElementById("container-info-table");
