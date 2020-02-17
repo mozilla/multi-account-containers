@@ -238,9 +238,10 @@
 
 
   <div class="panel menu-panel container-picker-panel hide" id="container-picker-panel">
-    <h3 class="title">
+    <h3 class="title" id="picker-title">
       Multi-Account Containers
     </h3>
+    <button class="btn-return arrow-left" id="close-container-picker-panel"></button>
     <hr>
     <div class="scrollable identities-list">
       <table class="menu" id="picker-identities-list">
@@ -260,33 +261,82 @@
   </div>
 
 
-  <div class="panel edit-container-panel hide" id="edit-container-panel">
-    <div class="columns">
-      <div class="panel-back-arrow" id="edit-container-panel-back-arrow">
-        <img alt="Panel Back Arrow" src="/img/container-arrow.svg" class="back-arrow-img" />
+<!--   <div class="panel menu-panel edit-container-panel hide" id="edit-container-panel">
+    <h3 class="title" id="container-edit-titl">
+      Default
+    </h3>
+    <button class="btn-return arrow-left" id="close-container-edit-panel"></button>
+    <hr>
+    <div class="scrollable edit-form">
+      <form id="edit-container-panel-form">
+        <input type="hidden" name="container-id" id="edit-container-panel-usercontext-input" />
+        <fieldset>
+          <legend>Name</legend>
+          <input type="text" name="container-name" id="edit-container-panel-name-input" maxlength="25"/>
+        </fieldset>
+        <fieldset id="edit-container-panel-choose-color" class="radio-choice">
+          <legend>Color</legend>
+        </fieldset>
+        <fieldset id="edit-container-panel-choose-icon" class="radio-choice">
+          <legend>Icon</legend>
+        </fieldset>
+      </form>
+    <div id="edit-sites-assigned" class="scrollable" hidden>
+      <div class="assigned-sites">Sites assigned to this container</div>
+      <div class="assigned-sites-list">
       </div>
-      <div class="column-panel-content">
-        <form id="edit-container-panel-form">
-          <input type="hidden" name="container-id" id="edit-container-panel-usercontext-input" />
-          <fieldset>
-            <legend>Name</legend>
-            <input type="text" name="container-name" id="edit-container-panel-name-input" maxlength="25"/>
-          </fieldset>
-          <fieldset id="edit-container-panel-choose-color" class="radio-choice">
-            <legend>Choose a color</legend>
-          </fieldset>
-          <fieldset id="edit-container-panel-choose-icon" class="radio-choice">
-            <legend>Choose an icon</legend>
-          </fieldset>
-        </form>
-        <div id="edit-sites-assigned" class="scrollable" hidden>
-          <h3>Sites assigned to this container</h3>
-          <div class="assigned-sites-list">
-          </div>
+    </div>
+    </div>
+    <div class="delete-container">
+      <button class="delete-btn">Delete This Container</button>
+    </div>
+  </div> -->
+
+  <div class="panel menu-panel edit-container-panel hide" id="edit-container-panel">
+    <h3 class="title" id="container-edit-title">
+      Default
+    </h3>
+    <button class="btn-return arrow-left" id="close-container-edit-panel"></button>
+    <hr>
+    <div class="scrollable edit-form">
+      <form id="edit-container-panel-form">
+        <input type="hidden" name="container-id" id="edit-container-panel-usercontext-input" />
+        <fieldset>
+          <legend class="form-header">Name</legend>
+          <input type="text" name="container-name" id="edit-container-panel-name-input" maxlength="25"/>
+        </fieldset>
+        <fieldset id="edit-container-panel-choose-color" class="radio-choice">
+          <legend class="form-header">Color</legend>
+        </fieldset>
+        <fieldset id="edit-container-panel-choose-icon" class="radio-choice">
+          <legend class="form-header">Icon</legend>
+        </fieldset>
+      </form>
+      <div id="edit-sites-assigned" class="scrollable">
+        <div class="options-header">Options</div>
+        <div class="container-options">
+          <input type="checkbox" id="site-isolation" name="site-isolation">
+          <label for="site-isolation" class="options-label">Limit to Designated Sites</label>
         </div>
-        <div class="panel-footer">
-          <a href="#" class="button secondary expanded footer-button cancel-button" id="edit-container-cancel-link">Cancel</a>
-          <a class="button primary expanded footer-button" id="edit-container-ok-link">OK</a>
+        <div class="container-options options-label" id="manage-assigned-sites-list">Manage Site List...
+        </div>
+      </div>
+    </div>
+    <div class="delete-container">
+      <button class="delete-btn">Delete This Container</button>
+    </div>
+  </div>
+
+  <div class="panel menu-panel edit-container-assignments hide" id="edit-container-assignments">
+    <h3 class="title" id="edit-assignments-title">
+      Default
+    </h3>
+    <button class="btn-return arrow-left" id="close-container-assignment-panel"></button>
+    <hr>
+    <div class="scrollable edit-form">
+      <div id="edit-sites-assigned" class="scrollable" hidden>
+        <div class="assigned-sites">Sites assigned to this container</div>
+        <div class="assigned-sites-list">
         </div>
       </div>
     </div>

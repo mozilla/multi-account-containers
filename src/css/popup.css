@@ -812,9 +812,9 @@ span ~ .panel-header-text {
   overflow: hidden; /* Bugfix: issue 948 */
 }
 
-#edit-sites-assigned {
-  flex: 1000; /* Bugfix: issue 948 */
-}
+/*#edit-sites-assigned {
+  flex: 1000; /* Bugfix: issue 948 
+}*/
 
 #edit-sites-assigned h3 {
   font-size: 14px;
@@ -849,7 +849,7 @@ span ~ .panel-header-text {
 
 .radio-choice > .radio-container {
   align-items: center;
-  block-size: 29px;
+  block-size: 25px;
   display: flex;
   flex: 0 0 calc(100% / var(--icon-fit));
 }
@@ -909,7 +909,7 @@ span ~ .panel-header-text {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  inline-size: 100%;
+  inline-size: 80%;
   margin-block-end: 10px;
   margin-inline-end: 0;
   margin-inline-start: 0;
@@ -934,10 +934,17 @@ span ~ .panel-header-text {
   padding-inline-start: 5px;
 }
 
-.edit-container-panel legend {
+.edit-container-panel legend,
+.options-header{
   flex: 1 0;
   font-size: 14px !important;
-  padding-block-end: 6px;
+  margin-block-end: 4px;
+  margin-block-start: -6px;
+}
+
+.options-header {
+  margin-block-start: 6px;
+  margin-block-end: 8px;
 }
 
 /* Achievement panel elements */
@@ -1088,6 +1095,11 @@ hr {
   padding: 0 16px 0 16px;
 }
 
+.edit-form {
+  color: #737373;
+  padding: 0 16px 0 16px;
+}
+
 .identities-list {
   margin: 0 0 41px 0;
 }
@@ -1104,6 +1116,28 @@ hr {
   width: 100%;
 }
 
+.delete-container {
+  background-color: #FFFFFF;
+  border-top: solid 1px #e3e3e3;
+  cursor: default;
+  height: 65px;
+  padding: 9px 18px 27px 17px;
+  position: fixed;
+  bottom: 0px;
+  width: 100%;
+}
+
+.delete-btn {
+  height: 30px;
+  line-height: 30px;
+  cursor: pointer;
+  width: 100%;
+  border: 0px;
+  border-radius: 2px;
+  background-color: rgba(12,12,13,0.1);
+  text-align: center;
+}
+
 .menu-panel {
   justify-content: flex-start;
 }
@@ -1118,4 +1152,37 @@ hr {
   background-color: rgba(255, 255, 255, 1);
   background-image: url("/img/arrow-icon-left.svg");
   cursor: pointer;
+}
+
+input {
+  border: solid 1px #BEBEBE;
+  border-radius: 2px;
+}
+
+.form-header {
+  height: 23px;
+  line-height: 23px;
+  padding: 0 0 0 0;
+}
+
+#edit-container-panel-name-input {
+  height: 29px;
+}
+
+.container-options {
+  height: 23px;
+}
+
+#site-isolation {
+  position: fixed;
+  bottom: auto;
+}
+
+.options-label {
+  padding-inline-start: 25px;
+  cursor: pointer;
+}
+
+#manage-assigned-sites-list {
+  color: #5A9DE6;
 }
