@@ -1107,3 +1107,15 @@ hr {
 .menu-panel {
   justify-content: flex-start;
 }
+
+.btn-return.arrow-left {
+  position: absolute;
+  border: 0;
+  left: 15px;
+  top: 15px;
+  width: 1.2rem;
+  height: 1.2rem;
+  background-color: rgba(255, 255, 255, 1);
+  background-image: url("/img/arrow-icon-left.svg");
+  cursor: pointer;
+}
