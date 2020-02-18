@@ -1186,3 +1186,19 @@ input {
 #manage-assigned-sites-list {
   color: #5A9DE6;
 }
+
+#info-icon {
+  position: absolute;
+  right: 13px;
+  top: 13px;
+  font-size: 10px;
+  height: 14px;
+  width: 14px;
+  border: solid 1px #000;
+  border-radius: 7px;
+  cursor: pointer;
+  text-align: center;
+  color: #000;
+  text-decoration: none;
+  font-weight: bold;
+}
