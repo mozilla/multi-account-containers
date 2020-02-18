@@ -55,23 +55,23 @@
   },
   "browser_action": {
     "browser_style": true,
-    "default_icon": "img/container-site.svg",
+    "default_icon": "img/multiaccountcontainer-16.svg",
     "default_title": "Multi-Account Containers",
     "default_popup": "popup.html",
     "theme_icons": [
       {
-        "light": "img/container-site-light.svg",
-        "dark": "img/container-site.svg",
+        "light": "img/multiaccountcontainer-16-dark.svg",
+        "dark": "img/multiaccountcontainer-16.svg",
         "size": 32
       }
     ]
   },
   "page_action": {
     "browser_style": true,
-    "default_icon": "img/container-site.svg",
+    "default_icon": "img/multiaccountcontainer-16.svg",
     "default_title": "Always open this in a Container",
     "default_popup": "pageActionPopup.html",
-    "pinned": false,
+    "pinned": true,
     "show_matches": ["*://*/*"]
   },
   "background": {
