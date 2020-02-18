@@ -539,6 +539,9 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     Utils.addEnterHandler(document.querySelector("#always-open-in"), () => {
       Logic.showPanel(P_CONTAINER_PICKER, null, ALWAYS_OPEN_IN_PICKER);
     });
+    Utils.addEnterHandler(document.querySelector("#info-icon"), () => {
+      browser.runtime.openOptionsPage();
+    });
     Utils.addEnterHandler(document.querySelector("#sort-containers-link"), async () => {
       try {
         await browser.runtime.sendMessage({
