@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const CONTAINER_HIDE_SRC = "/img/container-hide.svg";
-const CONTAINER_UNHIDE_SRC = "/img/container-unhide.svg";
+const CONTAINER_HIDE_SRC = "/img/password-hide.svg";
+const CONTAINER_UNHIDE_SRC = "/img/password-hide.svg";
 
 const DEFAULT_COLOR = "blue";
 const DEFAULT_ICON = "circle";
@@ -172,20 +172,16 @@ const Logic = {
     return activeTabs.length;
   },
 
-  _disableMoveTabs(message) {
-    // const moveTabsEl = document.querySelector("#container-info-movetabs");
-    const fragment = document.createDocumentFragment();
-    const incompatEl = document.createElement("div");
+  _disableMenuItem(message, elementToDisable = document.querySelector("#move-to-new-window")) {
+    elementToDisable.setAttribute("title", message);
+    elementToDisable.classList.remove("hover-highlight");
+    elementToDisable.classList.add("disabled-menu-item");
+  },
 
-    // moveTabsEl.classList.remove("clickable");
-    // moveTabsEl.setAttribute("title", message);
-
-    fragment.appendChild(incompatEl);
-    incompatEl.setAttribute("id", "container-info-movetabs-incompat");
-    incompatEl.textContent = message;
-    incompatEl.classList.add("container-info-tab-row");
-
-    // moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
+  _enableMenuItems(elementToDisable = document.querySelector("#move-to-new-window")) {
+    elementToDisable.removeAttribute("title");
+    elementToDisable.classList.add("hover-highlight");
+    elementToDisable.classList.remove("disabled-menu-item");
   },
 
   async refreshIdentities() {
@@ -624,6 +620,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
       tr.classList.add("menu-item");
+      tr.setAttribute("tabindex", "0");
       const td = document.createElement("td");
       const openTabs = identity.numberOfOpenTabs || "" ;
 
@@ -685,10 +682,11 @@ Logic.registerPanel(P_CONTAINER_INFO, {
   async initialize() {
     const closeContEl = document.querySelector("#close-container-info-panel");
     Utils.addEnterHandler(closeContEl, () => {
-      Logic.showPreviousPanel();
+      Logic.showPanel(P_CONTAINERS_LIST);
     });
 
     // Check if the user has incompatible add-ons installed
+    // Note: this is not implemented in messageHandler.js
     let incompatible = false;
     try {
       incompatible = await browser.runtime.sendMessage({
@@ -698,14 +696,24 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       throw new Error("Could not check for incompatible add-ons.");
     }
 
+    const moveTabsEl = document.querySelector("#move-to-new-window");
     const numTabs = await Logic.numTabs();
     if (incompatible) {
-      Logic._disableMoveTabs("Moving container tabs is incompatible with Pulse, PageShot, and SnoozeTabs.");
+      Logic._disableMenuItem("Moving container tabs is incompatible with Pulse, PageShot, and SnoozeTabs.");
       return;
     } else if (numTabs === 1) {
-      Logic._disableMoveTabs("Cannot move a tab from a single-tab window.");
+      Logic._disableMenuItem("Cannot move a tab from a single-tab window.");
       return;
     }
+
+    Utils.addEnterHandler(moveTabsEl, async () => {
+      await browser.runtime.sendMessage({
+        method: "moveTabsToWindow",
+        windowId: browser.windows.WINDOW_ID_CURRENT,
+        cookieStoreId: Logic.currentIdentity().cookieStoreId,
+      });
+      window.close();
+    });
 
     const manageContainer = document.querySelector("#manage-container-link");
     Utils.addEnterHandler(manageContainer, async () => {
@@ -730,6 +738,14 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       trHasTabs.style.display = !identity.hasHiddenTabs && !identity.hasOpenTabs ? "none" : "";
     }
 
+    if (identity.numberOfOpenTabs === 0) {
+      Logic._disableMenuItem("No tabs available for this container");
+    } else {
+      Logic._enableMenuItems();
+    }
+
+    this.intializeShowHide(identity);
+
     // Let's remove all the previous tabs.
     const table = document.getElementById("container-info-table");
     while (table.firstChild) {
@@ -743,6 +759,35 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       cookieStoreId: Logic.currentIdentity().cookieStoreId
     });
     return this.buildInfoTable(tabs);
+  },
+
+  intializeShowHide(identity) {
+    const hideContEl = document.querySelector("#hideorshow-container");
+    if (identity.numberOfOpenTabs === 0 && !identity.hasHiddenTabs) {
+      return Logic._disableMenuItem("No tabs available for this container",  hideContEl);
+    } else {
+      Logic._enableMenuItems(hideContEl);
+    }
+
+    Utils.addEnterHandler(hideContEl, async () => {
+      try {
+        browser.runtime.sendMessage({
+          method: identity.hasHiddenTabs ? "showTabs" : "hideTabs",
+          windowId: browser.windows.WINDOW_ID_CURRENT,
+          cookieStoreId: Logic.currentCookieStoreId()
+        });
+        window.close();
+      } catch (e) {
+        window.close();
+      }
+    });
+
+    const hideShowIcon = document.getElementById("container-info-hideorshow-icon");
+    hideShowIcon.src = identity.hasHiddenTabs ? CONTAINER_UNHIDE_SRC : CONTAINER_HIDE_SRC;
+
+    const hideShowLabel = document.getElementById("container-info-hideorshow-label");
+    hideShowLabel.textContent = identity.hasHiddenTabs ? "Show this container" : "Hide this container";
+    return;
   },
 
   buildInfoTable(tabs) {
@@ -805,10 +850,8 @@ Logic.registerPanel(P_CONTAINER_PICKER, {
   // This method is called when the object is registered.
   initialize() {
     const closeContEl = document.querySelector("#close-container-picker-panel");
-    closeContEl.setAttribute("tabindex", "0");
-    closeContEl.classList.add("firstTabindex");
     Utils.addEnterHandler(closeContEl, () => {
-      Logic.showPreviousPanel();
+      Logic.showPanel(P_CONTAINERS_LIST);
     });
   },
 
