@@ -99,6 +99,26 @@ const Utils = {
       tabIndex, 
       active
     });
+  },
+
+  async alwaysOpenInContainer(identity) {
+    const currentTab = await this.currentTab();
+    const assignedUserContextId = this.userContextId(identity.cookieStoreId);
+    Utils.setOrRemoveAssignment(
+      currentTab.id, 
+      currentTab.url, 
+      assignedUserContextId, 
+      false
+    );
+    if (currentTab.cookieStoreId !== identity.cookieStoreId) {
+      Utils.reloadInContainer(
+        currentTab.url, 
+        false, 
+        assignedUserContextId,
+        currentTab.index + 1, 
+        currentTab.active
+      );
+    }
   }
 
 };

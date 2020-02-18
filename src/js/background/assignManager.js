@@ -474,7 +474,6 @@ window.assignManager = {
   },
 
   async _setOrRemoveAssignment(tabId, pageUrl, userContextId, remove) {
-    console.log(userContextId)
     let actionName;
 
     // https://github.com/mozilla/testpilot-containers/issues/626
