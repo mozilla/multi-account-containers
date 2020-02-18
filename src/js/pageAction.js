@@ -22,21 +22,7 @@ async function init() {
     tr.appendChild(td);
 
     Utils.addEnterHandler(tr, async () => {
-      const currentTab = await Utils.currentTab();
-      const assignedUserContextId = Utils.userContextId(identity.cookieStoreId);
-      Utils.setOrRemoveAssignment(
-        currentTab.id, 
-        currentTab.url, 
-        assignedUserContextId, 
-        false
-      );
-      Utils.reloadInContainer(
-        currentTab.url, 
-        false, 
-        assignedUserContextId,
-        currentTab.index + 1, 
-        currentTab.active
-      );
+      Utils.alwaysOpenInContainer(identity);
       window.close();
     });
   });

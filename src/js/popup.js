@@ -740,8 +740,6 @@ Logic.registerPanel(P_CONTAINER_INFO, {
   // This method is called when the object is registered.
   async initialize() {
     const closeContEl = document.querySelector("#close-container-info-panel");
-    closeContEl.setAttribute("tabindex", "0");
-    closeContEl.classList.add("firstTabindex");
     Utils.addEnterHandler(closeContEl, () => {
       Logic.showPreviousPanel();
     });
@@ -777,7 +775,12 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
     // Populating the panel: name and icon
     document.getElementById("container-info-title").textContent = identity.name;
-
+    
+    const alwaysOpen = document.querySelector("#always-open-in-info-panel");    
+    Utils.addEnterHandler(alwaysOpen, async () => {
+      Utils.alwaysOpenInContainer(identity);
+      window.close();
+    });
     // Show or not the has-tabs section.
     for (let trHasTabs of document.getElementsByClassName("container-info-has-tabs")) { // eslint-disable-line prefer-const
       trHasTabs.style.display = !identity.hasHiddenTabs && !identity.hasOpenTabs ? "none" : "";
@@ -894,7 +897,6 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       pickedFunction = async function (identity) {
         const currentTab = await Utils.currentTab();
         const newUserContextId = Utils.userContextId(identity.cookieStoreId);
-        console.log(currentTab);
         Utils.reloadInContainer(
           currentTab.url, 
           false, 
@@ -909,14 +911,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
     default:
       document.getElementById("picker-title").textContent = "Always Open This Site in";
       pickedFunction = async function (identity) {
-        const currentTab = await Utils.currentTab();
-        const assignedUserContextId = Utils.userContextId(identity.cookieStoreId);
-        Utils.setOrRemoveAssignment(
-          currentTab.id, 
-          currentTab.url, 
-          assignedUserContextId, 
-          false
-        );
+        Utils.alwaysOpenInContainer(identity);
         window.close();
       };
       break;
