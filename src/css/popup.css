@@ -1047,13 +1047,15 @@ h3.title {
   cursor: pointer;
 }
 
-.menu-item:hover {
-  background: #1296F8;
-  color: #FFFFFF;
+.disabled-menu-item {
+  font-style: italic;
+  color: grey;
+  cursor: default;
 }
 
-.hover-highlight {
-
+.hover-highlight:hover {
+  background: #1296F8;
+  color: #FFFFFF;
 }
 
 .menu-text {

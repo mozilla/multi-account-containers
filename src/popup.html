@@ -115,27 +115,14 @@
     <a href="#" id="achievement-done-button" class="onboarding-button">Done</a>
   </div>
 
-<<<<<<< HEAD
-  <div class="panel container-panel hide" id="container-panel">
-    <div id="current-tab">
-      <h3>Current Tab</h3>
-      <div id="current-page"></div>
-      <label for="container-page-assigned">
-        <input type="checkbox" id="container-page-assigned" />
-        <span class="truncate-text">
-          Always open in
-          <span id="current-container"></span>
-        </span>
-      </label>
-=======
   <div class="panel menu-panel container-panel hide" id="container-panel">
     <h3 class="title">
       Multi-Account Containers
     </h3>
-    <a href="#" id="info-icon">i</a>
+    <a href="#" id="info-icon" tabindex="10">i</a>
     <hr>
     <table class="menu">
-      <tr class="menu-item" id="open-new-tab-in">
+      <tr class="menu-item hover-highlight" id="open-new-tab-in" tabindex="0">
         <td>
           <img class="menu-icon" alt="Open in New Tab" src="/img/tab-new-16.svg" />
           <span class="menu-text">Open New Tab in...</span>
@@ -144,7 +131,7 @@
             </span>
         </td>
       </tr>
-      <tr class="menu-item" id="reopen-site-in">
+      <tr class="menu-item hover-highlight" id="reopen-site-in" tabindex="0">
         <td>
           <img class="menu-icon" alt="Open in New Tab" src="/img/refresh-16.svg" />
           <span class="menu-text">Reopen This Site in...</span>
@@ -156,7 +143,7 @@
     </table>
     <hr>
     <table class="menu">
-      <tr class="menu-item" id="sort-containers-link">
+      <tr class="menu-item hover-highlight" id="sort-containers-link" tabindex="0">
         <td>
           <img class="menu-icon" alt="Open in New Tab" src="/img/sort-16_1.svg" />
           <span class="menu-text">Sort Tabs by Container</span>
@@ -164,7 +151,7 @@
             </span>
         </td>
       </tr>
-      <tr class="menu-item" id="always-open-in">
+      <tr class="menu-item hover-highlight" id="always-open-in" tabindex="0">
         <td>
           <img class="menu-icon" alt="Open in New Tab" src="/img/open-in-new-16.svg" />
           <span class="menu-text">Always Open This Site in...</span>
@@ -177,24 +164,31 @@
     <hr>
     <div class="sub-header">
     Containers
->>>>>>> 30e5895... added info icon as ling to options page
     </div>
-    <div class="container-panel-controls">
-      <a href="#" class="action-link" id="sort-containers-link" title="Sort tabs into container order">Sort Tabs</a>
-    </div>
-    <div class="scrollable panel-content" tabindex="-1">
-      <table class="identities-list">
-        <tbody></tbody>
+    <div class="scrollable identities-list">
+      <table class="menu" id="identities-list">
+        <tr class="menu-item hover-highlight">
+          <td>
+            <div class="menu-icon">
+              <div class="usercontext-icon"
+                data-identity-icon="pet"
+                data-identity-color="blue">
+              </div>
+            </div>
+            <span class="menu-text">Default</span>
+            <span class="menu-right-float">
+              <span class="container-count">22</span>
+              <span class="menu-arrow">
+                <img alt="Container Info" src="/img/arrow-icon-right.svg" />
+              </span>
+            </span>
+          </td>
+        </tr>
       </table>
     </div>
-    <div class="panel-footer edit-identities">
-      <div class="edit-containers-text panel-footer-secondary">
-        <a href="#" tabindex="0" id="edit-containers-link">Edit Containers</a>
-      </div>
-      <a href="#" tabindex="0" class="add-container-link pop-button" id="container-add-link" title="Create new container">
-        <img class="pop-button-image-small icon" alt="Create new container icon" src="/img/container-add.svg" />
-      </a>
-    </div>
+    <div class="bottom-btn" id="manage-containers-link" tabindex="0">
+      Manage Containers
+    </div> 
   </div>
 
 
@@ -205,15 +199,15 @@
     <button class="btn-return arrow-left" id="close-container-info-panel" tabindex="0"></button>
     <hr>
     <table class="menu">
-      <tr class="menu-item" id="hide-container">
+      <tr class="menu-item hover-highlight" id="hideorshow-container" tabindex="0">
         <td>
-          <img class="menu-icon" alt="Hide This Container" src="/img/tab-new-16.svg" />
-          <span class="menu-text">Hide This Container</span>
+          <img id="container-info-hideorshow-icon" class="menu-icon" alt="Hide This Container" src="img/password-hide.svg" />
+          <span id="container-info-hideorshow-label" class="menu-text">Hide This Container</span>
             <span class="menu-arrow">
             </span>
         </td>
       </tr>
-      <tr class="menu-item" id="move-to-new-window">
+      <tr class="menu-item hover-highlight" id="move-to-new-window" tabindex="0">
         <td>
           <img class="menu-icon" alt="Move Tabs to a New Window" src="/img/movetowindow-16.svg" />
           <span class="menu-text">Move Tabs to a New Window</span>
@@ -221,7 +215,7 @@
             </span>
         </td>
       </tr>
-      <tr class="menu-item" id="always-open">
+      <tr class="menu-item hover-highlight hover-highlight" id="always-open" tabindex="0">
         <td>
           <img class="menu-icon" alt="Always Open Site in Container" src="/img/open-in-new-16.svg" />
           <span class="menu-text" id="always-open-in-info-panel">Always Open Site in Container</span>
@@ -248,11 +242,11 @@
     <h3 class="title" id="picker-title">
       Multi-Account Containers
     </h3>
-    <button class="btn-return arrow-left" id="close-container-picker-panel"></button>
+    <button class="btn-return arrow-left" id="close-container-picker-panel" tabindex="0"></button>
     <hr>
     <div class="scrollable identities-list">
       <table class="menu" id="picker-identities-list">
-        <tr class="menu-item">
+        <tr class="menu-item hover-highlight">
           <td>
             <div class="menu-icon">
               <div class="usercontext-icon"
