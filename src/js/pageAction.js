@@ -5,11 +5,11 @@ async function init() {
 
   identities.forEach(identity => {
     const tr = document.createElement("tr");
-    tr.classList.add("menu-item");
+    tr.classList.add("menu-item", "hover-highlight");
     const td = document.createElement("td");
 
     td.innerHTML = Utils.escaped`          
-        <div class="menu-icon hover-highlight">
+        <div class="menu-icon">
           <div class="usercontext-icon"
             data-identity-icon="${identity.icon}"
             data-identity-color="${identity.color}">
