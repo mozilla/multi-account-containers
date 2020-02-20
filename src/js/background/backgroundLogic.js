@@ -329,6 +329,7 @@ const backgroundLogic = {
   },
 
   cookieStoreId(userContextId) {
+    if(userContextId === 0) return "firefox-default";
     return `firefox-container-${userContextId}`;
   }
 };

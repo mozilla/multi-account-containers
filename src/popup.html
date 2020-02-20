@@ -251,6 +251,7 @@
     </h3>
     <button class="btn-return arrow-left" id="close-container-picker-panel" tabindex="0"></button>
     <hr>
+    <div id="new-container-div"></div>
     <div class="scrollable identities-list">
       <table class="menu" id="picker-identities-list">
         <tr class="menu-item hover-highlight">
@@ -292,16 +293,20 @@
           <legend class="form-header">Icon</legend>
         </fieldset>
       </form>
-        <div class="options-header">Options</div>
-        <div class="container-options">
-          <input type="checkbox" id="site-isolation" name="site-isolation">
-          <label for="site-isolation" class="options-label">Limit to Designated Sites</label>
-        </div>
-        <div class="container-options options-label" id="manage-assigned-sites-list">Manage Site List...
-        </div>
+      <div class="options-header">Options</div>
+      <div class="container-options">
+        <input type="checkbox" id="site-isolation" name="site-isolation">
+        <label for="site-isolation" class="options-label">Limit to Designated Sites</label>
+      </div>
+      <div class="container-options options-label" id="manage-assigned-sites-list">Manage Site List...
+      </div>
     </div>
     <div class="delete-container">
       <button class="delete-btn" id="delete-container-button">Delete This Container</button>
+    </div>
+    <div class="panel-footer">
+      <a href="#" class="button expanded secondary footer-button cancel-button" id="create-container-cancel-link">Cancel</a>
+      <a href="#" class="button expanded primary footer-button" id="create-container-ok-link">OK</a>
     </div>
   </div>
 
