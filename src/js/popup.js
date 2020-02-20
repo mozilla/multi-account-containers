@@ -715,10 +715,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       window.close();
     });
 
-    const manageContainer = document.querySelector("#manage-container-link");
-    Utils.addEnterHandler(manageContainer, async () => {
-      Logic.showPanel(P_CONTAINER_EDIT, Logic.currentIdentity());
-    });
+
   },
 
   // This method is called when the panel is shown.
@@ -751,6 +748,10 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       method: "getTabs",
       windowId: browser.windows.WINDOW_ID_CURRENT,
       cookieStoreId: Logic.currentIdentity().cookieStoreId
+    });
+    const manageContainer = document.querySelector("#manage-container-link");
+    Utils.addEnterHandler(manageContainer, async () => {
+      Logic.showPanel(P_CONTAINER_EDIT, identity);
     });
     return this.buildOpenTabTable(tabs);
   },
