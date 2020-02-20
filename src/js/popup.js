@@ -44,7 +44,7 @@ const Logic = {
   _identities: [],
   _currentIdentity: null,
   _currentPanel: null,
-  _previousPanel: null,
+  _previousPanelPath: [],
   _panels: {},
   _onboardingVariation: null,
 
@@ -216,13 +216,16 @@ const Logic = {
     }
   },
 
-  async showPanel(panel, currentIdentity = null, pickerType = null) {
+  async showPanel(panel, currentIdentity = null, pickerType = null, backwards = false) {
     // Invalid panel... ?!?
     if (!(panel in this._panels)) {
       throw new Error("Something really bad happened. Unknown panel: " + panel);
     }
+    if (!backwards || !this._currentPanel) {
+      this._previousPanelPath.push(this._currentPanel);
+      console.log(this._previousPanelPath);
+    }
 
-    this._previousPanel = this._currentPanel;
     this._currentPanel = panel;
     this.pickerType = pickerType;
 
@@ -250,11 +253,10 @@ const Logic = {
   },
 
   showPreviousPanel() {
-    if (!this._previousPanel) {
+    if (!this._previousPanelPath) {
       throw new Error("Current panel not set!");
     }
-
-    this.showPanel(this._previousPanel, this._currentIdentity);
+    this.showPanel(this._previousPanelPath.pop(), this._currentIdentity, null, true);
   },
 
   registerPanel(panelName, panelObject) {
@@ -611,7 +613,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
-      tr.classList.add("menu-item");
+      tr.classList.add("menu-item", "hover-highlight");
       tr.setAttribute("tabindex", "0");
       const td = document.createElement("td");
       const openTabs = identity.numberOfOpenTabs || "" ;
@@ -738,19 +740,13 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
     this.intializeShowHide(identity);
 
-    // Let's remove all the previous tabs.
-    const table = document.getElementById("container-info-table");
-    while (table.firstChild) {
-      table.firstChild.remove();
-    }
-
     // Let's retrieve the list of tabs.
     const tabs = await browser.runtime.sendMessage({
       method: "getTabs",
       windowId: browser.windows.WINDOW_ID_CURRENT,
       cookieStoreId: Logic.currentIdentity().cookieStoreId
     });
-    return this.buildInfoTable(tabs);
+    return this.buildOpenTabTable(tabs);
   },
 
   intializeShowHide(identity) {
@@ -782,46 +778,38 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     return;
   },
 
-  buildInfoTable(tabs) {
+  buildOpenTabTable(tabs) {
+    // Let's remove all the previous tabs.
+    const table = document.getElementById("container-info-table");
+    while (table.firstChild) {
+      table.firstChild.remove();
+    }
+
     // For each one, let's create a new line.
     const fragment = document.createDocumentFragment();
     for (let tab of tabs) { // eslint-disable-line prefer-const
       const tr = document.createElement("tr");
       fragment.appendChild(tr);
-      tr.classList.add("container-info-tab-row");
-      tr.innerHTML = Utils.escaped`
-        <td></td>
-        <td class="container-info-tab-title truncate-text" title="${tab.url}" ><div class="container-tab-title">${tab.title}</div></td>`;
-      tr.querySelector("td").appendChild(Utils.createFavIconElement(tab.favIconUrl));
+      tr.classList.add("menu-item", "hover-highlight");
       tr.setAttribute("tabindex", "0");
-      document.getElementById("container-info-table").appendChild(fragment);
+      tr.innerHTML = Utils.escaped`
+        <td>
+          <div class="favicon"></div>
+          <span title="${tab.url}" class="menu-text truncate-text">${tab.title}</span>
+          <img id="${tab.id}" class="trash-button" src="/img/container-close-tab.svg" />
+        </td>`;
+      tr.querySelector(".favicon").appendChild(Utils.createFavIconElement(tab.favIconUrl));
+      tr.setAttribute("tabindex", "0");
+      table.appendChild(fragment);
 
       // On click, we activate this tab. But only if this tab is active.
       if (!tab.hiddenState) {
-        const closeImage = document.createElement("img");
-        closeImage.src = "/img/container-close-tab.svg";
-        closeImage.className = "container-close-tab";
-        closeImage.title = "Close tab";
-        closeImage.id = tab.id;
-        const tabTitle = tr.querySelector(".container-info-tab-title");
-        tabTitle.appendChild(closeImage);
-
-        // On hover, we add truncate-text class to add close-tab-image after tab title truncates
-        const tabTitleHoverEvent = () => {
-          tabTitle.classList.toggle("truncate-text");
-          tr.querySelector(".container-tab-title").classList.toggle("truncate-text");
-        };
-
-        tr.addEventListener("mouseover", tabTitleHoverEvent);
-        tr.addEventListener("mouseout", tabTitleHoverEvent);
-
-        tr.classList.add("clickable");
         Utils.addEnterHandler(tr, async () => {
           await browser.tabs.update(tab.id, { active: true });
           window.close();
         });
 
-        const closeTab = document.getElementById(tab.id);
+        const closeTab = document.querySelector(".trash-button");
         if (closeTab) {
           Utils.addEnterHandler(closeTab, async (e) => {
             await browser.tabs.remove(Number(e.target.id));
@@ -902,7 +890,7 @@ Logic.registerPanel(P_CONTAINER_PICKER, {
       const td = document.createElement("td");
 
       td.innerHTML = Utils.escaped`          
-        <div class="menu-icon">
+        <div class="menu-icon hover-highlight">
           <div class="usercontext-icon"
             data-identity-icon="${identity.icon}"
             data-identity-color="${identity.color}">
@@ -928,6 +916,9 @@ Logic.registerPanel(P_CONTAINER_PICKER, {
   }
 });
 
+// P_CONTAINER_ASSIGNMENTS: Shows Site Assignments and allows editing.
+// ----------------------------------------------------------------------------
+
 Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
   panelSelector: "#edit-container-assignments",
 
@@ -946,25 +937,11 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
     const identity = Logic.currentIdentity();
 
     // Populating the panel: name and icon
-    document.getElementById("container-assignments-title").textContent = identity.name;
+    document.getElementById("edit-assignments-title").textContent = identity.name;
 
     const userContextId = Logic.currentUserContextId();
     const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
     this.showAssignedContainers(assignments);
-
-    document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
-    document.querySelector("#edit-container-panel-usercontext-input").value = userContextId || NEW_CONTAINER_ID;
-    const containerName = document.querySelector("#edit-container-panel-name-input");
-    window.requestAnimationFrame(() => {
-      containerName.select();
-      containerName.focus();
-    });
-    [...document.querySelectorAll("[name='container-color']")].forEach(colorInput => {
-      colorInput.checked = colorInput.value === identity.color;
-    });
-    [...document.querySelectorAll("[name='container-icon']")].forEach(iconInput => {
-      iconInput.checked = iconInput.value === identity.icon;
-    });
 
     return Promise.resolve(null);
   },
@@ -974,41 +951,35 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
     const assignmentKeys = Object.keys(assignments);
     assignmentPanel.hidden = !(assignmentKeys.length > 0);
     if (assignments) {
-      const tableElement = assignmentPanel.querySelector(".assigned-sites-list");
+      const tableElement = document.querySelector("#edit-sites-assigned");
       /* Remove previous assignment list,
          after removing one we rerender the list */
       while (tableElement.firstChild) {
         tableElement.firstChild.remove();
       }
-
       assignmentKeys.forEach((siteKey) => {
         const site = assignments[siteKey];
-        const trElement = document.createElement("div");
+        const trElement = document.createElement("tr");
         /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
            This is pending a better solution for favicons from web extensions */
         const assumedUrl = `https://${site.hostname}/favicon.ico`;
         trElement.innerHTML = Utils.escaped`
-        <div class="favicon"></div>
-        <div title="${site.hostname}" class="truncate-text hostname">
-          ${site.hostname}
-        </div>
-        <img
-          class="pop-button-image delete-assignment"
-          src="/img/container-delete.svg"
-        />`;
+        <td>
+          <div class="favicon"></div>
+          <span title="${site.hostname}" class="menu-text">${site.hostname}</span>
+          <img class="trash-button delete-assignment" src="/img/container-delete.svg" />
+        </td>`;
         trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
-        const deleteButton = trElement.querySelector(".delete-assignment");
-        const that = this;
+        const deleteButton = trElement.querySelector(".trash-button");
         Utils.addEnterHandler(deleteButton, async () => {
           const userContextId = Logic.currentUserContextId();
           // Lets show the message to the current tab
-          // TODO remove then when firefox supports arrow fn async
           const currentTab = await Utils.currentTab();
           Utils.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
           delete assignments[siteKey];
-          that.showAssignedContainers(assignments);
+          this.showAssignedContainers(assignments);
         });
-        trElement.classList.add("container-info-tab-row", "clickable");
+        trElement.classList.add("menu-item", "hover-highlight");
         tableElement.appendChild(trElement);
       });
     }
@@ -1118,6 +1089,10 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       iconInput.checked = iconInput.value === identity.icon;
     });
 
+    const deleteButton = document.getElementById("delete-container-button");
+    Utils.addEnterHandler(deleteButton, () => {
+      Logic.showPanel(P_CONTAINER_DELETE, identity);
+    });
     return Promise.resolve(null);
   },
 
@@ -1134,7 +1109,9 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     Utils.addEnterHandler(document.querySelector("#delete-container-cancel-link"), () => {
       Logic.showPreviousPanel();
     });
-
+    Utils.addEnterHandler(document.querySelector("#close-container-delete-panel"), () => {
+      Logic.showPreviousPanel();
+    });
     Utils.addEnterHandler(document.querySelector("#delete-container-ok-link"), async () => {
       /* This promise wont resolve if the last tab was removed from the window.
           as the message async callback stops listening, this isn't an issue for us however it might be in future
@@ -1144,7 +1121,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
       try {
         await Logic.removeIdentity(Utils.userContextId(Logic.currentIdentity().cookieStoreId));
         await Logic.refreshIdentities();
-        Logic.showPreviousPanel();
+        Logic.showPanel(P_CONTAINERS_LIST);
       } catch (e) {
         Logic.showPanel(P_CONTAINERS_LIST);
       }
@@ -1156,7 +1133,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     const identity = Logic.currentIdentity();
 
     // Populating the panel: name, icon, and warning message
-    document.getElementById("delete-container-name").textContent = identity.name;
+    document.getElementById("container-delete-title").textContent = identity.name;
 
     const totalNumberOfTabs = identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
     let warningMessage = "";
@@ -1165,10 +1142,6 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
       warningMessage = `If you remove this container now, ${totalNumberOfTabs} container ${grammaticalNumTabs} will be closed.`;
     }
     document.getElementById("delete-container-tab-warning").textContent = warningMessage;
-
-    const icon = document.getElementById("delete-container-icon");
-    icon.setAttribute("data-identity-icon", identity.icon);
-    icon.setAttribute("data-identity-color", identity.color);
 
     return Promise.resolve(null);
   },
