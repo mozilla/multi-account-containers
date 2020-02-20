@@ -110,6 +110,7 @@ table {
   mask-image: linear-gradient(to left, transparent, black 1em);
   overflow: hidden;
   white-space: nowrap;
+  width: 100%;
 }
 
 /* Color and icon helpers */
@@ -273,6 +274,7 @@ table {
 
 .panel-content {
   flex: 1;
+  padding: 16px;
 }
 
 /* Column panels for edit screens */
@@ -443,6 +445,7 @@ manage things like container crud */
   block-size: 48px;
   display: flex;
   justify-content: space-between;
+  padding: 16px;
 }
 
 .panel-header .usercontext-icon {
@@ -762,17 +765,6 @@ span ~ .panel-header-text {
   margin-inline-end: 0;
 }
 
-.container-info-list {
-  display: flex;
-  flex-direction: column;
-  margin-block-start: 4px;
-  padding-block-start: 4px;
-}
-
-.container-info-list tbody {
-  display: contents;
-}
-
 .clickable {
   cursor: pointer;
 }
@@ -851,14 +843,6 @@ span ~ .panel-header-text {
 
 .assigned-sites-list > div > .icon {
   margin-inline-end: 10px;
-}
-
-.assigned-sites-list > div > .delete-assignment {
-  display: none;
-}
-
-.assigned-sites-list > div:hover > .delete-assignment {
-  display: block;
 }
 
 .assigned-sites-list > div > .hostname {
@@ -1021,7 +1005,6 @@ body {
   font-size: 13px;
   letter-spacing: -0.1px;
   width: 320px;
-  /* remove  in prodcution*/
 }
 
 h3.title {
@@ -1065,10 +1048,10 @@ h3.title {
 .menu-icon {
   float: left;
   text-align: center;
-  width: 40px;
+  width: 16px;
   display: block;
-  height: 24px;
-  padding: 0 8px 0 16px;
+  height: 16px;
+  margin: 4px 8px 4px 16px;
 }
 
 .menu-right-float {
@@ -1221,4 +1204,25 @@ input {
   color: #000;
   text-decoration: none;
   font-weight: bold;
+}
+
+.delete-warning {
+  padding: 8px 0 8px 0;
+}
+
+.trash-button {
+  float: right;
+  text-align: center;
+  width: 16px;
+  display: inline-block;
+  height: 16px;
+  margin: 4px 10px 4px 0;
+}
+
+tr > td > .trash-button {
+  display: none;
+}
+
+tr:hover > td > .trash-button {
+  display: block;
 }

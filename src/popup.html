@@ -229,7 +229,14 @@
     Open Tabs
     </div>
     <div class="scrollable">
-      <table id="container-info-table" class="container-info-list">
+      <table class="menu" id="container-info-table">
+        <tr class="menu-item hover-highlight" tabindex="0">
+          <td>
+            <div class="favicon"><img class="menu-icon" src="https://www.mozilla.org/favicon.ico" /></div>
+            <span class="menu-text truncate-text">www.mozillllllllllllllllllllllllllllllllllllla.org</span>
+            <img class="trash-button" src="/img/container-close-tab.svg" />
+          </td>
+        </tr>       
       </table>
     </div>
     <div class="bottom-btn" id="manage-container-link">
@@ -265,38 +272,6 @@
   </div>
   </div>
 
-
-<!--   <div class="panel menu-panel edit-container-panel hide" id="edit-container-panel">
-    <h3 class="title" id="container-edit-titl">
-      Default
-    </h3>
-    <button class="btn-return arrow-left" id="close-container-edit-panel"></button>
-    <hr>
-    <div class="scrollable edit-form">
-      <form id="edit-container-panel-form">
-        <input type="hidden" name="container-id" id="edit-container-panel-usercontext-input" />
-        <fieldset>
-          <legend>Name</legend>
-          <input type="text" name="container-name" id="edit-container-panel-name-input" maxlength="25"/>
-        </fieldset>
-        <fieldset id="edit-container-panel-choose-color" class="radio-choice">
-          <legend>Color</legend>
-        </fieldset>
-        <fieldset id="edit-container-panel-choose-icon" class="radio-choice">
-          <legend>Icon</legend>
-        </fieldset>
-      </form>
-    <div id="edit-sites-assigned" class="scrollable" hidden>
-      <div class="assigned-sites">Sites assigned to this container</div>
-      <div class="assigned-sites-list">
-      </div>
-    </div>
-    </div>
-    <div class="delete-container">
-      <button class="delete-btn">Delete This Container</button>
-    </div>
-  </div> -->
-
   <div class="panel menu-panel edit-container-panel hide" id="edit-container-panel">
     <h3 class="title" id="container-edit-title">
       Default
@@ -317,7 +292,6 @@
           <legend class="form-header">Icon</legend>
         </fieldset>
       </form>
-      <div id="edit-sites-assigned" class="scrollable">
         <div class="options-header">Options</div>
         <div class="container-options">
           <input type="checkbox" id="site-isolation" name="site-isolation">
@@ -325,10 +299,9 @@
         </div>
         <div class="container-options options-label" id="manage-assigned-sites-list">Manage Site List...
         </div>
-      </div>
     </div>
     <div class="delete-container">
-      <button class="delete-btn">Delete This Container</button>
+      <button class="delete-btn" id="delete-container-button">Delete This Container</button>
     </div>
   </div>
 
@@ -338,23 +311,30 @@
     </h3>
     <button class="btn-return arrow-left" id="close-container-assignment-panel"></button>
     <hr>
-    <div class="scrollable edit-form">
-      <div id="edit-sites-assigned" class="scrollable" hidden>
-        <div class="assigned-sites">Sites assigned to this container</div>
-        <div class="assigned-sites-list">
-        </div>
-      </div>
+    <div class="scrollable edit-sites-assigned">
+      <div class="sub-header">Sites assigned to this container</div>
+      <table class="menu scrollable" id="edit-sites-assigned">
+        <tr class="menu-item hover-highlight" tabindex="0">
+          <td>
+            <div class="favicon"><img class="menu-icon" src="https://www.mozilla.org/favicon.ico" /></div>
+            <span class="menu-text truncate-text">www.mozillllllllllllllllllllllllllllla.org</span>
+            <img class="trash-button" src="/img/container-delete.svg" />
+          </td>
+        </tr>
+      </table>
     </div>
   </div>
 
   <div class="hide panel delete-container-panel" id="delete-container-panel">
-    <div class="panel-header">
-      <span class="usercontext-icon" id="delete-container-icon"></span>
-      <h3 id="delete-container-name" class="panel-header-text container-name"></h3>
-    </div>
+    <h3 class="title" id="container-delete-title">
+      Default
+    </h3>
+    <button class="btn-return arrow-left" id="close-container-delete-panel"></button>
+    <hr>
     <div class="panel-content delete-container-confirm">
       <h4 class="delete-container-confirm-title">Remove This Container</h4>
-      <p><span id="delete-container-tab-warning"></span> Are you sure you want to remove this Container?</p>
+      <p class="delete-warning" id="delete-container-tab-warning"></p>
+      <p class="delete-warning">Are you sure you want to remove this Container?</p>
     </div>
     <div class="panel-footer">
       <a href="#" class="button expanded secondary footer-button cancel-button" id="delete-container-cancel-link">Cancel</a>
