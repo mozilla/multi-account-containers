@@ -9,7 +9,7 @@ async function init() {
     const td = document.createElement("td");
 
     td.innerHTML = Utils.escaped`          
-        <div class="menu-icon">
+        <div class="menu-icon hover-highlight">
           <div class="usercontext-icon"
             data-identity-icon="${identity.icon}"
             data-identity-color="${identity.color}">
