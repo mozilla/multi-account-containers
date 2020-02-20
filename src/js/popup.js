@@ -20,10 +20,9 @@ const P_ONBOARDING_5 = "onboarding5";
 const P_ONBOARDING_6 = "onboarding6";
 const P_ONBOARDING_7 = "onboarding7";
 const P_CONTAINERS_LIST = "containersList";
-const P_CONTAINER_PICKER = "containerPicker";
 const OPEN_NEW_CONTAINER_PICKER = "new-tab";
 const MANAGE_CONTAINERS_PICKER = "manage";
-const REOPEN_IN_CONTAINER = "reopen-in";
+const REOPEN_IN_CONTAINER_PICKER = "reopen-in";
 const ALWAYS_OPEN_IN_PICKER = "always-open-in";
 const P_CONTAINER_INFO = "containerInfo";
 const P_CONTAINER_EDIT = "containerEdit";
@@ -216,7 +215,7 @@ const Logic = {
     }
   },
 
-  async showPanel(panel, currentIdentity = null, pickerType = null, backwards = false) {
+  async showPanel(panel, currentIdentity = null, backwards = false) {
     // Invalid panel... ?!?
     if (!(panel in this._panels)) {
       throw new Error("Something really bad happened. Unknown panel: " + panel);
@@ -227,7 +226,6 @@ const Logic = {
     }
 
     this._currentPanel = panel;
-    this.pickerType = pickerType;
 
     this._currentIdentity = currentIdentity;
 
@@ -256,7 +254,7 @@ const Logic = {
     if (!this._previousPanelPath) {
       throw new Error("Current panel not set!");
     }
-    this.showPanel(this._previousPanelPath.pop(), this._currentIdentity, null, true);
+    this.showPanel(this._previousPanelPath.pop(), this._currentIdentity, true);
   },
 
   registerPanel(panelName, panelObject) {
@@ -525,17 +523,17 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
   async initialize() {
     Utils.addEnterHandler(document.querySelector("#manage-containers-link"), (e) => {
       if (!e.target.classList.contains("disable-edit-containers")) {
-        Logic.showPanel(P_CONTAINER_PICKER, null, MANAGE_CONTAINERS_PICKER);
+        Logic.showPanel(MANAGE_CONTAINERS_PICKER);
       }
     });
     Utils.addEnterHandler(document.querySelector("#open-new-tab-in"), () => {
-      Logic.showPanel(P_CONTAINER_PICKER, null, OPEN_NEW_CONTAINER_PICKER);
+      Logic.showPanel(OPEN_NEW_CONTAINER_PICKER);
     });
     Utils.addEnterHandler(document.querySelector("#reopen-site-in"), () => {
-      Logic.showPanel(P_CONTAINER_PICKER, null, REOPEN_IN_CONTAINER);
+      Logic.showPanel(REOPEN_IN_CONTAINER_PICKER);
     });
     Utils.addEnterHandler(document.querySelector("#always-open-in"), () => {
-      Logic.showPanel(P_CONTAINER_PICKER, null, ALWAYS_OPEN_IN_PICKER);
+      Logic.showPanel(ALWAYS_OPEN_IN_PICKER);
     });
     Utils.addEnterHandler(document.querySelector("#info-icon"), () => {
       browser.runtime.openOptionsPage();
@@ -821,10 +819,10 @@ Logic.registerPanel(P_CONTAINER_INFO, {
   },
 });
 
-// P_CONTAINER_PICKER: Makes the list editable.
+// OPEN_NEW_CONTAINER_PICKER: Opens a new container tab.
 // ----------------------------------------------------------------------------
 
-Logic.registerPanel(P_CONTAINER_PICKER, {
+Logic.registerPanel(OPEN_NEW_CONTAINER_PICKER, {
   panelSelector: "#container-picker-panel",
 
   // This method is called when the object is registered.
@@ -837,52 +835,18 @@ Logic.registerPanel(P_CONTAINER_PICKER, {
 
   // This method is called when the panel is shown.
   prepare() {
+    document.getElementById("picker-title").textContent = "Open a New Tab in";
     const fragment = document.createDocumentFragment();
-    let pickedFunction;
-    switch (Logic.pickerType) {
-    case OPEN_NEW_CONTAINER_PICKER:
-      document.getElementById("picker-title").textContent = "Open a New Tab in";
-      pickedFunction = function (identity) {
-        try {
-          browser.tabs.create({
-            cookieStoreId: identity.cookieStoreId
-          });
-          window.close();
-        } catch (e) {
-          window.close();
-        }
-      };
-      break;
-    case MANAGE_CONTAINERS_PICKER:
-      document.getElementById("picker-title").textContent = "Manage Containers";
-      pickedFunction = function (identity) {
-        Logic.showPanel(P_CONTAINER_EDIT, identity);
-      };
-      break;
-    case REOPEN_IN_CONTAINER:
-      document.getElementById("picker-title").textContent = "Reopen This Site in";
-      pickedFunction = async function (identity) {
-        const currentTab = await Utils.currentTab();
-        const newUserContextId = Utils.userContextId(identity.cookieStoreId);
-        Utils.reloadInContainer(
-          currentTab.url, 
-          false, 
-          newUserContextId,
-          currentTab.index + 1, 
-          currentTab.active
-        );
+    const pickedFunction = function (identity) {
+      try {
+        browser.tabs.create({
+          cookieStoreId: identity.cookieStoreId
+        });
         window.close();
-      };
-      break;
-    case ALWAYS_OPEN_IN_PICKER:
-    default:
-      document.getElementById("picker-title").textContent = "Always Open This Site in";
-      pickedFunction = async function (identity) {
-        Utils.alwaysOpenInContainer(identity);
+      } catch (e) {
         window.close();
-      };
-      break;
-    }
+      }
+    };
 
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
@@ -904,6 +868,174 @@ Logic.registerPanel(P_CONTAINER_PICKER, {
 
       Utils.addEnterHandler(tr, () => {
         pickedFunction(identity);
+      });
+    });
+
+    const list = document.querySelector("#picker-identities-list");
+
+    list.innerHTML = "";
+    list.appendChild(fragment);
+
+    return Promise.resolve(null);
+  }
+});
+
+// MANAGE_CONTAINERS_PICKER: Makes the list editable.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
+  panelSelector: "#container-picker-panel",
+
+  // This method is called when the object is registered.
+  initialize() {
+    const closeContEl = document.querySelector("#close-container-picker-panel");
+    Utils.addEnterHandler(closeContEl, () => {
+      Logic.showPanel(P_CONTAINERS_LIST);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    document.getElementById("picker-title").textContent = "Manage Containers";
+    const fragment = document.createDocumentFragment();
+    const pickedFunction = function (identity) {
+      Logic.showPanel(P_CONTAINER_EDIT, identity);
+    };
+
+    Logic.identities().forEach(identity => {
+      const tr = document.createElement("tr");
+      tr.classList.add("menu-item");
+      const td = document.createElement("td");
+
+      td.innerHTML = Utils.escaped`          
+        <div class="menu-icon hover-highlight">
+          <div class="usercontext-icon"
+            data-identity-icon="${identity.icon}"
+            data-identity-color="${identity.color}">
+          </div>
+        </div>
+        <span class="menu-text">${identity.name}</span>`;
+
+      fragment.appendChild(tr);
+
+      tr.appendChild(td);
+
+      Utils.addEnterHandler(tr, () => {
+        pickedFunction(identity);
+      });
+    });
+
+    const list = document.querySelector("#picker-identities-list");
+
+    list.innerHTML = "";
+    list.appendChild(fragment);
+
+    return Promise.resolve(null);
+  }
+});
+
+// REOPEN_IN_CONTAINER_PICKER: Makes the list editable.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
+  panelSelector: "#container-picker-panel",
+
+  // This method is called when the object is registered.
+  initialize() {
+    const closeContEl = document.querySelector("#close-container-picker-panel");
+    Utils.addEnterHandler(closeContEl, () => {
+      Logic.showPanel(P_CONTAINERS_LIST);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    document.getElementById("picker-title").textContent = "Reopen This Site in";
+    const fragment = document.createDocumentFragment();
+    const pickedFunction = async function (identity) {
+      const currentTab = await Utils.currentTab();
+      const newUserContextId = Utils.userContextId(identity.cookieStoreId);
+      Utils.reloadInContainer(
+        currentTab.url, 
+        false, 
+        newUserContextId,
+        currentTab.index + 1, 
+        currentTab.active
+      );
+      window.close();
+    };
+
+    Logic.identities().forEach(identity => {
+      const tr = document.createElement("tr");
+      tr.classList.add("menu-item");
+      const td = document.createElement("td");
+
+      td.innerHTML = Utils.escaped`          
+        <div class="menu-icon hover-highlight">
+          <div class="usercontext-icon"
+            data-identity-icon="${identity.icon}"
+            data-identity-color="${identity.color}">
+          </div>
+        </div>
+        <span class="menu-text">${identity.name}</span>`;
+
+      fragment.appendChild(tr);
+
+      tr.appendChild(td);
+
+      Utils.addEnterHandler(tr, () => {
+        pickedFunction(identity);
+      });
+    });
+
+    const list = document.querySelector("#picker-identities-list");
+
+    list.innerHTML = "";
+    list.appendChild(fragment);
+
+    return Promise.resolve(null);
+  }
+});
+
+// ALWAYS_OPEN_IN_PICKER: Makes the list editable.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
+  panelSelector: "#container-picker-panel",
+
+  // This method is called when the object is registered.
+  initialize() {
+    const closeContEl = document.querySelector("#close-container-picker-panel");
+    Utils.addEnterHandler(closeContEl, () => {
+      Logic.showPanel(P_CONTAINERS_LIST);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    document.getElementById("picker-title").textContent = "Reopen This Site in";
+    const fragment = document.createDocumentFragment();
+    Logic.identities().forEach(identity => {
+      const tr = document.createElement("tr");
+      tr.classList.add("menu-item");
+      const td = document.createElement("td");
+
+      td.innerHTML = Utils.escaped`          
+        <div class="menu-icon hover-highlight">
+          <div class="usercontext-icon"
+            data-identity-icon="${identity.icon}"
+            data-identity-color="${identity.color}">
+          </div>
+        </div>
+        <span class="menu-text">${identity.name}</span>`;
+
+      fragment.appendChild(tr);
+
+      tr.appendChild(td);
+
+      Utils.addEnterHandler(tr, () => {
+        Utils.alwaysOpenInContainer(identity);
+        window.close();
       });
     });
 
