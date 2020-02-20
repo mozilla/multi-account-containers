@@ -173,14 +173,16 @@ const Logic = {
 
   _disableMenuItem(message, elementToDisable = document.querySelector("#move-to-new-window")) {
     elementToDisable.setAttribute("title", message);
+    elementToDisable.removeAttribute("tabindex");
     elementToDisable.classList.remove("hover-highlight");
     elementToDisable.classList.add("disabled-menu-item");
   },
 
-  _enableMenuItems(elementToDisable = document.querySelector("#move-to-new-window")) {
-    elementToDisable.removeAttribute("title");
-    elementToDisable.classList.add("hover-highlight");
-    elementToDisable.classList.remove("disabled-menu-item");
+  _enableMenuItems(elementToEnable = document.querySelector("#move-to-new-window")) {
+    elementToEnable.removeAttribute("title");
+    elementToEnable.setAttribute("tabindex", "0");
+    elementToEnable.classList.add("hover-highlight");
+    elementToEnable.classList.remove("disabled-menu-item");
   },
 
   async refreshIdentities() {
@@ -222,7 +224,6 @@ const Logic = {
     }
     if (!backwards || !this._currentPanel) {
       this._previousPanelPath.push(this._currentPanel);
-      console.log(this._previousPanelPath);
     }
 
     this._currentPanel = panel;
@@ -337,6 +338,16 @@ const Logic = {
     const panelItem = this._panels[this._currentPanel];
     return document.querySelector(this.getPanelSelector(panelItem));
   },
+
+  listenToPickerBackButton() {
+    const closeContEl = document.querySelector("#close-container-picker-panel");
+    if (!this._listenerSet) {
+      Utils.addEnterHandler(closeContEl, () => {
+        Logic.showPreviousPanel();
+      });
+      this._listenerSet = true;
+    }
+  }
 };
 
 // P_ONBOARDING_1: First page for Onboarding.
@@ -682,7 +693,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
   async initialize() {
     const closeContEl = document.querySelector("#close-container-info-panel");
     Utils.addEnterHandler(closeContEl, () => {
-      Logic.showPanel(P_CONTAINERS_LIST);
+      Logic.showPreviousPanel();
     });
 
     // Check if the user has incompatible add-ons installed
@@ -836,14 +847,11 @@ Logic.registerPanel(OPEN_NEW_CONTAINER_PICKER, {
 
   // This method is called when the object is registered.
   initialize() {
-    const closeContEl = document.querySelector("#close-container-picker-panel");
-    Utils.addEnterHandler(closeContEl, () => {
-      Logic.showPanel(P_CONTAINERS_LIST);
-    });
   },
 
   // This method is called when the panel is shown.
   prepare() {
+    Logic.listenToPickerBackButton();
     document.getElementById("picker-title").textContent = "Open a New Tab in";
     const fragment = document.createDocumentFragment();
     const pickedFunction = function (identity) {
@@ -857,13 +865,16 @@ Logic.registerPanel(OPEN_NEW_CONTAINER_PICKER, {
       }
     };
 
+    document.getElementById("new-container-div").innerHTML = "";
+
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
-      tr.classList.add("menu-item");
+      tr.classList.add("menu-item", "hover-highlight");
+      tr.setAttribute("tabindex", "0");
       const td = document.createElement("td");
 
       td.innerHTML = Utils.escaped`          
-        <div class="menu-icon hover-highlight">
+        <div class="menu-icon">
           <div class="usercontext-icon"
             data-identity-icon="${identity.icon}"
             data-identity-color="${identity.color}">
@@ -897,23 +908,45 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
 
   // This method is called when the object is registered.
   initialize() {
-    const closeContEl = document.querySelector("#close-container-picker-panel");
-    Utils.addEnterHandler(closeContEl, () => {
-      Logic.showPanel(P_CONTAINERS_LIST);
-    });
   },
 
   // This method is called when the panel is shown.
   prepare() {
+    Logic.listenToPickerBackButton();
+    const closeContEl = document.querySelector("#close-container-picker-panel");
+    if (!this._listenerSet) {
+      Utils.addEnterHandler(closeContEl, () => {
+        Logic.showPreviousPanel();
+      });
+      this._listenerSet = true;
+    }
     document.getElementById("picker-title").textContent = "Manage Containers";
     const fragment = document.createDocumentFragment();
     const pickedFunction = function (identity) {
       Logic.showPanel(P_CONTAINER_EDIT, identity);
     };
 
+    document.getElementById("new-container-div").innerHTML = Utils.escaped`
+      <table class="menu">
+        <tr class="menu-item hover-highlight" id="new-container" tabindex="0">
+          <td>
+            <div class="menu-icon new-container-icon">+
+            </div>
+            <span class="menu-text">New Container</span>
+          </td>
+        </tr>
+      </table>
+      <hr>
+    `;
+
+    Utils.addEnterHandler(document.querySelector("#new-container"), () => {
+      Logic.showPanel(P_CONTAINER_EDIT, { name: Logic.generateIdentityName() });
+    });
+
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
-      tr.classList.add("menu-item");
+      tr.classList.add("menu-item", "hover-highlight");
+      tr.setAttribute("tabindex", "0");
       const td = document.createElement("td");
 
       td.innerHTML = Utils.escaped`          
@@ -951,18 +984,16 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
 
   // This method is called when the object is registered.
   initialize() {
-    const closeContEl = document.querySelector("#close-container-picker-panel");
-    Utils.addEnterHandler(closeContEl, () => {
-      Logic.showPanel(P_CONTAINERS_LIST);
-    });
   },
 
   // This method is called when the panel is shown.
-  prepare() {
+  async prepare() {
+    Logic.listenToPickerBackButton();
     document.getElementById("picker-title").textContent = "Reopen This Site in";
     const fragment = document.createDocumentFragment();
-    const pickedFunction = async function (identity) {
-      const currentTab = await Utils.currentTab();
+    const currentTab = await Utils.currentTab();
+    console.log(currentTab);
+    const pickedFunction = function (identity) {
       const newUserContextId = Utils.userContextId(identity.cookieStoreId);
       Utils.reloadInContainer(
         currentTab.url, 
@@ -974,12 +1005,44 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
       window.close();
     };
 
-    Logic.identities().forEach(identity => {
+    document.getElementById("new-container-div").innerHTML = "";
+
+    if (currentTab.cookieStoreId !== "firefox-default") {
       const tr = document.createElement("tr");
-      tr.classList.add("menu-item");
+      tr.classList.add("menu-item", "hover-highlight");
       const td = document.createElement("td");
 
       td.innerHTML = Utils.escaped`          
+        <div class="menu-icon hover-highlight">
+          <div class="mac-icon">
+          </div>
+        </div>
+        <span class="menu-text">Default Container</span>`;
+
+      fragment.appendChild(tr);
+
+      tr.appendChild(td);
+
+      Utils.addEnterHandler(tr, () => {
+        Utils.reloadInContainer(
+          currentTab.url, 
+          false, 
+          0,
+          currentTab.index + 1, 
+          currentTab.active
+        );
+        window.close();
+      });
+    }
+
+    Logic.identities().forEach(identity => {
+      if (currentTab.cookieStoreId !== identity.cookieStoreId) {
+        const tr = document.createElement("tr");
+        tr.classList.add("menu-item", "hover-highlight");
+        tr.setAttribute("tabindex", "0");
+        const td = document.createElement("td");
+
+        td.innerHTML = Utils.escaped`          
         <div class="menu-icon hover-highlight">
           <div class="usercontext-icon"
             data-identity-icon="${identity.icon}"
@@ -988,13 +1051,14 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
         </div>
         <span class="menu-text">${identity.name}</span>`;
 
-      fragment.appendChild(tr);
+        fragment.appendChild(tr);
 
-      tr.appendChild(td);
+        tr.appendChild(td);
 
-      Utils.addEnterHandler(tr, () => {
-        pickedFunction(identity);
-      });
+        Utils.addEnterHandler(tr, () => {
+          pickedFunction(identity);
+        });
+      }
     });
 
     const list = document.querySelector("#picker-identities-list");
@@ -1014,19 +1078,20 @@ Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
 
   // This method is called when the object is registered.
   initialize() {
-    const closeContEl = document.querySelector("#close-container-picker-panel");
-    Utils.addEnterHandler(closeContEl, () => {
-      Logic.showPanel(P_CONTAINERS_LIST);
-    });
   },
 
   // This method is called when the panel is shown.
   prepare() {
+    Logic.listenToPickerBackButton();
     document.getElementById("picker-title").textContent = "Reopen This Site in";
     const fragment = document.createDocumentFragment();
+
+    document.getElementById("new-container-div").innerHTML = "";
+
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
-      tr.classList.add("menu-item");
+      tr.classList.add("menu-item", "hover-highlight");
+      tr.setAttribute("tabindex", "0");
       const td = document.createElement("td");
 
       td.innerHTML = Utils.escaped`          
@@ -1066,8 +1131,6 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
   // This method is called when the object is registered.
   initialize() {
     const closeContEl = document.querySelector("#close-container-assignment-panel");
-    closeContEl.setAttribute("tabindex", "0");
-    closeContEl.classList.add("firstTabindex");
     Utils.addEnterHandler(closeContEl, () => {
       Logic.showPreviousPanel();
     });
@@ -1209,13 +1272,23 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     // Populating the panel: name and icon
     document.getElementById("container-edit-title").textContent = identity.name;
 
+
     const userContextId = Logic.currentUserContextId();
-    // const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
-    // this.showAssignedContainers(assignments);
-    // document.querySelector("#edit-container-panel .panel-footer").hidden = !!userContextId;
+    document.querySelector("#edit-container-panel .panel-footer").hidden = !!userContextId;
+    document.querySelector("#edit-container-panel .delete-container").hidden = !userContextId;
+
+    Utils.addEnterHandler(document.querySelector("#create-container-cancel-link"), () => {
+      Logic.showPreviousPanel();
+    });
+
+    Utils.addEnterHandler(document.querySelector("#create-container-ok-link"), () => {
+      this._submitForm();
+    });
+
     Utils.addEnterHandler(document.querySelector("#manage-assigned-sites-list"), () => {
       Logic.showPanel(P_CONTAINER_ASSIGNMENTS, identity);
     });
+
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
     document.querySelector("#edit-container-panel-usercontext-input").value = userContextId || NEW_CONTAINER_ID;
     const containerName = document.querySelector("#edit-container-panel-name-input");

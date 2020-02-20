@@ -91,6 +91,7 @@ table {
 }
 
 .scrollable {
+  flex: 1;
   inline-size: 100%;
   max-block-size: 400px;
   overflow: auto;
@@ -638,6 +639,14 @@ span ~ .panel-header-text {
   filter: url('/img/filters.svg#fill');
 }
 
+.mac-icon {
+  background-image: url('/img/multiaccountcontainer-16.svg');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  block-size: 100%;
+}
+
 .container-panel-row:hover .clickable .usercontext-icon,
 .container-panel-row:focus .clickable .usercontext-icon,
 .container-panel-row .clickable:focus .usercontext-icon {
@@ -1098,6 +1107,7 @@ hr {
 
 .edit-form {
   color: #737373;
+  flex: 1;
   padding-block-end: 0;
   padding-block-start: 0;
   padding-inline-end: 16px;
@@ -1130,14 +1140,14 @@ hr {
   background-color: #fff;
   border-block-start: solid 1px #e3e3e3;
   cursor: default;
+  display: flex;
   height: 65px;
   inline-size: 100%;
-  inset-block-end: 0;
+  justify-content: space-between;
   padding-block-end: 27px;
   padding-block-start: 9px;
   padding-inline-end: 18px;
   padding-inline-start: 17px;
-  position: fixed;
 }
 
 .delete-btn {
@@ -1149,10 +1159,6 @@ hr {
   inline-size: 100%;
   line-height: 30px;
   text-align: center;
-}
-
-.menu-panel {
-  justify-content: flex-start;
 }
 
 .btn-return.arrow-left {
@@ -1244,4 +1250,9 @@ tr > td > .trash-button {
 
 tr:hover > td > .trash-button {
   display: block;
+}
+
+.new-container-icon {
+  font-size: 24px;
+  margin-block-start: -2px;
 }
