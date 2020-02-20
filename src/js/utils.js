@@ -5,7 +5,7 @@ const Utils = {
 
   createFavIconElement(url) {
     const imageElement = document.createElement("img");
-    imageElement.classList.add("icon", "offpage");
+    imageElement.classList.add("icon", "offpage", "menu-icon");
     imageElement.src = url;
     const loadListener = (e) => {
       e.target.classList.remove("offpage");
