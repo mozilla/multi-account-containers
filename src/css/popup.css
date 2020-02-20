@@ -91,7 +91,6 @@ table {
 }
 
 .scrollable {
-  border-block-start: 1px solid #f1f1f1;
   inline-size: 100%;
   max-block-size: 400px;
   overflow: auto;
@@ -107,10 +106,10 @@ table {
 
 /* Effect borrowed from tabs in Firefox, ensure that the element flexes to the full width */
 .truncate-text {
+  inline-size: 100%;
   mask-image: linear-gradient(to left, transparent, black 1em);
   overflow: hidden;
   white-space: nowrap;
-  width: 100%;
 }
 
 /* Color and icon helpers */
@@ -274,7 +273,7 @@ table {
 
 .panel-content {
   flex: 1;
-  padding: 16px;
+  padding-block-start: 16px;
 }
 
 /* Column panels for edit screens */
@@ -445,7 +444,7 @@ manage things like container crud */
   block-size: 48px;
   display: flex;
   justify-content: space-between;
-  padding: 16px;
+  padding-block-start: 16px;
 }
 
 .panel-header .usercontext-icon {
@@ -822,10 +821,6 @@ span ~ .panel-header-text {
   overflow: hidden; /* Bugfix: issue 948 */
 }
 
-/*#edit-sites-assigned {
-  flex: 1000; /* Bugfix: issue 948 
-}*/
-
 #edit-sites-assigned h3 {
   font-size: 14px;
   font-weight: normal;
@@ -937,7 +932,7 @@ span ~ .panel-header-text {
 }
 
 .edit-container-panel legend,
-.options-header{
+.options-header {
   flex: 1 0;
   font-size: 14px !important;
   margin-block-end: 4px;
@@ -945,8 +940,8 @@ span ~ .panel-header-text {
 }
 
 .options-header {
-  margin-block-start: 6px;
   margin-block-end: 8px;
+  margin-block-start: 6px;
 }
 
 /* Achievement panel elements */
@@ -1000,45 +995,45 @@ span ~ .panel-header-text {
 }
 
 body {
+  color: #000;
   font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  color: #000000;
   font-size: 13px;
+  inline-size: 320px;
   letter-spacing: -0.1px;
-  width: 320px;
 }
 
 h3.title {
-  width: 100%;
-  color: #000000;
+  block-size: 40px;
+  color: #000;
   font-size: 13px;
-  letter-spacing: -0.1px;
   font-weight: bold;
+  inline-size: 100%;
+  letter-spacing: -0.1px;
   line-height: 40px;
   text-align: center;
-  height: 40px;
 }
 
 .menu {
-  width: 100%;
   border-style: none;
+  inline-size: 100%;
 }
 
 .menu-item {
-  height: 24px;
-  line-height: 24px;
-  width: 100%;
   cursor: pointer;
+  height: 24px;
+  inline-size: 100%;
+  line-height: 24px;
 }
 
 .disabled-menu-item {
-  font-style: italic;
   color: grey;
   cursor: default;
+  font-style: italic;
 }
 
 .hover-highlight:hover {
-  background: #1296F8;
-  color: #FFFFFF;
+  background: #1296f8;
+  color: #fff;
 }
 
 .menu-text {
@@ -1046,98 +1041,131 @@ h3.title {
 }
 
 .menu-icon {
-  float: left;
-  text-align: center;
-  width: 16px;
   display: block;
+  float: left;
   height: 16px;
-  margin: 4px 8px 4px 16px;
+  inline-size: 16px;
+  margin-block-end: 4px;
+  margin-block-start: 4px;
+  margin-inline-end: 8px;
+  margin-inline-start: 16px;
+  text-align: center;
 }
 
 .menu-right-float {
-  float: right;
-  text-align: right;
-  width: 60px;
   display: inline-block;
+  float: right;
   height: 24px;
+  inline-size: 60px;
+  text-align: right;
 }
 
 .container-count {
   opacity: 0.6;
-  padding: 0 6px 0 0;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 6px;
+  padding-inline-start: 0;
   text-align: right;
 }
 
 .menu-arrow {
-  float: right;
-  text-align: center;
-  width: 18px;
   display: inline-block;
+  float: right;
   height: 24px;
-  padding: 6px 12px 6px 0;
+  inline-size: 18px;
+  padding-block-end: 6px;
+  padding-block-start: 6px;
+  padding-inline-end: 12px;
+  padding-inline-start: 0;
+  text-align: center;
 }
 
 .menu-arrow img {
-  padding: 2 2 2 2;
   height: 12px;
-  width: 12px;
+  inline-size: 12px;
+  padding-block-end: 2px;
+  padding-block-start: 2px;
+  padding-inline-end: 2px;
+  padding-inline-start: 2px;
 }
 
 hr {
-  display: block;
   border: 0;
-  border-top: 1px solid #e3e3e3;
-  padding: 0 0 6px 0;
-  margin: 6px 0 0 0;
+  border-block-start: 1px solid #e3e3e3;
+  display: block;
+  margin-block-end: 0;
+  margin-block-start: 6px;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
+  padding-block-end: 6px;
+  padding-block-start: 0;
+  padding-inline-end: 0;
+  padding-inline-start: 0;
 }
 
 .sub-header {
-  height: 24px;
   color: #737373;
+  height: 24px;
   line-height: 24px;
-  padding: 0 16px 0 16px;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 16px;
+  padding-inline-start: 16px;
 }
 
 .edit-form {
   color: #737373;
-  padding: 0 16px 0 16px;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 16px;
+  padding-inline-start: 16px;
 }
 
 .identities-list {
-  margin: 0 0 41px 0;
+  margin-block-end: 41px;
+  margin-block-start: 0;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
 }
 
 .bottom-btn {
-  height: 41px;
-  line-height: 41px;
   background-color: #e3e3e3;
-  padding: 0 16px 0 16px;
   border: solid 1px #d9d9d9;
   cursor: pointer;
+  height: 41px;
+  inline-size: 100%;
+  inset-block-end: 0;
+  line-height: 41px;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 16px;
+  padding-inline-start: 16px;
   position: fixed;
-  bottom: 0px;
-  width: 100%;
 }
 
 .delete-container {
-  background-color: #FFFFFF;
-  border-top: solid 1px #e3e3e3;
+  background-color: #fff;
+  border-block-start: solid 1px #e3e3e3;
   cursor: default;
   height: 65px;
-  padding: 9px 18px 27px 17px;
+  inline-size: 100%;
+  inset-block-end: 0;
+  padding-block-end: 27px;
+  padding-block-start: 9px;
+  padding-inline-end: 18px;
+  padding-inline-start: 17px;
   position: fixed;
-  bottom: 0px;
-  width: 100%;
 }
 
 .delete-btn {
-  height: 30px;
-  line-height: 30px;
-  cursor: pointer;
-  width: 100%;
-  border: 0px;
+  background-color: rgba(12, 12, 13, 0.1);
+  border: 0;
   border-radius: 2px;
-  background-color: rgba(12,12,13,0.1);
+  cursor: pointer;
+  height: 30px;
+  inline-size: 100%;
+  line-height: 30px;
   text-align: center;
 }
 
@@ -1146,26 +1174,29 @@ hr {
 }
 
 .btn-return.arrow-left {
-  position: absolute;
-  border: 0;
-  left: 15px;
-  top: 15px;
-  width: 1.2rem;
-  height: 1.2rem;
   background-color: rgba(255, 255, 255, 1);
   background-image: url("/img/arrow-icon-left.svg");
+  border: 0;
   cursor: pointer;
+  height: 1.2rem;
+  inline-size: 1.2rem;
+  inset-block-start: 15px;
+  left: 15px;
+  position: absolute;
 }
 
 input {
-  border: solid 1px #BEBEBE;
+  border: solid 1px #bebebe;
   border-radius: 2px;
 }
 
 .form-header {
   height: 23px;
   line-height: 23px;
-  padding: 0 0 0 0;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 0;
+  padding-inline-start: 0;
 }
 
 #edit-container-panel-name-input {
@@ -1177,46 +1208,52 @@ input {
 }
 
 #site-isolation {
+  inset-block-end: auto;
   position: fixed;
-  bottom: auto;
 }
 
 .options-label {
-  padding-inline-start: 25px;
   cursor: pointer;
+  padding-inline-start: 25px;
 }
 
 #manage-assigned-sites-list {
-  color: #5A9DE6;
+  color: #5a9de6;
 }
 
 #info-icon {
-  position: absolute;
-  right: 13px;
-  top: 13px;
-  font-size: 10px;
-  height: 14px;
-  width: 14px;
   border: solid 1px #000;
   border-radius: 7px;
-  cursor: pointer;
-  text-align: center;
   color: #000;
-  text-decoration: none;
+  cursor: pointer;
+  font-size: 10px;
   font-weight: bold;
+  height: 14px;
+  inline-size: 14px;
+  inset-block-start: 13px;
+  position: absolute;
+  right: 13px;
+  text-align: center;
+  text-decoration: none;
 }
 
 .delete-warning {
-  padding: 8px 0 8px 0;
+  padding-block-end: 8px;
+  padding-block-start: 8px;
+  padding-inline-end: 0;
+  padding-inline-start: 0;
 }
 
 .trash-button {
-  float: right;
-  text-align: center;
-  width: 16px;
   display: inline-block;
+  float: right;
   height: 16px;
-  margin: 4px 10px 4px 0;
+  inline-size: 16px;
+  margin-block-end: 4px;
+  margin-block-start: 4px;
+  margin-inline-end: 10px;
+  margin-inline-start: 0;
+  text-align: center;
 }
 
 tr > td > .trash-button {
