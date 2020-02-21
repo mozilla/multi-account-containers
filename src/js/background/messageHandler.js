@@ -11,7 +11,7 @@ const messageHandler = {
 
       switch (m.method) {
       case "getShortcuts":
-      console.log(identityState.keyboardShortcut);
+        console.log(identityState.keyboardShortcut);
         response = identityState.keyboardShortcut;
         break;
       case "setShortcut":
@@ -91,7 +91,7 @@ const messageHandler = {
         );
         break;
       }
-      console.log(response)
+      console.log(response);
       return response;
     });
 
