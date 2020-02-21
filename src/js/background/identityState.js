@@ -1,4 +1,7 @@
+const NUM_OF_KEYBOARD_SHORTCUTS = 2;
+
 window.identityState = {
+  keyboardShortcut: {},
   storageArea: {
     area: browser.storage.local,
 
@@ -42,6 +45,19 @@ window.identityState = {
       return this.area.remove([storeKey]);
     },
 
+    async setKeyboardShortcut(shortcutId, cookieStoreId) {
+      identityState.keyboardShortcut[shortcutId] = cookieStoreId;
+      return this.area.set({[shortcutId]: cookieStoreId});
+    },
+
+    async loadKeyboardShortcuts () {
+      for (let i=0; i < NUM_OF_KEYBOARD_SHORTCUTS; i++) {
+        const key = "open_container_" + i;
+        const storageObject = await this.area.get(key);
+        identityState.keyboardShortcut[key] = storageObject[key];
+      }
+    },
+
     /*
      * Looks for abandoned identity keys in local storage, and makes sure all
      * identities registered in the browser are also in local storage. (this
@@ -72,7 +88,8 @@ window.identityState = {
           }
         }
       }
-    }
+    },
+
   },
 
   _createTabObject(tab) {
@@ -153,7 +170,13 @@ window.identityState = {
       macAddonUUID: uuidv4()
     };
   },
+
+  init() {
+    this.storageArea.loadKeyboardShortcuts();
+  }
 };
+
+identityState.init();
 
 function uuidv4() {
   // https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript

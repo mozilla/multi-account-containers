@@ -1,3 +1,4 @@
+const NUMBER_OF_KEYBOARD_SHORTCUTS = 2;
 const DEFAULT_TAB = "about:newtab";
 const backgroundLogic = {
   NEW_TAB_PAGES: new Set([
@@ -7,6 +8,19 @@ const backgroundLogic = {
     "about:blank"
   ]),
   unhideQueue: [],
+  init() {
+    console.log("init")
+    browser.commands.onCommand.addListener(function (command) {
+      for (let i=0; i < NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
+        const key = "open_container_" + i;
+        const cookieStoreId = identityState.keyboardShortcut[key];
+        console.log(cookieStoreId);
+        if (command === key) {
+          browser.tabs.create({cookieStoreId});
+        }
+      }
+    });
+  },
 
   async getExtensionInfo() {
     const manifestPath = browser.extension.getURL("manifest.json");
@@ -334,12 +348,5 @@ const backgroundLogic = {
   }
 };
 
-browser.commands.onCommand.addListener(function (command) {
-  if (command === "open_container_2") {
-    browser.tabs.create({cookieStoreId: "firefox-container-2"});
-  }
-  if (command === "open_container_1") {
-    console.log("Toggling the feature!");
-    browser.tabs.create({cookieStoreId: "firefox-container-1"});
-  }
-});
+
+backgroundLogic.init();
