@@ -10,6 +10,13 @@ const messageHandler = {
       let response;
 
       switch (m.method) {
+      case "getShortcuts":
+      console.log(identityState.keyboardShortcut);
+        response = identityState.keyboardShortcut;
+        break;
+      case "setShortcut":
+        identityState.storageArea.setKeyboardShortcut(m.shortcut, m.cookieStoreId);
+        break;
       case "resetSync":
         response = sync.resetSync();
         break;
@@ -84,6 +91,7 @@ const messageHandler = {
         );
         break;
       }
+      console.log(response)
       return response;
     });
 
