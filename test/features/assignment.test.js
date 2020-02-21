@@ -14,7 +14,7 @@ describe("Assignment Reopen Feature", function () {
     this.webExt.destroy();
   });
 
-  describe("click the 'Always open in' checkbox in the popup", function () {
+  describe("set to 'Always open in' firefox-container-4", function () {
     beforeEach(async function () {
       // popup click to set assignment for activeTab.url
       await this.webExt.popup.helper.clickElementById("always-open-in");

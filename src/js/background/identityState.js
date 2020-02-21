@@ -28,7 +28,7 @@ window.identityState = {
         await this.set(cookieStoreId, defaultContainerState);
         return defaultContainerState;
       }
-      throw new Error (`${cookieStoreId} not found`);
+      return false;
     },
 
     set(cookieStoreId, data) {
