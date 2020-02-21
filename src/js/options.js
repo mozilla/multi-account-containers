@@ -25,7 +25,6 @@ async function enableDisableSync() {
 }
 
 async function setupOptions() {
-  console.log("setup")
   const hasPermission = await browser.permissions.contains({permissions: ["bookmarks"]});
   const { syncEnabled } = await browser.storage.local.get("syncEnabled");
   if (hasPermission) {
