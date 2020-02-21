@@ -136,6 +136,20 @@ const backgroundLogic = {
     }
   },
 
+  // https://github.com/mozilla/multi-account-containers/issues/847
+  async addRemoveSiteIsolation(cookieStoreId, remove = false) {
+    const containerState = await identityState.storageArea.get(cookieStoreId);
+    try {
+      if ("isIsolated" in containerState || remove) {
+        delete containerState.isIsolated;
+      } else {
+        containerState.isIsolated = "locked";        
+      }
+      return await identityState.storageArea.set(cookieStoreId, containerState);
+    } catch (error) {
+      console.error(`No container: ${cookieStoreId}`);
+    }
+  },
 
   async moveTabsToWindow(options) {
     const requiredArguments = ["cookieStoreId", "windowId"];
@@ -242,7 +256,8 @@ const backgroundLogic = {
         hasHiddenTabs: !!containerState.hiddenTabs.length,
         hasOpenTabs: !!openTabs.length,
         numberOfHiddenTabs: containerState.hiddenTabs.length,
-        numberOfOpenTabs: openTabs.length
+        numberOfOpenTabs: openTabs.length,
+        isIsolated: !!containerState.isIsolated
       };
       return;
     });

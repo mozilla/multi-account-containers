@@ -202,6 +202,7 @@ const Logic = {
         identity.hasHiddenTabs = stateObject.hasHiddenTabs;
         identity.numberOfHiddenTabs = stateObject.numberOfHiddenTabs;
         identity.numberOfOpenTabs = stateObject.numberOfOpenTabs;
+        identity.isIsolated = stateObject.isIsolated;
       }
       return identity;
     });
@@ -1297,6 +1298,14 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     window.requestAnimationFrame(() => {
       containerName.select();
       containerName.focus();
+    });
+    const siteIsolation = document.querySelector("#site-isolation");
+    siteIsolation.checked = !!identity.isIsolated;
+    siteIsolation.addEventListener( "change", function() {
+      browser.runtime.sendMessage({ 
+        method: "addRemoveSiteIsolation",
+        cookieStoreId: identity.cookieStoreId
+      });
     });
     [...document.querySelectorAll("[name='container-color']")].forEach(colorInput => {
       colorInput.checked = colorInput.value === identity.color;

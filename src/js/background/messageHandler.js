@@ -32,6 +32,9 @@ const messageHandler = {
       case "neverAsk":
         assignManager._neverAsk(m);
         break;
+      case "addRemoveSiteIsolation":
+        response = backgroundLogic.addRemoveSiteIsolation(m.cookieStoreId);
+        break;
       case "getAssignment":
         response = browser.tabs.get(m.tabId).then((tab) => {
           return assignManager._getAssignment(tab);
