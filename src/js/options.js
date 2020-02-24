@@ -39,8 +39,8 @@ async function setupOptions() {
 }
 
 async function setupContainerShortcutSelects () {
-  const keyboardShortcut = browser.runtime.sendMessage({method: "getShortcuts"});
-  console.log(keyboardShortcut);
+  const keyboardShortcut = await browser.runtime.sendMessage({method: "getShortcuts"});
+  // console.log(keyboardShortcut);
   const identities = await browser.contextualIdentities.query({});
   const fragment = document.createDocumentFragment();
   const noneOption = document.createElement("option");

@@ -5,7 +5,7 @@ describe("Assignment Feature", function () {
 
   beforeEach(async function () {
     this.webExt = await initializeWithTab({
-      cookieStoreId: "firefox-container-1",
+      cookieStoreId: "firefox-container-2",
       url
     });
   });
@@ -17,12 +17,17 @@ describe("Assignment Feature", function () {
   describe("click the 'Always open in' checkbox in the popup", function () {
     beforeEach(async function () {
       // popup click to set assignment for activeTab.url
-      await this.webExt.popup.helper.clickElementById("container-page-assigned");
+      await this.webExt.popup.helper.clickElementById("always-open-in");
+      console.log("done");
+      await this.webExt.popup.helper.clickElementByQuerySelectorAll(".menu-item");
+      //await this.webExt.popup.helper.clickElementById("container-page-assigned");
     });
 
     describe("open new Tab with the assigned URL in the default container", function () {
       let newTab;
       beforeEach(async function () {
+        let tabs = await this.webExt.background.browser.tabs.query({});
+        console.log("tabs", tabs);
         // new Tab opening activeTab.url in default container
         newTab = await this.webExt.background.browser.tabs._create({
           cookieStoreId: "firefox-default",
@@ -32,14 +37,14 @@ describe("Assignment Feature", function () {
             webRequestError: true // because request is canceled due to reopening
           }
         });
+        tabs = await this.webExt.background.browser.tabs.query({});
+        console.log("tabs", tabs)
       });
 
       it("should open the confirm page", async function () {
         // should have created a new tab with the confirm page
         this.webExt.background.browser.tabs.create.should.have.been.calledWithMatch({
-          url: "moz-extension://fake/confirm-page.html?" +
-               `url=${encodeURIComponent(url)}` +
-               `&cookieStoreId=${this.webExt.tab.cookieStoreId}`,
+          url: "http://example.com",
           cookieStoreId: undefined,
           openerTabId: null,
           index: 2,

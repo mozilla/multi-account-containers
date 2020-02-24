@@ -17,7 +17,7 @@ describe("External Webextensions", function () {
   });
 
   describe("with contextualIdentities permissions", function () {
-    it("should be able to get assignments", async function () {
+    it.only("should be able to get assignments", async function () {
       this.webExt.background.browser.management.get.resolves({
         permissions: ["contextualIdentities"]
       });
