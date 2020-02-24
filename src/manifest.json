@@ -71,7 +71,7 @@
     "default_icon": "img/multiaccountcontainer-16.svg",
     "default_title": "Always open this in a Container",
     "default_popup": "pageActionPopup.html",
-    "pinned": true,
+    "pinned": false,
     "show_matches": ["*://*/*"]
   },
   "background": {
