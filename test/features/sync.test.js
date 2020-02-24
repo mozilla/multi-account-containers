@@ -11,7 +11,7 @@ describe("Sync", function() {
     delete this.syncHelper;
   });
 
-  it.only("testIdentityStateCleanup", async function() {
+  it("testIdentityStateCleanup", async function() {
     await this.syncHelper.stopSyncListeners();
 
     await this.syncHelper.setState({}, LOCAL_DATA, TEST_CONTAINERS, []);
