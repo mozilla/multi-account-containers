@@ -71,6 +71,7 @@ const buildPopupDom = popup => {
 };
 
 const buildConfirmPage = async (url) => {
+  console.log(url)
   const webExtension = await webExtensionsJSDOM.fromFile(url);
 
   webExtension.browser.runtime.onMessage = window.browser.runtime.sendMessage;

@@ -89,7 +89,7 @@ describe("Assignment Comfirm Page Feature", function () {
     describe("Set assignment to 'never ask' ", function () {
       beforeEach(async function () {
         // click confirm page to always open in container
-        const confirmPage = await buildConfirmPage("moz-extension://fake/confirm-page.html?" +
+        const confirmPage = await buildConfirmPage("src/confirm-page.html?" +
                `url=${encodeURIComponent(url)}` +
                `&cookieStoreId=${this.webExt.tab.cookieStoreId}`);
         await confirmPage.document.getElementById("never-ask").click();
