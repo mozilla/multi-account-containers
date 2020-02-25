@@ -5,11 +5,12 @@ describe("External Webextensions", function () {
 
   beforeEach(async function () {
     this.webExt = await initializeWithTab({
-      cookieStoreId: "firefox-container-1",
+      cookieStoreId: "firefox-container-4",
       url
     });
 
-    await this.webExt.popup.helper.clickElementById("container-page-assigned");
+    await this.webExt.popup.helper.clickElementById("always-open-in");
+    await this.webExt.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item", "last");
   });
 
   afterEach(function () {
@@ -17,7 +18,7 @@ describe("External Webextensions", function () {
   });
 
   describe("with contextualIdentities permissions", function () {
-    it.only("should be able to get assignments", async function () {
+    it("should be able to get assignments", async function () {
       this.webExt.background.browser.management.get.resolves({
         permissions: ["contextualIdentities"]
       });
@@ -32,7 +33,7 @@ describe("External Webextensions", function () {
 
       const [promise] = this.webExt.background.browser.runtime.onMessageExternal.addListener.yield(message, sender);
       const answer = await promise;
-      expect(answer.userContextId === "1").to.be.true;
+      expect(answer.userContextId === "4").to.be.true;
       expect(answer.neverAsk === false).to.be.true;
       expect(
         Object.prototype.hasOwnProperty.call(

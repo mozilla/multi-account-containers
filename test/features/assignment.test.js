@@ -1,11 +1,11 @@
 const {initializeWithTab} = require("../common");
 
-describe("Assignment Feature", function () {
+describe("Assignment Reopen Feature", function () {
   const url = "http://example.com";
 
   beforeEach(async function () {
     this.webExt = await initializeWithTab({
-      cookieStoreId: "firefox-container-2",
+      cookieStoreId: "firefox-default",
       url
     });
   });
@@ -18,63 +18,100 @@ describe("Assignment Feature", function () {
     beforeEach(async function () {
       // popup click to set assignment for activeTab.url
       await this.webExt.popup.helper.clickElementById("always-open-in");
-      console.log("done");
-      await this.webExt.popup.helper.clickElementByQuerySelectorAll(".menu-item");
-      //await this.webExt.popup.helper.clickElementById("container-page-assigned");
+      await this.webExt.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item");
     });
 
-    describe("open new Tab with the assigned URL in the default container", function () {
-      let newTab;
-      beforeEach(async function () {
-        let tabs = await this.webExt.background.browser.tabs.query({});
-        console.log("tabs", tabs);
-        // new Tab opening activeTab.url in default container
-        newTab = await this.webExt.background.browser.tabs._create({
-          cookieStoreId: "firefox-default",
-          url
-        }, {
-          options: {
-            webRequestError: true // because request is canceled due to reopening
-          }
-        });
-        tabs = await this.webExt.background.browser.tabs.query({});
-        console.log("tabs", tabs)
-      });
-
-      it("should open the confirm page", async function () {
-        // should have created a new tab with the confirm page
-        this.webExt.background.browser.tabs.create.should.have.been.calledWithMatch({
-          url: "http://example.com",
-          cookieStoreId: undefined,
-          openerTabId: null,
-          index: 2,
-          active: true
-        });
-      });
-
-      it("should remove the new Tab that got opened in the default container", function () {
-        this.webExt.background.browser.tabs.remove.should.have.been.calledWith(newTab.id);
+    it("should open the page in the assigned container", async function () {
+      // should have created a new tab with the confirm page
+      this.webExt.background.browser.tabs.create.should.have.been.calledWithMatch({
+        active: true,
+        cookieStoreId: "firefox-container-4",
+        index: 1,
+        openerTabId: null,
+        url: "http://example.com"
       });
     });
 
-    describe("click the 'Always open in' checkbox in the popup again", function () {
+  });
+
+});
+
+describe("Assignment Comfirm Page Feature", function () {
+  const url = "http://example.com";
+
+  beforeEach(async function () {
+    this.webExt = await initializeWithTab({
+      cookieStoreId: "firefox-container-4",
+      url
+    });
+  });
+
+  afterEach(function () {
+    this.webExt.destroy();
+  });
+
+  describe("open new Tab with the assigned URL in the default container", function () {
+    let newTab;
+    beforeEach(async function () {
+      await this.webExt.popup.helper.clickElementById("always-open-in");
+      await this.webExt.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item");
+
+      // new Tab opening activeTab.url in default container
+      newTab = await this.webExt.background.browser.tabs._create({
+        cookieStoreId: "firefox-default",
+        url
+      }, {
+        options: {
+          webRequestError: true // because request is canceled due to reopening
+        }
+      });
+    });
+
+    it("should open the confirm page", async function () {
+      // should have created a new tab with the confirm page
+      this.webExt.background.browser.tabs.create.should.have.been.calledWithMatch({
+        url: "moz-extension://fake/confirm-page.html?" +
+               `url=${encodeURIComponent(url)}` +
+               `&cookieStoreId=${this.webExt.tab.cookieStoreId}`,
+        cookieStoreId: undefined,
+        openerTabId: null,
+        index: 2,
+        active: true
+      });
+    });
+
+    it("should remove the new Tab that got opened in the default container", function () {
+      this.webExt.background.browser.tabs.remove.should.have.been.calledWith(newTab.id);
+    });
+
+
+    describe("Set assignment to 'never ask' ", function () {
       beforeEach(async function () {
-        // popup click to remove assignment for activeTab.url
-        await this.webExt.popup.helper.clickElementById("container-page-assigned");
+        // click confirm page to always open in container
+        await this.webExt.document.getElementById("never-ask").click();
+        await this.webExt.document.getElementById("confirm").click();
       });
 
-      describe("open new Tab with the no longer assigned URL in the default container", function () {
+      describe("open new Tab with url set to 'never ask' ", function () {
         beforeEach(async function () {
-          // new Tab opening activeTab.url in default container
+        // new Tab trying to open url in default container
           await this.webExt.background.browser.tabs._create({
             cookieStoreId: "firefox-default",
             url
           });
+          const tabs = await this.webExt.background.browser.tabs.query({});
+          console.log("tabs", tabs);
         });
 
         it("should not open the confirm page", async function () {
-          // should not have created a new tab
-          this.webExt.background.browser.tabs.create.should.not.have.been.called;
+          // should have created a new tab with the assigned url
+          this.webExt.background.browser.tabs.create.should.have.been.calledWithMatch({
+            url,
+            cookieStoreId: "firefox-container-4",
+            openerTabId: null,
+            index: 3,
+            active: true
+          });
         });
       });
     });

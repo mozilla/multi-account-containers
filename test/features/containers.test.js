@@ -23,7 +23,7 @@ describe("Containers Management", function () {
     describe("removing it afterwards", function () {
       beforeEach(async function () {
         await this.webExt.popup.helper.clickElementById("manage-containers-link");
-        await this.webExt.popup.helper.clickElementByQuerySelectorAll(".menu-item", "last");
+        await this.webExt.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item", "last");
         await this.webExt.popup.helper.clickElementById("delete-container-button");
         await this.webExt.popup.helper.clickElementById("delete-container-ok-link");
       });
