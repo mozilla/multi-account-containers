@@ -534,7 +534,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
   async initialize() {
     Utils.addEnterHandler(document.querySelector("#manage-containers-link"), (e) => {
       if (!e.target.classList.contains("disable-edit-containers")) {
-        console.log("manage clicked")
         Logic.showPanel(MANAGE_CONTAINERS_PICKER);
       }
     });
@@ -545,7 +544,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       Logic.showPanel(REOPEN_IN_CONTAINER_PICKER);
     });
     Utils.addEnterHandler(document.querySelector("#always-open-in"), () => {
-      console.log("clicked always-open-in");
       Logic.showPanel(ALWAYS_OPEN_IN_PICKER);
     });
     Utils.addEnterHandler(document.querySelector("#info-icon"), () => {
@@ -942,7 +940,6 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
     `;
 
     Utils.addEnterHandler(document.querySelector("#new-container"), () => {
-      console.log("new-container-clicked")
       Logic.showPanel(P_CONTAINER_EDIT, { name: Logic.generateIdentityName() });
     });
 
@@ -966,7 +963,6 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
       tr.appendChild(td);
 
       Utils.addEnterHandler(tr, () => {
-        console.log("manage indentity:", identity)
         pickedFunction(identity);
       });
     });
@@ -996,7 +992,6 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
     document.getElementById("picker-title").textContent = "Reopen This Site in";
     const fragment = document.createDocumentFragment();
     const currentTab = await Utils.currentTab();
-    console.log("currentTab",currentTab);
     const pickedFunction = function (identity) {
       const newUserContextId = Utils.userContextId(identity.cookieStoreId);
       Utils.reloadInContainer(
@@ -1112,7 +1107,6 @@ Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
       tr.appendChild(td);
 
       Utils.addEnterHandler(tr, () => {
-        console.log("clicked");
         Utils.alwaysOpenInContainer(identity);
         window.close();
       });
@@ -1310,7 +1304,6 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
     const deleteButton = document.getElementById("delete-container-button");
     Utils.addEnterHandler(deleteButton, () => {
-      console.log("delete button clicked")
       Logic.showPanel(P_CONTAINER_DELETE, identity);
     });
     return Promise.resolve(null);
@@ -1333,7 +1326,6 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
       Logic.showPreviousPanel();
     });
     Utils.addEnterHandler(document.querySelector("#delete-container-ok-link"), async () => {
-      console.log("delete ok clicked", Logic.currentIdentity().cookieStoreId)
       /* This promise wont resolve if the last tab was removed from the window.
           as the message async callback stops listening, this isn't an issue for us however it might be in future
           if you want to do anything post delete do it in the background script.

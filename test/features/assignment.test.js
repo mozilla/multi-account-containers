@@ -1,4 +1,5 @@
 const {initializeWithTab} = require("../common");
+const {buildConfirmPage} = require("../common");
 
 describe("Assignment Reopen Feature", function () {
   const url = "http://example.com";
@@ -88,8 +89,11 @@ describe("Assignment Comfirm Page Feature", function () {
     describe("Set assignment to 'never ask' ", function () {
       beforeEach(async function () {
         // click confirm page to always open in container
-        await this.webExt.document.getElementById("never-ask").click();
-        await this.webExt.document.getElementById("confirm").click();
+        const confirmPage = await buildConfirmPage("moz-extension://fake/confirm-page.html?" +
+               `url=${encodeURIComponent(url)}` +
+               `&cookieStoreId=${this.webExt.tab.cookieStoreId}`);
+        await confirmPage.document.getElementById("never-ask").click();
+        await confirmPage.document.getElementById("confirm").click();
       });
 
       describe("open new Tab with url set to 'never ask' ", function () {

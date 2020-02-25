@@ -70,6 +70,13 @@ const buildPopupDom = popup => {
   });
 };
 
+const buildConfirmPage = async (url) => {
+  const webExtension = await webExtensionsJSDOM.fromFile(url);
+
+  webExtension.browser.runtime.onMessage = window.browser.runtime.sendMessage;
+  return webExtension;
+};
+
 const initializeWithTab = async (details = {
   cookieStoreId: "firefox-default"
 }) => {
@@ -108,4 +115,5 @@ module.exports = {
   sinon,
   expect,
   nextTick,
+  buildConfirmPage
 };
