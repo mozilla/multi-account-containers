@@ -1,4 +1,3 @@
-const NUMBER_OF_KEYBOARD_SHORTCUTS = 2;
 const DEFAULT_TAB = "about:newtab";
 const backgroundLogic = {
   NEW_TAB_PAGES: new Set([
@@ -7,10 +6,11 @@ const backgroundLogic = {
     "about:home",
     "about:blank"
   ]),
+  NUMBER_OF_KEYBOARD_SHORTCUTS: 2,
   unhideQueue: [],
   init() {
     browser.commands.onCommand.addListener(function (command) {
-      for (let i=0; i < NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
+      for (let i=0; i < this.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
         const key = "open_container_" + i;
         const cookieStoreId = identityState.keyboardShortcut[key];
         if (command === key) {

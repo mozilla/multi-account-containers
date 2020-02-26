@@ -119,7 +119,9 @@
     <h3 class="title">
       Multi-Account Containers
     </h3>
-    <a href="#" id="info-icon" tabindex="10">i</a>
+    <a href="#" class="info-icon" id="info-icon" tabindex="10">
+      <img alt="info" src="/img/info-thin-16.svg" / >
+    </a>
     <hr>
     <table class="menu">
       <tr class="menu-item hover-highlight" id="open-new-tab-in" tabindex="0">
@@ -153,7 +155,7 @@
       </tr>
       <tr class="menu-item hover-highlight" id="always-open-in" tabindex="0">
         <td>
-          <img class="menu-icon" alt="Open in New Tab" src="/img/open-in-new-16.svg" />
+          <img class="menu-icon" alt="Open in New Tab" src="/img/container-openin-16.svg" />
           <span class="menu-text">Always Open This Site in...</span>
             <span class="menu-arrow">
               <img alt="Container Info" src="/img/arrow-icon-right.svg" />
@@ -199,6 +201,14 @@
     <button class="btn-return arrow-left" id="close-container-info-panel" tabindex="0"></button>
     <hr>
     <table class="menu">
+      <tr class="menu-item hover-highlight" id="open-new-tab-in-info" tabindex="0">
+        <td>
+          <img class="menu-icon" alt="Open in New Tab" src="/img/tab-new-16.svg" />
+          <span class="menu-text">Open New Tab in this Container</span>
+            <span class="menu-arrow">
+            </span>
+        </td>
+      </tr>
       <tr class="menu-item hover-highlight" id="hideorshow-container" tabindex="0">
         <td>
           <img id="container-info-hideorshow-icon" class="menu-icon" alt="Hide This Container" src="img/password-hide.svg" />
@@ -217,7 +227,7 @@
       </tr>
       <tr class="menu-item hover-highlight hover-highlight" id="always-open" tabindex="0">
         <td>
-          <img class="menu-icon" alt="Always Open Site in Container" src="/img/open-in-new-16.svg" />
+          <img class="menu-icon" alt="Always Open Site in Container" src="/img/container-openin-16.svg" />
           <span class="menu-text" id="always-open-in-info-panel">Always Open Site in Container</span>
             <span class="menu-arrow">
             </span>
@@ -280,7 +290,7 @@
         <input type="hidden" name="container-id" id="edit-container-panel-usercontext-input" />
         <fieldset>
           <legend class="form-header">Name</legend>
-          <input type="text" name="container-name" id="edit-container-panel-name-input" maxlength="25"/>
+          <input type="text" name="container-name" id="edit-container-panel-name-input" class="edit-container-panel-name-input" maxlength="25"/>
         </fieldset>
         <fieldset id="edit-container-panel-choose-color" class="radio-choice">
           <legend class="form-header">Color</legend>
@@ -291,10 +301,10 @@
       </form>
       <div class="options-header">Options</div>
       <div class="container-options">
-        <input type="checkbox" id="site-isolation" name="site-isolation">
+        <input type="checkbox" class="site-isolation" id="site-isolation" name="site-isolation">
         <label for="site-isolation" class="options-label">Limit to Designated Sites</label>
       </div>
-      <div class="container-options options-label" id="manage-assigned-sites-list">Manage Site List...
+      <div class="container-options options-label manage-assigned-sites-list" id="manage-assigned-sites-list">Manage Site List...
       </div>
     </div>
     <div class="delete-container">
