@@ -72,9 +72,12 @@ const buildPopupDom = popup => {
 
 const buildConfirmPage = async (url) => {
   console.log(url)
-  const webExtension = await webExtensionsJSDOM.fromFile(url);
+  const webExtension = await webExtensionsJSDOM
+    .fromFile(path.join(__dirname, "../src/confirm-page.html"), {
+      apiFake: true,
+      jsdom: {url}
+    });
 
-  webExtension.browser.runtime.onMessage = window.browser.runtime.sendMessage;
   return webExtension;
 };
 
