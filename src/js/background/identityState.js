@@ -1,5 +1,3 @@
-const NUM_OF_KEYBOARD_SHORTCUTS = 2;
-
 window.identityState = {
   keyboardShortcut: {},
   storageArea: {
@@ -51,7 +49,7 @@ window.identityState = {
     },
 
     async loadKeyboardShortcuts () {
-      for (let i=0; i < NUM_OF_KEYBOARD_SHORTCUTS; i++) {
+      for (let i=0; i < backgroundLogic.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
         const key = "open_container_" + i;
         const storageObject = await this.area.get(key);
         identityState.keyboardShortcut[key] = storageObject[key];

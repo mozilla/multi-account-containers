@@ -42,15 +42,15 @@
     },
     "open_container_0": {
       "suggested_key": {
-        "default": "Ctrl+Shift+0"
-      },
-      "description": "Container Shortcut 0"
-    },
-    "open_container_1": {
-      "suggested_key": {
         "default": "Ctrl+Shift+1"
       },
       "description": "Container Shortcut 1"
+    },
+    "open_container_1": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+2"
+      },
+      "description": "Container Shortcut 2"
     }
   },
   "browser_action": {
@@ -68,7 +68,7 @@
   },
   "page_action": {
     "browser_style": true,
-    "default_icon": "img/multiaccountcontainer-16.svg",
+    "default_icon": "img/container-openin-16.svg",
     "default_title": "Always open this in a Container",
     "default_popup": "pageActionPopup.html",
     "pinned": false,

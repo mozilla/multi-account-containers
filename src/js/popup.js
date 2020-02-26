@@ -725,6 +725,17 @@ Logic.registerPanel(P_CONTAINER_INFO, {
   async prepare() {
     const identity = Logic.currentIdentity();
 
+    const newTab = document.querySelector("#open-new-tab-in-info");
+    Utils.addEnterHandler(newTab, () => {
+      try {
+        browser.tabs.create({
+          cookieStoreId: identity.cookieStoreId
+        });
+        window.close();
+      } catch (e) {
+        window.close();
+      }
+    });
     // Populating the panel: name and icon
     document.getElementById("container-info-title").textContent = identity.name;
     
@@ -922,7 +933,7 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
       <table class="menu">
         <tr class="menu-item hover-highlight" id="new-container" tabindex="0">
           <td>
-            <div class="menu-icon new-container-icon">+
+            <div class="menu-icon"><img alt="New Container" src="/img/new-16.svg" />
             </div>
             <span class="menu-text">New Container</span>
           </td>

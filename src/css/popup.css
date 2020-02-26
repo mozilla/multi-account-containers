@@ -392,7 +392,7 @@ manage things like container crud */
   background-image: var(--identity-icon);
   background-position: center center;
   background-repeat: no-repeat;
-  background-size: 16px 16px;
+  background-size: 16px;
   block-size: 100%;
   fill: var(--identity-icon-color);
   filter: url('/img/filters.svg#fill');
@@ -402,7 +402,7 @@ manage things like container crud */
   background-image: url('/img/multiaccountcontainer-16.svg');
   background-position: center center;
   background-repeat: no-repeat;
-  background-size: 16px 16px;
+  background-size: 16px;
   block-size: 100%;
 }
 
@@ -647,6 +647,9 @@ body {
   font-size: 13px;
   inline-size: 320px;
   letter-spacing: -0.1px;
+  --highlight-blue: #1296f8;
+  --hr-grey: #e3e3e3;
+  --text-grey: #737373;
 }
 
 h3.title {
@@ -679,7 +682,7 @@ h3.title {
 }
 
 .hover-highlight:hover {
-  background: #1296f8;
+  background: var(--highlight-blue);
   color: #fff;
 }
 
@@ -739,7 +742,7 @@ h3.title {
 
 hr {
   border: 0;
-  border-block-start: 1px solid #e3e3e3;
+  border-block-start: 1px solid var(--hr-grey);
   display: block;
   margin-block-end: 0;
   margin-block-start: 6px;
@@ -752,7 +755,7 @@ hr {
 }
 
 .sub-header {
-  color: #737373;
+  color: var(--text-grey);
   height: 24px;
   line-height: 24px;
   padding-block-end: 0;
@@ -762,7 +765,7 @@ hr {
 }
 
 .edit-form {
-  color: #737373;
+  color: var(--text-grey);
   flex: 1;
   padding-block-end: 0;
   padding-block-start: 0;
@@ -778,7 +781,7 @@ hr {
 }
 
 .bottom-btn {
-  background-color: #e3e3e3;
+  background-color: var(--hr-grey);
   border: solid 1px #d9d9d9;
   cursor: pointer;
   height: 41px;
@@ -794,7 +797,7 @@ hr {
 
 .delete-container {
   background-color: #fff;
-  border-block-start: solid 1px #e3e3e3;
+  border-block-start: solid 1px var(--hr-grey);
   cursor: default;
   display: flex;
   height: 65px;
@@ -843,7 +846,7 @@ input {
   padding-inline-start: 0;
 }
 
-#edit-container-panel-name-input {
+.edit-container-panel-name-input {
   height: 29px;
 }
 
@@ -851,7 +854,7 @@ input {
   height: 23px;
 }
 
-#site-isolation {
+.site-isolation {
   inset-block-end: auto;
   position: fixed;
 }
@@ -861,19 +864,14 @@ input {
   padding-inline-start: 25px;
 }
 
-#manage-assigned-sites-list {
-  color: #5a9de6;
+.manage-assigned-sites-list {
+  color: var(--highlight-blue);
 }
 
-#info-icon {
-  border: solid 1px #000;
-  border-radius: 7px;
-  color: #000;
+.info-icon {
   cursor: pointer;
-  font-size: 10px;
-  font-weight: bold;
-  height: 14px;
-  inline-size: 14px;
+  height: 16px;
+  inline-size: 16px;
   inset-block-start: 13px;
   position: absolute;
   right: 13px;
@@ -906,9 +904,4 @@ tr > td > .trash-button {
 
 tr:hover > td > .trash-button {
   display: block;
-}
-
-.new-container-icon {
-  font-size: 24px;
-  margin-block-start: -2px;
 }

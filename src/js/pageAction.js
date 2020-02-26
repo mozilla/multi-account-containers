@@ -16,10 +16,9 @@ async function init() {
           </div>
         </div>
         <span class="menu-text">${identity.name}</span>`;
-
-    fragment.appendChild(tr);
-
+    
     tr.appendChild(td);
+    fragment.appendChild(tr);
 
     Utils.addEnterHandler(tr, async () => {
       Utils.alwaysOpenInContainer(identity);
