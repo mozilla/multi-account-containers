@@ -260,7 +260,6 @@ table {
   padding-block-start: 16px;
 }
 
-/*.column-panel-content .button,*/
 .panel-footer .button {
   align-items: center;
   block-size: 100%;
@@ -360,7 +359,6 @@ manage things like container crud */
   justify-content: center;
 }
 
-/*.pop-button a,*/
 .panel-footer a {
   text-decoration: none;
 }
@@ -647,6 +645,7 @@ body {
   font-size: 13px;
   inline-size: 320px;
   letter-spacing: -0.1px;
+
   --highlight-blue: #1296f8;
   --hr-grey: #e3e3e3;
   --text-grey: #737373;
