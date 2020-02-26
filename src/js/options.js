@@ -74,9 +74,14 @@ function storeShortcutChoice (event) {
   });
 }
 
+function resetOnboarding() {
+  browser.storage.local.set({"onboarding-stage": 0});
+}
+
 document.addEventListener("DOMContentLoaded", setupOptions);
 document.querySelector("#bookmarksPermissions").addEventListener( "change", requestPermissions);
 document.querySelector("#syncCheck").addEventListener( "change", enableDisableSync);
+document.querySelector("button").addEventListener("click", resetOnboarding);
 
 for (let i=0; i < NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
   document.querySelector("#open_container_"+i)
