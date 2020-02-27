@@ -6,8 +6,9 @@ const messageHandler = {
 
   init() {
     // Handles messages from webextension code
-    browser.runtime.onMessage.addListener((m) => {
+    browser.runtime.onMessage.addListener(async (m) => {
       let response;
+      let tab;
 
       switch (m.method) {
       case "getShortcuts":
@@ -43,9 +44,7 @@ const messageHandler = {
       case "setOrRemoveAssignment":
         // m.tabId is used for where to place the in content message
         // m.url is the assignment to be removed/added
-        response = browser.tabs.get(m.tabId).then((tab) => {
-          return assignManager._setOrRemoveAssignment(tab.id, m.url, m.userContextId, m.value);
-        });
+        response = assignManager._setOrRemoveAssignment(m.tabId, m.url, m.userContextId, m.value);
         break;
       case "sortTabs":
         backgroundLogic.sortTabs();
@@ -89,6 +88,21 @@ const messageHandler = {
           m.active,
           true
         );
+        break;
+      case "assignAndReloadInContainer":
+        tab = await assignManager.reloadPageInContainer(
+          m.url, 
+          m.currentUserContextId, 
+          m.newUserContextId, 
+          m.tabIndex, 
+          m.active,
+          true
+        );
+        // m.tabId is used for where to place the in content message
+        // m.url is the assignment to be removed/added
+        response = browser.tabs.get(tab.id).then((tab) => {
+          return assignManager._setOrRemoveAssignment(tab.id, m.url, m.newUserContextId, m.value);
+        });
         break;
       }
       console.log(m.method, "response", response);

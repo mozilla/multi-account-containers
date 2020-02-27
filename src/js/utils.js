@@ -90,8 +90,8 @@ const Utils = {
     });
   },
 
-  reloadInContainer(url, currentUserContextId, newUserContextId, tabIndex, active) {
-    return browser.runtime.sendMessage({
+  async reloadInContainer(url, currentUserContextId, newUserContextId, tabIndex, active) {
+    return await browser.runtime.sendMessage({
       method: "reloadInContainer",
       url, 
       currentUserContextId, 
@@ -102,21 +102,24 @@ const Utils = {
   },
 
   async alwaysOpenInContainer(identity) {
-    const currentTab = await this.currentTab();
+    let currentTab = await this.currentTab();
     const assignedUserContextId = this.userContextId(identity.cookieStoreId);
-    Utils.setOrRemoveAssignment(
-      currentTab.id, 
-      currentTab.url, 
-      assignedUserContextId, 
-      false
-    );
     if (currentTab.cookieStoreId !== identity.cookieStoreId) {
-      Utils.reloadInContainer(
+      return await browser.runtime.sendMessage({
+        method: "assignAndReloadInContainer",
+        url: currentTab.url, 
+        currentUserContextId: false, 
+        newUserContextId: assignedUserContextId, 
+        tabIndex: currentTab.index +1, 
+        active:currentTab.active
+      });
+    } else {
+      currentTab = await this.currentTab();
+      Utils.setOrRemoveAssignment(
+        currentTab.id, 
         currentTab.url, 
-        false, 
-        assignedUserContextId,
-        currentTab.index + 1, 
-        currentTab.active
+        assignedUserContextId, 
+        false
       );
     }
   }

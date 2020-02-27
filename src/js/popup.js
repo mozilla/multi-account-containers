@@ -1180,8 +1180,8 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
         Utils.addEnterHandler(deleteButton, async () => {
           const userContextId = Logic.currentUserContextId();
           // Lets show the message to the current tab
-          const currentTab = await Utils.currentTab();
-          Utils.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
+          // const currentTab = await Utils.currentTab();
+          Utils.setOrRemoveAssignment(false, assumedUrl, userContextId, true);
           delete assignments[siteKey];
           this.showAssignedContainers(assignments);
         });
