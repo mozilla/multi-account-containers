@@ -51,6 +51,54 @@
         "default": "Ctrl+Shift+2"
       },
       "description": "Container Shortcut 2"
+    },
+    "open_container_2": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+3"
+      },
+      "description": "Container Shortcut 3"
+    },
+    "open_container_3": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+4"
+      },
+      "description": "Container Shortcut 4"
+    },
+    "open_container_4": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+5"
+      },
+      "description": "Container Shortcut 5"
+    },
+    "open_container_5": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+6"
+      },
+      "description": "Container Shortcut 6"
+    },
+    "open_container_6": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+7"
+      },
+      "description": "Container Shortcut 7"
+    },
+    "open_container_7": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+8"
+      },
+      "description": "Container Shortcut 8"
+    },
+    "open_container_8": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+9"
+      },
+      "description": "Container Shortcut 9"
+    },
+    "open_container_9": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+0"
+      },
+      "description": "Container Shortcut 10"
     }
   },
   "browser_action": {

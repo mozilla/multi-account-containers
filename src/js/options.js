@@ -1,4 +1,4 @@
-const NUMBER_OF_KEYBOARD_SHORTCUTS = 2;
+const NUMBER_OF_KEYBOARD_SHORTCUTS = 10;
 
 async function requestPermissions() {
   const checkbox = document.querySelector("#bookmarksPermissions");
@@ -40,11 +40,11 @@ async function setupOptions() {
 
 async function setupContainerShortcutSelects () {
   const keyboardShortcut = await browser.runtime.sendMessage({method: "getShortcuts"});
-  // console.log(keyboardShortcut);
   const identities = await browser.contextualIdentities.query({});
   const fragment = document.createDocumentFragment();
   const noneOption = document.createElement("option");
   noneOption.value = "none";
+  noneOption.id = "none";
   noneOption.textContent = "None";
   fragment.append(noneOption);
 
@@ -61,7 +61,8 @@ async function setupContainerShortcutSelects () {
     const shortcutSelect = document.getElementById(shortcutKey);
     shortcutSelect.appendChild(fragment.cloneNode(true));
     if (keyboardShortcut && keyboardShortcut[shortcutKey]) {
-      shortcutSelect.getElementById(keyboardShortcut[shortcutKey]).selected = true;
+      const cookieStoreId = keyboardShortcut[shortcutKey];
+      shortcutSelect.querySelector("#" + cookieStoreId).selected = true;
     }
   }
 }
