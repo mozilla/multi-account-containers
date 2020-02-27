@@ -12,8 +12,7 @@ const messageHandler = {
 
       switch (m.method) {
       case "getShortcuts":
-        console.log("getShortcuts", identityState.keyboardShortcut);
-        response = identityState.keyboardShortcut;
+        response = identityState.storageArea.loadKeyboardShortcuts();
         break;
       case "setShortcut":
         identityState.storageArea.setKeyboardShortcut(m.shortcut, m.cookieStoreId);
@@ -105,7 +104,6 @@ const messageHandler = {
         });
         break;
       }
-      console.log(m.method, "response", response);
       return response;
     });
 
