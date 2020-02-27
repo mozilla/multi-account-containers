@@ -390,6 +390,11 @@ table {
   background-color: #0675d3;
 }
 
+.onboarding-button:focus,
+.half-onboarding-button:focus {
+  box-shadow: 0 0 0 1px #0a84ff inset, 0 0 0 1px #0a84ff, 0 0 0 4px rgba(10, 132, 255, 0.3);
+}
+
 /* Pop buttons are the square shaped buttons used to
 manage things like container crud */
 .pop-button {
