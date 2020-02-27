@@ -500,16 +500,23 @@ window.assignManager = {
         userContextId,
         neverAsk: false
       }, exemptedTabIds);
-      actionName = "added";
+      actionName = "assigned site to always open in this container";
     } else {
       await this.storageArea.remove(pageUrl);
-      actionName = "removed";
+      actionName = "removed from assigned sites list";
     }
-    browser.tabs.sendMessage(tabId, {
-      text: `Successfully ${actionName} site to always open in this container`
-    });
-    const tab = await browser.tabs.get(tabId);
-    this.calculateContextMenu(tab);
+
+    if (tabId) {
+      const tab = await browser.tabs.get(tabId);
+      setTimeout(function(){ 
+        browser.tabs.sendMessage(tabId, {
+          text: `Successfully ${actionName}`
+        });
+      }, 1000);
+
+
+      this.calculateContextMenu(tab);
+    }
   },
 
   async _getAssignment(tab) {
@@ -595,7 +602,7 @@ window.assignManager = {
     // False represents assignment is not permitted
     // If the user has explicitly checked "Never Ask Again" on the warning page we will send them straight there
     if (neverAsk) {
-      browser.tabs.create({url, cookieStoreId, index, active, openerTabId});
+      return browser.tabs.create({url, cookieStoreId, index, active, openerTabId});
     } else {
       let confirmUrl = `${loadPage}?url=${this.encodeURLProperty(url)}&cookieStoreId=${cookieStoreId}`;
       let currentCookieStoreId;
@@ -603,7 +610,7 @@ window.assignManager = {
         currentCookieStoreId = backgroundLogic.cookieStoreId(currentUserContextId);
         confirmUrl += `&currentCookieStoreId=${currentCookieStoreId}`;
       }
-      browser.tabs.create({
+      return browser.tabs.create({
         url: confirmUrl,
         cookieStoreId: currentCookieStoreId,
         openerTabId,
