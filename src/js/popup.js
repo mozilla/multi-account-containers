@@ -633,14 +633,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       case 38:
         previous();
         break;
-      case 13: {
-        const panel = Logic.getCurrentPanelElement();
-        const button = panel.getElementsByTagName("A")[0];
-        if(button) {
-          button.click();
-        }
-        break;
-      }
       case 39:
       {
         const showTabs = element.parentNode.querySelector(".show-tabs");
