@@ -680,7 +680,8 @@ h3.title {
   font-style: italic;
 }
 
-.hover-highlight:hover {
+.hover-highlight:hover,
+.hover-highlight:focus {
   background: var(--highlight-blue);
   color: #fff;
 }

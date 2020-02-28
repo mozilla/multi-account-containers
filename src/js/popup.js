@@ -1215,6 +1215,13 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     this._editForm.addEventListener("submit", () => {
       this._submitForm();
     });
+    Utils.addEnterHandler(document.querySelector("#create-container-cancel-link"), () => {
+      Logic.showPreviousPanel();
+    });
+
+    Utils.addEnterHandler(document.querySelector("#create-container-ok-link"), () => {
+      this._submitForm();
+    });
   },
 
   async _submitForm() {
@@ -1275,18 +1282,10 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     // Populating the panel: name and icon
     document.getElementById("container-edit-title").textContent = identity.name;
 
-
     const userContextId = Logic.currentUserContextId();
     document.querySelector("#edit-container-panel .panel-footer").hidden = !!userContextId;
     document.querySelector("#edit-container-panel .delete-container").hidden = !userContextId;
-
-    Utils.addEnterHandler(document.querySelector("#create-container-cancel-link"), () => {
-      Logic.showPreviousPanel();
-    });
-
-    Utils.addEnterHandler(document.querySelector("#create-container-ok-link"), () => {
-      this._submitForm();
-    });
+    document.querySelector("#edit-container-options").hidden = !userContextId;
 
     Utils.addEnterHandler(document.querySelector("#manage-assigned-sites-list"), () => {
       Logic.showPanel(P_CONTAINER_ASSIGNMENTS, identity);
