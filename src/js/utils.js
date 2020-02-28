@@ -102,7 +102,7 @@ const Utils = {
   },
 
   async alwaysOpenInContainer(identity) {
-    let currentTab = await this.currentTab();
+    const currentTab = await this.currentTab();
     const assignedUserContextId = this.userContextId(identity.cookieStoreId);
     if (currentTab.cookieStoreId !== identity.cookieStoreId) {
       return await browser.runtime.sendMessage({
@@ -113,15 +113,13 @@ const Utils = {
         tabIndex: currentTab.index +1, 
         active:currentTab.active
       });
-    } else {
-      currentTab = await this.currentTab();
-      Utils.setOrRemoveAssignment(
-        currentTab.id, 
-        currentTab.url, 
-        assignedUserContextId, 
-        false
-      );
     }
+    await Utils.setOrRemoveAssignment(
+      currentTab.id, 
+      currentTab.url, 
+      assignedUserContextId, 
+      false
+    );
   }
 
 };

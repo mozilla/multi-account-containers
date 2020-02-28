@@ -530,7 +530,6 @@ window.assignManager = {
 
   async _setOrRemoveAssignment(tabId, pageUrl, userContextId, remove) {
     let actionName;
-
     // https://github.com/mozilla/testpilot-containers/issues/626
     // Context menu has stored context IDs as strings, so we need to coerce
     // the value to a string for accurate checking
