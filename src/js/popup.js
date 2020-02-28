@@ -611,7 +611,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     });
 
     document.addEventListener("keydown", (e) => {
-      const selectables = [...document.querySelectorAll("[tabindex='0'], [tabindex='-1']")];
+      const selectables = [...document.querySelectorAll(".open-newtab[tabindex='0']")];
       const element = document.activeElement;
       const index = selectables.indexOf(element) || 0;
       function next() {
@@ -652,7 +652,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       default:
         if ((e.keyCode >= 49 && e.keyCode <= 57) &&
             Logic._currentPanel === "containersList") {
-          const element = selectables[e.keyCode - 48];
+          const element = selectables[e.keyCode - 49];
           if (element) {
             element.click();
           }
