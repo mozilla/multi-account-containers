@@ -560,8 +560,18 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         window.close();
       }
     });
-
     document.addEventListener("keydown", (e) => {
+      function openNewContainerTab(identity) {
+        try {
+          browser.tabs.create({
+            cookieStoreId: identity.cookieStoreId
+          });
+          window.close();
+        } catch (e) {
+          window.close();
+        }
+      }
+      const identities = Logic.identities();
       const selectables = [...document.querySelectorAll(".open-newtab[tabindex='0']")];
       const element = document.activeElement;
       const index = selectables.indexOf(element) || 0;
@@ -603,9 +613,9 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       default:
         if ((e.keyCode >= 49 && e.keyCode <= 57) &&
             Logic._currentPanel === "containersList") {
-          const element = selectables[e.keyCode - 49];
-          if (element) {
-            element.click();
+          const identity = identities[e.keyCode - 49];
+          if (identity) {
+            openNewContainerTab(identity);
           }
         }
         break;
