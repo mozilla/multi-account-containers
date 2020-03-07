@@ -951,6 +951,20 @@ span ~ .panel-header-text {
   padding-block-start: 5px;
   padding-inline-end: 5px;
   padding-inline-start: 5px;
+
+}
+
+.edit-container-panel input[type="text"]#edit-container-panel-site-input {
+  inline-size: 80%;
+}
+
+#edit-container-site-link {
+  block-size: 36px;
+  background: #ebebeb;
+}
+
+#edit-container-site-link:hover {
+  background: #e3e3e3;
 }
 
 .edit-container-panel legend {

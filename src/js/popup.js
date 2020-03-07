@@ -1054,6 +1054,11 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       this._submitForm();
     });
 
+    // Add new site to current container
+    const siteLink = document.querySelector("#edit-container-site-link");
+    Logic.addEnterHandler(siteLink, () => {
+      this._addSite();
+    });
 
   },
 
@@ -1076,6 +1081,12 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     } catch (e) {
       Logic.showPanel(P_CONTAINERS_LIST);
     }
+  },
+
+  async _addSite() {
+    const formValues = new FormData(this._editForm);
+    console.log(formValues.get("container-id"));
+    console.log(formValues.get("site-name"));
   },
 
   showAssignedContainers(assignments) {
@@ -1161,6 +1172,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
     this.showAssignedContainers(assignments);
     document.querySelector("#edit-container-panel .panel-footer").hidden = !!userContextId;
+    // Only show ability to add site if it's an existing container
+    document.querySelector("#edit-container-panel-add-site").hidden = !userContextId;
 
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
     document.querySelector("#edit-container-panel-usercontext-input").value = userContextId || NEW_CONTAINER_ID;
