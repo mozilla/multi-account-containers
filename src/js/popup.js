@@ -1818,6 +1818,12 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     Utils.addEnterHandler(document.querySelector("#create-container-ok-link"), () => {
       this._submitForm();
     });
+
+    // Add new site to current container
+    const siteLink = document.querySelector("#edit-container-site-link");
+    Logic.addEnterHandler(siteLink, () => {
+      this._addSite();
+    });
   },
 
   async _submitForm() {
@@ -1858,6 +1864,57 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     editedIdentity.icon = formValues.get("container-icon") || DEFAULT_ICON;
     editedIdentity.name = document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName();
     return editedIdentity;
+  },
+
+  async _addSite() {
+    const formValues = new FormData(this._editForm);
+    console.log(formValues.get("container-id"));
+    console.log(formValues.get("site-name"));
+  },
+
+  showAssignedContainers(assignments) {
+    const assignmentPanel = document.getElementById("edit-sites-assigned");
+    const assignmentKeys = Object.keys(assignments);
+    assignmentPanel.hidden = !(assignmentKeys.length > 0);
+    if (assignments) {
+      const tableElement = assignmentPanel.querySelector(".assigned-sites-list");
+      /* Remove previous assignment list,
+         after removing one we rerender the list */
+      while (tableElement.firstChild) {
+        tableElement.firstChild.remove();
+      }
+
+      assignmentKeys.forEach((siteKey) => {
+        const site = assignments[siteKey];
+        const trElement = document.createElement("div");
+        /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
+           This is pending a better solution for favicons from web extensions */
+        const assumedUrl = `https://${site.hostname}/favicon.ico`;
+        trElement.innerHTML = escaped`
+        <div class="favicon"></div>
+        <div title="${site.hostname}" class="truncate-text hostname">
+          ${site.hostname}
+        </div>
+        <img
+          class="pop-button-image delete-assignment"
+          src="/img/container-delete.svg"
+        />`;
+        trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
+        const deleteButton = trElement.querySelector(".delete-assignment");
+        const that = this;
+        Logic.addEnterHandler(deleteButton, async () => {
+          const userContextId = Logic.currentUserContextId();
+          // Lets show the message to the current tab
+          // TODO remove then when firefox supports arrow fn async
+          const currentTab = await Logic.currentTab();
+          Logic.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
+          delete assignments[siteKey];
+          that.showAssignedContainers(assignments);
+        });
+        trElement.classList.add("container-info-tab-row", "clickable");
+        tableElement.appendChild(trElement);
+      });
+    }
   },
 
   initializeRadioButtons() {
@@ -1910,6 +1967,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     Utils.addEnterHandler(document.querySelector("#manage-assigned-sites-list"), () => {
       Logic.showPanel(P_CONTAINER_ASSIGNMENTS, this.getEditInProgressIdentity(), false, false);
     });
+    // Only show ability to add site if it's an existing container
+    document.querySelector("#edit-container-panel-add-site").hidden = !userContextId;
 
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
     document.querySelector("#edit-container-panel-usercontext-input").value = userContextId || NEW_CONTAINER_ID;
