@@ -1923,6 +1923,19 @@ manage things like container crud */
   margin-inline: 4px;
 }
 
+.edit-container-panel input[type="text"]#edit-container-panel-site-input {
+  inline-size: 80%;
+}
+
+#edit-container-site-link {
+  block-size: 36px;
+  background: #ebebeb;
+}
+
+#edit-container-site-link:hover {
+  background: #e3e3e3;
+}
+
 input[type="text"]:focus {
   /* Both a border and box-shadow of 1px are needed because using a 2px border
    * would redraw the input 1px farther to the left.
