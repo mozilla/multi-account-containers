@@ -794,6 +794,17 @@ span ~ .panel-header-text {
   padding-inline-start: 30%;
 }
 
+.edit-container-delete-button {
+  align-items: center;
+  /*background: var(--primary-action-color);*/
+  block-size: 100%;
+  color: black;
+  display: inline-block;
+  justify-content: center;
+  padding-block-start: 6px;
+  padding-inline-start: 40%;
+}
+
 .edit-containers-panel-footer {
   background: var(--primary-action-color);
 }

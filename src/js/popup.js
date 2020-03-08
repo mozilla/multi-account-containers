@@ -77,7 +77,7 @@ const Logic = {
   _previousPanel: null,
   _panels: {},
   _onboardingVariation: null,
-
+  _currentSelectedIdentities: [],
   async init() {
     // Remove browserAction "upgraded" badge when opening panel
     this.clearBrowserActionBadge();
@@ -275,7 +275,7 @@ const Logic = {
     }
   },
 
-  async showPanel(panel, currentIdentity = null) {
+  async showPanel(panel, currentIdentity = null, multIdentity = []) {
     // Invalid panel... ?!?
     if (!(panel in this._panels)) {
       throw new Error("Something really bad happened. Unknown panel: " + panel);
@@ -284,8 +284,12 @@ const Logic = {
     this._previousPanel = this._currentPanel;
     this._currentPanel = panel;
 
-    this._currentIdentity = currentIdentity;
-
+    // Note: this may not be the best approach to this, may want to refactor it
+    if (multIdentity.length !== 0) {
+      this._currentSelectedIdentities = multIdentity;
+    } else {
+      this._currentIdentity = currentIdentity;
+    }
     // Initialize the panel before showing it.
     await this._panels[panel].prepare();
     Object.keys(this._panels).forEach((panelKey) => {
@@ -329,6 +333,12 @@ const Logic = {
       throw new Error("CurrentIdentity must be set before calling Logic.currentIdentity.");
     }
     return this._currentIdentity;
+  },
+  currentSelectedIdentities() {
+    if (!this._currentSelectedIdentities) {
+      throw new Error("current Selected Identities must be set before calling Logic.currentSelectedIdentities.");
+    }
+    return this._currentSelectedIdentities;
   },
 
   currentUserContextId() {
@@ -1005,6 +1015,8 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
         if (e.target.matches(".edit-container-icon") || e.target.parentNode.matches(".edit-container-icon")) {
           Logic.showPanel(P_CONTAINER_EDIT, identity);
         } else if (e.target.matches(".delete-container-icon") || e.target.parentNode.matches(".delete-container-icon")) {
+
+          // TODO Add logic here to hold for event selector
           Logic.showPanel(P_CONTAINER_DELETE, identity);
         }
       });
@@ -1199,9 +1211,20 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
           if you want to do anything post delete do it in the background script.
           Browser console currently warns about not listening also.
       */
+      let currentSelection = [];
+      if (Logic.currentSelectedIdentities().length !== 0) {
+        currentSelection = Logic.currentSelectedIdentities();
+      } else {
+        currentSelection = [Logic.currentIdentity()];
+      }
+      let i  = 0;
+      // TODO this is still async and may cause issue
       try {
-        await Logic.removeIdentity(Logic.userContextId(Logic.currentIdentity().cookieStoreId));
-        await Logic.refreshIdentities();
+        while(i < currentSelection.length) {
+          await Logic.removeIdentity(Logic.userContextId(currentSelection[i].cookieStoreId));
+          await Logic.refreshIdentities();
+          i ++;
+        }
         Logic.showPreviousPanel();
       } catch (e) {
         Logic.showPanel(P_CONTAINERS_LIST);
@@ -1211,23 +1234,33 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
 
   // This method is called when the panel is shown.
   prepare() {
-    const identity = Logic.currentIdentity();
-
-    // Populating the panel: name, icon, and warning message
-    document.getElementById("delete-container-name").textContent = identity.name;
-
-    const totalNumberOfTabs = identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
-    let warningMessage = "";
-    if (totalNumberOfTabs > 0) {
-      const grammaticalNumTabs = totalNumberOfTabs > 1 ? "tabs" : "tab";
-      warningMessage = `If you remove this container now, ${totalNumberOfTabs} container ${grammaticalNumTabs} will be closed.`;
+    let currentSelection = [];
+    if (Logic.currentSelectedIdentities().length !== 0) {
+      currentSelection = Logic.currentSelectedIdentities();
+    } else {
+      currentSelection = [Logic.currentIdentity()];
     }
-    document.getElementById("delete-container-tab-warning").textContent = warningMessage;
 
-    const icon = document.getElementById("delete-container-icon");
-    icon.setAttribute("data-identity-icon", identity.icon);
-    icon.setAttribute("data-identity-color", identity.color);
+    let i = 0;
+    // TODO right now for mult-selection, it displays the first item in the selection at the icon and name
+    // Populating the panel: name, icon, and warning message
+    document.getElementById("delete-container-name").textContent = currentSelection[0].name;
+    document.getElementById("delete-container-tab-warning").textContent = ``;
+    while(i < currentSelection.length) {
+      const identity = currentSelection[0];
+      const totalNumberOfTabs = identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
+      let warningMessage = "";
+      if (totalNumberOfTabs > 0) {
+        const grammaticalNumTabs = totalNumberOfTabs > 1 ? "tabs" : "tab";
+        warningMessage =`If you remove ${identity.name} container now, ${totalNumberOfTabs} container ${grammaticalNumTabs} will be closed.`;
+      }
+      document.getElementById("delete-container-tab-warning").textContent += warningMessage;
 
+      const icon = document.getElementById("delete-container-icon");
+      icon.setAttribute("data-identity-icon", identity.icon);
+      icon.setAttribute("data-identity-color", identity.color);
+      i++;
+    }
     return Promise.resolve(null);
   },
 });
