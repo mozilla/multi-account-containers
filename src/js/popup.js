@@ -1868,23 +1868,36 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
   async _addSite() {
     const formValues = new FormData(this._editForm);
-    console.log(formValues.get("container-id"));
-    console.log(formValues.get("site-name"));
     const url = formValues.get("site-name");
     const userContextId = formValues.get("container-id");
     const currentTab = await Logic.currentTab();
     const tabId = currentTab.id;
-    try {
-      await browser.runtime.sendMessage({
-        method: "setOrRemoveAssignment",
-        tabId: tabId,
-        url: url,
-        userContextId: userContextId,
-        value: false
-      });
-    } catch (e) {
-      console.log(e);
+    const fullURL = this.checkurl(url);
+    Logic.setOrRemoveAssignment(tabId, fullURL, userContextId, false);
+  },
+
+  checkurl(url){
+    // append "https://" if protocol not found
+    const regexWww = /.*www\..*/g;
+    const foundWww = url.match(regexWww);
+    const regexhttp = /^http:\/\/.*/g;
+    const regexhttps = /^https:\/\/.*/g;
+    const foundhttp = url.match(regexhttp);
+    const foundhttps = url.match(regexhttps);
+    let newURL = url;
+
+    if (!foundhttp && !foundhttps) {
+      newURL = "https://" + url;
     }
+
+    if (!foundWww) {
+      if (newURL.match(regexhttp)) {
+        newURL = "http://www." + newURL.substring(7);
+      } else if (newURL.match(regexhttps)) {
+        newURL = "https://www." + newURL.substring(8);
+      }
+    }
+    return newURL;
   },
 
   showAssignedContainers(assignments) {
