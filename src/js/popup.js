@@ -1084,9 +1084,47 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   },
 
   async _addSite() {
+    // Get URL and container ID from form
     const formValues = new FormData(this._editForm);
-    console.log(formValues.get("container-id"));
-    console.log(formValues.get("site-name"));
+    const url = formValues.get("site-name");
+    const userContextId = formValues.get("container-id");
+    const currentTab = await Logic.currentTab();
+    const tabId = currentTab.id;
+    const fullURL = this.checkUrl(url);
+
+    // Assign URL to container
+    await Logic.setOrRemoveAssignment(tabId, fullURL, userContextId, false);
+
+    // Clear form
+    document.querySelector("#edit-container-panel-site-input").value = "";
+
+    // Show new assignments
+    const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
+    this.showAssignedContainers(assignments);
+  },
+
+  checkUrl(url){
+    // append "https://" if protocol not found
+    const regexWww = /.*www\..*/g;
+    const foundWww = url.match(regexWww);
+    const regexhttp = /^http:\/\/.*/g;
+    const regexhttps = /^https:\/\/.*/g;
+    const foundhttp = url.match(regexhttp);
+    const foundhttps = url.match(regexhttps);
+    let newURL = url;
+
+    if (!foundhttp && !foundhttps) {
+      newURL = "https://" + url;
+    }
+
+    if (!foundWww) {
+      if (newURL.match(regexhttp)) {
+        newURL = "http://www." + newURL.substring(7);
+      } else if (newURL.match(regexhttps)) {
+        newURL = "https://www." + newURL.substring(8);
+      }
+    }
+    return newURL;
   },
 
   showAssignedContainers(assignments) {
@@ -1174,7 +1212,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     document.querySelector("#edit-container-panel .panel-footer").hidden = !!userContextId;
     // Only show ability to add site if it's an existing container
     document.querySelector("#edit-container-panel-add-site").hidden = !userContextId;
-
+    // Make site input empty
+    document.querySelector("#edit-container-panel-site-input").value = "";
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
     document.querySelector("#edit-container-panel-usercontext-input").value = userContextId || NEW_CONTAINER_ID;
     const containerName = document.querySelector("#edit-container-panel-name-input");
