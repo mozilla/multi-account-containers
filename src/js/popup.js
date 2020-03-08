@@ -1089,7 +1089,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const userContextId = formValues.get("container-id");
     const currentTab = await Logic.currentTab();
     const tabId = currentTab.id;
-    const fullURL = this.checkurl(url);
+    const fullURL = this.checkUrl(url);
     Logic.setOrRemoveAssignment(tabId, fullURL, userContextId, false);
   },
 
