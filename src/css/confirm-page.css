@@ -77,6 +77,10 @@ dfn {
   font-style: normal;
 }
 
+#deny, #confirm {
+  flex-grow: 1;
+}
+
 .button-container > button {
   min-inline-size: 240px;
 }
