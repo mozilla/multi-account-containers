@@ -1087,6 +1087,21 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const formValues = new FormData(this._editForm);
     console.log(formValues.get("container-id"));
     console.log(formValues.get("site-name"));
+    const url = formValues.get("site-name");
+    const userContextId = formValues.get("container-id");
+    const currentTab = await Logic.currentTab();
+    const tabId = currentTab.id;
+    try {
+      await browser.runtime.sendMessage({
+        method: "setOrRemoveAssignment",
+        tabId: tabId,
+        url: url,
+        userContextId: userContextId,
+        value: false
+      });
+    } catch (e) {
+      console.log(e);
+    }
   },
 
   showAssignedContainers(assignments) {
