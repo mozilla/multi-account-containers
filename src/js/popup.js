@@ -279,7 +279,7 @@ const Logic = {
     }
   },
 
-  async showPanel(panel, currentIdentity = null, multIdentity = []) {
+  async showPanel(panel, currentIdentity = null) {
     // Invalid panel... ?!?
     if (!(panel in this._panels)) {
       throw new Error("Something really bad happened. Unknown panel: " + panel);
@@ -289,11 +289,7 @@ const Logic = {
     this._currentPanel = panel;
 
     // Note: this may not be the best approach to this, may want to refactor it
-    if (multIdentity.length !== 0) {
-      this._currentSelectedIdentities = multIdentity;
-    } else {
-      this._currentIdentity = currentIdentity;
-    }
+    this._currentIdentity = currentIdentity;
     // Initialize the panel before showing it.
     await this._panels[panel].prepare();
     Object.keys(this._panels).forEach((panelKey) => {
@@ -989,15 +985,21 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 Logic.registerPanel(P_CONTAINERS_EDIT, {
   panelSelector: "#edit-containers-panel",
   lastSelected: null,
-  shiftOn: 0,
+  shiftOn: false,
 
+  /*  This function is the handler of deletion for both keypress delete and delete button.
+      The keypress delete support for both backspace and delete key.
+   */
   async deleteHandler() {
     const selectedIdentities = Logic.currentSelectedIdentities();
     if (selectedIdentities.length > 0) {
-      await Logic.showPanel(P_CONTAINER_DELETE, null, selectedIdentities);
+      await Logic.showPanel(P_CONTAINER_DELETE);
     }
   },
 
+  /*  The function is to update the delete button.
+      The delete button shows up once any containers are selected.
+   */
   updateDeleteButton(selectedContainers) {
     const deleteButton = document.querySelector("div.panel-footer.panel-footer-secondary");
     if (selectedContainers.length === 0) {
@@ -1017,7 +1019,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
 
     document.addEventListener("keydown", e => {
       if (e.keyCode === 16) {
-        this.shiftOn = 1;
+        this.shiftOn = true;
       } else if (e.keyCode === 8 || e.keyCode === 48) {
         this.deleteHandler();
       }
@@ -1025,7 +1027,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
 
     document.addEventListener("keyup", e => {
       if (e.keyCode === 16) {
-        this.shiftOn = 0;
+        this.shiftOn = false;
       }
     });
   },
@@ -1074,10 +1076,12 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
           const currentSelectedIdentity = Logic.currentSelectedIdentities();
           const index = currentSelectedIdentity.indexOf(identity);
 
-          if (!this.lastSelected || this.shiftOn === 0 || currentSelectedIdentity.length === 0) {
+          // case of there is one container is trying to be selected/unselected
+          if (!this.lastSelected || !this.shiftOn || currentSelectedIdentity.length === 0) {
             this.lastSelected = identity;
           }
 
+          // get range of containers who need to be operated
           const identities = Logic.identities();
           let start = identities.indexOf(this.lastSelected);
           let end = Logic.identities().indexOf(identity);
@@ -1085,18 +1089,20 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
             start = [end, end=start][0];
           }
 
-          const panels = document.querySelectorAll(".unstriped .container-panel-row");
+          // get container panel rows to update highlight status
+          const rows = document.querySelectorAll(".unstriped .container-panel-row");
 
 
+          // select or unselected target containers
           if (index === -1) {
             for (let i = start; i <= end; i++) {
               Logic.addSelectedIdentity(identities[i]);
-              panels[i].classList.add("highlight");
+              rows[i].classList.add("highlight");
             }
           } else {
             for (let i = start; i <= end; i++) {
               Logic.removeSelectedIdentity(identities[i]);
-              panels[i].classList.remove("highlight");
+              rows[i].classList.remove("highlight");
             }
           }
 
@@ -1296,12 +1302,15 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
           if you want to do anything post delete do it in the background script.
           Browser console currently warns about not listening also.
       */
-      let currentSelection = [];
-      if (Logic.currentSelectedIdentities().length !== 0) {
-        currentSelection = Logic.currentSelectedIdentities();
-      } else {
+
+      // if current identity is not null, then delete single, otherwise, delete all selected
+      let currentSelection;
+      try {
         currentSelection = [Logic.currentIdentity()];
+      } catch (e) {
+        currentSelection = Logic.currentSelectedIdentities();
       }
+
       try {
         // loop through each selected container
         for (let i = 0; i < currentSelection.length; i++) {
@@ -1318,13 +1327,13 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
 
   // This method is called when the panel is shown.
   prepare() {
-    let currentSelection = [];
-    if (Logic.currentSelectedIdentities().length !== 0) {
-      currentSelection = Logic.currentSelectedIdentities();
-    } else {
+    // if current identity is not null, then show single container information, otherwise show all selected
+    let currentSelection;
+    try {
       currentSelection = [Logic.currentIdentity()];
+    } catch (e) {
+      currentSelection = Logic.currentSelectedIdentities();
     }
-
     // right now for mult-selection, it displays the first item in the selection at the icon and name
     // Populating the panel: name, icon, and warning message
     document.getElementById("delete-container-name").textContent = currentSelection[0].name;
