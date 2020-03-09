@@ -263,8 +263,9 @@ const Logic = {
       }
       return identity;
     });
+  },
 
-    // reset selected container for deletion
+  async resetSelectedIdentities() {
     this._currentSelectedIdentities = [];
   },
 
@@ -644,7 +645,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       function next() {
         const nextElement = selectables[index + 1];
         if (nextElement) {
-          console.log(nextElement);
           nextElement.focus();
         }
       }
@@ -1022,6 +1022,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
 
   // This method is called when the panel is shown.
   prepare() {
+    Logic.resetSelectedIdentities();
     const fragment = document.createDocumentFragment();
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
@@ -1077,7 +1078,6 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
           }
 
           const panels = document.querySelectorAll(".unstriped .container-panel-row .userContext-wrapper");
-          console.log(panels);
 
 
           if (index === -1) {
@@ -1279,6 +1279,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
   // This method is called when the object is registered.
   initialize() {
     Logic.addEnterHandler(document.querySelector("#delete-container-cancel-link"), () => {
+      Logic.resetSelectedIdentities();
       Logic.showPreviousPanel();
     });
 
@@ -1300,6 +1301,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
           await Logic.removeIdentity(Logic.userContextId(currentSelection[i].cookieStoreId));
         }
         await Logic.refreshIdentities();
+        await Logic.resetSelectedIdentities();
         Logic.showPreviousPanel();
       } catch (e) {
         await Logic.showPanel(P_CONTAINERS_LIST);
