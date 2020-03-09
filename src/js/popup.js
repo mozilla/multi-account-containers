@@ -644,6 +644,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       function next() {
         const nextElement = selectables[index + 1];
         if (nextElement) {
+          console.log(nextElement);
           nextElement.focus();
         }
       }
@@ -1075,13 +1076,19 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
             end = tmp;
           }
 
+          const panels = document.querySelectorAll(".unstriped .container-panel-row .userContext-wrapper");
+          console.log(panels);
+
+
           if (index === -1) {
             for (let i = start; i <= end; i++) {
               Logic.addSelectedIdentity(identities[i]);
+              panels[i].classList.add("highlight");
             }
           } else {
             for (let i = start; i <= end; i++) {
               Logic.removeSelectedIdentity(identities[i]);
+              panels[i].classList.remove("highlight");
             }
           }
 

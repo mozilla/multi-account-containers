@@ -668,6 +668,10 @@ span ~ .panel-header-text {
   fill: #0094fb;
 }
 
+.highlight {
+  background-color: #eb6c2d;
+}
+
 /* Panel Footer */
 .panel-footer {
   align-items: center;
