@@ -1064,7 +1064,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
           const currentSelectedIdentity = Logic.currentSelectedIdentities();
           const index = currentSelectedIdentity.indexOf(identity);
 
-          if (this.shiftOn === 0) {
+          if (!this.lastSelected || this.shiftOn === 0) {
             this.lastSelected = identity;
           }
 
