@@ -1000,7 +1000,6 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
 
   updateDeleteButton(selectedContainers) {
     const deleteButton = document.querySelector("div.panel-footer.panel-footer-secondary");
-    console.log(deleteButton);
     if (selectedContainers.length === 0) {
       deleteButton.classList.add("hide");
     } else {
@@ -1072,7 +1071,6 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
         } else if (e.target.matches(".delete-container-icon") || e.target.parentNode.matches(".delete-container-icon")) {
           Logic.showPanel(P_CONTAINER_DELETE, identity);
         } else if (e.target.matches(".select-container") || e.target.parentNode.matches(".select-container")) {
-          console.log(this.shiftOn);
           const currentSelectedIdentity = Logic.currentSelectedIdentities();
           const index = currentSelectedIdentity.indexOf(identity);
 
@@ -1103,10 +1101,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
           }
 
           this.lastSelected = identity;
-
           this.updateDeleteButton(currentSelectedIdentity);
-
-          console.log(Logic.currentSelectedIdentities());
         }
       });
     });
