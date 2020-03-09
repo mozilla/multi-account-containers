@@ -1064,7 +1064,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
           const currentSelectedIdentity = Logic.currentSelectedIdentities();
           const index = currentSelectedIdentity.indexOf(identity);
 
-          if (!this.lastSelected || this.shiftOn === 0) {
+          if (!this.lastSelected || this.shiftOn === 0 || currentSelectedIdentity.length === 0) {
             this.lastSelected = identity;
           }
 
@@ -1321,7 +1321,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     // right now for mult-selection, it displays the first item in the selection at the icon and name
     // Populating the panel: name, icon, and warning message
     document.getElementById("delete-container-name").textContent = currentSelection[0].name;
-    document.getElementById("delete-container-tab-warning").textContent = ``;
+    document.getElementById("delete-container-tab-warning").textContent = "";
     for (let i = 0; i < currentSelection.length; i++) {
       const identity = currentSelection[i];
       const totalNumberOfTabs = identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
