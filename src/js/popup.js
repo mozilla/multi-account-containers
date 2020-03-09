@@ -1078,7 +1078,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
             end = tmp;
           }
 
-          const panels = document.querySelectorAll(".unstriped .container-panel-row .userContext-wrapper");
+          const panels = document.querySelectorAll(".unstriped .container-panel-row");
 
 
           if (index === -1) {

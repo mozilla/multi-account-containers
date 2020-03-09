@@ -669,7 +669,7 @@ span ~ .panel-header-text {
 }
 
 .highlight {
-  background-color: #eb6c2d;
+  background-color: #979797 !important;
 }
 
 /* Panel Footer */
