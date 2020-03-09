@@ -288,8 +288,8 @@ const Logic = {
     this._previousPanel = this._currentPanel;
     this._currentPanel = panel;
 
-    // Note: this may not be the best approach to this, may want to refactor it
     this._currentIdentity = currentIdentity;
+
     // Initialize the panel before showing it.
     await this._panels[panel].prepare();
     Object.keys(this._panels).forEach((panelKey) => {
