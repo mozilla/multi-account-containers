@@ -1875,32 +1875,36 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const tabId = currentTab.id;
     const fullURL = this.checkUrl(url);
 
-    // Assign URL to container
-    await Logic.setOrRemoveAssignment(tabId, fullURL, userContextId, false);
+    if (fullURL !== "") {
+      // Assign URL to container
+      await Logic.setOrRemoveAssignment(tabId, fullURL, userContextId, false);
 
-    // Clear form
-    document.querySelector("#edit-container-panel-site-input").value = "";
+      // Clear form
+      document.querySelector("#edit-container-panel-site-input").value = "";
 
-    // Show new assignments
-    const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
-    this.showAssignedContainers(assignments);
+      // Show new assignments
+      const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
+      this.showAssignedContainers(assignments);
+    }
   },
 
   checkUrl(url){
     // append "https://" if protocol not found
+    const validUrl = /[\w.-]+(?:\.[\w.-]+)/g;
     const regexWww = /.*www\..*/g;
-    const foundWww = url.match(regexWww);
     const regexhttp = /^http:\/\/.*/g;
     const regexhttps = /^https:\/\/.*/g;
-    const foundhttp = url.match(regexhttp);
-    const foundhttps = url.match(regexhttps);
     let newURL = url;
 
-    if (!foundhttp && !foundhttps) {
+    if (!url.match(validUrl)) {
+      return "";
+    }
+
+    if (!url.match(regexhttp) && !url.match(regexhttps)) {
       newURL = "https://" + url;
     }
 
-    if (!foundWww) {
+    if (!url.match(regexWww)) {
       if (newURL.match(regexhttp)) {
         newURL = "http://www." + newURL.substring(7);
       } else if (newURL.match(regexhttps)) {
