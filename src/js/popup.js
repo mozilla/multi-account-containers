@@ -991,25 +991,26 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
   lastSelected: null,
   shiftOn: 0,
 
+  async deleteHandler() {
+    const selectedIdentities = Logic.currentSelectedIdentities();
+    if (selectedIdentities.length > 0) {
+      await Logic.showPanel(P_CONTAINER_DELETE, null, selectedIdentities);
+    }
+  },
+
   // This method is called when the object is registered.
   initialize() {
     Logic.addEnterHandler(document.querySelector("#exit-edit-mode-link"), () => {
       Logic.showPanel(P_CONTAINERS_LIST);
     });
 
-    Logic.addEnterHandler(document.querySelector("#delete-link"), async () => {
-      /*
-          Showing the confirm page of deleting all selected containers.
-      */
-      const selectedIdentities = Logic.currentSelectedIdentities();
-      if (selectedIdentities.length > 0) {
-        await Logic.showPanel(P_CONTAINER_DELETE, null, selectedIdentities);
-      }
-    });
+    Logic.addEnterHandler(document.querySelector("#delete-link"), this.deleteHandler);
 
     document.addEventListener("keydown", e => {
       if (e.keyCode === 16) {
         this.shiftOn = 1;
+      } else if (e.keyCode === 8 || e.keyCode === 48) {
+        this.deleteHandler();
       }
     });
 
