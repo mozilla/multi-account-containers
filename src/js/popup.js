@@ -998,6 +998,16 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
     }
   },
 
+  updateDeleteButton(selectedContainers) {
+    const deleteButton = document.querySelector("div.panel-footer.panel-footer-secondary");
+    console.log(deleteButton);
+    if (selectedContainers.length === 0) {
+      deleteButton.classList.add("hide");
+    } else {
+      deleteButton.classList.remove("hide");
+    }
+  },
+
   // This method is called when the object is registered.
   initialize() {
     Logic.addEnterHandler(document.querySelector("#exit-edit-mode-link"), () => {
@@ -1024,6 +1034,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
   // This method is called when the panel is shown.
   prepare() {
     Logic.resetSelectedIdentities();
+    this.updateDeleteButton(Logic.currentSelectedIdentities());
     const fragment = document.createDocumentFragment();
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
@@ -1073,9 +1084,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
           let start = identities.indexOf(this.lastSelected);
           let end = Logic.identities().indexOf(identity);
           if (start > end) {
-            const tmp = start;
-            start = end;
-            end = tmp;
+            start = [end, end=start][0];
           }
 
           const panels = document.querySelectorAll(".unstriped .container-panel-row");
@@ -1094,6 +1103,8 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
           }
 
           this.lastSelected = identity;
+
+          this.updateDeleteButton(currentSelectedIdentity);
 
           console.log(Logic.currentSelectedIdentities());
         }
