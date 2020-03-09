@@ -263,6 +263,9 @@ const Logic = {
       }
       return identity;
     });
+
+    // reset selected container for deletion
+    this._currentSelectedIdentities = [];
   },
 
   getPanelSelector(panel) {
@@ -339,6 +342,21 @@ const Logic = {
       throw new Error("current Selected Identities must be set before calling Logic.currentSelectedIdentities.");
     }
     return this._currentSelectedIdentities;
+  },
+
+  addSelectedIdentiry(identity) {
+    const index = this._currentSelectedIdentities.indexOf(identity);
+    if (index === -1) {
+      this._currentSelectedIdentities.push(identity);
+    }
+  },
+
+  removeSelectedIdentity(identity) {
+    const index = this._currentSelectedIdentities.indexOf(identity);
+
+    if (index !== -1) {
+      this._currentSelectedIdentities.splice(index, 1);
+    }
   },
 
   currentUserContextId() {
@@ -970,6 +988,8 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
 Logic.registerPanel(P_CONTAINERS_EDIT, {
   panelSelector: "#edit-containers-panel",
+  selectedHistory: [],
+  switchOn: 0,
 
   // This method is called when the object is registered.
   initialize() {
@@ -986,13 +1006,18 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
         await Logic.showPanel(P_CONTAINER_DELETE, null, selectedIdentities);
       }
     });
-  },
 
-  // showing delete button if there is any selected containers
-  showDeleteSelectedButton(selectedContainers) {
-    const assignmentPanel = document.getElementById("edit-sites-assigned");
-    const assignmentKeys = Object.keys(selectedContainers);
-    assignmentPanel.hidden = !(assignmentKeys.length > 0);
+    document.addEventListener("keydown", e => {
+      if (e.keyCode === 16) {
+        this.switchOn = 1;
+      }
+    });
+
+    document.addEventListener("keyup", e => {
+      if (e.keyCode === 16) {
+        this.switchOn = 0;
+      }
+    });
   },
 
   // This method is called when the panel is shown.
@@ -1003,7 +1028,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       fragment.appendChild(tr);
       tr.classList.add("container-panel-row");
       tr.innerHTML = escaped`
-        <td class="userContext-wrapper">
+        <td class="userContext-wrapper select-container">
           <div class="userContext-icon-wrapper">
             <div class="usercontext-icon"
               data-identity-icon="${identity.icon}"
@@ -1032,9 +1057,33 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
         if (e.target.matches(".edit-container-icon") || e.target.parentNode.matches(".edit-container-icon")) {
           Logic.showPanel(P_CONTAINER_EDIT, identity);
         } else if (e.target.matches(".delete-container-icon") || e.target.parentNode.matches(".delete-container-icon")) {
-
-          // TODO Add logic here to hold for event selector
           Logic.showPanel(P_CONTAINER_DELETE, identity);
+        } else if (e.target.matches(".select-container") || e.target.parentNode.matches(".select-container")) {
+          console.log(this.switchOn);
+          const index = this.selectedHistory.indexOf(identity);
+
+          if (this.switchOn === 1) {
+            const identities = Logic.identities();
+            let start = identities.indexOf(this.selectedHistory[this.selectedHistory.length-1]);
+            let end = identities.indexOf(identity);
+            if (start > end) {
+              const tmp = start;
+              end = start;
+              start = tmp;
+            }
+
+            for (let i = start; i <= end; i++) {
+              Logic.addSelectedIdentiry(identities[i]);
+            }
+
+          } else if (index === -1) {
+            this.selectedHistory.push(identity);
+            Logic.addSelectedIdentiry(identity);
+          } else if (this.switchOn === 0){
+            this.selectedHistory.splice(index, 1);
+            Logic.removeSelectedIdentity(identity);
+          }
+          console.log(Logic.currentSelectedIdentities());
         }
       });
     });
