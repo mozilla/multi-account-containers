@@ -344,9 +344,8 @@ const Logic = {
     return this._currentSelectedIdentities;
   },
 
-  addSelectedIdentiry(identity) {
-    const index = this._currentSelectedIdentities.indexOf(identity);
-    if (index === -1) {
+  addSelectedIdentity(identity) {
+    if (!this._currentSelectedIdentities.includes(identity)) {
       this._currentSelectedIdentities.push(identity);
     }
   },
@@ -988,8 +987,8 @@ Logic.registerPanel(P_CONTAINER_INFO, {
 
 Logic.registerPanel(P_CONTAINERS_EDIT, {
   panelSelector: "#edit-containers-panel",
-  selectedHistory: [],
-  switchOn: 0,
+  lastSelected: null,
+  shiftOn: 0,
 
   // This method is called when the object is registered.
   initialize() {
@@ -1009,13 +1008,13 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
 
     document.addEventListener("keydown", e => {
       if (e.keyCode === 16) {
-        this.switchOn = 1;
+        this.shiftOn = 1;
       }
     });
 
     document.addEventListener("keyup", e => {
       if (e.keyCode === 16) {
-        this.switchOn = 0;
+        this.shiftOn = 0;
       }
     });
   },
@@ -1059,30 +1058,35 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
         } else if (e.target.matches(".delete-container-icon") || e.target.parentNode.matches(".delete-container-icon")) {
           Logic.showPanel(P_CONTAINER_DELETE, identity);
         } else if (e.target.matches(".select-container") || e.target.parentNode.matches(".select-container")) {
-          console.log(this.switchOn);
-          const index = this.selectedHistory.indexOf(identity);
+          console.log(this.shiftOn);
+          const currentSelectedIdentity = Logic.currentSelectedIdentities();
+          const index = currentSelectedIdentity.indexOf(identity);
 
-          if (this.switchOn === 1) {
-            const identities = Logic.identities();
-            let start = identities.indexOf(this.selectedHistory[this.selectedHistory.length-1]);
-            let end = identities.indexOf(identity);
-            if (start > end) {
-              const tmp = start;
-              end = start;
-              start = tmp;
-            }
-
-            for (let i = start; i <= end; i++) {
-              Logic.addSelectedIdentiry(identities[i]);
-            }
-
-          } else if (index === -1) {
-            this.selectedHistory.push(identity);
-            Logic.addSelectedIdentiry(identity);
-          } else if (this.switchOn === 0){
-            this.selectedHistory.splice(index, 1);
-            Logic.removeSelectedIdentity(identity);
+          if (this.shiftOn === 0) {
+            this.lastSelected = identity;
           }
+
+          const identities = Logic.identities();
+          let start = identities.indexOf(this.lastSelected);
+          let end = Logic.identities().indexOf(identity);
+          if (start > end) {
+            const tmp = start;
+            start = end;
+            end = tmp;
+          }
+
+          if (index === -1) {
+            for (let i = start; i <= end; i++) {
+              Logic.addSelectedIdentity(identities[i]);
+            }
+          } else {
+            for (let i = start; i <= end; i++) {
+              Logic.removeSelectedIdentity(identities[i]);
+            }
+          }
+
+          this.lastSelected = identity;
+
           console.log(Logic.currentSelectedIdentities());
         }
       });
