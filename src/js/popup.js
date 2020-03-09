@@ -983,7 +983,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       */
       const selectedIdentities = Logic.currentSelectedIdentities();
       if (selectedIdentities.length > 0) {
-        await Logic.showPanel(P_CONTAINER_DELETE, null, Logic.currentSelectedIdentities());
+        await Logic.showPanel(P_CONTAINER_DELETE, null, selectedIdentities);
       }
     });
   },
@@ -1256,8 +1256,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
       currentSelection = [Logic.currentIdentity()];
     }
 
-    let i = 0;
-    // TODO right now for mult-selection, it displays the first item in the selection at the icon and name
+    // right now for mult-selection, it displays the first item in the selection at the icon and name
     // Populating the panel: name, icon, and warning message
     document.getElementById("delete-container-name").textContent = currentSelection[0].name;
     document.getElementById("delete-container-tab-warning").textContent = ``;
