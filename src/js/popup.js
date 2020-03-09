@@ -976,6 +976,23 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
     Logic.addEnterHandler(document.querySelector("#exit-edit-mode-link"), () => {
       Logic.showPanel(P_CONTAINERS_LIST);
     });
+
+    Logic.addEnterHandler(document.querySelector("#delete-link"), async () => {
+      /*
+          Showing the confirm page of deleting all selected containers.
+      */
+      const selectedIdentities = Logic.currentSelectedIdentities();
+      if (selectedIdentities.length > 0) {
+        await Logic.showPanel(P_CONTAINER_DELETE, null, Logic.currentSelectedIdentities());
+      }
+    });
+  },
+
+  // showing delete button if there is any selected containers
+  showDeleteSelectedButton(selectedContainers) {
+    const assignmentPanel = document.getElementById("edit-sites-assigned");
+    const assignmentKeys = Object.keys(selectedContainers);
+    assignmentPanel.hidden = !(assignmentKeys.length > 0);
   },
 
   // This method is called when the panel is shown.
@@ -1217,17 +1234,15 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
       } else {
         currentSelection = [Logic.currentIdentity()];
       }
-      let i  = 0;
-      // TODO this is still async and may cause issue
       try {
-        while(i < currentSelection.length) {
+        // loop through each selected container
+        for (let i = 0; i < currentSelection.length; i++) {
           await Logic.removeIdentity(Logic.userContextId(currentSelection[i].cookieStoreId));
-          await Logic.refreshIdentities();
-          i ++;
         }
+        await Logic.refreshIdentities();
         Logic.showPreviousPanel();
       } catch (e) {
-        Logic.showPanel(P_CONTAINERS_LIST);
+        await Logic.showPanel(P_CONTAINERS_LIST);
       }
     });
   },
@@ -1246,8 +1261,8 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     // Populating the panel: name, icon, and warning message
     document.getElementById("delete-container-name").textContent = currentSelection[0].name;
     document.getElementById("delete-container-tab-warning").textContent = ``;
-    while(i < currentSelection.length) {
-      const identity = currentSelection[0];
+    for (let i = 0; i < currentSelection.length; i++) {
+      const identity = currentSelection[i];
       const totalNumberOfTabs = identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
       let warningMessage = "";
       if (totalNumberOfTabs > 0) {
@@ -1259,7 +1274,6 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
       const icon = document.getElementById("delete-container-icon");
       icon.setAttribute("data-identity-icon", identity.icon);
       icon.setAttribute("data-identity-color", identity.color);
-      i++;
     }
     return Promise.resolve(null);
   },
