@@ -1106,27 +1106,22 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   },
 
   checkUrl(url){
-    // append "https://" if protocol not found
     const validUrl = /[\w.-]+(?:\.[\w.-]+)/g;
-    const regexWww = /.*www\..*/g;
-    const regexhttp = /^http:\/\/.*/g;
-    const regexhttps = /^https:\/\/.*/g;
+    const regexProtocol = /^https?:\/\/.*/g;
+    const valid = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+$,\w]+@)?[A-Za-z0-9.-]+|(?:www\.|[-;:&=+$,\w]+@)[A-Za-z0-9.-]+)((?:\/[+~%/.\w\-_]*)?\??(?:[-+=&;%@.\w_]*)#?(?:[.!/\\\w]*))?)/g;
     let newURL = url;
     
     if (!url.match(validUrl)) {
       return null;
     }
 
-    if (!url.match(regexhttp) && !url.match(regexhttps)) {
+    // append "https://" if protocol not found
+    if (!url.match(regexProtocol)) {
       newURL = "https://" + url;
     }
 
-    if (!url.match(regexWww)) {
-      if (newURL.match(regexhttp)) {
-        newURL = "http://www." + newURL.substring(7);
-      } else if (newURL.match(regexhttps)) {
-        newURL = "https://www." + newURL.substring(8);
-      }
+    if (!newURL.match(valid)) {
+      return null;
     }
     return newURL;
   },

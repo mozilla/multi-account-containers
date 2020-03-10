@@ -1,4 +1,3 @@
-// const expect = require("chai").expect;
 const {initializeWithTab} = require("../common");
 
 describe("#1670", function () {
@@ -58,8 +57,6 @@ describe("#1670", function () {
       });
 
       it("should not assign the URL to a container", function () {
-        // console.log(this.webExt.background.browser.contextualIdentities);
-        // expect( console.log.calledOnce ).to.be.true;
         this.webExt.background.browser.contextualIdentities.update.should.not.have.been.called;
       });
     });
