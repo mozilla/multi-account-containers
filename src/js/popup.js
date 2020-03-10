@@ -990,7 +990,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
   /*  This function is the handler of deletion for both keypress delete and delete button.
       The keypress delete support for both backspace and delete key.
    */
-  async deleteHandler() {
+  async _deleteHandler() {
     const selectedIdentities = Logic.currentSelectedIdentities();
     if (selectedIdentities.length > 0) {
       await Logic.showPanel(P_CONTAINER_DELETE);
@@ -1000,7 +1000,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
   /*  The function is to update the delete button.
       The delete button shows up once any containers are selected.
    */
-  updateDeleteButton(selectedContainers) {
+  _updateDeleteButton(selectedContainers) {
     const deleteButton = document.querySelector("div.panel-footer.panel-footer-secondary");
     if (selectedContainers.length === 0) {
       deleteButton.classList.add("hide");
@@ -1015,13 +1015,13 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       Logic.showPanel(P_CONTAINERS_LIST);
     });
 
-    Logic.addEnterHandler(document.querySelector("#delete-link"), this.deleteHandler);
+    Logic.addEnterHandler(document.querySelector("#delete-link"), this._deleteHandler);
 
     document.addEventListener("keydown", e => {
       if (e.keyCode === 16) {
         this.shiftOn = true;
       } else if (e.keyCode === 8 || e.keyCode === 48) {
-        this.deleteHandler();
+        this._deleteHandler();
       }
     });
 
@@ -1035,7 +1035,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
   // This method is called when the panel is shown.
   prepare() {
     Logic.resetSelectedIdentities();
-    this.updateDeleteButton(Logic.currentSelectedIdentities());
+    this._updateDeleteButton(Logic.currentSelectedIdentities());
     const fragment = document.createDocumentFragment();
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
@@ -1107,7 +1107,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
           }
 
           this.lastSelected = identity;
-          this.updateDeleteButton(currentSelectedIdentity);
+          this._updateDeleteButton(currentSelectedIdentity);
         }
       });
     });
