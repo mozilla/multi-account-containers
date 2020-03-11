@@ -1357,7 +1357,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
       icon.style.visibility = 'hidden';
       icon.style.marginLeft = `-16px`;
       document.getElementById("delete-container-name").textContent = `Containers`;
-      containerString = "those " + currentSelection.length + " containers";
+      containerString = "this " + currentSelection.length + " containers";
     }
     let warningMessage = "";
     if (totalNumberOfTabs > 0) {
