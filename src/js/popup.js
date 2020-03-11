@@ -1344,7 +1344,6 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
       const identity = currentSelection[i];
       totalNumberOfTabs += identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
     }
-    console.log(currentSelection.length);
     const icon = document.getElementById("delete-container-icon");
     if (currentSelection.length === 1 ) {
       document.getElementById("delete-container-name").textContent = currentSelection[0].name;
