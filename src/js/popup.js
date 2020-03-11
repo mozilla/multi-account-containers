@@ -1329,6 +1329,9 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
   prepare() {
     // if current identity is not null, then show single container information, otherwise show all selected
     let currentSelection;
+    let totalNumberOfTabs = 0;
+    let containerString = "";
+
     try {
       currentSelection = [Logic.currentIdentity()];
     } catch (e) {
@@ -1336,22 +1339,32 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     }
     // right now for mult-selection, it displays the first item in the selection at the icon and name
     // Populating the panel: name, icon, and warning message
-    document.getElementById("delete-container-name").textContent = currentSelection[0].name;
-    document.getElementById("delete-container-tab-warning").textContent = "";
+    document.getElementById("delete-container-tab-warning").textContent = ``;
     for (let i = 0; i < currentSelection.length; i++) {
       const identity = currentSelection[i];
-      const totalNumberOfTabs = identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
-      let warningMessage = "";
-      if (totalNumberOfTabs > 0) {
-        const grammaticalNumTabs = totalNumberOfTabs > 1 ? "tabs" : "tab";
-        warningMessage =`If you remove ${identity.name} container now, ${totalNumberOfTabs} container ${grammaticalNumTabs} will be closed.`;
-      }
-      document.getElementById("delete-container-tab-warning").textContent += warningMessage;
-
-      const icon = document.getElementById("delete-container-icon");
-      icon.setAttribute("data-identity-icon", identity.icon);
-      icon.setAttribute("data-identity-color", identity.color);
+      totalNumberOfTabs += identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
     }
+    console.log(currentSelection.length);
+    const icon = document.getElementById("delete-container-icon");
+    if (currentSelection.length === 1 ) {
+      document.getElementById("delete-container-name").textContent = currentSelection[0].name;
+      icon.style.visibility = 'visible';
+      icon.style.marginLeft = `0px`;
+      icon.setAttribute("data-identity-icon", currentSelection[0].icon);
+      icon.setAttribute("data-identity-color", currentSelection[0].color);
+      containerString = "this container";
+    } else {
+      icon.style.visibility = 'hidden';
+      icon.style.marginLeft = `-16px`;
+      document.getElementById("delete-container-name").textContent = `Containers`;
+      containerString = "this " + currentSelection.length + " containers";
+    }
+    let warningMessage = "";
+    if (totalNumberOfTabs > 0) {
+      const grammaticalNumTabs = totalNumberOfTabs > 1 ? "tabs" : "tab";
+      warningMessage =`If you remove ${containerString} now, ${totalNumberOfTabs} container ${grammaticalNumTabs} will be closed.`;
+    }
+    document.getElementById("delete-container-tab-warning").textContent += warningMessage + ` Are you sure you want to remove ${containerString}?`;
     return Promise.resolve(null);
   },
 });
