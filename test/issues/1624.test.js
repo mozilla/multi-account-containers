@@ -11,40 +11,47 @@ describe("Delete multiple Containers", function () {
 
   describe("creating a new container", function () {
     beforeEach(async function () {
-      await this.webExt.popup.helper.clickElementById("container-add-link");
-      await this.webExt.popup.helper.clickElementById("edit-container-ok-link");
+      for (let i = 0; i < 3; i++) {
+        await this.webExt.popup.helper.clickElementById("container-add-link");
+        await this.webExt.popup.helper.clickElementById("edit-container-ok-link");
+      }
     });
 
     it("should create it in the browser as well", function () {
-      this.webExt.background.browser.contextualIdentities.create.should.have.been.calledOnce;
+      this.webExt.background.browser.contextualIdentities.create.should.have.been.calledThrice;
     });
 
     describe("manually select one container and delete by delete button", function () {
       beforeEach(async function () {
         await this.webExt.popup.helper.clickElementById("edit-containers-link");
-        await this.webExt.popup.helper.clickElementByQuerySelectorAll(".edit-container-icon", "last");
+        await this.webExt.popup.helper.clickElementByQuerySelectorAll(".select-container", "last");
         await this.webExt.popup.helper.clickElementById("delete-link");
         await this.webExt.popup.helper.clickElementById("delete-container-ok-link");
+
+        await this.webExt.popup.helper.clickElementByQuerySelectorAll(".select-container", "last");
+
       });
 
       it("should remove it in the browser as well", function () {
-        this.webExt.background.browser.contextualIdentities.remove.should.have.been.calledWith("firefox-container-5");
+        this.webExt.background.browser.contextualIdentities.remove.should.have.been.calledWith("firefox-container-7");
       });
     });
 
     describe("manually click select multiple contaienr and delete by delete button", function () {
       beforeEach(async function () {
-        await this.webExt.popup.helper.clickElementById("container-add-link");
-        await this.webExt.popup.helper.clickElementById("edit-container-ok-link");
-
         await this.webExt.popup.helper.clickElementById("edit-containers-link");
-        // TODO: select multi containers here
+
+        const nodeArray = Array.from(this.webExt.popup.window.document.querySelectorAll(".select-container"));
+        nodeArray[5].click();
+        nodeArray[6].click();
+
         await this.webExt.popup.helper.clickElementById("delete-link");
         await this.webExt.popup.helper.clickElementById("delete-container-ok-link");
+
       });
 
       it("should remove it in the browser as well", function () {
-        this.webExt.background.browser.contextualIdentities.remove.should.have.been.calledWith("firefox-container-6");
+        this.webExt.background.browser.contextualIdentities.remove.should.have.been.calledTwice;
       });
     });
   });
