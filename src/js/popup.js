@@ -1020,7 +1020,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
     document.addEventListener("keydown", e => {
       if (e.keyCode === 16) {
         this.shiftOn = true;
-      } else if (e.keyCode === 8 || e.keyCode === 48) {
+      } else if (e.keyCode === 8 || e.keyCode === 46) {
         this._deleteHandler();
       }
     });
