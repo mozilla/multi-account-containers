@@ -990,7 +990,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
   /*  This function is the handler of deletion for both keypress delete and delete button.
       The keypress delete support for both backspace and delete key.
    */
-  async deleteHandler() {
+  async _deleteHandler() {
     const selectedIdentities = Logic.currentSelectedIdentities();
     if (selectedIdentities.length > 0) {
       await Logic.showPanel(P_CONTAINER_DELETE);
@@ -1000,7 +1000,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
   /*  The function is to update the delete button.
       The delete button shows up once any containers are selected.
    */
-  updateDeleteButton(selectedContainers) {
+  _updateDeleteButton(selectedContainers) {
     const deleteButton = document.querySelector("div.panel-footer.panel-footer-secondary");
     if (selectedContainers.length === 0) {
       deleteButton.classList.add("hide");
@@ -1015,13 +1015,13 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       Logic.showPanel(P_CONTAINERS_LIST);
     });
 
-    Logic.addEnterHandler(document.querySelector("#delete-link"), this.deleteHandler);
+    Logic.addEnterHandler(document.querySelector("#delete-link"), this._deleteHandler);
 
     document.addEventListener("keydown", e => {
       if (e.keyCode === 16) {
         this.shiftOn = true;
-      } else if (e.keyCode === 8 || e.keyCode === 48) {
-        this.deleteHandler();
+      } else if (e.keyCode === 8 || e.keyCode === 46) {
+        this._deleteHandler();
       }
     });
 
@@ -1035,7 +1035,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
   // This method is called when the panel is shown.
   prepare() {
     Logic.resetSelectedIdentities();
-    this.updateDeleteButton(Logic.currentSelectedIdentities());
+    this._updateDeleteButton(Logic.currentSelectedIdentities());
     const fragment = document.createDocumentFragment();
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
@@ -1107,7 +1107,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
           }
 
           this.lastSelected = identity;
-          this.updateDeleteButton(currentSelectedIdentity);
+          this._updateDeleteButton(currentSelectedIdentity);
         }
       });
     });
@@ -1329,6 +1329,9 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
   prepare() {
     // if current identity is not null, then show single container information, otherwise show all selected
     let currentSelection;
+    let totalNumberOfTabs = 0;
+    let containerString = "";
+
     try {
       currentSelection = [Logic.currentIdentity()];
     } catch (e) {
@@ -1336,22 +1339,31 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     }
     // right now for mult-selection, it displays the first item in the selection at the icon and name
     // Populating the panel: name, icon, and warning message
-    document.getElementById("delete-container-name").textContent = currentSelection[0].name;
-    document.getElementById("delete-container-tab-warning").textContent = "";
+    document.getElementById("delete-container-tab-warning").textContent = ``;
     for (let i = 0; i < currentSelection.length; i++) {
       const identity = currentSelection[i];
-      const totalNumberOfTabs = identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
-      let warningMessage = "";
-      if (totalNumberOfTabs > 0) {
-        const grammaticalNumTabs = totalNumberOfTabs > 1 ? "tabs" : "tab";
-        warningMessage =`If you remove ${identity.name} container now, ${totalNumberOfTabs} container ${grammaticalNumTabs} will be closed.`;
-      }
-      document.getElementById("delete-container-tab-warning").textContent += warningMessage;
-
-      const icon = document.getElementById("delete-container-icon");
-      icon.setAttribute("data-identity-icon", identity.icon);
-      icon.setAttribute("data-identity-color", identity.color);
+      totalNumberOfTabs += identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
     }
+    const icon = document.getElementById("delete-container-icon");
+    if (currentSelection.length === 1 ) {
+      document.getElementById("delete-container-name").textContent = currentSelection[0].name;
+      icon.style.visibility = 'visible';
+      icon.style.marginLeft = `0px`;
+      icon.setAttribute("data-identity-icon", currentSelection[0].icon);
+      icon.setAttribute("data-identity-color", currentSelection[0].color);
+      containerString = "this container";
+    } else {
+      icon.style.visibility = 'hidden';
+      icon.style.marginLeft = `-16px`;
+      document.getElementById("delete-container-name").textContent = `Containers`;
+      containerString = "this " + currentSelection.length + " containers";
+    }
+    let warningMessage = "";
+    if (totalNumberOfTabs > 0) {
+      const grammaticalNumTabs = totalNumberOfTabs > 1 ? "tabs" : "tab";
+      warningMessage =`If you remove ${containerString} now, ${totalNumberOfTabs} container ${grammaticalNumTabs} will be closed.`;
+    }
+    document.getElementById("delete-container-tab-warning").textContent += warningMessage + ` Are you sure you want to remove ${containerString}?`;
     return Promise.resolve(null);
   },
 });
