@@ -1011,12 +1011,15 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
 
   // This method is called when the object is registered.
   initialize() {
+    // add logic to move between different panel
     Logic.addEnterHandler(document.querySelector("#exit-edit-mode-link"), () => {
       Logic.showPanel(P_CONTAINERS_LIST);
     });
 
+    // add delete handler
     Logic.addEnterHandler(document.querySelector("#delete-link"), this._deleteHandler);
 
+    // set up key down to listen for shift key, backspace key and delete key
     document.addEventListener("keydown", e => {
       if (e.keyCode === 16) {
         this.shiftOn = true;
@@ -1025,6 +1028,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
       }
     });
 
+    // set up key down to listen for shift key
     document.addEventListener("keyup", e => {
       if (e.keyCode === 16) {
         this.shiftOn = false;
@@ -1034,6 +1038,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
 
   // This method is called when the panel is shown.
   prepare() {
+    // reset the selection and delete button style on init
     Logic.resetSelectedIdentities();
     this._updateDeleteButton(Logic.currentSelectedIdentities());
     const fragment = document.createDocumentFragment();
@@ -1073,6 +1078,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
         } else if (e.target.matches(".delete-container-icon") || e.target.parentNode.matches(".delete-container-icon")) {
           Logic.showPanel(P_CONTAINER_DELETE, identity);
         } else if (e.target.matches(".select-container") || e.target.parentNode.matches(".select-container")) {
+          // get the selections and index of current container identity
           const currentSelectedIdentity = Logic.currentSelectedIdentities();
           const index = currentSelectedIdentity.indexOf(identity);
 
@@ -1107,6 +1113,7 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
           }
 
           this.lastSelected = identity;
+          // update style of delete button
           this._updateDeleteButton(currentSelectedIdentity);
         }
       });
@@ -1292,6 +1299,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
   // This method is called when the object is registered.
   initialize() {
     Logic.addEnterHandler(document.querySelector("#delete-container-cancel-link"), () => {
+      // reset selected item on init.
       Logic.resetSelectedIdentities();
       Logic.showPreviousPanel();
     });
@@ -1303,7 +1311,8 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
           Browser console currently warns about not listening also.
       */
 
-      // if current identity is not null, then delete single, otherwise, delete all selected
+      // if current identity is not defined, then set the selected list to the selected list
+      // Note: when current Selection is defined, it means it is invoke from a single deletion mode.
       let currentSelection;
       try {
         currentSelection = [Logic.currentIdentity()];
@@ -1312,12 +1321,14 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
       }
 
       try {
-        // loop through each selected container
+        // loop through each selected container and delete it one by one
         for (let i = 0; i < currentSelection.length; i++) {
           await Logic.removeIdentity(Logic.userContextId(currentSelection[i].cookieStoreId));
         }
+        // refresh and reset the identities
         await Logic.refreshIdentities();
         await Logic.resetSelectedIdentities();
+        // goes back to previous panel
         Logic.showPreviousPanel();
       } catch (e) {
         await Logic.showPanel(P_CONTAINERS_LIST);
@@ -1327,38 +1338,45 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
 
   // This method is called when the panel is shown.
   prepare() {
-    // if current identity is not null, then show single container information, otherwise show all selected
     let currentSelection;
     let totalNumberOfTabs = 0;
     let containerString = "";
 
+    // if current identity is not defined, then set the selected list to the selected list
+    // Note: when current Selection is defined, it means it is invoke from a single deletion mode.
     try {
       currentSelection = [Logic.currentIdentity()];
     } catch (e) {
       currentSelection = Logic.currentSelectedIdentities();
     }
-    // right now for mult-selection, it displays the first item in the selection at the icon and name
     // Populating the panel: name, icon, and warning message
+    // reset the content of confirm page.
     document.getElementById("delete-container-tab-warning").textContent = ``;
+    // count number of affected tabs
     for (let i = 0; i < currentSelection.length; i++) {
       const identity = currentSelection[i];
       totalNumberOfTabs += identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
     }
     const icon = document.getElementById("delete-container-icon");
+    // Note: if the length is one, then it is a single deletion
+    // Set confirm page content depending on whether is single deletion or multiple deletion
     if (currentSelection.length === 1 ) {
       document.getElementById("delete-container-name").textContent = currentSelection[0].name;
+      // update icon style for single deletion
       icon.style.visibility = 'visible';
       icon.style.marginLeft = `0px`;
       icon.setAttribute("data-identity-icon", currentSelection[0].icon);
       icon.setAttribute("data-identity-color", currentSelection[0].color);
       containerString = "this container";
     } else {
+      // update icon for multiple deletion
       icon.style.visibility = 'hidden';
       icon.style.marginLeft = `-16px`;
       document.getElementById("delete-container-name").textContent = `Containers`;
       containerString = "this " + currentSelection.length + " containers";
     }
     let warningMessage = "";
+    // update the confirm page content when there are at least 1 affected tabs
     if (totalNumberOfTabs > 0) {
       const grammaticalNumTabs = totalNumberOfTabs > 1 ? "tabs" : "tab";
       warningMessage =`If you remove ${containerString} now, ${totalNumberOfTabs} container ${grammaticalNumTabs} will be closed.`;
