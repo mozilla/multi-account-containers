@@ -28,7 +28,7 @@ button .container-name,
 
   /* for a mid sized window we have enough for this but not our image */
   .title {
-    background-image: url("chrome://global/skin/icons/info.svg");
+    background-image: url('chrome://global/skin/icons/info.svg');
   }
 }
 
@@ -77,7 +77,8 @@ dfn {
   font-style: normal;
 }
 
-#deny, #confirm {
+#deny,
+#confirm {
   flex-grow: 1;
 }
 
