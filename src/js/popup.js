@@ -1350,7 +1350,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     }
     // Populating the panel: name, icon, and warning message
     // reset the content of confirm page.
-    document.getElementById("delete-container-tab-warning").textContent = ``;
+    document.getElementById("delete-container-tab-warning").textContent = "";
     // count number of affected tabs
     for (let i = 0; i < currentSelection.length; i++) {
       const identity = currentSelection[i];
@@ -1362,16 +1362,16 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     if (currentSelection.length === 1 ) {
       document.getElementById("delete-container-name").textContent = currentSelection[0].name;
       // update icon style for single deletion
-      icon.style.visibility = 'visible';
-      icon.style.marginLeft = `0px`;
+      icon.style.visibility = "visible";
+      icon.style.marginLeft = "0px";
       icon.setAttribute("data-identity-icon", currentSelection[0].icon);
       icon.setAttribute("data-identity-color", currentSelection[0].color);
       containerString = "this container";
     } else {
       // update icon for multiple deletion
-      icon.style.visibility = 'hidden';
-      icon.style.marginLeft = `-16px`;
-      document.getElementById("delete-container-name").textContent = `Containers`;
+      icon.style.visibility = "hidden";
+      icon.style.marginLeft = "-16px";
+      document.getElementById("delete-container-name").textContent = "Containers";
       containerString = "this " + currentSelection.length + " containers";
     }
     let warningMessage = "";
