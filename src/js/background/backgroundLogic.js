@@ -237,6 +237,51 @@ const backgroundLogic = {
     return identitiesOutput;
   },
 
+  async reorganize() {
+    let windows = await browser.windows.getAll();
+    let containers = new Set();
+    for (const windowObj of windows) {
+      const tabs = await browser.tabs.query({windowId: windowObj.id});
+      for (const tab of tabs) {
+        containers.add(tab.cookieStoreId);
+      }
+    }
+    containers = Array.from(containers);
+
+    for (let i = 0; i < containers.length; i++) {
+      const windowId = (i < windows.length) ? windows[i].id : -1;
+      await this._reorganizeInternal(windowId, containers[i]);
+    }
+    windows = await browser.windows.getAll();
+    for (let i = containers.length; i < windows.length; i++) {
+      await browser.windows.remove(windows[i].id);
+    }
+  },
+
+  async _reorganizeInternal(windowId, cookieStoreId) {
+    let createNew = false;
+    let tabs = await browser.tabs.query({
+      "cookieStoreId": cookieStoreId
+    });
+    if (windowId === -1) {
+      const newWindowObj = await browser.windows.create();
+      windowId = newWindowObj.id;
+      createNew = true;
+    }
+    browser.tabs.move(tabs.map((tab) => tab.id), {
+      windowId: windowId,
+      index: -1
+    });
+    if (createNew) {
+      tabs = await browser.tabs.query({windowId: windowId});
+      for (let tab of tabs) { // eslint-disable-line prefer-const
+        if (tab.cookieStoreId !== cookieStoreId) {
+          browser.tabs.remove(tab.id);
+        }
+      }
+    }
+  },
+
   async sortTabs() {
     const windows = await browser.windows.getAll();
     for (let windowObj of windows) { // eslint-disable-line prefer-const
