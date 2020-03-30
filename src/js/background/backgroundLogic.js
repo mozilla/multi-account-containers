@@ -237,7 +237,7 @@ const backgroundLogic = {
     return identitiesOutput;
   },
 
-  async reorganize() {
+  async sortTabsByWindow() {
     let windows = await browser.windows.getAll();
     let containers = new Set();
     for (const windowObj of windows) {
@@ -250,7 +250,7 @@ const backgroundLogic = {
 
     for (let i = 0; i < containers.length; i++) {
       const windowId = (i < windows.length) ? windows[i].id : -1;
-      await this._reorganizeInternal(windowId, containers[i]);
+      await this._sortTabsByWindowInternal(windowId, containers[i]);
     }
     windows = await browser.windows.getAll();
     for (let i = containers.length; i < windows.length; i++) {
@@ -258,7 +258,7 @@ const backgroundLogic = {
     }
   },
 
-  async _reorganizeInternal(windowId, cookieStoreId) {
+  async _sortTabsByWindowInternal(windowId, cookieStoreId) {
     let createNew = false;
     let tabs = await browser.tabs.query({
       "cookieStoreId": cookieStoreId
@@ -274,7 +274,7 @@ const backgroundLogic = {
     });
     if (createNew) {
       tabs = await browser.tabs.query({windowId: windowId});
-      for (let tab of tabs) { // eslint-disable-line prefer-const
+      for (const tab of tabs) {
         if (tab.cookieStoreId !== cookieStoreId) {
           browser.tabs.remove(tab.id);
         }
