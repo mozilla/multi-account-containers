@@ -240,6 +240,8 @@ const backgroundLogic = {
   async sortTabsByWindow() {
     let windows = await browser.windows.getAll();
     let containers = new Set();
+
+    // loop through each tab to find all active containers
     for (const windowObj of windows) {
       const tabs = await browser.tabs.query({windowId: windowObj.id});
       for (const tab of tabs) {
@@ -248,10 +250,16 @@ const backgroundLogic = {
     }
     containers = Array.from(containers);
 
+    // for each container, move all related tabs to its window
     for (let i = 0; i < containers.length; i++) {
+      // if no window is available, then pass -1
       const windowId = (i < windows.length) ? windows[i].id : -1;
       await this._sortTabsByWindowInternal(windowId, containers[i]);
     }
+
+    // Logically, there shouldn't be any redundant windows
+    // but, maybe other addons/features conflicts, so double check to
+    // delete redundant windows here.
     windows = await browser.windows.getAll();
     for (let i = containers.length; i < windows.length; i++) {
       await browser.windows.remove(windows[i].id);
