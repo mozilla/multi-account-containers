@@ -259,27 +259,29 @@ const backgroundLogic = {
   },
 
   async _sortTabsByWindowInternal(windowId, cookieStoreId) {
-    let createNew = false;
-    let tabs = await browser.tabs.query({
+    let newlyOpenedTabId = null;
+    const tabs = await browser.tabs.query({
       "cookieStoreId": cookieStoreId
     });
+
+    // create a new window so that move tabs to the new window
     if (windowId === -1) {
       const newWindowObj = await browser.windows.create();
       windowId = newWindowObj.id;
-      createNew = true;
+      newlyOpenedTabId = newWindowObj.tabs[0].id;
     }
+
+    // move all tabs
     browser.tabs.move(tabs.map((tab) => tab.id), {
       windowId: windowId,
       index: -1
     });
-    if (createNew) {
-      tabs = await browser.tabs.query({windowId: windowId});
-      for (const tab of tabs) {
-        if (tab.cookieStoreId !== cookieStoreId) {
-          browser.tabs.remove(tab.id);
-        }
-      }
+
+    // if new window is created, then close newly opened tab by its id
+    if (newlyOpenedTabId !== null) {
+      browser.tabs.remove(newlyOpenedTabId);
     }
+
   },
 
   async sortTabs() {
