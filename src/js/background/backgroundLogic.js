@@ -269,7 +269,8 @@ const backgroundLogic = {
     if (windowId === -1) {
       const newWindowObj = await browser.windows.create();
       windowId = newWindowObj.id;
-      // take the tab is from the newly created window for deleting uses
+      // Since creating new window will have opened n default tab,
+      // take the tab id here, and we could delete it after moving
       newlyOpenedTabId = newWindowObj.tabs[0].id;
     }
 
