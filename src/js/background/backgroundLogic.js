@@ -238,7 +238,7 @@ const backgroundLogic = {
   },
 
   async sortTabsByWindow() {
-    let windows = await browser.windows.getAll();
+    const windows = await browser.windows.getAll();
     let containers = new Set();
 
     // loop through each tab to find all active containers
@@ -257,13 +257,6 @@ const backgroundLogic = {
       await this._sortTabsByWindowInternal(windowId, containers[i]);
     }
 
-    // Logically, there shouldn't be any redundant windows
-    // but, maybe other addons/features conflicts, so double check to
-    // delete redundant windows here.
-    windows = await browser.windows.getAll();
-    for (let i = containers.length; i < windows.length; i++) {
-      await browser.windows.remove(windows[i].id);
-    }
   },
 
   async _sortTabsByWindowInternal(windowId, cookieStoreId) {
@@ -276,11 +269,13 @@ const backgroundLogic = {
     if (windowId === -1) {
       const newWindowObj = await browser.windows.create();
       windowId = newWindowObj.id;
+      // Since creating new window will open a default tab,
+      // take the tab id here, and we could delete it after moving
       newlyOpenedTabId = newWindowObj.tabs[0].id;
     }
 
     // move all tabs
-    browser.tabs.move(tabs.map((tab) => tab.id), {
+    await browser.tabs.move(tabs.map((tab) => tab.id), {
       windowId: windowId,
       index: -1
     });
