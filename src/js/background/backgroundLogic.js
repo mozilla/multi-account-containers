@@ -6,7 +6,20 @@ const backgroundLogic = {
     "about:home",
     "about:blank"
   ]),
+  NUMBER_OF_KEYBOARD_SHORTCUTS: 10,
   unhideQueue: [],
+  init() {
+    browser.commands.onCommand.addListener(function (command) {
+      for (let i=0; i < backgroundLogic.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
+        const key = "open_container_" + i;
+        const cookieStoreId = identityState.keyboardShortcut[key];
+        if (command === key) {
+          if (cookieStoreId === "none") return;
+          browser.tabs.create({cookieStoreId});
+        }
+      }
+    });
+  },
 
   async getExtensionInfo() {
     const manifestPath = browser.extension.getURL("manifest.json");
@@ -123,6 +136,20 @@ const backgroundLogic = {
     }
   },
 
+  // https://github.com/mozilla/multi-account-containers/issues/847
+  async addRemoveSiteIsolation(cookieStoreId, remove = false) {
+    const containerState = await identityState.storageArea.get(cookieStoreId);
+    try {
+      if ("isIsolated" in containerState || remove) {
+        delete containerState.isIsolated;
+      } else {
+        containerState.isIsolated = "locked";        
+      }
+      return await identityState.storageArea.set(cookieStoreId, containerState);
+    } catch (error) {
+      console.error(`No container: ${cookieStoreId}`);
+    }
+  },
 
   async moveTabsToWindow(options) {
     const requiredArguments = ["cookieStoreId", "windowId"];
@@ -229,7 +256,8 @@ const backgroundLogic = {
         hasHiddenTabs: !!containerState.hiddenTabs.length,
         hasOpenTabs: !!openTabs.length,
         numberOfHiddenTabs: containerState.hiddenTabs.length,
-        numberOfOpenTabs: openTabs.length
+        numberOfOpenTabs: openTabs.length,
+        isIsolated: !!containerState.isIsolated
       };
       return;
     });
@@ -329,6 +357,10 @@ const backgroundLogic = {
   },
 
   cookieStoreId(userContextId) {
+    if(userContextId === 0) return "firefox-default";
     return `firefox-container-${userContextId}`;
   }
 };
+
+
+backgroundLogic.init();
