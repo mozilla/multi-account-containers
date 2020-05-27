@@ -143,6 +143,7 @@
     "/img/container-site-d-24.png"
   ],
   "options_ui": {
-    "page": "options.html"
+    "page": "options.html",
+    "browser_style": true
   }
 }
