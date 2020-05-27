@@ -107,10 +107,26 @@ table {
 
 /* Effect borrowed from tabs in Firefox, ensure that the element flexes to the full width */
 .truncate-text {
+  position: relative;
   inline-size: 100%;
-  mask-image: linear-gradient(to left, transparent, black 1em);
   overflow: hidden;
   white-space: nowrap;
+}
+
+.truncate-text::after {
+  position: absolute;
+  mask-image: linear-gradient(to right, transparent, white 70%);
+  content: " ";
+  inline-size: 50px;
+  height: 100%;
+  inset-inline-end: 0;
+  background: white;
+}
+
+.hover-highlight:hover .truncate-text::after,
+.hover-highlight:focus .truncate-text::after {
+  mask-image: linear-gradient(to right, transparent, var(--highlight-blue) 50%);
+  background: var(--highlight-blue);
 }
 
 /* Color and icon helpers */
@@ -674,6 +690,11 @@ h3.title {
   line-height: 24px;
 }
 
+.menu-item td {
+  display: flex;
+  max-inline-size: 300px;
+}
+
 .disabled-menu-item {
   color: grey;
   cursor: default;
@@ -687,12 +708,13 @@ h3.title {
 }
 
 .menu-text {
+  inline-size: calc(100% - 40px);
+  max-inline-size: 260px;
   line-height: 24px;
 }
 
 .menu-icon {
   display: block;
-  float: left;
   height: 16px;
   inline-size: 16px;
   margin-block-end: 4px;
@@ -703,8 +725,6 @@ h3.title {
 }
 
 .menu-right-float {
-  display: inline-block;
-  float: right;
   height: 24px;
   inline-size: 60px;
   text-align: right;
