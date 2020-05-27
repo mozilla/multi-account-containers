@@ -22,9 +22,9 @@
     "nyc": "^15.0.0",
     "sinon": "^7.5.0",
     "sinon-chai": "^3.3.0",
-    "stylelint": "^7.9.0",
-    "stylelint-config-standard": "^16.0.0",
-    "stylelint-order": "^0.3.0",
+    "stylelint-order": "^4.0.0",
+    "stylelint": "^13.5.0",
+    "stylelint-config-standard": "^20.0.0",
     "web-ext": "^2.9.3",
     "webextensions-jsdom": "^1.2.1"
   },
