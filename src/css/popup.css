@@ -712,12 +712,17 @@ h3.title {
 .menu-icon {
   display: block;
   height: 16px;
-  inline-size: 16px;
+  inline-size: 23px;
   margin-block-end: 4px;
   margin-block-start: 4px;
   margin-inline-end: 8px;
   margin-inline-start: 16px;
   text-align: center;
+}
+
+/* Maintain 1:1 square ratio for Favicons of websites added to a specific container */
+#container-info-table .menu-icon {
+  inline-size: 16px;
 }
 
 .menu-right-float {
