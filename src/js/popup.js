@@ -219,12 +219,14 @@ const Logic = {
   },
 
   async showPanel(panel, currentIdentity = null, backwards = false) {
-    // Invalid panel... ?!?
-    if (!(panel in this._panels)) {
-      throw new Error("Something really bad happened. Unknown panel: " + panel);
-    }
     if (!backwards || !this._currentPanel) {
       this._previousPanelPath.push(this._currentPanel);
+    }
+
+    // If invalid panel, reset panels.
+    if (!(panel in this._panels)) {
+      panel = P_CONTAINERS_LIST;
+      this._previousPanelPath = [];
     }
 
     this._currentPanel = panel;
@@ -347,6 +349,71 @@ const Logic = {
         Logic.showPreviousPanel();
       });
       this._listenerSet = true;
+    }
+  },
+
+  shortcutListener(e){
+    function openNewContainerTab(identity) {
+      try {
+        browser.tabs.create({
+          cookieStoreId: identity.cookieStoreId
+        });
+        window.close();
+      } catch (e) {
+        window.close();
+      }
+    }
+    const identities = Logic.identities();
+    if ((e.keyCode >= 49 && e.keyCode <= 57) &&
+            Logic._currentPanel === "containersList") {
+      const identity = identities[e.keyCode - 49];
+      if (identity) {
+        openNewContainerTab(identity);
+      }
+    }
+  },
+
+  keyboardNavListener(e){
+    const panelSelector = Logic.getPanelSelector(Logic._panels[Logic._currentPanel]);
+    const selectables = [...document.querySelectorAll(`${panelSelector} .keyboard-nav[tabindex='0']`)];
+    const element = document.activeElement;
+    const backButton = document.querySelector(`${panelSelector} .keyboard-nav-back`);
+    const index = selectables.indexOf(element) || 0;
+    function next() {
+      const nextElement = selectables[index + 1];
+      if (nextElement) {
+        nextElement.focus();
+      }
+    }
+    function previous() {
+      const previousElement = selectables[index - 1];
+      if (previousElement) {
+        previousElement.focus();
+      }
+    }
+    switch (e.keyCode) {
+    case 40:
+      next();
+      break;
+    case 38:
+      previous();
+      break;
+    case 39:
+    {
+      if(element){
+        element.click();
+      }
+      break;
+    }
+    case 37:
+    {
+      if(backButton){
+        backButton.click();
+      }
+      break;
+    }
+    default:
+      break;
     }
   }
 };
@@ -560,71 +627,10 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         window.close();
       }
     });
-    document.addEventListener("keydown", (e) => {
-      function openNewContainerTab(identity) {
-        try {
-          browser.tabs.create({
-            cookieStoreId: identity.cookieStoreId
-          });
-          window.close();
-        } catch (e) {
-          window.close();
-        }
-      }
-      const identities = Logic.identities();
-      const selectables = [...document.querySelectorAll(".open-newtab[tabindex='0']")];
-      const element = document.activeElement;
-      const index = selectables.indexOf(element) || 0;
-      function next() {
-        const nextElement = selectables[index + 1];
-        if (nextElement) {
-          nextElement.focus();
-        }
-      }
-      function previous() {
-        const previousElement = selectables[index - 1];
-        if (previousElement) {
-          previousElement.focus();
-        }
-      }
-      switch (e.keyCode) {
-      case 40:
-        next();
-        break;
-      case 38:
-        previous();
-        break;
-      case 39:
-      {
-        const showTabs = element.parentNode.querySelector(".show-tabs");
-        if(showTabs) {
-          showTabs.click();
-        }
-        break;
-      }
-      case 37:
-      {
-        const hideTabs = document.querySelector(".panel-back-arrow");
-        if(hideTabs) {
-          hideTabs.click();
-        }
-        break;
-      }
-      default:
-        if ((e.keyCode >= 49 && e.keyCode <= 57) &&
-            Logic._currentPanel === "containersList") {
-          const identity = identities[e.keyCode - 49];
-          if (identity) {
-            openNewContainerTab(identity);
-          }
-        }
-        break;
-      }
-    });
+
   },
 
   unregister() {
-
   },
 
   // This method is called when the panel is shown.
@@ -633,7 +639,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
-      tr.classList.add("menu-item", "hover-highlight");
+      tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
       tr.setAttribute("tabindex", "0");
       const td = document.createElement("td");
       const openTabs = identity.numberOfOpenTabs || "" ;
@@ -666,22 +672,9 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
     list.innerHTML = "";
     list.appendChild(fragment);
-    /* Not sure why extensions require a focus for the doorhanger,
-       however it allows us to have a tabindex before the first selected item
-     */
-    // const focusHandler = () => {
-    //   const identityList = list.querySelector("tr .clickable");
-    //   if (identityList) {
-    //     // otherwise this throws an error when there are no containers present.
-    //     identityList.focus();
-    //     document.removeEventListener("focus", focusHandler);
-    //   }
-    // };
-    // document.addEventListener("focus", focusHandler);
-    // /* If the user mousedown's first then remove the focus handler */
-    // document.addEventListener("mousedown", () => {
-    //   document.removeEventListener("focus", focusHandler);
-    // });
+
+    document.addEventListener("keydown", Logic.keyboardNavListener);
+    document.addEventListener("keydown", Logic.shortcutListener);
     return Promise.resolve();
   },
 });
@@ -822,7 +815,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     for (let tab of tabs) { // eslint-disable-line prefer-const
       const tr = document.createElement("tr");
       fragment.appendChild(tr);
-      tr.classList.add("menu-item", "hover-highlight");
+      tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
       tr.setAttribute("tabindex", "0");
       tr.innerHTML = Utils.escaped`
         <td>
@@ -883,7 +876,7 @@ Logic.registerPanel(OPEN_NEW_CONTAINER_PICKER, {
 
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
-      tr.classList.add("menu-item", "hover-highlight");
+      tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
       tr.setAttribute("tabindex", "0");
       const td = document.createElement("td");
 
@@ -942,7 +935,7 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
 
     document.getElementById("new-container-div").innerHTML = Utils.escaped`
       <table class="menu">
-        <tr class="menu-item hover-highlight" id="new-container" tabindex="0">
+        <tr class="menu-item hover-highlight keyboard-nav" id="new-container" tabindex="0">
           <td>
             <div class="menu-icon"><img alt="New Container" src="/img/new-16.svg" />
             </div>
@@ -959,7 +952,7 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
 
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
-      tr.classList.add("menu-item", "hover-highlight");
+      tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
       tr.setAttribute("tabindex", "0");
       const td = document.createElement("td");
 
@@ -1022,7 +1015,7 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
 
     if (currentTab.cookieStoreId !== "firefox-default") {
       const tr = document.createElement("tr");
-      tr.classList.add("menu-item", "hover-highlight");
+      tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
       const td = document.createElement("td");
 
       td.innerHTML = Utils.escaped`          
@@ -1051,7 +1044,7 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
     Logic.identities().forEach(identity => {
       if (currentTab.cookieStoreId !== identity.cookieStoreId) {
         const tr = document.createElement("tr");
-        tr.classList.add("menu-item", "hover-highlight");
+        tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
         tr.setAttribute("tabindex", "0");
         const td = document.createElement("td");
 
@@ -1103,7 +1096,7 @@ Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
 
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
-      tr.classList.add("menu-item", "hover-highlight");
+      tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
       tr.setAttribute("tabindex", "0");
       const td = document.createElement("td");
 
@@ -1196,7 +1189,7 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
           delete assignments[siteKey];
           this.showAssignedContainers(assignments);
         });
-        trElement.classList.add("menu-item", "hover-highlight");
+        trElement.classList.add("menu-item", "hover-highlight", " keyboard-nav");
         tableElement.appendChild(trElement);
       });
     }
