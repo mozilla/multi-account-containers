@@ -841,7 +841,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
           window.close();
         });
 
-        const closeTab = document.querySelector(".trash-button");
+        const closeTab = tr.querySelector(".trash-button");
         if (closeTab) {
           Utils.addEnterHandler(closeTab, async (e) => {
             await browser.tabs.remove(Number(e.target.id));
