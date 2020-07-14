@@ -721,6 +721,7 @@ h3.title {
 }
 
 /* Maintain 1:1 square ratio for Favicons of websites added to a specific container */
+#edit-sites-assigned .menu-icon,
 #container-info-table .menu-icon {
   inline-size: 16px;
 }
