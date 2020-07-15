@@ -703,10 +703,14 @@ h3.title {
   color: #fff;
 }
 
-.menu-text {
+.menu-item-name {
+  display: flex;
   inline-size: calc(100% - 40px);
-  line-height: 24px;
   max-inline-size: 260px;
+}
+
+.menu-text {
+  line-height: 24px;
 }
 
 .menu-icon {

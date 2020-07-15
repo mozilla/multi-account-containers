@@ -403,6 +403,12 @@ const Logic = {
       if(element){
         element.click();
       }
+
+      // If one Container is highlighted,
+      if (element.classList.contains("keyboard-right-arrow-override")) {
+        element.querySelector(".menu-right-float").click();
+      }
+
       break;
     }
     case 37:
@@ -639,19 +645,21 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
-      tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
+      tr.classList.add("menu-item", "hover-highlight", "keyboard-nav", "keyboard-right-arrow-override");
       tr.setAttribute("tabindex", "0");
       const td = document.createElement("td");
       const openTabs = identity.numberOfOpenTabs || "" ;
 
-      td.innerHTML = Utils.escaped`          
-        <div class="menu-icon">
-          <div class="usercontext-icon"
-            data-identity-icon="${identity.icon}"
-            data-identity-color="${identity.color}">
+      td.innerHTML = Utils.escaped`
+        <div class="menu-item-name">
+          <div class="menu-icon">
+            <div class="usercontext-icon"
+              data-identity-icon="${identity.icon}"
+              data-identity-color="${identity.color}">
+            </div>
           </div>
+          <span class="menu-text">${identity.name}</span>
         </div>
-        <span class="menu-text">${identity.name}</span>
         <span class="menu-right-float">
           <span class="container-count">${openTabs}</span>
           <span class="menu-arrow">
@@ -663,9 +671,37 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
       tr.appendChild(td);
 
-      Utils.addEnterHandler(tr, () => {
+      const openInThisContainer = tr.querySelector(".menu-item-name");
+      Utils.addEnterHandler(openInThisContainer, () => {
+        try {
+          browser.tabs.create({
+            cookieStoreId: identity.cookieStoreId
+          });
+          window.close();
+        } catch (e) {
+          window.close();
+        }
+      });
+
+      Utils.addEnterOnlyHandler(tr, () => {
+        try {
+          browser.tabs.create({
+            cookieStoreId: identity.cookieStoreId
+          });
+          window.close();
+        } catch (e) {
+          window.close();
+        }
+      });
+
+      // Select only the ">" from the container list
+      const showPanelButton = tr.querySelector(".menu-right-float");
+
+      Utils.addEnterHandler(showPanelButton, () => {
         Logic.showPanel(P_CONTAINER_INFO, identity);
       });
+
+
     });
 
     const list = document.querySelector("#identities-list");
