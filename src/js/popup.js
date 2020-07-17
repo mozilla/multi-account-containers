@@ -30,6 +30,13 @@ const P_CONTAINER_DELETE = "containerDelete";
 const P_CONTAINERS_ACHIEVEMENT = "containersAchievement";
 const P_CONTAINER_ASSIGNMENTS = "containerAssignments";
 
+function addRemoveSiteIsolation() {
+  const identity = Logic.currentIdentity();
+  browser.runtime.sendMessage({
+    method: "addRemoveSiteIsolation",
+    cookieStoreId: identity.cookieStoreId
+  });
+}
 
 async function getExtensionInfo() {
   const manifestPath = browser.extension.getURL("manifest.json");
@@ -1242,6 +1249,9 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   initialize() {
     this.initializeRadioButtons();
     Utils.addEnterHandler(document.querySelector("#close-container-edit-panel"), () => {
+      // Resets listener from siteIsolation checkbox to keep the update queue to 0.
+      const siteIsolation = document.querySelector("#site-isolation");
+      siteIsolation.removeEventListener("change", addRemoveSiteIsolation, false);
       const formValues = new FormData(this._editForm);
       if (formValues.get("container-id") !== NEW_CONTAINER_ID) {
         this._submitForm();
@@ -1337,14 +1347,10 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       containerName.select();
       containerName.focus();
     });
+
     const siteIsolation = document.querySelector("#site-isolation");
     siteIsolation.checked = !!identity.isIsolated;
-    siteIsolation.addEventListener( "change", function() {
-      browser.runtime.sendMessage({ 
-        method: "addRemoveSiteIsolation",
-        cookieStoreId: identity.cookieStoreId
-      });
-    });
+    siteIsolation.addEventListener( "change", addRemoveSiteIsolation, false);
     [...document.querySelectorAll("[name='container-color']")].forEach(colorInput => {
       colorInput.checked = colorInput.value === identity.color;
     });
