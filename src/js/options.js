@@ -28,14 +28,12 @@ async function enableDisableReplaceTab() {
 async function setupOptions() {
   const hasPermission = await browser.permissions.contains({permissions: ["bookmarks"]});
   const { syncEnabled } = await browser.storage.local.get("syncEnabled");
-  const { replaceTabEnabled } =
-    await browser.storage.local.get("replaceTabEnabled");
+  const { replaceTabEnabled } = await browser.storage.local.get("replaceTabEnabled");
   if (hasPermission) {
     document.querySelector("#bookmarksPermissions").checked = true;
   }
   document.querySelector("#syncCheck").checked = !!syncEnabled;
-  document.querySelector("#replaceTabCheck").checked =
-    !!replaceTabEnabled;
+  document.querySelector("#replaceTabCheck").checked = !!replaceTabEnabled;
   setupContainerShortcutSelects();
 }
 
@@ -83,8 +81,7 @@ function resetOnboarding() {
 document.addEventListener("DOMContentLoaded", setupOptions);
 document.querySelector("#bookmarksPermissions").addEventListener( "change", requestPermissions);
 document.querySelector("#syncCheck").addEventListener( "change", enableDisableSync);
-document.querySelector("#replaceTabCheck")
-  .addEventListener( "change", enableDisableReplaceTab);
+document.querySelector("#replaceTabCheck").addEventListener( "change", enableDisableReplaceTab);
 document.querySelector("button").addEventListener("click", resetOnboarding);
 
 for (let i=0; i < NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
