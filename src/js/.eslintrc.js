@@ -7,6 +7,8 @@ module.exports = {
     "badge": true,
     "backgroundLogic": true,
     "identityState": true,
-    "messageHandler": true
+    "messageHandler": true,
+    "sync": true,
+    "Utils": true
   }
 };

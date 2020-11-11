@@ -6,7 +6,20 @@ const backgroundLogic = {
     "about:home",
     "about:blank"
   ]),
+  NUMBER_OF_KEYBOARD_SHORTCUTS: 10,
   unhideQueue: [],
+  init() {
+    browser.commands.onCommand.addListener(function (command) {
+      for (let i=0; i < backgroundLogic.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
+        const key = "open_container_" + i;
+        const cookieStoreId = identityState.keyboardShortcut[key];
+        if (command === key) {
+          if (cookieStoreId === "none") return;
+          browser.tabs.create({cookieStoreId});
+        }
+      }
+    });
+  },
 
   async getExtensionInfo() {
     const manifestPath = browser.extension.getURL("manifest.json");
@@ -59,15 +72,13 @@ const backgroundLogic = {
       });
     }
     await donePromise;
-    browser.runtime.sendMessage({
-      method: "refreshNeeded"
-    });
   },
 
   async openNewTab(options) {
     let url = options.url || undefined;
     const userContextId = ("userContextId" in options) ? options.userContextId : 0;
     const active = ("nofocus" in options) ? options.nofocus : true;
+    const discarded = ("noload" in options) ? options.noload : false;
 
     const cookieStoreId = backgroundLogic.cookieStoreId(userContextId);
     // Autofocus url bar will happen in 54: https://bugzilla.mozilla.org/show_bug.cgi?id=1295072
@@ -84,6 +95,7 @@ const backgroundLogic = {
     return browser.tabs.create({
       url,
       active,
+      discarded,
       pinned: options.pinned || false,
       cookieStoreId
     });
@@ -126,16 +138,31 @@ const backgroundLogic = {
     return list.concat(containerState.hiddenTabs);
   },
 
-  async unhideContainer(cookieStoreId) {
+  async unhideContainer(cookieStoreId, alreadyShowingUrl) {
     if (!this.unhideQueue.includes(cookieStoreId)) {
       this.unhideQueue.push(cookieStoreId);
       await this.showTabs({
-        cookieStoreId
+        cookieStoreId,
+        alreadyShowingUrl
       });
       this.unhideQueue.splice(this.unhideQueue.indexOf(cookieStoreId), 1);
     }
   },
 
+  // https://github.com/mozilla/multi-account-containers/issues/847
+  async addRemoveSiteIsolation(cookieStoreId, remove = false) {
+    const containerState = await identityState.storageArea.get(cookieStoreId);
+    try {
+      if ("isIsolated" in containerState || remove) {
+        delete containerState.isIsolated;
+      } else {
+        containerState.isIsolated = "locked";        
+      }
+      return await identityState.storageArea.set(cookieStoreId, containerState);
+    } catch (error) {
+      console.error(`No container: ${cookieStoreId}`);
+    }
+  },
 
   async moveTabsToWindow(options) {
     const requiredArguments = ["cookieStoreId", "windowId"];
@@ -242,7 +269,8 @@ const backgroundLogic = {
         hasHiddenTabs: !!containerState.hiddenTabs.length,
         hasOpenTabs: !!openTabs.length,
         numberOfHiddenTabs: containerState.hiddenTabs.length,
-        numberOfOpenTabs: openTabs.length
+        numberOfOpenTabs: openTabs.length,
+        isIsolated: !!containerState.isIsolated
       };
       return;
     });
@@ -322,21 +350,30 @@ const backgroundLogic = {
     const containerState = await identityState.storageArea.get(options.cookieStoreId);
 
     for (let object of containerState.hiddenTabs) { // eslint-disable-line prefer-const
-      promises.push(this.openNewTab({
-        userContextId: userContextId,
-        url: object.url,
-        nofocus: options.nofocus || false,
-        pinned: object.pinned,
-      }));
+      // do not show already opened url
+      const noload = !object.pinned;
+      if (object.url !== options.alreadyShowingUrl) {
+        promises.push(this.openNewTab({
+          userContextId: userContextId,
+          url: object.url,
+          nofocus: options.nofocus || false,
+          noload: noload,
+          pinned: object.pinned,
+        }));
+      }
     }
 
     containerState.hiddenTabs = [];
 
     await Promise.all(promises);
-    return await identityState.storageArea.set(options.cookieStoreId, containerState);
+    return identityState.storageArea.set(options.cookieStoreId, containerState);
   },
 
   cookieStoreId(userContextId) {
+    if(userContextId === 0) return "firefox-default";
     return `firefox-container-${userContextId}`;
   }
 };
+
+
+backgroundLogic.init();

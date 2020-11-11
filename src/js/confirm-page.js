@@ -1,6 +1,6 @@
 async function load() {
   const searchParams = new URL(window.location).searchParams;
-  const redirectUrl = decodeURIComponent(searchParams.get("url"));
+  const redirectUrl = searchParams.get("url");
   const cookieStoreId = searchParams.get("cookieStoreId");
   const currentCookieStoreId = searchParams.get("currentCookieStoreId");
   const redirectUrlElement = document.getElementById("redirect-url");
@@ -17,25 +17,14 @@ async function load() {
     const currentContainer = await browser.contextualIdentities.get(currentCookieStoreId);
     document.getElementById("current-container-name").textContent = currentContainer.name;
   }
-
-  document.getElementById("redirect-form").addEventListener("submit", (e) => {
+  document.getElementById("deny").addEventListener("click", (e) => {
     e.preventDefault();
-    let button = "confirm"; // Confirm is the form default.
-    let buttonTarget = e.explicitOriginalTarget;
-    if (buttonTarget.tagName !== "BUTTON") {
-      buttonTarget = buttonTarget.closest("button");
-    }
-    if (buttonTarget && buttonTarget.id) {
-      button = buttonTarget.id;
-    }
-    switch (button) {
-    case "deny":
-      denySubmit(redirectUrl);
-      break;
-    case "confirm":
-      confirmSubmit(redirectUrl, cookieStoreId);
-      break;
-    }
+    denySubmit(redirectUrl);
+  });
+
+  document.getElementById("confirm").addEventListener("click", (e) => {
+    e.preventDefault();
+    confirmSubmit(redirectUrl, cookieStoreId);
   });
 }
 

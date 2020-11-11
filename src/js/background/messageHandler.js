@@ -6,10 +6,23 @@ const messageHandler = {
 
   init() {
     // Handles messages from webextension code
-    browser.runtime.onMessage.addListener((m) => {
+    browser.runtime.onMessage.addListener(async (m) => {
       let response;
+      let tab;
 
       switch (m.method) {
+      case "getShortcuts":
+        response = identityState.storageArea.loadKeyboardShortcuts();
+        break;
+      case "setShortcut":
+        identityState.storageArea.setKeyboardShortcut(m.shortcut, m.cookieStoreId);
+        break;
+      case "resetSync":
+        response = sync.resetSync();
+        break;
+      case "resetBookmarksContext":
+        response = assignManager.resetBookmarksMenuItem();
+        break;
       case "deleteContainer":
         response = backgroundLogic.deleteContainer(m.message.userContextId);
         break;
@@ -18,6 +31,9 @@ const messageHandler = {
         break;
       case "neverAsk":
         assignManager._neverAsk(m);
+        break;
+      case "addRemoveSiteIsolation":
+        response = backgroundLogic.addRemoveSiteIsolation(m.cookieStoreId);
         break;
       case "getAssignment":
         response = browser.tabs.get(m.tabId).then((tab) => {
@@ -30,9 +46,7 @@ const messageHandler = {
       case "setOrRemoveAssignment":
         // m.tabId is used for where to place the in content message
         // m.url is the assignment to be removed/added
-        response = browser.tabs.get(m.tabId).then((tab) => {
-          return assignManager._setOrRemoveAssignment(tab.id, m.url, m.userContextId, m.value);
-        });
+        response = assignManager._setOrRemoveAssignment(m.tabId, m.url, m.userContextId, m.value);
         break;
       case "sortTabs":
         backgroundLogic.sortTabs();
@@ -67,6 +81,31 @@ const messageHandler = {
       case "exemptContainerAssignment":
         response = assignManager._exemptTab(m);
         break;
+      case "reloadInContainer":
+        response = assignManager.reloadPageInContainer(
+          m.url, 
+          m.currentUserContextId, 
+          m.newUserContextId, 
+          m.tabIndex, 
+          m.active,
+          true
+        );
+        break;
+      case "assignAndReloadInContainer":
+        tab = await assignManager.reloadPageInContainer(
+          m.url, 
+          m.currentUserContextId, 
+          m.newUserContextId, 
+          m.tabIndex, 
+          m.active,
+          true
+        );
+        // m.tabId is used for where to place the in content message
+        // m.url is the assignment to be removed/added
+        response = browser.tabs.get(tab.id).then((tab) => {
+          return assignManager._setOrRemoveAssignment(tab.id, m.url, m.newUserContextId, m.value);
+        });
+        break;
       }
       return response;
     });
@@ -79,6 +118,7 @@ const messageHandler = {
         if (!extensionInfo.permissions.includes("contextualIdentities")) {
           throw new Error("Missing contextualIdentities permission");
         }
+        // eslint-disable-next-line require-atomic-updates
         externalExtensionAllowed[sender.id] = true;
       }
       let response;
@@ -141,9 +181,6 @@ const messageHandler = {
     }, {urls: ["<all_urls>"], types: ["main_frame"]});
 
     browser.tabs.onCreated.addListener((tab) => {
-      if (tab.incognito) {
-        badge.disableAddon(tab.id);
-      }
       // lets remember the last tab created so we can close it if it looks like a redirect
       this.lastCreatedTab = tab;
       if (tab.cookieStoreId) {
@@ -153,9 +190,26 @@ const messageHandler = {
             !tab.url.startsWith("moz-extension")) {
           // increment the counter of container tabs opened
           this.incrementCountOfContainerTabsOpened();
-        }
 
-        backgroundLogic.unhideContainer(tab.cookieStoreId);
+          this.tabUpdateHandler = (tabId, changeInfo) => {
+            if (tabId === tab.id && changeInfo.status === "complete") {
+              // get current tab's url to not open the same one from hidden tabs
+              browser.tabs.get(tabId).then(loadedTab => {
+                backgroundLogic.unhideContainer(tab.cookieStoreId, loadedTab.url);
+              }).catch((e) => {
+                throw e;
+              });
+
+              browser.tabs.onUpdated.removeListener(this.tabUpdateHandler);
+            }
+          };
+
+          // if it's a container tab wait for it to complete and
+          // unhide other tabs from this container
+          if (tab.cookieStoreId.startsWith("firefox-container")) {
+            browser.tabs.onUpdated.addListener(this.tabUpdateHandler);
+          }
+        }
       }
       setTimeout(() => {
         this.lastCreatedTab = null;

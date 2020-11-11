@@ -3,14 +3,10 @@ module.exports = {
       "node": true,
       "mocha": true
     },
-    globals: {
-      "sinon": false,
-      "expect": false,
-      "nextTick": false,
-      "buildBackgroundDom": false,
-      "background": false,
-      "buildPopupDom": false,
-      "popup": false,
-      "helper": false
+    "parserOptions": {
+      "ecmaVersion": 2018
+    },
+    "rules": {
+      "no-restricted-globals": ["error", "browser"]
     }
 }

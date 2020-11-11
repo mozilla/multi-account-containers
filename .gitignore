@@ -12,3 +12,7 @@ src/web-ext-artifacts/*
 
 # JetBrains IDE files
 .idea
+
+# IstanbulJS
+.nyc_output
+coverage

@@ -19,10 +19,18 @@ For more info, see:
 ## Development
 
 1. `npm install`
-2. `./node_modules/.bin/web-ext run -s src/`
+2. `./node_modules/web-ext/bin/web-ext run -s src/`
 
 ### Testing
-TBD
+`npm run test`
+
+or 
+
+`npm run lint` 
+
+for just the linter
+
+There is a timeout test that sometimes fails on certain machines, so make sure to run the tests on your clone before you make any changes to see if you have this problem.
 
 ### Distributing
 #### Make the new version
@@ -51,6 +59,6 @@ Finally, we also publish the release to GitHub for those followers.
 
 Facebook & Twitter icons CC-Attrib https://fairheadcreative.com.
 
-- [Licence](./LICENSE.txt)
+- [License](./LICENSE.txt)
 - [Contributing](./CONTRIBUTING.md)
 - [Code Of Conduct](./CODE_OF_CONDUCT.md)

@@ -47,7 +47,7 @@ module.exports = {
       "error",
       {
         "escape": {
-          "taggedTemplates": ["escaped"]
+          "taggedTemplates": ["Utils.escaped"]
         }
       }
     ],

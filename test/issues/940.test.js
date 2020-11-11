@@ -1,180 +1,179 @@
-describe("#940", () => {
-  describe("when other onBeforeRequestHandlers are faster and redirect with the same requestId", () => {
-    it("should not open two confirm pages", async () => {
-      // init
-      const activeTab = {
-        id: 1,
-        cookieStoreId: "firefox-container-1",
-        url: "http://example.com",
-        index: 0
-      };
-      await helper.browser.initializeWithTab(activeTab);
-      // assign the activeTab.url
-      await helper.popup.clickElementById("container-page-assigned");
+const {expect, sinon, initializeWithTab} = require("../common");
 
-      // start request and don't await the requests at all
-      // so the second request below is actually comparable to an actual redirect that also fires immediately
-      const newTab = {
-        id: 2,
-        cookieStoreId: "firefox-default",
-        url: activeTab.url,
-        index: 1,
-        active: true
-      };
-      helper.browser.openNewTab(newTab, {
-        requestId: 1
+describe("#940", function () {
+  describe("when other onBeforeRequestHandlers are faster and redirect with the same requestId", function () {
+    it("should not open two confirm pages", async function () {
+      const webExtension = await initializeWithTab({
+        cookieStoreId: "firefox-container-4",
+        url: "http://example.com"
       });
 
-      // other addon sees the same request
-      // and redirects to the https version of activeTab.url
-      // since it's a redirect the request has the same requestId
-      background.browser.webRequest.onBeforeRequest.addListener.yield({
-        frameId: 0,
-        tabId: newTab.id,
-        url: "https://example.com",
-        requestId: 1
-      });
-      await nextTick();
+      await webExtension.popup.helper.clickElementById("always-open-in");
+      await webExtension.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item");
 
-      background.browser.tabs.create.should.have.been.calledOnce;
+      const responses = {};
+      await webExtension.background.browser.tabs._create({
+        url: "https://example.com"
+      }, {
+        options: {
+          webRequestRedirects: ["https://example.com"],
+          webRequestError: true,
+          instantRedirects: true
+        },
+        responses
+      });
+
+      const result = await responses.webRequest.onBeforeRequest[1];
+      expect(result).to.deep.equal({
+        cancel: true
+      });
+      webExtension.browser.tabs.create.should.have.been.calledOnce;
+
+      webExtension.destroy();
     });
   });
 
-  describe("when redirects change requestId midflight", () => {
-    let promiseResults;
-    beforeEach(async () => {
-      // init
-      const activeTab = {
-        id: 1,
-        cookieStoreId: "firefox-container-1",
-        url: "https://www.youtube.com",
-        index: 0
+  describe("when redirects change requestId midflight", function () {
+    beforeEach(async function () {
+      
+      this.webExt = await initializeWithTab({
+        cookieStoreId: "firefox-container-4",
+        url: "https://www.youtube.com"
+      });
+
+      await this.webExt.popup.helper.clickElementById("always-open-in");
+      await this.webExt.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item");
+      
+      global.clock = sinon.useFakeTimers();
+      this.redirectedRequest = async (options = {}) => {
+        const newTabResponses = {};
+        const newTab = await this.webExt.browser.tabs._create({
+          url: "http://youtube.com"
+        }, {
+          options: Object.assign({
+            webRequestRedirects: [
+              "https://youtube.com",
+              "https://www.youtube.com",
+              {
+                url: "https://www.youtube.com",
+                webRequest: {
+                  requestId: 2
+                }
+              }
+            ],
+            webRequestError: true,
+            instantRedirects: true
+          }, options),
+          responses: newTabResponses
+        });
+  
+        return [newTabResponses, newTab];
       };
-      await helper.browser.initializeWithTab(activeTab);
-      // assign the activeTab.url
-      await helper.popup.clickElementById("container-page-assigned");
-
-      // http://youtube.com
-      const newTab = {
-        id: 2,
-        cookieStoreId: "firefox-default",
-        url: "http://youtube.com",
-        index: 1,
-        active: true
-      };
-      const promise1 = helper.browser.openNewTab(newTab, {
-        requestId: 1
-      });
-
-      // https://youtube.com
-      const [promise2] = background.browser.webRequest.onBeforeRequest.addListener.yield({
-        frameId: 0,
-        tabId: newTab.id,
-        url: "https://youtube.com",
-        requestId: 1
-      });
-
-      // https://www.youtube.com
-      const [promise3] = background.browser.webRequest.onBeforeRequest.addListener.yield({
-        frameId: 0,
-        tabId: newTab.id,
-        url: "https://www.youtube.com",
-        requestId: 1
-      });
-
-      // https://www.youtube.com
-      const [promise4] = background.browser.webRequest.onBeforeRequest.addListener.yield({
-        frameId: 0,
-        tabId: newTab.id,
-        url: "https://www.youtube.com",
-        requestId: 2
-      });
-
-      promiseResults = await Promise.all([promise1, promise2, promise3, promise4]);
     });
 
-    it("should not open two confirm pages", async () => {
+    afterEach(function () {
+      this.webExt.destroy();
+      global.clock.restore();
+    });
+
+    it("should not open two confirm pages", async function () {
+      const [newTabResponses] = await this.redirectedRequest();
+
       // http://youtube.com is not assigned, no cancel, no reopening
-      expect(promiseResults[0]).to.deep.equal({});
+      expect(await newTabResponses.webRequest.onBeforeRequest[0]).to.deep.equal({});
 
       // https://youtube.com is not assigned, no cancel, no reopening
-      expect(promiseResults[1]).to.deep.equal({});
+      expect(await newTabResponses.webRequest.onBeforeRequest[1]).to.deep.equal({});
 
       // https://www.youtube.com is assigned, this triggers reopening, cancel
-      expect(promiseResults[2]).to.deep.equal({
+      expect(await newTabResponses.webRequest.onBeforeRequest[2]).to.deep.equal({
         cancel: true
       });
 
       // https://www.youtube.com is assigned, this was a redirect, cancel early, no reopening
-      expect(promiseResults[3]).to.deep.equal({
+      expect(await newTabResponses.webRequest.onBeforeRequest[3]).to.deep.equal({
         cancel: true
       });
 
-      background.browser.tabs.create.should.have.been.calledOnce;
+      this.webExt.background.browser.tabs.create.should.have.been.calledOnce;
     });
 
-    it("should uncancel after webRequest.onCompleted", async () => {
-      const [promise1] = background.browser.webRequest.onCompleted.addListener.yield({
-        tabId: 2
+    it("should uncancel after webRequest.onCompleted", async function () {
+      const [newTabResponses, newTab] = await this.redirectedRequest();
+      // remove onCompleted listeners because in the real world this request would never complete
+      // and thus might trigger unexpected behavior because the tab gets removed when reopening
+      this.webExt.background.browser.webRequest.onCompleted.addListener = sinon.stub();
+      this.webExt.background.browser.tabs.create.resetHistory();
+      // we create a tab with the same id and use the same request id to see if uncanceled
+      await this.webExt.browser.tabs._create({
+        id: newTab.id,
+        url: "https://www.youtube.com"
+      }, {
+        options: {
+          webRequest: {
+            requestId: newTabResponses.webRequest.request.requestId
+          }
+        }
       });
-      await promise1;
 
-      const [promise2] = background.browser.webRequest.onBeforeRequest.addListener.yield({
-        frameId: 0,
-        tabId: 2,
-        url: "https://www.youtube.com",
-        requestId: 123
-      });
-      await promise2;
-
-      background.browser.tabs.create.should.have.been.calledTwice;
+      this.webExt.background.browser.tabs.create.should.have.been.calledOnce;
     });
 
-    it("should uncancel after webRequest.onErrorOccurred", async () => {
-      const [promise1] = background.browser.webRequest.onErrorOccurred.addListener.yield({
-        tabId: 2
+    it("should uncancel after webRequest.onErrorOccurred", async function () {
+      const [newTabResponses, newTab] = await this.redirectedRequest();
+      this.webExt.background.browser.tabs.create.resetHistory();
+      // we create a tab with the same id and use the same request id to see if uncanceled
+      await this.webExt.browser.tabs._create({
+        id: newTab.id,
+        url: "https://www.youtube.com"
+      }, {
+        options: {
+          webRequest: {
+            requestId: newTabResponses.webRequest.request.requestId
+          },
+          webRequestError: true
+        }
       });
-      await promise1;
 
-      // request to assigned url in same tab
-      const [promise2] = background.browser.webRequest.onBeforeRequest.addListener.yield({
-        frameId: 0,
-        tabId: 2,
-        url: "https://www.youtube.com",
-        requestId: 123
-      });
-      await promise2;
-
-      background.browser.tabs.create.should.have.been.calledTwice;
+      this.webExt.background.browser.tabs.create.should.have.been.calledOnce;
     });
 
-    it("should uncancel after 2 seconds", async () => {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      // request to assigned url in same tab
-      const [promise2] = background.browser.webRequest.onBeforeRequest.addListener.yield({
-        frameId: 0,
-        tabId: 2,
-        url: "https://www.youtube.com",
-        requestId: 123
+    it("should uncancel after 2 seconds", async function () {
+      const [newTabResponses, newTab] = await this.redirectedRequest({
+        webRequestDontYield: ["onCompleted", "onErrorOccurred"]
       });
-      await promise2;
+      global.clock.tick(2000);
 
-      background.browser.tabs.create.should.have.been.calledTwice;
-    }).timeout(2002);
+      this.webExt.background.browser.tabs.create.resetHistory();
+      // we create a tab with the same id and use the same request id to see if uncanceled
+      await this.webExt.browser.tabs._create({
+        id: newTab.id,
+        url: "https://www.youtube.com"
+      }, {
+        options: {
+          webRequest: {
+            requestId: newTabResponses.webRequest.request.requestId
+          },
+          webRequestError: true
+        }
+      });
 
-    it("should not influence the canceled url in other tabs", async () => {
-      const newTab = {
-        id: 123,
+      this.webExt.background.browser.tabs.create.should.have.been.calledOnce;
+    });
+
+    it("should not influence the canceled url in other tabs", async function () {
+      await this.redirectedRequest();
+      this.webExt.background.browser.tabs.create.resetHistory();
+      await this.webExt.browser.tabs._create({
         cookieStoreId: "firefox-default",
-        url: "https://www.youtube.com",
-        index: 10,
-        active: true
-      };
-      await helper.browser.openNewTab(newTab, {
-        requestId: 321
+        url: "https://www.youtube.com"
+      }, {
+        options: {
+          webRequestError: true
+        }
       });
 
-      background.browser.tabs.create.should.have.been.calledTwice;
+      this.webExt.background.browser.tabs.create.should.have.been.calledOnce;
     });
   });
 });
