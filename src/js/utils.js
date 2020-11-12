@@ -52,7 +52,7 @@ const Utils = {
       // The only issue with this approach is that if (for some unknown reason) pregeneratedString is not saved, it will result in an infinite loop - but better than a privacy leak!
       return getBogusProxy();
     }
-  }
+  },
 
   /**
  * Escapes any occurances of &, ", <, > or / with XML entities.
@@ -167,6 +167,8 @@ const Utils = {
   }
 };
 
+window.Utils = Utils;
+
 // The following creates a fake (but convincing) constant Utils.DEFAULT_PROXY
 Object.defineProperty(window.Utils, "DEFAULT_PROXY", {
   value: Object.freeze({type: "direct"}),
@@ -176,5 +178,3 @@ Object.defineProperty(window.Utils, "DEFAULT_PROXY", {
   // Setting configurable to false avoids deletion of Utils.DEFAULT_PROXY
   configurable: false
 });
-
-window.Utils = Utils;

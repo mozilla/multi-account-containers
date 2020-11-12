@@ -743,33 +743,9 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     // Note: this is not implemented in messageHandler.js
     let incompatible = false;
     try {
-      const incompatible = await browser.runtime.sendMessage({
+      incompatible = await browser.runtime.sendMessage({
         method: "checkIncompatibleAddons"
       });
-      const moveTabsEl = document.querySelector("#container-info-movetabs");
-      if (incompatible) {
-        const fragment = document.createDocumentFragment();
-        const incompatEl = document.createElement("div");
-
-        moveTabsEl.classList.remove("clickable");
-        moveTabsEl.setAttribute("title", "Moving container tabs is incompatible with Pulse, PageShot, and SnoozeTabs.");
-
-        fragment.appendChild(incompatEl);
-        incompatEl.setAttribute("id", "container-info-movetabs-incompat");
-        incompatEl.textContent = "Incompatible with other Experiments.";
-        incompatEl.classList.add("container-info-tab-row");
-
-        moveTabsEl.parentNode.insertBefore(fragment, moveTabsEl.nextSibling);
-      } else {
-        Logic.addEnterHandler(moveTabsEl, async function () {
-          await browser.runtime.sendMessage({
-            method: "moveTabsToWindow",
-            windowId: browser.windows.WINDOW_ID_CURRENT,
-            cookieStoreId: Logic.currentIdentity().cookieStoreId,
-          });
-          window.close();
-        });
-      }
     } catch (e) {
       throw new Error("Could not check for incompatible add-ons.");
     }
@@ -1391,10 +1367,12 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     document.querySelector("#edit-container-panel-proxy").value = "";
 
     const edit_proxy_dom = function(result) {
-      if(result.type === "http")
-        document.querySelector("#edit-container-panel-proxy").value = `${result.host}:${result.port}`;
-      else if(result.type === "direct")
-        document.querySelector("#edit-container-panel-proxy").value = "";
+      const proxyInput = document.querySelector("#edit-container-panel-proxy");
+      if (result.type === "direct" || typeof result.type === "undefined") {
+        proxyInput.value = "";
+        return;
+      }
+      proxyInput.value = `${result.type}://${result.host}:${result.port}`;
     };
 
     proxifiedContainers.retrieve(identity.cookieStoreId).then((result) => {

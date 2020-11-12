@@ -1,20 +1,3 @@
-// Below lets us print errors, huge thanks to Jonathan @ https://stackoverflow.com/questions/18391212/is-it-not-possible-to-stringify-an-error-using-json-stringify
-if (!("toJSON" in Error.prototype))
-  Object.defineProperty(Error.prototype, "toJSON", {
-    value: function() {
-      const alt = {};
-
-      Object.getOwnPropertyNames(this).forEach(function(key) {
-        alt[key] = this[key];
-      }, this);
-
-      return alt;
-    },
-    configurable: true,
-    writable: true
-  });
-
-
 // This object allows other scripts to access the list mapping containers to their proxies
 proxifiedContainers = {
 
@@ -79,6 +62,7 @@ proxifiedContainers = {
       });
     });
   },
+
   set(cookieStoreId, proxy, initialize = false) {
     return new Promise((resolve, reject) => {
       if (initialize === true) {
@@ -125,25 +109,14 @@ proxifiedContainers = {
     });
   },
 
-  //Parses a proxy description string of the format host[:port] or username:password@host[:port] (port is optional)
+  //Parses a proxy description string of the format type://host[:port] or type://username:password@host[:port] (port is optional)
   parseProxy(proxy_str) {
-    const regexp = /(\b(\w+):(\w+)@)?(((?:\d{1,3}\.){3}\d{1,3}\b)|(\b(\w+)(\.(\w+))+))(:(\d+))?/;
-    if (regexp.test(proxy_str) !== true)
+    const proxyRegexp = /(?<type>(https?)|(socks4?)):\/\/(\b(?<username>\w+):(?<password>\w+)@)?(?<host>((?:\d{1,3}\.){3}\d{1,3}\b)|(\b(\w+)(\.(\w+))+))(:(?<port>\d+))?/;
+    if (proxyRegexp.test(proxy_str) !== true) {
       return false;
-
-    else {
-      const matches = regexp.exec(proxy_str);
-
-      const result = {
-        type: "http",
-        host: matches[4],
-        port: parseInt(matches[11], 10) || 8080,
-        username: matches[2] || "",
-        password: matches[3] || ""
-      };
-
-      return result;
     }
+    const matches = proxyRegexp.exec(proxy_str);
+    return matches.groups;
   },
 
   // Deletes the proxy information object for a specified cookieStoreId [useful for cleaning]
