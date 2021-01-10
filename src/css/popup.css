@@ -1009,6 +1009,16 @@ tr:hover > td > .trash-button {
     filter: invert(1);
   }
 
+  #edit-sites-assigned .menu-icon,
+  #container-info-table .menu-icon {
+    filter: invert(0);
+  }
+
+  .truncate-text::after {
+  	background: #4a4a4a;
+  	mask-image: linear-gradient(to right, transparent, #4a4a4a 70%);
+  }
+
   [data-identity-color="grey"] {
     --identity-icon-color: #ededf0;
   }
