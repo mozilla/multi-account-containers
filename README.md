@@ -18,32 +18,43 @@ For more info, see:
 
 ## Development
 
-To run this extension:
+### Running Locally
 
-1. Open Firefox and load the `about:debugging` page. Click 
-   [Load Temporary Add-on](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Temporary_Installation_in_Firefox)
-   and select the `manifest.json` file within the folder of an example extension.
-   Here is a [video](https://www.youtube.com/watch?v=cer9EUKegG4)
-   that demonstrates how to do this.
-2. Install the
-   [web-ext](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Getting_started_with_web-ext)
-   tool. At the command line, open the example extension's folder and type
-   `web-ext run -s src/`. This launches Firefox and installs the extension automatically.
-   This tool provides some additional development features, such as
-   [automatic reloading](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Getting_started_with_web-ext#Automatic_extension_reloading).
+#### via WebExtensions API (web-ext)
+
+1. Install the [web-ext](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Getting_started_with_web-ext) tool.
+2. Run `web-ext run -s src/`. This launches Firefox and installs the extension automatically.
+
+This tool provides some additional development features, such as [automatic reloading](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Getting_started_with_web-ext#Automatic_extension_reloading).
+
+#### via about:debugging in Firefox
+
+1. Open the `about:debugging` page in Firefox.
+2. Click on `This FIrefox`.
+3. Click on [Load Temporary Add-on](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Temporary_Installation_in_Firefox).
+4. Select `src/manifest.json`.
+
+Here is a [video](https://www.youtube.com/watch?v=cer9EUKegG4) that demonstrates how to do this.
 
 ### Testing
 
-```
-# Install dependencies
-npm install
+* Install dependencies:
 
-# Run all tests
-npm run test
+  ```
+  npm install
+  ```
 
-# Only run the linter
-npm run lint
-```
+* Run all tests:
+
+  ```
+  npm run test
+  ```
+
+* Only run the linter:
+
+  ```
+  npm run lint
+  ```
 
 There is a timeout test that sometimes fails on certain machines, so make sure to run the tests on your clone before you make any changes to see if you have this problem.
 
