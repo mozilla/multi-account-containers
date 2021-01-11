@@ -20,17 +20,17 @@ For more info, see:
 
 ### Running Locally
 
-#### via WebExtensions API (web-ext)
+#### Via WebExtensions API (web-ext)
 
 1. Install the [web-ext](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Getting_started_with_web-ext) tool.
 2. Run `web-ext run -s src/`. This launches Firefox and installs the extension automatically.
 
 This tool provides some additional development features, such as [automatic reloading](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Getting_started_with_web-ext#Automatic_extension_reloading).
 
-#### via about:debugging in Firefox
+#### Via about:debugging in Firefox
 
 1. Open the `about:debugging` page in Firefox.
-2. Click on `This FIrefox`.
+2. Click on `This Firefox`.
 3. Click on [Load Temporary Add-on](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Temporary_Installation_in_Firefox).
 4. Select `src/manifest.json`.
 
