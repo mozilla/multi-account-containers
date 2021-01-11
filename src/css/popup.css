@@ -1015,8 +1015,8 @@ tr:hover > td > .trash-button {
   }
 
   .truncate-text::after {
-  	background: #4a4a4a;
-  	mask-image: linear-gradient(to right, transparent, #4a4a4a 70%);
+    background: #4a4a4a;
+    mask-image: linear-gradient(to right, transparent, #4a4a4a 70%);
   }
 
   [data-identity-color="grey"] {
