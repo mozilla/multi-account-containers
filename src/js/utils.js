@@ -1,3 +1,5 @@
+/*global getBogusProxy */
+
 const DEFAULT_FAVICON = "/img/blank-favicon.svg";
 
 // TODO use export here instead of globals
@@ -26,8 +28,7 @@ const Utils = {
     const bogusType = "socks4";
     const bogusPort = 9999;
     const bogusUsername = "foo";
-    const bogusPassword = "foo";
-    if(typeof window.Utils.pregeneratedString !== 'undefined')
+    if(typeof window.Utils.pregeneratedString !== "undefined")
     {
       return {type:bogusType, host:`w.${window.Utils.pregeneratedString}.coo`, port:bogusPort, username:bogusUsername, failoverTimeout:bogusFailover};
     }
@@ -38,12 +39,12 @@ const Utils = {
 
       // We generate a cryptographically random string (of length specified in bogusLength), but we only do so once - thus negating any time delay caused
       const bogusLength = 8;
-      let array = new Uint8Array(bogusLength);
+      const array = new Uint8Array(bogusLength);
       window.crypto.getRandomValues(array);
       for(let i = 0; i < bogusLength; i++)
       {
-        let s = array[i].toString(16);
-        if(s.length == 1)
+        const s = array[i].toString(16);
+        if(s.length === 1)
           window.Utils.pregeneratedString += `0${s}`;
         else
           window.Utils.pregeneratedString += s;
