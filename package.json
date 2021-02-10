@@ -25,7 +25,7 @@
     "stylelint": "^13.5.0",
     "stylelint-config-standard": "^20.0.0",
     "stylelint-order": "^4.0.0",
-    "web-ext": "^2.9.3",
+    "web-ext": "^5.4.1",
     "webextensions-jsdom": "^1.2.1"
   },
   "homepage": "https://github.com/mozilla/multi-account-containers#readme",
