@@ -593,7 +593,6 @@ span ~ .panel-header-text {
 }
 
 .userContext-wrapper {
-  align-items: center;
   display: flex;
   flex: 1 1;
   transition: background-color 75ms;
@@ -608,6 +607,23 @@ span ~ .panel-header-text {
   block-size: var(--icon-button-size);
   flex: 0 0 var(--icon-button-size);
   margin-inline-start: var(--inline-icon-space-size);
+}
+
+.userContext-name-wrapper {
+  align-self: center;
+  flex: 1;
+}
+
+.container-panel-row .container-lockorunlock {
+  align-items: center;
+  display: flex;
+  flex: 0 0 var(--icon-button-size);
+}
+
+.container-panel-row .container-lockorunlock img {
+  align-self: center;
+  block-size: 20px;
+  flex: 1;
 }
 
 /* .userContext-icon is used natively, Bug 1333811 was raised to fix */
@@ -926,12 +942,24 @@ span ~ .panel-header-text {
 }
 
 /* https://github.com/mozilla/multi-account-containers/issues/847 */
-.container-lockorunlock.container-locked * {
-  filter: invert(0.5) sepia(1) saturate(127) hue-rotate(360deg);
+.container-lockorunlock * {
+  fill: #979797;
+  filter: url('/img/filters.svg#fill');
 }
 
-.container-lockorunlock.container-unlocked * {
-  filter: invert(0.5);
+.container-lockorunlock:hover * {
+  fill: black;
+  filter: url('/img/filters.svg#fill');
+}
+
+.container-lockorunlock.container-locked * {
+  fill: red;
+  filter: url('/img/filters.svg#fill');
+}
+
+.container-lockorunlock.container-locked:hover * {
+  fill: #ba1111;
+  filter: url('/img/filters.svg#fill');
 }
 
 /* Achievement panel elements */

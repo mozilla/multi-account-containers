@@ -92,6 +92,16 @@ const assignManager = {
         }
       });
       return sites;
+    },
+
+    async getNumbersOfAssignments() {
+      return Object.values(await this.area.get()).reduce((result, site) => {
+        const userContextId = site.userContextId;
+        if (userContextId !== undefined) {
+          result[userContextId] = (result[userContextId] || 0) + 1;
+        }
+        return result;
+      }, {});
     }
   },
 
@@ -141,9 +151,9 @@ const assignManager = {
       return {};
     }
     const userContextId = this.getUserContextIdFromCookieStore(tab);
-    
+
     // https://github.com/mozilla/multi-account-containers/issues/847
-    //    
+    //
     // Handle the case where this request's URL is not assigned to any particular
     // container. We must do the following check:
     //
@@ -160,7 +170,7 @@ const assignManager = {
     //   - the incoming request is for "www.amazon.com", which has no specific container assignment
     //   - in this case, we must re-open "www.amazon.com" in a new tab in the default container
     const mustReloadPageInDefaultContainerDueToLocking = await this._determineMustReloadPageInDefaultContainerDueToLocking(siteSettings, tab);
-    
+
     if (!mustReloadPageInDefaultContainerDueToLocking) {
       if (!siteSettings
           || userContextId === siteSettings.userContextId
@@ -248,20 +258,20 @@ const assignManager = {
       cancel: true,
     };
   },
-  
+
   async _determineMustReloadPageInDefaultContainerDueToLocking(siteSettings, tab) {
     // Tab doesn't support cookies, so containers not supported either.
     if (!("cookieStoreId" in tab)) {
       return false;
     }
-    
+
     // Requested page has been assigned to a specific container.
     // I.e. it will be opened in that container anyway, so we don't need to check if the
     // current tab's container is locked or not.
     if (siteSettings) {
       return false;
     }
-    
+
     // Requested page is not assigned to a specific container. If the current tab's container
     // is locked, then the page must be reloaded in the default container.
     const currentContainerState = await identityState.storageArea.get(tab.cookieStoreId);
@@ -445,14 +455,14 @@ const assignManager = {
         neverAsk: false
       }, exemptedTabIds);
       actionName = "added";
-    
+
     } else {
       // Remove assignment
       await this.storageArea.remove(pageUrl);
       actionName = "removed";
-      
+
       // Unlock container if now empty
-      await this._unlockContainerIfHasNoAssignments(userContextId);    
+      await this._unlockContainerIfHasNoAssignments(userContextId);
     }
     browser.tabs.sendMessage(tabId, {
       text: `Successfully ${actionName} site to always open in this container`
@@ -460,7 +470,7 @@ const assignManager = {
     const tab = await browser.tabs.get(tabId);
     this.calculateContextMenu(tab);
   },
-  
+
   async _unlockContainerIfHasNoAssignments(userContextId) {
     const assignments = await this.storageArea.getByContainer(userContextId);
     const hasAssignments = assignments && Object.keys(assignments).length > 0;
@@ -548,21 +558,21 @@ const assignManager = {
       return `%${charCode}`;
     });
   },
-  
+
   reloadPageInDefaultContainer(url, index, active, openerTabId) {
     // To create a new tab in the default container, it is easiest just to omit the
     // cookieStoreId entirely.
-    // 
+    //
     // Unfortunately, if you create a new tab WITHOUT a cookieStoreId but WITH an openerTabId,
     // then the new tab automatically inherits the opener tab's cookieStoreId.
     // I.e. it opens in the wrong container!
-    // 
+    //
     // So we have to explicitly pass in a cookieStoreId when creating the tab, since we
     // are specifying the openerTabId. There doesn't seem to be any way
     // to look up the default container's cookieStoreId programatically, so sadly
     // we have to hardcode it here as "firefox-default". This is potentially
     // not cross-browser compatible.
-    // 
+    //
     // Note that we could have just omitted BOTH cookieStoreId and openerTabId. But the
     // drawback then is that if the user later closes the newly-created tab, the browser
     // does not automatically return to the original opener tab. To get this desired behaviour,

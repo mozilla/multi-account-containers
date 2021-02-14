@@ -254,6 +254,7 @@ const Logic = {
         identity.hasHiddenTabs = stateObject.hasHiddenTabs;
         identity.numberOfHiddenTabs = stateObject.numberOfHiddenTabs;
         identity.numberOfOpenTabs = stateObject.numberOfOpenTabs;
+        identity.numberOfAssignments = stateObject.numberOfAssignments;
         identity.isLocked = stateObject.isLocked;
       }
       return identity;
@@ -370,7 +371,7 @@ const Logic = {
       value
     });
   },
-  
+
   lockOrUnlockContainer(userContextId, isLocked) {
     return browser.runtime.sendMessage({
       method: "lockOrUnlockContainer",
@@ -379,6 +380,29 @@ const Logic = {
         isLocked: !!isLocked
       }
     });
+  },
+
+  showLockState(element, identity) {
+    const icon = element.querySelector(".icon");
+    const label = element.querySelector(".label");
+    const titled = label || element;
+
+    if (icon) { icon.src = identity.isLocked ? CONTAINER_LOCKED_SRC : CONTAINER_UNLOCKED_SRC; }
+    if (label) { label.innerText = identity.isLocked ? "Locked" : "Unlocked"; }
+    titled.setAttribute("title", `${identity.isLocked ? "Lock" : "Unlock"} ${identity.name} container`);
+
+    element.classList.remove("container-locked", "container-unlocked");
+    element.classList.add("container-lockorunlock", identity.isLocked ? "container-locked" : "container-unlocked");
+  },
+
+  async toggleLock(element, identity) {
+    try {
+      await Logic.lockOrUnlockContainer(Logic.userContextId(identity.cookieStoreId), !identity.isLocked);
+      identity.isLocked = !identity.isLocked;
+      this.showLockState(element, identity);
+    } catch (e) {
+      throw new Error("Failed to lock/unlock container: " + e.message);
+    }
   },
 
   generateIdentityName() {
@@ -678,9 +702,11 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
     Logic.identities().forEach(identity => {
       const hasTabs = (identity.hasHiddenTabs || identity.hasOpenTabs);
+      const hasAssignments = identity.numberOfAssignments > 0;
       const tr = document.createElement("tr");
       const context = document.createElement("td");
       const manage = document.createElement("td");
+      const lock = document.createElement("div");
 
       tr.classList.add("container-panel-row");
 
@@ -696,9 +722,13 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             data-identity-color="${identity.color}">
           </div>
         </div>
-        <div class="container-name truncate-text"></div>`;
+        <div class="userContext-name-wrapper">
+          <div class="container-name truncate-text"></div>
+        </div>`;
       context.querySelector(".container-name").textContent = identity.name;
       manage.innerHTML = "<img src='/img/container-arrow.svg' class='show-tabs pop-button-image-small' />";
+      lock.innerHTML = "<img class='icon' />";
+      Logic.showLockState(lock, identity);
 
       fragment.appendChild(tr);
 
@@ -708,9 +738,15 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         tr.appendChild(manage);
       }
 
+      if (hasAssignments) {
+        context.appendChild(lock);
+      }
+
       Logic.addEnterHandler(tr, async (e) => {
-        if (e.target.matches(".open-newtab")
-          || e.target.parentNode.matches(".open-newtab")
+        if (e.target.closest(".container-lockorunlock")) {
+          const lock = e.target.closest(".container-lockorunlock");
+          Logic.toggleLock(lock, identity);
+        } else if (e.target.closest(".open-newtab")
           || e.type === "keydown") {
           try {
             browser.tabs.create({
@@ -929,7 +965,9 @@ Logic.registerPanel(P_CONTAINERS_EDIT, {
               data-identity-color="${identity.color}">
             </div>
           </div>
-          <div class="container-name truncate-text"></div>
+          <div class="userContext-name-wrapper">
+            <div class="container-name truncate-text"></div>
+          </div>
         </td>
         <td class="edit-container pop-button edit-container-icon">
           <img
@@ -1024,7 +1062,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     }
   },
 
-  showAssignedContainers(assignments, isLocked) {
+  showAssignedContainers(assignments, identity) {
     const assignmentPanel = document.getElementById("edit-sites-assigned");
     const assignmentKeys = Object.keys(assignments);
     assignmentPanel.hidden = !(assignmentKeys.length > 0);
@@ -1035,30 +1073,21 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       while (tableElement.firstChild) {
         tableElement.firstChild.remove();
       }
-      
+
       /* Container locking: https://github.com/mozilla/multi-account-containers/issues/847 */
-      const lockOrUnlockIcon = isLocked ? CONTAINER_LOCKED_SRC : CONTAINER_UNLOCKED_SRC;
-      const lockOrUnlockLabel = isLocked ? "Locked" : "Unlocked";
-      const lockOrUnlockClass = isLocked ? "container-locked" : "container-unlocked";
-      const lockElement = document.createElement("div");
-      lockElement.innerHTML = escaped`
-        <img class="icon" src="${lockOrUnlockIcon}">
-        <div title="${lockOrUnlockLabel}">
-          ${lockOrUnlockLabel}
-        </div>`;
-      lockElement.classList.add("container-info-tab-row", "clickable", "container-lockorunlock", lockOrUnlockClass);
-      tableElement.appendChild(lockElement);
-      
-      Logic.addEnterHandler(lockElement, async () => {
-        try {
-          await Logic.lockOrUnlockContainer(Logic.currentUserContextId(), !isLocked);
-          this.showAssignedContainers(assignments, !isLocked);
-        } catch (e) {
-          throw new Error("Failed to lock/unlock container: " + e.message);
-        }
+      const lock = document.createElement("div");
+      lock.innerHTML = escaped`
+        <img class="icon">
+        <div class="label">`;
+      lock.classList.add("container-info-tab-row", "clickable");
+      Logic.showLockState(lock, identity);
+      tableElement.appendChild(lock);
+
+      Logic.addEnterHandler(lock, () => {
+        Logic.toggleLock(lock, identity);
       });
       /* Container locking end */
-      
+
       /* Assignment list */
       assignmentKeys.forEach((siteKey) => {
         const site = assignments[siteKey];
@@ -1085,7 +1114,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
           const currentTab = await Logic.currentTab();
           Logic.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
           delete assignments[siteKey];
-          that.showAssignedContainers(assignments, isLocked);
+          that.showAssignedContainers(assignments, identity);
         });
         trElement.classList.add("container-info-tab-row", "clickable");
         tableElement.appendChild(trElement);
@@ -1129,7 +1158,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
     const userContextId = Logic.currentUserContextId();
     const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
-    this.showAssignedContainers(assignments, identity.isLocked);
+    this.showAssignedContainers(assignments, identity);
     document.querySelector("#edit-container-panel .panel-footer").hidden = !!userContextId;
 
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
