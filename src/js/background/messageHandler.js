@@ -82,10 +82,10 @@ const messageHandler = {
       }
       return response;
     });
-    
+
     // Monitor browserAction popup
     this.browserAction.init();
-    
+
     // Handles external messages from webextensions
     const externalExtensionAllowed = {};
     browser.runtime.onMessageExternal.addListener(async (message, sender) => {
@@ -226,7 +226,7 @@ const messageHandler = {
       throw e;
     });
   },
-  
+
   /**
     Sends a message to a tab, with following benefits:
     1. Waits until sending AND animating is fully complete
@@ -254,7 +254,7 @@ const messageHandler = {
         } catch (e) {
           if (this.tabRemoved) { break; }
           if (attempts >= MAX_ATTEMPTS) { throw e; }
-          
+
           attempts++;
           await new Promise((resolve) => {
             setTimeout(resolve, 1000);
@@ -262,7 +262,7 @@ const messageHandler = {
         }
       } while (!succeeded);
     }
-  
+
     handleTabStatusLoading() {
       if (!this.tabLoading) {
         this.tabLoading = {};
@@ -271,20 +271,20 @@ const messageHandler = {
         });
       }
     }
-    
+
     handleTabStatusComplete() {
       if (this.tabLoading) {
         this.tabLoading.resolve();
         this.tabLoading = null;
       }
     }
-  
+
     handleTabRemoved() {
       this.tabRemoved = true;
       this.removeTabListeners();
       this.handleTabStatusComplete();
     }
-  
+
     addTabListeners() {
       this.onTabsUpdated = (eventTabId, info) => {
         if (this.tabId === eventTabId) {
@@ -295,27 +295,27 @@ const messageHandler = {
           }
         }
       };
-      
+
       this.onTabsRemoved = (eventTabId) => {
         if (this.tabId === eventTabId) {
           this.handleTabRemoved();
         }
       };
-      
+
       browser.tabs.onUpdated.addListener(this.onTabsUpdated, { tabId: this.tabId, properties:["status"] });
       browser.tabs.onRemoved.addListener(this.onTabsRemoved);
     }
-    
+
     removeTabListeners() {
       browser.tabs.onUpdated.removeListener(this.onTabsUpdated);
       browser.tabs.onRemoved.removeListener(this.onTabsRemoved);
     }
   },
-  
+
   async sendTabMessage(tabId, message) {
     const tab = await backgroundLogic.getTabOrNull(tabId);
     if (!tab || tab.id === browser.tabs.TAB_ID_NONE) { throw new Error(`Cannot send message to tab ${tabId}`); }
-  
+
     const sendMessage = new this.SendTabMessage(tabId, message);
     sendMessage.addTabListeners();
     try {
@@ -327,7 +327,7 @@ const messageHandler = {
       sendMessage.removeTabListeners();
     }
   },
-  
+
   // Holds current browserAction popup state, dispatches events
   browserAction: {
     init() {
@@ -336,7 +336,7 @@ const messageHandler = {
           this.onLoad(port);
         }
       });
-      
+
       browser.windows.onFocusChanged.addListener((windowId) => {
         this.currentWindowId = windowId;
       });
@@ -345,9 +345,9 @@ const messageHandler = {
       // Note a new connection can arrive before existing connection is disconnected.
       // Happens when you click on the browserAction button on two different windows
       if (this.popup) { this.onUnload(); }
-      
+
       const popup = this.popup = { windowId: this.currentWindowId };
-  
+
       port.onDisconnect.addListener(() => {
         if (this.popup === popup) {
           this.onUnload();
@@ -359,7 +359,7 @@ const messageHandler = {
           this.onUpdate(popup, msg.update);
         }
       });
-      
+
       window.dispatchEvent(new Event("BrowserActionPopupLoad"));
     },
     onUnload() {

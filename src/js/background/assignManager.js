@@ -116,7 +116,7 @@ const assignManager = {
     this.storageArea.setExempted(pageUrl, m.tabId);
     return true;
   },
-  
+
   _determineSetAssignmentDueToRecording(tabId, url, siteSettings) {
     if (siteSettings) { return false; } // Assignment already set
     if (!recordManager.isRecordingTabId(tabId)) { return false; }
@@ -148,12 +148,12 @@ const assignManager = {
       return {};
     }
     const userContextId = this.getUserContextIdFromCookieStore(tab);
-    
+
     // Recording
     if (this._determineSetAssignmentDueToRecording(tab.id, options.url, siteSettings)) {
       await this._setOrRemoveAssignment(tab.id, options.url, userContextId, false);
     }
-    
+
     if (!siteSettings
         || userContextId === siteSettings.userContextId
         || this.storageArea.isExempted(options.url, tab.id)) {
@@ -387,7 +387,7 @@ const assignManager = {
     // Context menu has stored context IDs as strings, so we need to coerce
     // the value to a string for accurate checking
     userContextId = String(userContextId);
-    
+
     if (!remove) {
       const tabs = await browser.tabs.query({});
       const assignmentStoreKey = this.storageArea.getSiteStoreKey(pageUrl);

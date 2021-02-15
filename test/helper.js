@@ -21,7 +21,7 @@ module.exports = {
               window.browser.storage.local.set.resetHistory();
               window.browser.runtime.connect.returns({
                 postMessage: sinon.stub()
-              });      
+              });
             }
           }
         }
@@ -33,7 +33,7 @@ module.exports = {
     async openNewTab(tab, options = {}) {
       return background.browser.tabs._create(tab, options);
     },
-    
+
     async browseToURL(tabId, url) {
       const [promise] = background.browser.webRequest.onBeforeRequest.addListener.yield({
         frameId: 0,

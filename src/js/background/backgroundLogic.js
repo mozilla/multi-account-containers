@@ -99,14 +99,14 @@ const backgroundLogic = {
     if (value instanceof Promise) { return value; }
     return Promise.resolve(value);
   },
-  
+
   asTabId(tabId) {
     if (tabId === undefined || tabId === null) {
       return browser.tabs.TAB_ID_NONE;
     }
     return tabId;
   },
-  
+
   async getTabOrNull(tabId) {
     tabId = this.asTabId(tabId);
     if (tabId !== browser.tabs.TAB_ID_NONE) {
@@ -353,7 +353,7 @@ const backgroundLogic = {
   cookieStoreId(userContextId) {
     return `firefox-container-${userContextId}`;
   },
-  
+
   async invokeBrowserMethod(name, args) {
     let target = browser;
     let indexOfDot;
