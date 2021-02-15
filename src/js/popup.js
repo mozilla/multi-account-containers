@@ -103,7 +103,7 @@ const Logic = {
     if (!Env.hasFullBrowserAPI) {
       await this.injectAPI();
     }
-    
+
     // API methods are ready, can continue with init
     const initializingPanels = this.initializePanels();
 
@@ -118,7 +118,7 @@ const Logic = {
 
     // Remove browserAction "upgraded" badge when opening panel
     const clearingBadge = this.clearBrowserActionBadge();
-    
+
     // Routing to the correct panel.
     // If localStorage is disabled, we don't show the onboarding.
     const onboardingData = await browser.storage.local.get([ONBOARDING_STORAGE_KEY]);
@@ -151,7 +151,7 @@ const Logic = {
       showingPanel = this.showPanel(P_ONBOARDING_1);
       break;
     }
-    
+
     return Promise.all([initializingPanels, clearingBadge, settingOnboardingStage, showingPanel]);
   },
 
@@ -210,7 +210,7 @@ const Logic = {
 
   async clearBrowserActionBadge() {
     if (!Env.isBrowserActionPopup) { return; }
-    
+
     const extensionInfo = await getExtensionInfo();
     const storage = await browser.storage.local.get({ browserActionBadgesClicked: [] });
     browser.browserAction.setBadgeBackgroundColor({ color: null });
@@ -365,11 +365,11 @@ const Logic = {
   registerPanel(panelName, panelObject) {
     this._panels[panelName] = panelObject;
   },
-  
+
   initializePanels() {
     return Promise.all(Object.values(this._panels).map(async (panel) => { return panel.initialize(); }));
   },
-  
+
   getPanel(panelName) {
     return this._panels[panelName];
   },
@@ -384,7 +384,7 @@ const Logic = {
     }
     return this._currentIdentity;
   },
-  
+
   setCurrentIdentity(identity) {
     this._currentIdentity = identity;
   },
@@ -443,7 +443,7 @@ const Logic = {
       return recordingTabId === tab.id;
     } catch (e) { console.error("Failed to determine if recording: " + e.message); return false; }
   },
-  
+
   async setRecordingTab(tab) {
     const tabId = tab ? tab.id : browser.tabs.TAB_ID_NONE;
     return browser.runtime.sendMessage({
@@ -451,7 +451,7 @@ const Logic = {
       tabId
     });
   },
-  
+
   generateIdentityName() {
     const defaultName = "Container #";
     const ids = [];
@@ -622,7 +622,37 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         window.close();
       }
     });
-    
+
+    this.getAssignmentCheckbox().addEventListener("change", async () => {
+      const currentTab = await Logic.currentTab();
+      if (!currentTab || !currentTab.cookieStoreId) { return; }
+      const currentTabUserContextId = Logic.userContextId(currentTab.cookieStoreId);
+      Logic.setOrRemoveAssignment(currentTab.id, currentTab.url, currentTabUserContextId, !this.getAssignmentCheckbox().checked);
+    });
+
+    Logic.addEnterHandler(this.getRecordButton(), async () => {
+      const currentTab = await Logic.currentTab();
+      if (!currentTab || !currentTab.cookieStoreId) { return; }
+      if (!this.isRecordingEnabled()) { return; }
+
+      const newRecordingTab = this.isRecordingActive() ? null : currentTab;
+      let showingPanel;
+      try {
+        // Show new recording started/stopped status
+        this.setRecordingActiveAndEnabled(!!newRecordingTab, true);
+        // Show recording panel
+        if (newRecordingTab) { showingPanel = Logic.showPanel(P_CONTAINER_RECORD); }
+        // Start/stop recording
+        await Logic.setRecordingTab(newRecordingTab);
+      } catch (e) {
+        // Failed - revert recording started/stopped status
+        this.setRecordingActiveAndEnabled(!newRecordingTab, true);
+        try { await showingPanel; } catch (e) { /* Ignore show error, as we're immediately going to change panel */ }
+        Logic.showPanel(P_CONTAINERS_LIST);
+        throw new Error("Failed to " + (newRecordingTab ? "start" : "stop") + " recording: " + e.message);
+      }
+    });
+
     document.addEventListener("keydown", (e) => {
       const selectables = [...document.querySelectorAll("[tabindex='0'], [tabindex='-1']")];
       const element = document.activeElement;
@@ -701,8 +731,12 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     browser.tabs.onUpdated.removeListener(this.tabUpdateHandler);
   },
 
+  getAssignmentCheckbox() {
+    return document.getElementById("container-page-assigned");
+  },
+
   setupAssignmentCheckbox(siteSettings, currentUserContextId) {
-    const assignmentCheckboxElement = document.getElementById("container-page-assigned");
+    const assignmentCheckboxElement = this.getAssignmentCheckbox();
     let checked = false;
     if (siteSettings && Number(siteSettings.userContextId) === currentUserContextId) {
       checked = true;
@@ -714,34 +748,34 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     }
     assignmentCheckboxElement.disabled = disabled;
   },
-  
+
+  getRecordButton() {
+    return document.getElementById("record-link");
+  },
+
   isRecordingEnabled() {
-    const recordLinkElement = document.getElementById("record-link");
-    if (recordLinkElement.classList.contains("disabled")) { return false; }
-    return true;
+    return !this.getRecordButton().classList.contains("disabled");
   },
-  
+
   isRecordingActive() {
-    const recordLinkElement = document.getElementById("record-link");
-    if (recordLinkElement.classList.contains("active")) { return true; }
-    return false;
+    return this.getRecordButton().classList.contains("active");
   },
-  
+
   setRecordingActiveAndEnabled(isActive, isEnabled) {
-    const recordLinkElement = document.getElementById("record-link");
-    const recordIconElement = recordLinkElement.querySelector(".icon");
-  
+    const recordButton = this.getRecordButton();
+    const recordButtonIcon = recordButton.querySelector(".icon");
+
     if (!isEnabled) {
-      recordIconElement.src = CONTAINER_RECORD_DISABLED_SRC;
-      recordLinkElement.classList.remove("active");
-      recordLinkElement.classList.add("disabled");
+      recordButtonIcon.src = CONTAINER_RECORD_DISABLED_SRC;
+      recordButton.classList.remove("active");
+      recordButton.classList.add("disabled");
     } else {
-      recordIconElement.src = CONTAINER_RECORD_ENABLED_SRC;
-      recordLinkElement.classList.remove("disabled");
+      recordButtonIcon.src = CONTAINER_RECORD_ENABLED_SRC;
+      recordButton.classList.remove("disabled");
       if (isActive) {
-        recordLinkElement.classList.add("active");
+        recordButton.classList.add("active");
       } else {
-        recordLinkElement.classList.remove("active");
+        recordButton.classList.remove("active");
       }
     }
   },
@@ -749,34 +783,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
   async prepareCurrentTabHeader() {
     const currentTab = await Logic.currentTab();
     const currentTabElement = document.getElementById("current-tab");
-    const assignmentCheckboxElement = document.getElementById("container-page-assigned");
-    const recordLinkElement = document.getElementById("record-link");
     const currentTabUserContextId = Logic.userContextId(currentTab.cookieStoreId);
-    assignmentCheckboxElement.addEventListener("change", () => {
-      Logic.setOrRemoveAssignment(currentTab.id, currentTab.url, currentTabUserContextId, !assignmentCheckboxElement.checked);
-    });
-    Logic.addEnterHandler(recordLinkElement, async () => {
-      const currentTab = await Logic.currentTab();
-      if (!currentTab) { return; }
-      if (!this.isRecordingEnabled()) { return; }
-      
-      const newRecordingTab = this.isRecordingActive() ? null : currentTab;
-      let showingPanel;
-      try {
-        // Show new recording started/stopped status
-        this.setRecordingActiveAndEnabled(!!newRecordingTab, true);
-        // Show recording panel
-        if (newRecordingTab) { showingPanel = Logic.showPanel(P_CONTAINER_RECORD); }
-        // Start/stop recording
-        await Logic.setRecordingTab(newRecordingTab);
-      } catch (e) {
-        // Failed - revert recording started/stopped status
-        this.setRecordingActiveAndEnabled(!newRecordingTab, true);
-        try { await showingPanel; } catch (e) { /* Ignore show error, as we're immediately going to change panel */ }
-        Logic.showPanel(P_CONTAINERS_LIST);
-        throw new Error("Failed to " + (newRecordingTab ? "start" : "stop") + " recording: " + e.message);
-      }
-    });
     currentTabElement.hidden = !currentTab;
     this.setupAssignmentCheckbox(false, currentTabUserContextId);
     this.setRecordingActiveAndEnabled(false, false);
