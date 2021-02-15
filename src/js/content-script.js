@@ -21,7 +21,7 @@ class PromiseBuilder {
       }).finally(() => { if (this.completions) { this.completions.forEach((completion) => { completion(); }); } })
     ]);
   }
-  
+
   async _tryHandler(handler, name, ...args) {
     try {
       await handler(...args);
@@ -30,32 +30,32 @@ class PromiseBuilder {
       this.reject(e);
     }
   }
-  
+
   promise(handler) {
     if (handler) { this._tryHandler(handler, "promise", this); }
     return this._promise;
   }
-  
+
   onCompletion(completion) {
     if (!this.completions) { this.completions = []; }
     this.completions.push(completion);
     return this;
   }
-  
+
   onTimeout(delay, timeoutHandler) {
     const timer = () => { this._tryHandler(timeoutHandler, "timeout", this.resolve, this.reject); };
     let timeoutId = setTimeout(() => { timeoutId = null; timer(); }, delay);
     this.onCompletion(() => { clearTimeout(timeoutId); });
     return this;
   }
-  
+
   onFutureEvent(target, eventName, eventHandler) {
     const listener = (event) => { this._tryHandler(eventHandler, eventName, this.resolve, this.reject, event); };
     target.addEventListener(eventName, listener, {once: true});
     this.onCompletion(() => { target.removeEventListener(eventName, listener); });
     return this;
   }
-  
+
   onEvent(target, eventName, eventHandler) {
     if (target === window) {
       eventName = eventName.toLowerCase();
@@ -68,7 +68,7 @@ class PromiseBuilder {
         case "complete":
           // Event already fired - run immediately
           this._tryHandler(eventHandler, eventName, this.resolve, this.reject);
-          return this; 
+          return this;
         }
       }
     }
@@ -92,22 +92,22 @@ class Animation {
           element.classList.add("show");
         }
       } else {
-        element.classList.remove("show");    
+        element.classList.remove("show");
       }
     };
-  
+
     return new PromiseBuilder()
       .onTimeout(timeoutDelay, resolves())
       .onEvent(element, "transitionend", resolves())
       .promise((promise) => {
-      
+
         // Delay until element has been rendered
         requestAnimationFrame(() => {
           setTimeout(() => {
             animate();
           }, 10);
         });
-      
+
         // Ensure animation always reaches final state
         promise.onCompletion(animate);
       });
@@ -132,13 +132,11 @@ class UIResponse {
   }
 }
 
-let requests;
-
 class UIRequestManager {
   static request(component, action, options) {
     // Try for quick return
     if (component.unique) {
-      const previous = requests && requests[component.name];
+      const previous = this.requests && this.requests[component.name];
 
       // Quick return if request already enqueued
       if (previous && previous.action === action) {
@@ -153,7 +151,7 @@ class UIRequestManager {
           return previous.response;
         }
       }
-      
+
       // Quick return if no request pending and element already added/removed
       if (!previous) {
         const element = this._get(component);
@@ -164,19 +162,19 @@ class UIRequestManager {
         }
       }
     }
-    
+
     // New request
     const response = new UIResponse();
     const request = new UIRequest(component, action, options, response);
-    
+
     // Enqueue
     let previous;
     if (component.unique) {
-      if (!requests) { requests = {}; }
-      previous = requests[component.name];
-      requests[component.name] = request;
+      if (!this.requests) { this.requests = {}; }
+      previous = this.requests[component.name];
+      this.requests[component.name] = request;
     }
-    
+
     // Execute
     response.modifyingDOM = new Promise((resolve,reject) => {
       const modifiedDOM = {resolve,reject};
@@ -185,10 +183,10 @@ class UIRequestManager {
         this._execute(request, previous, modifiedDOM, animated);
       });
     });
-    
+
     return response;
   }
-  
+
   static _get(component) {
     const unique = component.unique;
     if (!unique) { return null; }
@@ -207,16 +205,16 @@ class UIRequestManager {
       }
     }
   }
-  
+
   static async _execute(request, previous, modifiedDOM, animated) {
     try {
       if (previous) {
         try { await previous.response.animating; } catch (e) { /* Ignore previous success/failure */ }
       }
-      
+
       const component = request.component;
       const options = request.options;
-    
+
       // Get parent
       let parentElement;
       if ("querySelector" in component.parent) {
@@ -228,24 +226,24 @@ class UIRequestManager {
           parentElement = this._get(component.parent);
         }
       }
-      
+
       let element;
-      
+
       // Add
       if (request.action === "add") {
         element = await component.create(options);
         if (component.onUpdate) { await component.onUpdate(element, options); }
-      
+
         if (component.prepend) {
           parentElement.prepend(element);
         } else {
           parentElement.appendChild(element);
         }
-      
+
         modifiedDOM.resolve(element);
-        
+
         if (component.onAdd) { await component.onAdd(element, options); }
-        
+
       // Remove
       } else {
         if (parentElement) {
@@ -257,14 +255,16 @@ class UIRequestManager {
           modifiedDOM.resolve(element);
         }
       }
-      
+
       animated.resolve(element);
-      
+
     } catch (e) {
       modifiedDOM.reject(e);
       animated.reject(e);
     } finally {
-      if (requests[request.component.name] === request) { requests[request.component.name] = null; }
+      if (this.requests && this.requests[request.component.name] === request) {
+        this.requests[request.component.name] = null;
+      }
     }
   }
 }
@@ -318,7 +318,7 @@ class Recording {
       text: "Sites will be automatically added to this container as you browse in this tab"
     });
     elem.classList.add("recording");
-    return elem;    
+    return elem;
   }
   static onAdd(elem)    { return Animation.toggle(elem, true); }
   static onRemove(elem) { return Animation.toggle(elem, false); }
@@ -329,7 +329,7 @@ class Message {
   static async create(options) {
     // Message
     const msgElem = document.createElement("div");
-    
+
     // Text
     // Ideally we would use https://bugzilla.mozilla.org/show_bug.cgi?id=1340930 when this is available
     msgElem.innerText = options.text;
