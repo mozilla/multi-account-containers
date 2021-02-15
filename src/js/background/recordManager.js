@@ -1,31 +1,41 @@
 const recordManager = {
-  recording: null,
-  listening: null,
-  
+  recording: undefined,
+  listening: undefined,
+
   Recording: class {
     constructor(tab) {
       if (tab) {
         this.windowId    = tab.windowId;
         this.tabId       = tab.id;
         this.isTabActive = tab.active;
+        this.isTabReady  = tab.url.startsWith("http");
+        this.tabMessage  = {};
       } else {
         this.windowId    = browser.windows.WINDOW_ID_NONE;
         this.tabId       = browser.tabs.TAB_ID_NONE;
         this.isTabActive = false;
+        this.isTabReady  = false;
+        this.tabMessage  = undefined;
       }
     }
-    
-    get valid() {
-      return this.tabId !== browser.tabs.TAB_ID_NONE;
+
+    get valid() { return this.tabId !== browser.tabs.TAB_ID_NONE; }
+
+    updateTabPopup(active, opts) {
+      if (this.valid) { this.tabMessage.popup = active; this.updateTabPopupOptions(opts); }
     }
-    
+
+    updateTabPopupOptions(opts) {
+      if (this.valid) { Object.assign(this.tabMessage.popupOptions, opts); }
+    }
+
     async sendTabMessage() {
       return messageHandler.sendTabMessage(this.tabId, this.tabMessage);
     }
-    
+
     async stop() {
       if (!this.valid) { return; }
-    
+
       recordManager.listening.enabled = false;
 
       // Update GUI
@@ -36,71 +46,76 @@ const recordManager = {
         return this.sendTabMessage();
       }
     }
-    
+
     async start() {
       if (!this.valid) { return; }
 
       recordManager.listening.enabled = true;
-  
+
       // Update GUI
       const baPopup = messageHandler.browserAction.popup;
-      const tabPopup = this.isTabActive && (!baPopup || baPopup.windowId !== this.windowId);
-      this.tabMessage = { recording: true, popup: tabPopup, popupOptions: {tabId: this.tabId} };
-      const showingPage = browser.tabs.update(this.tabId, { url: browser.runtime.getURL("/recording.html") });
+      const showTabPopup = this.isTabActive && (!baPopup || baPopup.windowId !== this.windowId);
+      this.tabMessage = { recording: true, popup: showTabPopup, popupOptions: {tabId: this.tabId, hide:!showTabPopup} };
+      const showingPage = this.isTabReady
+        ? Promise.resolve()
+        : browser.tabs.update(this.tabId, { url: browser.runtime.getURL("/recording.html") });
       const messagingTab = this.sendTabMessage();
 
       return Promise.all([showingPage, messagingTab]);
     }
-  
+
     // Re-show recording state on page load
     onTabsUpdated(tabId, changeInfo) {
       if (this.tabId === tabId && changeInfo.status === "complete") {
         this.sendTabMessage();
       }
     }
-    
+
     // Show/hide tabPopup on this tab show/hide
     onTabsActivated(activeInfo) {
       if (this.tabId === activeInfo.tabId) {
+        this.isTabActive = true;
         this.sendTabMessage();
+      } else if (this.windowId === activeInfo.windowId) {
+        this.isTabActive = false;
       }
     }
-    
+
     // Keep track of tab's windowId
     onTabsAttached(tabId, attachInfo) {
       if (this.tabId === tabId) {
         this.windowId = attachInfo.newWindowId;
       }
     }
-  
+
     // Stop recording on close
     onTabsRemoved(tabId) {
       if (this.tabId === tabId) {
         recordManager.setTabId(browser.tabs.TAB_ID_NONE);
       }
     }
-  
+
     // Show/hide tabPopup on hide/show browserActionPopup
     onToggleBrowserActionPopup(baPopupVisible, baPopup) {
       if (this.windowId === baPopup.windowId && this.isTabActive) {
-        this.tabMessage.popup = !baPopupVisible;
-        this.tabMessage.popupOptions = { tabId:this.tabId, width:baPopup.width, height:baPopup.height };
+        const showTabPopup = !baPopupVisible;
+        this.updateTabPopup(showTabPopup, { width:baPopup.width, height:baPopup.height, hide:!showTabPopup });
         this.sendTabMessage();
       }
     }
   },
-  
+
   Listening: class {
     constructor() {
       this._enabled = false;
     }
-    
+
     get enabled() { return this._enabled; }
-    
+
     set enabled(enabled) {
       if (this._enabled === !!enabled) { return; }
       this._enabled = !!enabled;
-      
+
       if (enabled) {
         browser.tabs.onUpdated.addListener(this.onTabsUpdated, { properties: ["status"] });
         browser.tabs.onActivated.addListener(this.onTabsActivated);
@@ -117,7 +132,7 @@ const recordManager = {
         window.removeEventListener("BrowserActionPopupUnload", this.onBrowserActionPopupUnload);
       }
     }
-    
+
     onTabsUpdated(...args)       { recordManager.recording.onTabsUpdated(...args); }
     onTabsActivated(...args)     { recordManager.recording.onTabsActivated(...args); }
     onTabsAttached(...args)      { recordManager.recording.onTabsAttached(...args); }
@@ -125,52 +140,56 @@ const recordManager = {
     onBrowserActionPopupLoad()   { recordManager.recording.onToggleBrowserActionPopup(true, messageHandler.browserAction.popup); }
     onBrowserActionPopupUnload() { recordManager.recording.onToggleBrowserActionPopup(false, messageHandler.browserAction.popup); }
   },
-  
+
   init() {
     this.recording = new recordManager.Recording();
     this.listening = new recordManager.Listening();
   },
-  
+
   isRecordingTabId(tabId) {
     if (!this.recording.valid) { return false; }
     if (this.recording.tabId !== tabId) { return false; }
     return true;
   },
-  
+
   getTabId() {
     return this.recording.tabId;
-  },    
-  
+  },
+
   async setTabId(tabId) {
     // Ensure tab is recordable
     tabId = backgroundLogic.asTabId(tabId);
     const tab = await backgroundLogic.getTabOrNull(tabId);
     const wantRecordableTab = tabId !== browser.tabs.TAB_ID_NONE;
     const isRecordableTab = tab && "cookieStoreId" in tab;
-    
+
     // Invalid tab - stop recording & throw error
     if (wantRecordableTab && !isRecordableTab) {
       this.setTabId(browser.tabs.TAB_ID_NONE); // Don't wait for stop
       throw new Error(`Recording not possible for tab with id ${tabId}`);
     }
-    
+
     // Already recording
     if (this.recording.tabId === tabId) { return; }
-    
+
     const oldRecording = this.recording;
     const newRecording = this.recording = new recordManager.Recording(tab);
-    
+
     // Don't wait for stop
-    oldRecording.stop();
+    if (oldRecording.valid) { oldRecording.stop(); }
     try {
       // But DO wait for start
-      await newRecording.start();
-      
+      if (newRecording.valid) { await newRecording.start(); }
+
     // If error while starting, immediately stop, but don't wait
     } catch (e) {
       this.setTabId(browser.tabs.TAB_ID_NONE);
       throw e;
     }
+  },
+
+  async setTabPopupPosition(tabId, x, y) {
+    if (this.isRecordingTabId(tabId)) { this.recording.updateTabPopupOptions({x,y}); }
   }
 };
 

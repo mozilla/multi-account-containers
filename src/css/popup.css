@@ -802,6 +802,7 @@ span ~ .panel-header-text {
   block-size: 100%;
   color: #fff;
   display: inline-block;
+  flex: 1;
   justify-content: center;
   padding-block-start: 6px;
   padding-inline-start: 30%;

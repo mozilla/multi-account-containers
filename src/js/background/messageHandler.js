@@ -43,6 +43,9 @@ const messageHandler = {
       case "setOrRemoveRecording":
         response = recordManager.setTabId(m.tabId);
         break;
+      case "setTabPopupPosition":
+        response = recordManager.setTabPopupPosition(m.tabId, m.x, m.y);
+        break;
       case "sortTabs":
         backgroundLogic.sortTabs();
         break;
