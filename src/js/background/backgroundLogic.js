@@ -22,10 +22,49 @@ const backgroundLogic = {
   },
 
   async getExtensionInfo() {
-    const manifestPath = browser.extension.getURL("manifest.json");
+    const manifestPath = browser.runtime.getURL("manifest.json");
     const response = await fetch(manifestPath);
     const extensionInfo = await response.json();
     return extensionInfo;
+  },
+
+  async getMullvadInfo() {
+    const amIMullvadPath = "https://am.i.mullvad.net/json";
+
+    // TODO: Add some sort of error catching
+    const mullvadFetchData = await fetch(amIMullvadPath)
+      .then((response) => response.json())
+      .then(data => {
+        return data;
+      });
+
+    return await mullvadFetchData;
+  },
+
+  async getMullvadServers() {
+    const port = browser.runtime.connectNative("mozillavpnnp");
+
+    port.onMessage.addListener(response => {
+      console.log("Received message: " + JSON.stringify(response));
+    });
+
+    port.postMessage({t: "servers"});
+    console.log("getMullvadServers");
+    const mullvadServersPath = "https://stage-vpn.guardian.nonprod.cloudops.mozgcp.net:443/api/v1/vpn/servers";
+    console.log(`mullvadServersPath: ${mullvadServersPath}`);
+    const response = await fetch(mullvadServersPath, {
+      "credentials": "omit",
+      "headers": {
+        "Accept": "application/json",
+        "Accept-Encoding": "gzip, deflate, br",
+        "Accept-Language": "en-US,en;q=0.5",
+        "Host": "stage-vpn.guardian.nonprod.cloudops.mozgcp.net",
+      },
+      "method": "GET",
+      "mode": "cors"
+    });
+    console.log(`response: ${response}`);
+    return await response.json();
   },
 
   getUserContextIdFromCookieStoreId(cookieStoreId) {

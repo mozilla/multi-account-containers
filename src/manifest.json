@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Firefox Multi-Account Containers",
-  "version": "8.0.0",
+  "version": "9.0.0",
   "incognito": "not_allowed",
   "description": "Multi-Account Containers helps you keep all the parts of your online life contained in different tabs. Custom labels and color-coded tabs help keep different activities — like online shopping, travel planning, or checking work email — separate.",
   "icons": {
@@ -10,7 +10,7 @@
   },
   "applications": {
     "gecko": {
-      "id": "@testpilot-containers",
+      "id": "vpn@mozilla.org",
       "strict_min_version": "67.0"
     }
   },
@@ -24,11 +24,14 @@
     "history",
     "idle",
     "management",
+    "nativeMessaging",
     "storage",
     "tabs",
     "webRequestBlocking",
     "webRequest",
-    "proxy"
+    "proxy",
+
+    "https://stage-vpn.guardian.nonprod.cloudops.mozgcp.net:443/*"
   ],
   "optional_permissions": [
     "bookmarks"

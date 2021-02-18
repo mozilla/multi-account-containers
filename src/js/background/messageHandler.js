@@ -106,6 +106,12 @@ const messageHandler = {
           return assignManager._setOrRemoveAssignment(tab.id, m.url, m.newUserContextId, m.value);
         });
         break;
+      case "getMullvadInfo":
+        response = await backgroundLogic.getMullvadInfo();
+        break;
+      case "getMullvadServers":
+        response = await backgroundLogic.getMullvadServers();
+        break;
       }
       return response;
     });
