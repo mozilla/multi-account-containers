@@ -839,6 +839,21 @@ hr {
   padding-inline-start: 17px;
 }
 
+.mozilla-proxy-btn {
+  background-color: black;
+  background-image: url("/img/mozillavpn.png");
+  background-repeat: no-repeat;
+  background-size: 2em 2em;
+  border: 0;
+  border-radius: 2px;
+  color: white;
+  cursor: pointer;
+  height: 30px;
+  inline-size: 100%;
+  line-height: 30px;
+  text-align: center;
+}
+
 .delete-btn {
   background-color: rgba(12, 12, 13, 0.1);
   border: 0;

@@ -29,6 +29,7 @@ const ALWAYS_OPEN_IN_PICKER = "always-open-in";
 const P_CONTAINER_INFO = "containerInfo";
 const P_CONTAINER_EDIT = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
+const P_CONTAINER_MOZ_VPN_PROXY = "containerMozVpnProxy";
 const P_CONTAINERS_ACHIEVEMENT = "containersAchievement";
 const P_CONTAINER_ASSIGNMENTS = "containerAssignments";
 
@@ -265,9 +266,6 @@ const Logic = {
       const panelElement = document.querySelector(this.getPanelSelector(panelItem));
       if (!panelElement.classList.contains("hide")) {
         panelElement.classList.add("hide");
-        if ("unregister" in panelItem) {
-          panelItem.unregister();
-        }
       }
     });
     const panelEl = document.querySelector(this.getPanelSelector(this._panels[panel]));
@@ -663,9 +661,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       }
     });
 
-  },
-
-  unregister() {
   },
 
   // This method is called when the panel is shown.
@@ -1463,6 +1458,12 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     Utils.addEnterHandler(deleteButton, () => {
       Logic.showPanel(P_CONTAINER_DELETE, identity);
     });
+
+    const mozillaVpnButton = document.getElementById("mozilla-proxy-button");
+    Utils.addEnterHandler(mozillaVpnButton, () => {
+      Logic.showPanel(P_CONTAINER_MOZ_VPN_PROXY, identity);
+    });
+
     return Promise.resolve(null);
   },
 
@@ -1513,6 +1514,57 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
     }
     document.getElementById("delete-container-tab-warning").textContent = warningMessage;
 
+    return Promise.resolve(null);
+  },
+});
+
+// P_CONTAINER_MOZ_VPN_PROXY: Choose a Mozilla VPN Proxy node
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_CONTAINER_MOZ_VPN_PROXY, {
+  panelSelector: "#moz-vpn-proxy-panel",
+
+  // This method is called when the object is registered.
+  initialize() {
+    Utils.addEnterHandler(document.querySelector("#choose-moz-vpn-proxy-cancel-link"), () => {
+      Logic.showPreviousPanel();
+    });
+    Utils.addEnterHandler(document.querySelector("#close-moz-vpn-proxy-panel"), () => {
+      Logic.showPreviousPanel();
+    });
+    Utils.addEnterHandler(document.querySelector("#choose-moz-vpn-proxy-ok-link"), async () => {
+      try {
+        alert("assign the proxy to the container here!");
+        Logic.showPanel(P_CONTAINER_INFO, Logic.currentIdentity());
+      } catch (e) {
+        Logic.showPanel(P_CONTAINER_INFO, Logic.currentIdentity());
+      }
+    });
+  },
+
+  // This method is called when the panel is shown.
+  async prepare() {
+    const serversListEl = document.getElementById("choose-moz-vpn-proxy-server-list");
+    const promoEl = document.getElementById("choose-moz-vpn-proxy-promo");
+    const mullvadInfo = await browser.runtime.sendMessage({
+      method: "getMullvadInfo"
+    });
+    console.log(`mullvadInfo: ${mullvadInfo}`);
+    console.log(`mullvadInfo.mullvad_exit_ip: ${mullvadInfo.mullvad_exit_ip}`);
+    if (mullvadInfo.mullvad_exit_ip) {
+      const mullvadServers = await browser.runtime.sendMessage({
+        method: "getMullvadServers"
+      });
+      const serversUl = document.createElement("ul");
+      for (const country of mullvadServers.countries) {
+        const serverLi = document.createElement("li");
+        serverLi.innerHtml = Utils.escaped`${country.name}`;
+        serversUl.appendChild(serverLi);
+      }
+      serversListEl.appendChild(serversUl);
+      promoEl.classList.add("hide");
+      serversListEl.classList.remove("hide");
+    }
     return Promise.resolve(null);
   },
 });

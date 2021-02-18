@@ -301,6 +301,7 @@
         </fieldset>
         <fieldset>
           <legend>Proxy (Optional)</legend>
+          <a class="mozilla-proxy-btn" id="mozilla-proxy-button">Use Mozilla VPN</a>
           <input type="text" name="container-proxy" id="edit-container-panel-proxy" maxlength="50" placeholder="type://host:port"/>
         </fieldset>
       </form>
@@ -357,6 +358,28 @@
     <div class="panel-footer">
       <a href="#" class="button expanded secondary footer-button cancel-button" id="delete-container-cancel-link">Cancel</a>
       <a href="#" class="button expanded primary footer-button" id="delete-container-ok-link">OK</a>
+    </div>
+  </div>
+
+  <div class="panel moz-vpn-proxy-panel hide" id="moz-vpn-proxy-panel">
+    <h3 class="title" id="moz-vpn-proxy-title">
+      Mozilla VPN Proxies
+    </h3>
+    <button class="btn-return arrow-left" id="close-moz-vpn-proxy-panel"></button>
+    <hr>
+    <div class="scrollable panel-content choose-moz-vpn-proxy">
+      <div id="choose-moz-vpn-proxy-server-list" class="hide">
+        <h4 class="choose-moz-vpn-proxy-title">Select a proxy server</h4>
+      </div>
+      <div id="choose-moz-vpn-proxy-promo">
+        <h4>Mozilla VPN</h4>
+        <p>You aren't connected to Mozilla VPN.</p>
+        <p>Connect to <a href="https://vpn.mozilla.org">Mozilla VPN</a> to use its proxy.</p>
+      </div>
+    </div>
+    <div class="panel-footer">
+      <a href="#" class="button expanded secondary footer-button cancel-button" id="choose-moz-vpn-proxy-cancel-link">Cancel</a>
+      <a href="#" class="button expanded primary footer-button" id="choose-moz-vpn-proxy-ok-link">OK</a>
     </div>
   </div>
 
