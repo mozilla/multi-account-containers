@@ -449,7 +449,7 @@ const UI = {
 
     isEqualOptions(options) {
       return options === this.options || (options && this.options &&
-        Object.keys(options).every(k => options[k] === this.options[k]));
+        Object.keys(this.component.options).every(k => options[k] === this.options[k]));
     }
 
     toString() { return `${this.component}::${this.action}::${JSON.stringify(this.options)}`; }
