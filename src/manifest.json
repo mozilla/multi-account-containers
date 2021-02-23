@@ -30,7 +30,7 @@
     "webRequest",
     "proxy",
 
-    "https://am.i.mullvad.net/*"
+    "https://am.i.mullvad.net/json"
   ],
   "optional_permissions": [
     "bookmarks"

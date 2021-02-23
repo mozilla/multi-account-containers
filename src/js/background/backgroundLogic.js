@@ -29,25 +29,16 @@ const backgroundLogic = {
   },
 
   async getMullvadInfo() {
-    console.log("getMullvadInfo");
     const amIMullvadPath = "https://am.i.mullvad.net/json";
-    console.log(`fetching ${amIMullvadPath}`);
-    const response = await fetch("https://am.i.mullvad.net/json", {
-      "credentials": "omit",
-      "headers": {
-        "Accept": "application/json",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Accept-Language": "en-US,en;q=0.5",
-        "Host": "am.i.mullvad.net",
-      },
-      "method": "GET",
-      "mode": "cors"
-    });
-    // const response = await fetch(amIMullvadPath);
-    console.log(`response: ${response}`);
-    const responseJson = await response.json();
-    console.log(`responseJson: ${responseJson}`);
-    return responseJson;
+
+    // TODO: Add some sort of error catching
+    const mullvadFetchData = await fetch(amIMullvadPath)
+      .then((response) => response.json())
+      .then(data => {
+        return data;
+      });
+
+    return await mullvadFetchData;
   },
 
   async getMullvadServers() {
