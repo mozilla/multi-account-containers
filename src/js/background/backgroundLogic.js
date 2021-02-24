@@ -37,8 +37,7 @@ const backgroundLogic = {
       .then(data => {
         return data;
       });
-
-    return await mullvadFetchData;
+    return mullvadFetchData;
   },
 
   async getMullvadServers() {
@@ -188,7 +187,7 @@ const backgroundLogic = {
       if ("isIsolated" in containerState || remove) {
         delete containerState.isIsolated;
       } else {
-        containerState.isIsolated = "locked";        
+        containerState.isIsolated = "locked";
       }
       return await identityState.storageArea.set(cookieStoreId, containerState);
     } catch (error) {
