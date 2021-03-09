@@ -18,17 +18,43 @@ For more info, see:
 
 ## Development
 
-1. `npm install`
-2. `./node_modules/web-ext/bin/web-ext run -s src/`
+### Running Locally
+
+#### Via WebExtensions API (web-ext)
+
+1. Install the [web-ext](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Getting_started_with_web-ext) tool.
+2. Run `web-ext run -s src/`. This launches Firefox and installs the extension automatically.
+
+This tool provides some additional development features, such as [automatic reloading](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Getting_started_with_web-ext#Automatic_extension_reloading).
+
+#### Via about:debugging in Firefox
+
+1. Open the `about:debugging` page in Firefox.
+2. Click on `This Firefox`.
+3. Click on [Load Temporary Add-on](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Temporary_Installation_in_Firefox).
+4. Select `src/manifest.json`.
+
+Here is a [video](https://www.youtube.com/watch?v=cer9EUKegG4) that demonstrates how to do this.
 
 ### Testing
-`npm run test`
 
-or 
+* Install dependencies:
 
-`npm run lint` 
+  ```
+  npm install
+  ```
 
-for just the linter
+* Run all tests:
+
+  ```
+  npm run test
+  ```
+
+* Only run the linter:
+
+  ```
+  npm run lint
+  ```
 
 There is a timeout test that sometimes fails on certain machines, so make sure to run the tests on your clone before you make any changes to see if you have this problem.
 
