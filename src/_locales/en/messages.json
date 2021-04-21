@@ -1,7 +1,7 @@
 {
   "extensionDescription": {
-      "message": "Multi-Account Containers helps you keep all the parts of your online life contained in different tabs. Custom labels and color-coded tabs help keep different activities — like online shopping, travel planning, or checking work email — separate.",
-      "description": "Description of the extension. DO NOT TRANSLATE \"Multi-Account Containers\"."
+    "message": "Multi-Account Containers helps you keep all the parts of your online life contained in different tabs. Custom labels and color-coded tabs help keep different activities — like online shopping, travel planning, or checking work email — separate.",
+    "description": "Description of the extension. DO NOT TRANSLATE \"Multi-Account Containers\"."
   },
   "openInNewTabTitle": {
     "message": "Open New Tab in…",
@@ -27,10 +27,10 @@
     "message": "Always Open Site in Container"
   },
   "openANewTabIn": {
-    "message" : "Open a New Tab in…"
+    "message": "Open a New Tab in…"
   },
   "openNewTabInThisContainer": {
-    "message" : "Open New Tab in this Container"
+    "message": "Open New Tab in this Container"
   },
   "openTabs": {
     "message": "Open Tabs"
@@ -48,7 +48,7 @@
     "message": "A simple and secure way to manage your online life"
   },
   "onboarding-1-sec-description": {
-    "message" : "Use containers to organize tasks, manage accounts, and store sensitive data."
+    "message": "Use containers to organize tasks, manage accounts, and store sensitive data."
   },
   "onboarding-2-header": {
     "message": "Put containers to work for you."
@@ -203,6 +203,9 @@
   "keyboardShortCuts": {
     "message": "Keyboard Shortcuts:"
   },
+  "pageActionDescription": {
+    "message": "Show the \"Always open this in a container\" button in the URL bar"
+  },
   "onboarding": {
     "message": "Onboarding"
   },
@@ -243,7 +246,7 @@
     "message": "Container to open with Keyboard Shortcut $keyId$",
     "placeholders": {
       "keyId": {
-          "content": "$1"
+        "content": "$1"
       }
     }
   },
