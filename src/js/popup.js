@@ -26,6 +26,7 @@ const OPEN_NEW_CONTAINER_PICKER = "new-tab";
 const MANAGE_CONTAINERS_PICKER = "manage";
 const REOPEN_IN_CONTAINER_PICKER = "reopen-in";
 const ALWAYS_OPEN_IN_PICKER = "always-open-in";
+const ALLOW_OPEN_IN_PICKER = "allow-open-in";
 const P_CONTAINER_INFO = "containerInfo";
 const P_CONTAINER_EDIT = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
@@ -37,6 +38,15 @@ function addRemoveSiteIsolation() {
   browser.runtime.sendMessage({
     method: "addRemoveSiteIsolation",
     cookieStoreId: identity.cookieStoreId
+  });
+}
+
+function addRemoveAllowedSite(cookieStoreId, allowedSiteUrl, remove = false) {
+  return browser.runtime.sendMessage({
+    method: "addRemoveAllowedSite",
+    cookieStoreId: cookieStoreId,
+    allowedSiteUrl: allowedSiteUrl,
+    remove: remove
   });
 }
 
@@ -225,6 +235,7 @@ const Logic = {
         identity.numberOfHiddenTabs = stateObject.numberOfHiddenTabs;
         identity.numberOfOpenTabs = stateObject.numberOfOpenTabs;
         identity.isIsolated = stateObject.isIsolated;
+        identity.allowedSites = stateObject.allowedSites;
       }
       if (containerOrder) {
         identity.order = containerOrder[identity.cookieStoreId];
@@ -300,6 +311,14 @@ const Logic = {
       throw new Error("CurrentIdentity must be set before calling Logic.currentIdentity.");
     }
     return this._currentIdentity;
+  },
+
+  async refreshCurrentIdentity() {
+    const current = this.currentIdentity();
+    await this.refreshIdentities();
+    this._currentIdentity = this.identities().find(
+      identity => identity.cookieStoreId === current.cookieStoreId
+    );
   },
 
   currentUserContextId() {
@@ -645,6 +664,9 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     Utils.addEnterHandler(document.querySelector("#always-open-in"), () => {
       Logic.showPanel(ALWAYS_OPEN_IN_PICKER);
     });
+    Utils.addEnterHandler(document.querySelector("#allow-open-in"), () => {
+      Logic.showPanel(ALLOW_OPEN_IN_PICKER);
+    });
     Utils.addEnterHandler(document.querySelector("#info-icon"), () => {
       browser.runtime.openOptionsPage();
     });
@@ -667,6 +689,13 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
   // This method is called when the panel is shown.
   async prepare() {
     const fragment = document.createDocumentFragment();
+
+    const anyIsolatedContainers = Logic.identities().some(
+      identity => identity.isIsolated
+    );
+
+    const allowOpenIn = document.querySelector("#allow-open-in");
+    allowOpenIn.hidden = !anyIsolatedContainers;
 
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
@@ -1236,6 +1265,65 @@ Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
   }
 });
 
+// ALLOW_OPEN_IN_PICKER: Makes the list editable.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(ALLOW_OPEN_IN_PICKER, {
+  panelSelector: "#container-picker-panel",
+
+  // This method is called when the object is registered.
+  initialize() {},
+
+  // This method is called when the panel is shown.
+  prepare() {
+    Logic.listenToPickerBackButton();
+    document.getElementById("picker-title").textContent =
+      "Allow opening this site in";
+    const fragment = document.createDocumentFragment();
+
+    document.getElementById("new-container-div").innerHTML = Utils.escaped`
+      <div class="sub-header">Only showing isolated containers</div>
+    `;
+
+    Logic.identities()
+      .filter(identity => identity.isIsolated)
+      .forEach(identity => {
+        const tr = document.createElement("tr");
+        tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
+        tr.setAttribute("tabindex", "0");
+        const td = document.createElement("td");
+
+        td.innerHTML = Utils.escaped`
+        <div class="menu-icon hover-highlight">
+          <div class="usercontext-icon"
+            data-identity-icon="${identity.icon}"
+            data-identity-color="${identity.color}">
+          </div>
+        </div>
+        <span class="menu-text">${identity.name}</span>`;
+
+        fragment.appendChild(tr);
+
+        tr.appendChild(td);
+
+        Utils.addEnterHandler(tr, async () => {
+          // const currentTab = await this.currentTab();
+          const currentTab = await Utils.currentTab();
+          const url = currentTab.url;
+          addRemoveAllowedSite(identity.cookieStoreId, url);
+          window.close();
+        });
+      });
+
+    const list = document.querySelector("#picker-identities-list");
+
+    list.innerHTML = "";
+    list.appendChild(fragment);
+
+    return Promise.resolve(null);
+  }
+});
+
 // P_CONTAINER_ASSIGNMENTS: Shows Site Assignments and allows editing.
 // ----------------------------------------------------------------------------
 
@@ -1259,7 +1347,15 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
 
     const userContextId = Logic.currentUserContextId();
     const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
+
+    this._addAllowedForm = document.getElementById("add-allowed-site-form");
+    this._addAllowedForm.addEventListener("submit", e => {
+      e.preventDefault();
+      this._submitAddAllowedSiteForm();
+    });
+
     this.showAssignedContainers(assignments);
+    this.showAllowedContainers(identity.isIsolated, identity.allowedSites);
 
     return Promise.resolve(null);
   },
@@ -1277,18 +1373,7 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
       }
       assignmentKeys.forEach((siteKey) => {
         const site = assignments[siteKey];
-        const trElement = document.createElement("tr");
-        /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
-           This is pending a better solution for favicons from web extensions */
-        const assumedUrl = `https://${site.hostname}/favicon.ico`;
-        trElement.innerHTML = Utils.escaped`
-        <td>
-          <div class="favicon"></div>
-          <span title="${site.hostname}" class="menu-text">${site.hostname}</span>
-          <img class="trash-button delete-assignment" src="/img/container-delete.svg" />
-        </td>`;
-        trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
-        const deleteButton = trElement.querySelector(".trash-button");
+        const { trElement, deleteButton, assumedUrl } = this._createContainerRow(site.hostname);
         Utils.addEnterHandler(deleteButton, async () => {
           const userContextId = Logic.currentUserContextId();
           // Lets show the message to the current tab
@@ -1297,10 +1382,66 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
           delete assignments[siteKey];
           this.showAssignedContainers(assignments);
         });
-        trElement.classList.add("menu-item", "hover-highlight", "keyboard-nav");
         tableElement.appendChild(trElement);
       });
     }
+  },
+
+  showAllowedContainers(isIsolated, allowed) {
+    const allowedSitesPanel = document.querySelector(".edit-allowed-sites-panel");
+    allowedSitesPanel.hidden = !isIsolated;
+
+    const tableElement = document.getElementById("edit-sites-allowed");
+    // Clear the previous list list
+    while (tableElement.firstChild) {
+      tableElement.firstChild.remove();
+    }
+    allowed.forEach((allowedKey, idx) => {
+      const hostname = Utils.getLabelForAllowedSiteKey(allowedKey);
+      const { trElement, deleteButton } = this._createContainerRow(hostname);
+      Utils.addEnterHandler(deleteButton, async () => {
+        const currentCookieStoreId = Logic.currentCookieStoreId();
+        addRemoveAllowedSite(currentCookieStoreId, hostname, true);
+        allowed.splice(idx, 1);
+        this.showAllowedContainers(isIsolated, allowed);
+      });
+      tableElement.appendChild(trElement);
+    });
+  },
+
+  _createContainerRow(hostname) {
+    const trElement = document.createElement("tr");
+    /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
+       This is pending a better solution for favicons from web extensions */
+    const assumedUrl = `https://${hostname}/favicon.ico`;
+    trElement.innerHTML = Utils.escaped`
+    <td>
+      <div class="favicon"></div>
+      <span title="${hostname}" class="menu-text truncate-text">${hostname}</span>
+      <img class="trash-button delete-assignment" src="/img/container-delete.svg" />
+    </td>`;
+    trElement
+      .getElementsByClassName("favicon")[0]
+      .appendChild(Utils.createFavIconElement(assumedUrl));
+
+    const deleteButton = trElement.querySelector(".trash-button");
+    trElement.classList.add("menu-item", "hover-highlight", "keyboard-nav");
+
+    return { trElement, deleteButton, assumedUrl };
+  },
+
+  async _submitAddAllowedSiteForm() {
+    const formValues = new FormData(this._addAllowedForm);
+
+    const currentCookieStoreId = Logic.currentCookieStoreId();
+    const allowedSite = formValues.get("add-allowed-site-name");
+
+    await addRemoveAllowedSite(currentCookieStoreId, allowedSite);
+
+    await Logic.refreshCurrentIdentity();
+    const identity = Logic.currentIdentity();
+    this.showAllowedContainers(identity.isIsolated, identity.allowedSites);
+    this._addAllowedForm.reset();
   },
 });
 
