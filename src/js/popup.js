@@ -1873,11 +1873,11 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const userContextId = formValues.get("container-id");
     const currentTab = await Logic.currentTab();
     const tabId = currentTab.id;
-    const fullURL = this.checkUrl(url);
+    const baseURL = this.normalizeUrl(url);
 
-    if (fullURL !== null) {
+    if (baseURL !== null) {
       // Assign URL to container
-      await Logic.setOrRemoveAssignment(tabId, fullURL, userContextId, false);
+      await Logic.setOrRemoveAssignment(tabId, baseURL, userContextId, false);
 
       // Clear form
       document.querySelector("#edit-container-panel-site-input").value = "";
@@ -1888,25 +1888,44 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     }
   },
 
-  checkUrl(url){
-    const validUrl = /[\w.-]+(?:\.[\w.-]+)/g;
-    const regexProtocol = /^https?:\/\/.*/g;
-    const valid = /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=+$,\w]+@)?[A-Za-z0-9.-]+|(?:www\.|[-;:&=+$,\w]+@)[A-Za-z0-9.-]+)((?:\/[+~%/.\w\-_]*)?\??(?:[-+=&;%@.\w_]*)#?(?:[.!/\\\w]*))?)/g;
-    let newURL = url;
+  normalizeUrl(url){
+    /*
+     *  Important: the rules that automatically open a site in a container only
+     *  look at the URL up to but excluding the / after the domainname.
+     *
+     *  Furthermore, containers are only useful for http & https URLs because
+     *  those are the only protocols that transmit cookies to maintain
+     *  sessions.
+     */
 
-    if (!url.match(validUrl)) {
-      return null;
+    // Preface with "https://" if no protocol present
+    const startsWithProtocol = /^\w+:\/\/|^mailto:/; // all protocols are followed by :// (except mailto) 
+    if (!url.match(startsWithProtocol)) {
+      url = "https://" + url;
     }
 
-    // append "https://" if protocol not found
-    if (!url.match(regexProtocol)) {
-      newURL = "https://" + url;
-    }
+    /*
+     * Dual-purpose match: (1) check that url start with http or https proto,
+     * and (2) exclude everything from the / after the domain (any path, any
+     * query string, and any anchor)
+     */
+    const basePart = /^(https?:\/\/)([^/?#]*)/;
+    const r = url.match(basePart);
+    if (!r) return null;
+    const urlProto = r[1];      // includes :// if any
+    const urlConnection = r[2]; // [user[:passwd]@]domain[:port]
 
-    if (!newURL.match(valid)) {
-      return null;
-    }
-    return newURL;
+    // Extract domain from [user[:passwd]@]domain[:port]
+    const domainPart = /^(?:.*@)?([^:]+)/;
+    const d = urlConnection.match(domainPart);
+    if (!d) return null;
+    const urlDomain = d[1];
+
+    // Check that the domain is valid (RFC-1034)
+    const validDomain = /^(?:\w(?:[\w-]*\w)?)(?:\.\w(?:[\w-]*\w)?)+$/;
+    if (!urlDomain.match(validDomain)) return null;
+
+    return urlProto+urlDomain;
   },
 
   showAssignedContainers(assignments) {
