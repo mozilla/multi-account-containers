@@ -41,7 +41,7 @@ describe("#1670", function () {
       const exampleUrl = "https://github.com/mozilla/multi-account-containers";
       beforeEach(async function () {
         console.log("TRACE 5.5.1.0");
-        await this.webExt.popup.helper.clickElementById("edit-containers-link");
+        await this.webExt.popup.helper.clickElementById("manage-containers-link");
         console.log("TRACE 5.5.1.1");
         await this.webExt.popup.helper.clickElementByQuerySelectorAll(".edit-container-icon", "last");
         console.log("TRACE 5.5.1.2");
@@ -65,7 +65,7 @@ describe("#1670", function () {
       const exampleUrl = "github.com/mozilla/multi-account-containers";
       beforeEach(async function () {
         console.log("TRACE 5.7.1.0");
-        await this.webExt.popup.helper.clickElementById("edit-containers-link");
+        await this.webExt.popup.helper.clickElementById("manage-containers-link");
         console.log("TRACE 5.7.1.1");
         await this.webExt.popup.helper.clickElementByQuerySelectorAll(".edit-container-icon", "last");
         console.log("TRACE 5.7.1.2");
@@ -89,7 +89,7 @@ describe("#1670", function () {
       const exampleUrl = "github";
       beforeEach(async function () {
         console.log("TRACE 5.9.1.0");
-        await this.webExt.popup.helper.clickElementById("edit-containers-link");
+        await this.webExt.popup.helper.clickElementById("manage-containers-link");
         console.log("TRACE 5.9.1.1");
         await this.webExt.popup.helper.clickElementByQuerySelectorAll(".edit-container-icon", "last");
         console.log("TRACE 5.9.1.2");
@@ -113,7 +113,7 @@ describe("#1670", function () {
       const exampleUrl = "";
       beforeEach(async function () {
         console.log("TRACE 5.11.1.0");
-        await this.webExt.popup.helper.clickElementById("edit-containers-link");
+        await this.webExt.popup.helper.clickElementById("manage-containers-link");
         console.log("TRACE 5.11.1.1");
         await this.webExt.popup.helper.clickElementByQuerySelectorAll(".edit-container-icon", "last");
         console.log("TRACE 5.11.1.2");
