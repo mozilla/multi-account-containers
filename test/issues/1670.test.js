@@ -11,8 +11,9 @@ describe("#1670", function () {
 
   describe("creating a new container", function () {
     beforeEach(async function () {
-      await this.webExt.popup.helper.clickElementById("container-add-link");
-      await this.webExt.popup.helper.clickElementById("edit-container-ok-link");
+      await this.webExt.popup.helper.clickElementById("manage-containers-link");
+      await this.webExt.popup.helper.clickElementById("new-container");
+      await this.webExt.popup.helper.clickElementById("create-container-ok-link");
     });
 
     it("should create it in the browser as well", function () {
