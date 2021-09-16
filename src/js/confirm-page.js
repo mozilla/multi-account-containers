@@ -7,21 +7,21 @@ async function load() {
   redirectUrlElement.textContent = redirectUrl;
   appendFavicon(redirectUrl, redirectUrlElement);
 
-  const container = await browser.contextualIdentities.get(cookieStoreId);
-  [...document.querySelectorAll(".container-name")].forEach((containerNameElement) => {
-    containerNameElement.textContent = container.name;
-  });
-
-  // If default container, button will default to normal HTML content
-  if (currentCookieStoreId) {
-    const currentContainer = await browser.contextualIdentities.get(currentCookieStoreId);
-    document.getElementById("current-container-name").textContent = currentContainer.name;
-  }
   document.getElementById("deny").addEventListener("click", (e) => {
     e.preventDefault();
     denySubmit(redirectUrl);
   });
 
+  const container = await browser.contextualIdentities.get(cookieStoreId);
+  const currentContainer = currentCookieStoreId ? await browser.contextualIdentities.get(currentCookieStoreId) : null;
+  const currentContainerName = currentContainer ? currentContainer.name : ""
+
+  document.querySelectorAll("[data-message-id]").forEach(el => {
+    const elementData = el.dataset;
+    const containerName = elementData.messageArg === "container-name" ? container.name : currentContainerName;
+    el.textContent = browser.i18n.getMessage(elementData.messageId, containerName);
+  });
+  
   document.getElementById("confirm").addEventListener("click", (e) => {
     e.preventDefault();
     confirmSubmit(redirectUrl, cookieStoreId);

@@ -140,6 +140,7 @@
       "run_at": "document_start"
     }
   ],
+  "default_locale": "en",
   "web_accessible_resources": [
     "/img/container-site-d-24.png"
   ],
