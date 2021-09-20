@@ -14,7 +14,7 @@ async function load() {
 
   const container = await browser.contextualIdentities.get(cookieStoreId);
   const currentContainer = currentCookieStoreId ? await browser.contextualIdentities.get(currentCookieStoreId) : null;
-  const currentContainerName = currentContainer ? currentContainer.name : ""
+  const currentContainerName = currentContainer ? currentContainer.name : "";
 
   document.querySelectorAll("[data-message-id]").forEach(el => {
     const elementData = el.dataset;
