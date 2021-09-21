@@ -19,8 +19,15 @@
     "message": "Always Open This Site in…",
     "description": "Menu title"
   },
+  "alwaysOpenIn": {
+    "message": "Always open in…",
+    "description": "Menu title"
+  },
   "alwaysOpenSiteInContainer": {
     "message": "Always Open Site in Container"
+  },
+  "openANewTabIn": {
+    "message" : "Open a New Tab in…"
   },
   "openNewTabInThisContainer": {
     "message" : "Open New Tab in this Container"

@@ -920,7 +920,7 @@ Logic.registerPanel(OPEN_NEW_CONTAINER_PICKER, {
   // This method is called when the panel is shown.
   prepare() {
     Logic.listenToPickerBackButton();
-    document.getElementById("picker-title").textContent = "Open a New Tab in";
+    document.getElementById("picker-title").textContent = browser.i18n.getMessage("openANewTabIn");
     const fragment = document.createDocumentFragment();
     const pickedFunction = function (identity) {
       try {
@@ -1104,7 +1104,7 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
   // This method is called when the panel is shown.
   async prepare() {
     Logic.listenToPickerBackButton();
-    document.getElementById("picker-title").textContent = "Reopen This Site in";
+    document.getElementById("picker-title").textContent = browser.i18n.getMessage("reopenThisSiteIn");
     const fragment = document.createDocumentFragment();
     const currentTab = await Utils.currentTab();
     const pickedFunction = function (identity) {
@@ -1197,7 +1197,7 @@ Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
   // This method is called when the panel is shown.
   prepare() {
     Logic.listenToPickerBackButton();
-    document.getElementById("picker-title").textContent = "Always Open in";
+    document.getElementById("picker-title").textContent = browser.i18n.getMessage("alwaysOpenIn");
     const fragment = document.createDocumentFragment();
 
     document.getElementById("new-container-div").innerHTML = "";
