@@ -988,7 +988,7 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
       });
       this._listenerSet = true;
     }
-    document.getElementById("picker-title").textContent = "Manage Containers";
+    document.getElementById("picker-title").textContent = browser.i18n.getMessage("manageContainers");
     const fragment = document.createDocumentFragment();
     const pickedFunction = function (identity) {
       Logic.showPanel(P_CONTAINER_EDIT, identity);
@@ -1000,7 +1000,7 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
           <td>
             <div class="menu-icon"><img alt="New Container" src="/img/new-16.svg" />
             </div>
-            <span class="menu-text">New Container</span>
+            <span class="menu-text">${ browser.i18n.getMessage("newContainer") }</span>
           </td>
         </tr>
       </table>

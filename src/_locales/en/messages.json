@@ -119,6 +119,9 @@
   "manageContainers": {
     "message": "Manage Containers"
   },
+  "newContainer": {
+    "message": "New Container"
+  },
   "hideThisContainer": {
     "message": "Hide This Container"
   },
