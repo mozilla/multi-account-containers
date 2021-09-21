@@ -2,143 +2,133 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <title>Multi-Account Containers</title>
-  <link rel="stylesheet" href="css/popup.css">
-
+  <script type="text/javascript" src="./js/i18n.js"></script>
+  <link rel="stylesheet" href="./css/popup.css">
 </head>
 <body>
-
   <div class="hide panel onboarding onboarding-panel-1">
-    <img class="onboarding-img" alt="Container Tabs Overview" src="/img/onboarding-1.png" />
-    <h3 class="onboarding-title">A better way to manage all the things you do online</h3>
-    <p>
-      Use containers to organize tasks, manage accounts, and keep your focus where you want it.
-    </p>
-    <a href="#" class="onboarding-button onboarding-start-button keyboard-nav" tabindex="0">Get Started</a>
+    <img class="onboarding-img" alt="" src="/img/onboarding-1.png" />
+    <h3 class="onboarding-title" data-i18n-message-id="onboarding-1-header"></h3>
+    <p data-i18n-message-id="onboarding-1-description"></p>
+    <a href="#" class="onboarding-button onboarding-start-button keyboard-nav" tabindex="0" data-i18n-message-id="getStarted"></a>
   </div>
 
   <div class="hide panel onboarding security-onboarding-panel-1">
-    <img class="onboarding-img" alt="Container Tabs Overview" src="/img/onboarding-1.png" />
-    <h3 class="onboarding-title">A simple and secure way to manage your online life</h3>
-    <p>
-      Use containers to organize tasks, manage accounts, and store sensitive data.
-    </p>
-    <a href="#" class="onboarding-button onboarding-start-button keyboard-nav" tabindex="0">Get Started</a>
+    <img class="onboarding-img" alt="" src="/img/onboarding-1.png" />
+    <h3 class="onboarding-title" data-i18n-message-id="onboarding-1-sec-header"></h3>
+    <p data-i18n-message-id="onboarding-1-sec-description"></p>
+    <a href="#" class="onboarding-button onboarding-start-button keyboard-nav" tabindex="0" data-i18n-message-id="getStarted"></a>
   </div>
 
   <div class="panel onboarding onboarding-panel-2 hide">
-    <img class="onboarding-img" alt="How Containers Work" src="/img/onboarding-2.png" />
-    <h3 class="onboarding-title">Put containers to work for you.</h3>
-    <p>Features like color-coding and separate container tabs help you find things easily, focus your attention, and minimize distractions.</p>
-    <a href="#" class="onboarding-button onboarding-next-button keyboard-nav" tabindex="0">Next</a>
+    <img class="onboarding-img" alt="" src="/img/onboarding-2.png" />
+    <h3 class="onboarding-title" data-i18n-message-id="onboarding-2-header"></h3>
+    <p data-i18n-message-id="onboarding-2-description"></p>
+    <a href="#" class="onboarding-button onboarding-next-button keyboard-nav" tabindex="0" data-i18n-message-id="next"></a>
   </div>
 
   <div class="panel onboarding security-onboarding-panel-2 hide">
-    <img class="onboarding-img" alt="How Containers Work" src="/img/onboarding-2.png" />
-    <h3 class="onboarding-title">Put containers to work for you.</h3>
-    <p>Color-coding helps you categorize your online life, find things easily, and minimize distractions.</p>
-    <a href="#" class="onboarding-button onboarding-next-button keyboard-nav" tabindex="0">Next</a>
+    <img class="onboarding-img" alt="" src="/img/onboarding-2.png" />
+    <h3 class="onboarding-title" data-i18n-message-id="onboarding-2-header"></h3>
+    <p data-i18n-message-id="onboarding-2-sec-description"></p>
+    <a href="#" class="onboarding-button onboarding-next-button keyboard-nav" tabindex="0" data-i18n-message-id="next"></a>
   </div>
 
   <div class="panel onboarding onboarding-panel-3 hide">
-    <img class="onboarding-img" alt="How Containers Work" src="/img/onboarding-3.png" />
-    <h3 class="onboarding-title">A place for everything, and everything in its place.</h3>
-    <p>Start with the containers we've created, or create your own.</p>
-    <a href="#" class="onboarding-button onboarding-almost-done-button keyboard-nav" tabindex="0">Next</a>
+    <img class="onboarding-img" alt="" src="/img/onboarding-3.png" />
+    <h3 class="onboarding-title" data-i18n-message-id="onboarding-3-header"></h3>
+    <p data-i18n-message-id="onboarding-3-description"></p>
+    <a href="#" class="onboarding-button onboarding-almost-done-button keyboard-nav" tabindex="0" data-i18n-message-id="next"></a>
   </div>
 
   <div class="panel onboarding security-onboarding-panel-3 hide">
-    <img class="onboarding-img" alt="How Containers Work" src="/img/onboarding-3-security.png" />
-    <h3 class="onboarding-title">Set boundaries for your browsing.</h3>
-    <p>Cookies are stored within a container, so you can segment sensitive data and browsing history to stay organized and to limit the impact of online trackers.</p>
-    <a href="#" class="onboarding-button onboarding-almost-done-button keyboard-nav" tabindex="0">Next</a>
+    <img class="onboarding-img" alt="" src="/img/onboarding-3-security.png" />
+    <h3 class="onboarding-title" data-i18n-message-id="onboarding-3-sec-header"></h3>
+    <p data-i18n-message-id="onboarding-2-sec-description"></p>
+    <a href="#" class="onboarding-button onboarding-almost-done-button keyboard-nav" tabindex="0" data-i18n-message-id="next"></a>
   </div>
 
   <div class="panel onboarding onboarding-panel-4 hide" id="onboarding-panel-4">
-    <img class="onboarding-img" alt="How to assign sites to containers" src="/img/onboarding-4.png" />
-    <h3 class="onboarding-title">Always open sites in the containers you want.</h3>
-    <p>Right-click inside a container tab to assign the site to always open in the container.</p>
-    <a href="#" id="onboarding-done-button" class="onboarding-button keyboard-nav" tabindex="0">Next</a>
+    <img class="onboarding-img" alt="" src="/img/onboarding-4.png" />
+    <h3 class="onboarding-title" data-i18n-message-id="onboarding-4-header"></h3>
+    <p data-i18n-message-id="onboarding-4-description"></p>
+    <a href="#" id="onboarding-done-button" class="onboarding-button keyboard-nav" tabindex="0" data-i18n-message-id="next"></a>
   </div>
 
   <div class="panel onboarding onboarding-panel-5 hide" id="onboarding-panel-5">
-    <img class="onboarding-img" alt="Long-press the New Tab button to create a new container tab." src="/img/onboarding-3.png" />
-    <h3 class="onboarding-title">Container tabs when you need them.</h3>
-    <p>Long-press the New Tab button to create a new container tab.</p>
-    <a href="#" id="onboarding-longpress-button" class="onboarding-button keyboard-nav" tabindex="0">Next</a>
+    <img class="onboarding-img" alt="" src="/img/onboarding-3.png" />
+    <h3 class="onboarding-title" data-i18n-message-id="onboarding-5-header"></h3>
+    <p data-i18n-message-id="onboarding-5-description"></p>
+    <a href="#" id="onboarding-longpress-button" class="onboarding-button keyboard-nav" tabindex="0" data-i18n-message-id="next"></a>
   </div>
 
   <div class="panel onboarding onboarding-panel-6 hide" id="onboarding-panel-6">
-    <img class="onboarding-img" alt="Syncing Containers is now Available!" src="/img/Sync.svg" />
-    <h3 class="onboarding-title">Syncing Containers is now Available!</h3>
-    <p>Turn on Sync to share container and site assignments with any computer connected to your Firefox Account.</p>
+    <img class="onboarding-img" alt="" src="/img/Sync.svg" />
+    <h3 class="onboarding-title" data-i18n-message-id="onboarding-6-header"></h3>
+    <p data-i18n-message-id="onboarding-6-description"></p>
     <div class="half-button-wrapper">
-      <a herf="#" id="no-sync" class="half-onboarding-button grey-button keyboard-nav" tabindex="0">Not Now</a>
-      <a href="#" id="start-sync-button" class="half-onboarding-button keyboard-nav" tabindex="0">Start Syncing</a>
+      <a href="#" id="no-sync" class="half-onboarding-button grey-button keyboard-nav" tabindex="0" data-i18n-message-id="notNow"></a>
+      <a href="#" id="start-sync-button" class="half-onboarding-button keyboard-nav" tabindex="0" data-i18n-message-id="startSyncing"></a>
     </div>
   </div>
 
   <div class="panel onboarding onboarding-panel-7 hide" id="onboarding-panel-7">
-    <img class="onboarding-img" alt="Firefox Account is required to sync" src="/img/Account.svg" />
-    <h3 class="onboarding-title">Firefox Account is required to sync.</h3>
-    <p>Click Sign In to confirm that your Firefox Account is active.</p>
+    <img class="onboarding-img" alt="" src="/img/Account.svg" />
+    <h3 class="onboarding-title" data-i18n-message-id="onboarding-7-header"></h3>
+    <p data-i18n-message-id="onboarding-7-description"></p>
     <div class="half-button-wrapper">
-      <a herf="#" id="no-sign-in" class="half-onboarding-button grey-button keyboard-nav" tabindex="0">Not Now</a>
-      <a href="#" id="sign-in" class="half-onboarding-button keyboard-nav" tabindex="0">Sign In</a>
+      <a href="#" id="no-sign-in" class="half-onboarding-button grey-button keyboard-nav" tabindex="0" data-i18n-message-id="notNow"></a>
+      <a href="#" id="sign-in" class="half-onboarding-button keyboard-nav" tabindex="0" data-i18n-message-id="signIn"></a>
     </div>
   </div>
 
   <div class="panel achievement-panel hide" id="achievement-panel">
-    <img class="onboarding-img" alt="You achieved a Containers milestone!" src="/img/onboarding-3.png" />
-    <h3 class="onboarding-title">100 tabs!</h3>
-    <p>You've opened 100 Container tabs.</p>
-    <p>If you enjoy Containers, help us spread the word!</p>
+    <img class="onboarding-img" alt="" src="/img/onboarding-3.png" />
+    <h3 class="onboarding-title" data-i18n-message-id="oneHundredTabsHeader"></h3>
+    <p data-i18n-message-id="youHaveOpened"></p>
+    <p data-i18n-message-id="spreadTheWord"></p>
     <p class="share-ctas">
       <a class="cta-link" href="https://mzl.la/2gJtIZ4" id="achievement-rate-button" target="_blank">
-        <span class="cta amo-rate-cta">
-          <img src="/img/amo-icon.svg" class="cta-icon" alt="addons.mozilla.org Icon">
-          Rate
+        <span class="cta amo-rate-cta" data-i18n-message-id="rate">
+          <img src="/img/amo-icon.svg" class="cta-icon" alt="">
         </span>
       </a>
       <a class="cta-link" href="https://bit.ly/fb-share-mac-addon" target="_blank">
-        <span class="cta fb-share-cta">
-          <img src="/img/webicon-facebook.svg" class="cta-icon" alt="Facebook Icon">
-          Share
+        <span class="cta fb-share-cta" data-i18n-message-id="share">
+          <img src="/img/webicon-facebook.svg" class="cta-icon" alt="">
         </span>
       </a>
       <a class="cta-link" href="http://bit.ly/tweet-100-tabs-mac-addon" target="_blank">
-        <span class="cta tweet-cta">
-          <img src="/img/webicon-twitter.svg" class="cta-icon" alt="Twitter Icon">
-          Tweet
+        <span class="cta tweet-cta" data-i18n-message-id="tweet">
+          <img src="/img/webicon-twitter.svg" class="cta-icon" alt="">
         </span>
       </a>
     </p>
-    <a href="#" id="achievement-done-button" class="onboarding-button keyboard-nav">Done</a>
+    <a href="#" id="achievement-done-button" class="onboarding-button keyboard-nav" data-i18n-message-id="done"></a>
   </div>
 
   <div class="panel menu-panel container-panel hide" id="container-panel">
-    <h3 class="title">
-      Multi-Account Containers
-    </h3>
+    <h3 class="title">Multi-Account Containers</h3>
     <a href="#" class="info-icon" id="info-icon" tabindex="10">
-      <img alt="info" src="/img/info-thin-16.svg" / >
+      <img data-i18n-attribute-message-id="info" data-i18n-attribute="alt" alt="" ="info" src="/img/info-thin-16.svg" / >
     </a>
     <hr>
     <table class="menu">
       <tr class="menu-item hover-highlight keyboard-nav" id="open-new-tab-in" tabindex="0">
         <td>
-          <img class="menu-icon" alt="Open in New Tab" src="/img/tab-new-16.svg" />
-          <span class="menu-text">Open New Tab in...</span>
+          <img class="menu-icon" alt="" src="/img/tab-new-16.svg" />
+          <span class="menu-text" data-i18n-message-id="openInNewTabTitle"></span>
             <span class="menu-arrow">
-              <img alt="Container Info" src="/img/arrow-icon-right.svg" />
+              <img alt="" src="/img/arrow-icon-right.svg" />
             </span>
         </td>
       </tr>
       <tr class="menu-item hover-highlight keyboard-nav" id="reopen-site-in" tabindex="0">
         <td>
-          <img class="menu-icon" alt="Open in New Tab" src="/img/refresh-16.svg" />
-          <span class="menu-text">Reopen This Site in...</span>
+          <img class="menu-icon" alt="" src="/img/refresh-16.svg" />
+          <span data-i18n-message-id="reopenThisSiteIn" class="menu-text"></span>
             <span class="menu-arrow">
-              <img alt="Container Info" src="/img/arrow-icon-right.svg" />
+              <img alt="" src="/img/arrow-icon-right.svg" />
             </span>
         </td>
       </tr>
@@ -147,26 +137,24 @@
     <table class="menu">
       <tr class="menu-item hover-highlight keyboard-nav" id="sort-containers-link" tabindex="0">
         <td>
-          <img class="menu-icon" alt="Open in New Tab" src="/img/sort-16_1.svg" />
-          <span class="menu-text">Sort Tabs by Container</span>
+          <img class="menu-icon" alt="" src="/img/sort-16_1.svg" />
+          <span class="menu-text" data-i18n-message-id="sortTabsByContainer"></span>
             <span class="menu-arrow">
             </span>
         </td>
       </tr>
       <tr class="menu-item hover-highlight keyboard-nav" id="always-open-in" tabindex="0">
         <td>
-          <img class="menu-icon" alt="Open in New Tab" src="/img/container-openin-16.svg" />
-          <span class="menu-text">Always Open This Site in...</span>
+          <img class="menu-icon" alt="" src="/img/container-openin-16.svg" />
+          <span class="menu-text" data-i18n-message-id="alwaysOpenThisSiteIn"></span>
             <span class="menu-arrow">
-              <img alt="Container Info" src="/img/arrow-icon-right.svg" />
+              <img alt="" src="/img/arrow-icon-right.svg" />
             </span>
         </td>
       </tr>
     </table>
     <hr>
-    <div class="sub-header">
-    Containers
-    </div>
+    <div class="sub-header" data-i18n-message-id="containers"></div>
     <div class="scrollable identities-list">
       <table class="menu" id="identities-list">
         <tr class="menu-item hover-highlight">
@@ -177,68 +165,62 @@
                   data-identity-icon="pet"
                   data-identity-color="blue"></div>
               </div>
-              <span class="menu-text">Default</span>
+              <span class="menu-text" data-i18n-message-id="default"></span>
             </div>
             <span class="menu-right-float">
               <span class="container-count">22</span>
               <span class="menu-arrow">
-                <img alt="Container Info" src="/img/arrow-icon-right.svg" />
+                <img alt="" src="/img/arrow-icon-right.svg" />
               </span>
             </span>
           </td>
         </tr>
       </table>
     </div>
-    <div class="bottom-btn keyboard-nav hover-highlight" id="manage-containers-link" tabindex="0">
-      Manage Containers
-    </div> 
+    <div class="bottom-btn keyboard-nav hover-highlight" id="manage-containers-link" tabindex="0" data-i18n-message-id="manageContainers"></div>
   </div>
 
 
   <div class="hide panel menu-panel container-info-panel" id="container-info-panel" tabindex="-1">
-    <h3 class="title" id="container-info-title">
-      Personal
-    </h3>
+    <h3 class="title" id="container-info-title" data-i18n-attribute-message-id="personal"></h3>
     <button class="btn-return arrow-left keyboard-nav-back" id="close-container-info-panel" tabindex="0"></button>
     <hr>
     <table class="menu">
       <tr class="menu-item hover-highlight keyboard-nav" id="open-new-tab-in-info" tabindex="0">
         <td>
-          <img class="menu-icon" alt="Open in New Tab" src="/img/tab-new-16.svg" />
-          <span class="menu-text">Open New Tab in this Container</span>
+          <img class="menu-icon" alt="" src="/img/tab-new-16.svg" />
+          <span class="menu-text" data-i18n-message-id="openNewTabInThisContainer"></span>
             <span class="menu-arrow">
             </span>
         </td>
       </tr>
       <tr class="menu-item hover-highlight keyboard-nav" id="hideorshow-container" tabindex="0">
         <td>
-          <img id="container-info-hideorshow-icon" class="menu-icon" alt="Hide This Container" src="img/password-hide.svg" />
-          <span id="container-info-hideorshow-label" class="menu-text">Hide This Container</span>
+          <img id="container-info-hideorshow-icon" class="menu-icon" alt="" src="img/password-hide.svg" />
+          <span id="container-info-hideorshow-label" class="menu-text" data-i18n-message-id="hideThisContainer"></span>
             <span class="menu-arrow">
             </span>
         </td>
       </tr>
       <tr class="menu-item hover-highlight keyboard-nav" id="move-to-new-window" tabindex="0">
         <td>
-          <img class="menu-icon" alt="Move Tabs to a New Window" src="/img/movetowindow-16.svg" />
-          <span class="menu-text">Move Tabs to a New Window</span>
+          <img class="menu-icon" alt="" src="/img/movetowindow-16.svg" />
+          <span class="menu-text" data-i18n-message-id="moveTabsToANewWindow"></span>
             <span class="menu-arrow">
             </span>
         </td>
       </tr>
       <tr class="menu-item hover-highlight keyboard-nav" id="always-open" tabindex="0">
         <td>
-          <img class="menu-icon" alt="Always Open Site in Container" src="/img/container-openin-16.svg" />
-          <span class="menu-text" id="always-open-in-info-panel">Always Open Site in Container</span>
+          <img class="menu-icon" alt="" src="/img/container-openin-16.svg" />
+          <span class="menu-text" id="always-open-in-info-panel" data-i18n-message-id="alwaysOpenSiteInContainer"></span>
             <span class="menu-arrow">
             </span>
         </td>
       </tr>
     </table>
     <hr>
-    <div class="sub-header">
-    Open Tabs
-    </div>
+    <div class="sub-header" data-i18n-message-id="openTabs"></div>
     <div class="scrollable">
       <table class="menu" id="container-info-table">
         <tr class="menu-item hover-highlight keyboard-nav" tabindex="0">
@@ -250,9 +232,7 @@
         </tr>       
       </table>
     </div>
-    <div class="bottom-btn keyboard-nav hover-highlight" id="manage-container-link" tabindex="0">
-      Manage This Container
-    </div>
+    <div class="bottom-btn keyboard-nav hover-highlight" id="manage-container-link" tabindex="0" data-i18n-message-id="manageThisContainer"></div>
   </div>
 
 
@@ -273,7 +253,7 @@
                 data-identity-color="blue">
               </div>
             </div>
-            <span class="menu-text">Default</span>
+            <span class="menu-text" data-i18n-message-id="default"></span>
           </td>
         </tr>
       </table>
@@ -281,52 +261,48 @@
   </div>
 
   <div class="panel menu-panel edit-container-panel hide" id="edit-container-panel">
-    <h3 class="title" id="container-edit-title">
-      Default
-    </h3>
+    <h3 class="title" id="container-edit-title" data-i18n-message-id="default"></h3>
     <button class="btn-return arrow-left" id="close-container-edit-panel"></button>
     <hr>
     <div class="scrollable edit-form">
       <form id="edit-container-panel-form">
         <input type="hidden" name="container-id" id="edit-container-panel-usercontext-input" />
         <fieldset>
-          <legend class="form-header">Name</legend>
+          <legend class="form-header" data-i18n-message-id="name"></legend>
           <input type="text" name="container-name" id="edit-container-panel-name-input" class="edit-container-panel-name-input" maxlength="25"/>
         </fieldset>
         <fieldset id="edit-container-panel-choose-color" class="radio-choice">
-          <legend class="form-header">Color</legend>
+          <legend class="form-header" data-i18n-message-id="color"></legend>
         </fieldset>
         <fieldset id="edit-container-panel-choose-icon" class="radio-choice">
-          <legend class="form-header">Icon</legend>
+          <legend class="form-header" data-i18n-message-id="icon"></legend>
         </fieldset>
       </form>
       <div id="edit-container-options">
-        <div class="options-header">Options</div>
+        <div class="options-header" data-i18n-message-id="options"></div>
         <div class="container-options">
           <input type="checkbox" class="site-isolation" id="site-isolation" name="site-isolation">
-          <label for="site-isolation" class="options-label">Limit to Designated Sites</label>
+          <label for="site-isolation" class="options-label" data-i18n-message-id="limitToDesignatedSites"></label>
         </div>
-        <div class="container-options options-label manage-assigned-sites-list" id="manage-assigned-sites-list" tabindex="0">Manage Site List...
+        <div class="container-options options-label manage-assigned-sites-list" id="manage-assigned-sites-list" tabindex="0">
         </div>
       </div>
     </div>
     <div class="delete-container">
-      <button class="delete-btn" id="delete-container-button">Delete This Container</button>
+      <button class="delete-btn" id="delete-container-button" data-i18n-message-id="deleteThisContainer"></button>
     </div>
     <div class="panel-footer">
-      <a href="#" class="button expanded secondary footer-button cancel-button" id="create-container-cancel-link">Cancel</a>
-      <a href="#" class="button expanded primary footer-button" id="create-container-ok-link">OK</a>
+      <a href="#" class="button expanded secondary footer-button cancel-button" id="create-container-cancel-link" data-i18n-message-id="cancel"></a>
+      <a href="#" class="button expanded primary footer-button" id="create-container-ok-link" data-i18n-message-id="ok"></a>
     </div>
   </div>
 
   <div class="panel menu-panel edit-container-assignments hide" id="edit-container-assignments">
-    <h3 class="title" id="edit-assignments-title">
-      Default
-    </h3>
+    <h3 class="title" id="edit-assignments-title" data-i18n-message-id="default"></h3>
     <button class="btn-return arrow-left" id="close-container-assignment-panel"></button>
     <hr>
     <div class="scrollable edit-sites-assigned">
-      <div class="sub-header">Sites assigned to this container</div>
+      <div class="sub-header" data-i18n-attribute-message-id="sitesAssignedToThisContainer"></div>
       <table class="menu scrollable" id="edit-sites-assigned">
         <tr class="menu-item hover-highlight" tabindex="0">
           <td>
@@ -340,19 +316,18 @@
   </div>
 
   <div class="hide panel delete-container-panel" id="delete-container-panel">
-    <h3 class="title" id="container-delete-title">
-      Default
+    <h3 class="title" id="container-delete-title" data-i18n-message-id="default">
     </h3>
     <button class="btn-return arrow-left" id="close-container-delete-panel"></button>
     <hr>
     <div class="panel-content delete-container-confirm">
-      <h4 class="delete-container-confirm-title">Remove This Container</h4>
+      <h4 class="delete-container-confirm-title" data-i18n-message-id="removeThisContainer"></h4>
       <p class="delete-warning" id="delete-container-tab-warning"></p>
-      <p class="delete-warning">Are you sure you want to remove this Container?</p>
+      <p class="delete-warning" data-i18n-message-id="removeThisContainerConfirmation"></p>
     </div>
     <div class="panel-footer">
-      <a href="#" class="button expanded secondary footer-button cancel-button" id="delete-container-cancel-link">Cancel</a>
-      <a href="#" class="button expanded primary footer-button" id="delete-container-ok-link">OK</a>
+      <a href="#" class="button expanded secondary footer-button cancel-button" data-i18n-message-id="cancel" id="delete-container-cancel-link"></a>
+      <a href="#" class="button expanded primary footer-button" data-i18n-message-id="ok" id="delete-container-ok-link"></a>
     </div>
   </div>
 
