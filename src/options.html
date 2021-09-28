@@ -3,85 +3,86 @@
 <html>
   <head>
     <meta charset="utf-8">
+    <script type="text/javascript" src="./js/i18n.js"></script>
     <link rel="stylesheet" href="css/options.css">
   </head>
 
   <body>
     <form>
-      <h3>Optional Permissions:</h3>
-      <label>
+      <h3 data-i18n-message-id="optionalPermissions"></h3>
+      <label >
         <input type="checkbox" id="bookmarksPermissions">
-        Enable Bookmark Menus
+        <span data-i18n-message-id="enableBookMarkMenus"></span>
+
       </label>
-      <p><em>This setting allows you to open a bookmark or folder of bookmarks in a container.</em></p>
-      <h3>Firefox Accounts Sync:</h3>
+      <p><em data-i18n-message-id="enableBookMarkMenusDescription"></em></p>
+      <h3 data-i18n-message-id="firefoxAccountsSync"></h3>
       <label>
         <input type="checkbox" id="syncCheck">
-        Enable Sync
+        <span data-i18n-message-id="enableSync"></span>
       </label>
-      <p><em>This setting allows you to sync your containers and site assignments across devices.</em></p>
-      <h3>Tab behaviour:</h3>
+      <p><em data-i18n-message-id="enableSyncDescription"></em></p>
+      <h3 data-i18n-message-id="tabBehavior"></h3>
       <label>
         <input type="checkbox" id="replaceTabCheck">
-        Replace tab instead of creating a new one
+        <span data-i18n-message-id="replaceTab"></span>
       </label>
-      <p><em>Replace the current tab if a page which is assigned to another container is opened (instead of keeping the current tab open).
-        Opening tabs with middle mouse button is not affected.</em></p>
-      <h3>Keyboard Shortcuts:</h3>
-      <p><em>Edit which container is opened when using the numbered shortcuts.</em></p>
+      <p><em data-i18n-message-id="replaceTabDescription"></em></p>
+      <h3 data-i18n-message-id="keyboardShortCuts"></h3>
+      <p><em data-i18n-message-id="editWhichContainer"></em></p>
       <p><label>
-        Container to open with Keyboard Shortcut 1
+        <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="1"></span>
         <select id="open_container_0">
         </select>
       </label></p>
       <p><label>
-        Container to open with Keyboard Shortcut 2
+        <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="2"></span>
         <select id="open_container_1">
         </select>
       </label></p>
       <p><label>
-        Container to open with Keyboard Shortcut 3
+        <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="3"></span>
         <select id="open_container_2">
         </select>
       </label></p>
       <p><label>
-        Container to open with Keyboard Shortcut 4
+        <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="4"></span>
         <select id="open_container_3">
         </select>
       </label></p>
       <p><label>
-        Container to open with Keyboard Shortcut 5
+        <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="5"></span>
         <select id="open_container_4">
         </select>
       </label></p>
       <p><label>
-        Container to open with Keyboard Shortcut 6
+        <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="6"></span>
         <select id="open_container_5">
         </select>
       </label></p>
       <p><label>
-        Container to open with Keyboard Shortcut 7
+        <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="7"></span>
         <select id="open_container_6">
         </select>
       </label></p>
       <p><label>
-        Container to open with Keyboard Shortcut 8
+        <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="8"></span>
         <select id="open_container_7">
         </select>
       </label></p>
       <p><label>
-        Container to open with Keyboard Shortcut 9
+        <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="9"></span>
         <select id="open_container_8">
         </select>
       </label></p>
       <p><label>
-        Container to open with Keyboard Shortcut 10
+        <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="10"></span>
         <select id="open_container_9">
         </select>
       </label></p>
-      <h3>Onboarding:</h3>
-      <button>Reset Onboarding Panels</button>
-      <p><em>Toggle this to see the onboarding panels again.</em></p>
+      <h3 data-i18n-message-id="onboarding"></h3>
+      <button data-i18n-message-id="resetOnboardingPanels"></button>
+      <p><em data-i18n-message-id="onboardingToggle"></em></p>
     </form>
     <script src="js/options.js"></script>
   </body>

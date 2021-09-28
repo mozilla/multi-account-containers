@@ -41,7 +41,7 @@ function addRemoveSiteIsolation() {
 }
 
 async function getExtensionInfo() {
-  const manifestPath = browser.extension.getURL("manifest.json");
+  const manifestPath = browser.runtime.getURL("manifest.json");
   const response = await fetch(manifestPath);
   const extensionInfo = await response.json();
   return extensionInfo;
@@ -924,7 +924,7 @@ Logic.registerPanel(OPEN_NEW_CONTAINER_PICKER, {
   // This method is called when the panel is shown.
   prepare() {
     Logic.listenToPickerBackButton();
-    document.getElementById("picker-title").textContent = "Open a New Tab in";
+    document.getElementById("picker-title").textContent = browser.i18n.getMessage("openANewTabIn");
     const fragment = document.createDocumentFragment();
     const pickedFunction = function (identity) {
       try {
@@ -992,7 +992,7 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
       });
       this._listenerSet = true;
     }
-    document.getElementById("picker-title").textContent = "Manage Containers";
+    document.getElementById("picker-title").textContent = browser.i18n.getMessage("manageContainers");
     const fragment = document.createDocumentFragment();
     const pickedFunction = function (identity) {
       Logic.showPanel(P_CONTAINER_EDIT, identity);
@@ -1004,7 +1004,7 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
           <td>
             <div class="menu-icon"><img alt="New Container" src="/img/new-16.svg" />
             </div>
-            <span class="menu-text">New Container</span>
+            <span class="menu-text">${ browser.i18n.getMessage("newContainer") }</span>
           </td>
         </tr>
       </table>
@@ -1108,7 +1108,7 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
   // This method is called when the panel is shown.
   async prepare() {
     Logic.listenToPickerBackButton();
-    document.getElementById("picker-title").textContent = "Reopen This Site in";
+    document.getElementById("picker-title").textContent = browser.i18n.getMessage("reopenThisSiteIn");
     const fragment = document.createDocumentFragment();
     const currentTab = await Utils.currentTab();
     const pickedFunction = function (identity) {
@@ -1201,7 +1201,7 @@ Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
   // This method is called when the panel is shown.
   prepare() {
     Logic.listenToPickerBackButton();
-    document.getElementById("picker-title").textContent = "Reopen This Site in";
+    document.getElementById("picker-title").textContent = browser.i18n.getMessage("alwaysOpenIn");
     const fragment = document.createDocumentFragment();
 
     document.getElementById("new-container-div").innerHTML = "";

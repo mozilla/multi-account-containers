@@ -1,0 +1,270 @@
+{
+  "extensionDescription": {
+      "message": "Multi-Account Containers helps you keep all the parts of your online life contained in different tabs. Custom labels and color-coded tabs help keep different activities — like online shopping, travel planning, or checking work email — separate.",
+      "description": "Description of the extension. DO NOT TRANSLATE \"Multi-Account Containers\"."
+  },
+  "openInNewTabTitle": {
+    "message": "Open New Tab in…",
+    "description": "Menu title"
+  },
+  "reopenThisSiteIn": {
+    "message": "Reopen This Site in…",
+    "description": "Menu title"
+  },
+  "sortTabsByContainer": {
+    "message": "Sort Tabs by Container",
+    "description": "Menu title"
+  },
+  "alwaysOpenThisSiteIn": {
+    "message": "Always Open This Site in…",
+    "description": "Menu title"
+  },
+  "alwaysOpenIn": {
+    "message": "Always open in…",
+    "description": "Menu title"
+  },
+  "alwaysOpenSiteInContainer": {
+    "message": "Always Open Site in Container"
+  },
+  "openANewTabIn": {
+    "message" : "Open a New Tab in…"
+  },
+  "openNewTabInThisContainer": {
+    "message" : "Open New Tab in this Container"
+  },
+  "openTabs": {
+    "message": "Open Tabs"
+  },
+  "moveTabsToANewWindow": {
+    "message": "Move Tabs to a New Window"
+  },
+  "onboarding-1-header": {
+    "message": "A better way to manage all the things you do online"
+  },
+  "onboarding-1-description": {
+    "message": "Use containers to organize tasks, manage accounts, and keep your focus where you want it."
+  },
+  "onboarding-1-sec-header": {
+    "message": "A simple and secure way to manage your online life"
+  },
+  "onboarding-1-sec-description": {
+    "message" : "Use containers to organize tasks, manage accounts, and store sensitive data."
+  },
+  "onboarding-2-header": {
+    "message": "Put containers to work for you."
+  },
+  "onboarding-2-description": {
+    "message": "Features like color-coding and separate container tabs help you find things easily, focus your attention, and minimize distractions."
+  },
+  "onboarding-2-sec-description": {
+    "message": "Color-coding helps you categorize your online life, find things easily, and minimize distractions."
+  },
+  "onboarding-3-header": {
+    "message": "A place for everything, and everything in its place."
+  },
+  "onboarding-3-description": {
+    "message": "Start with the containers we've created, or create your own."
+  },
+  "onboarding-3-sec-header": {
+    "message": "Set boundaries for your browsing."
+  },
+  "onboarding-3-sec-description": {
+    "message": "Cookies are stored within a container, so you can segment sensitive data and browsing history to stay organized and to limit the impact of online trackers."
+  },
+  "onboarding-4-header": {
+    "message": "Always open sites in the containers you want."
+  },
+  "onboarding-4-description": {
+    "message": "Right-click inside a container tab to assign the site to always open in the container."
+  },
+  "onboarding-5-header": {
+    "message": "Container tabs when you need them."
+  },
+  "onboarding-5-description": {
+    "message": "Long-press the New Tab button to create a new container tab."
+  },
+  "onboarding-6-header": {
+    "message": "Syncing Containers is now Available!"
+  },
+  "onboarding-6-description": {
+    "message": "Turn on Sync to share container and site assignments with any computer connected to your Firefox Account."
+  },
+  "onboarding-7-header": {
+    "message": "Firefox Account is required to sync."
+  },
+  "onboarding-7-description": {
+    "message": "Click Sign In to confirm that your Firefox Account is active."
+  },
+  "oneHundredTabsHeader": {
+    "message": "100 tabs!"
+  },
+  "youHaveOpened": {
+    "message": "You've opened 100 Container tabs."
+  },
+  "spreadTheWord": {
+    "message": "If you enjoy Containers, help us spread the word!"
+  },
+  "rate": {
+    "message": "Rate"
+  },
+  "share": {
+    "message": "Share"
+  },
+  "tweet": {
+    "message": "Tweet"
+  },
+  "default": {
+    "message": "Default"
+  },
+  "manageContainers": {
+    "message": "Manage Containers"
+  },
+  "newContainer": {
+    "message": "New Container"
+  },
+  "hideThisContainer": {
+    "message": "Hide This Container"
+  },
+  "removeThisContainer": {
+    "message": "Remove This Container"
+  },
+  "removeThisContainerConfirmation": {
+    "message": "Are you sure you want to remove this Container?"
+  },
+  "cancel": {
+    "message": "Cancel"
+  },
+  "ok": {
+    "message": "OK"
+  },
+  "sitesAssignedToThisContainer": {
+    "message": "Sites assigned to this container"
+  },
+  "options": {
+    "message": "Options"
+  },
+  "name": {
+    "message": "Name"
+  },
+  "color": {
+    "message": "Color"
+  },
+  "icon": {
+    "message": "Icon"
+  },
+  "limitToDesignatedSites": {
+    "message": "Limit to Designated Sites"
+  },
+  "deleteThisContainer": {
+    "message": "Delete This Container"
+  },
+  "manageSiteList": {
+    "message": "Manage Site List…"
+  },
+  "manageThisContainer": {
+    "message": "Manage This Container"
+  },
+  "containers": {
+    "message": "Containers"
+  },
+  "done": {
+    "message": "Done"
+  },
+  "getStarted": {
+    "message": "Get Started"
+  },
+  "signIn": {
+    "message": "Sign In"
+  },
+  "notNow": {
+    "message": "Not Now"
+  },
+  "startSyncing": {
+    "message": "Start Syncing"
+  },
+  "info": {
+    "message": "info"
+  },
+  "next": {
+    "message": "Next"
+  },
+  "openThisSiteConfirmation": {
+    "message": "Open this site in your assigned container?"
+  },
+  "wouldYouStillLikeToOpenConfirmation": {
+    "message": "Would you still like to open in this current container?"
+  },
+  "rememberMyDecision": {
+    "message": "Remember my decision for this site"
+  },
+  "optionalPermissions": {
+    "message": "Optional Permissions:"
+  },
+  "keyboardShortCuts": {
+    "message": "Keyboard Shortcuts:"
+  },
+  "onboarding": {
+    "message": "Onboarding"
+  },
+  "resetOnboardingPanels": {
+    "message": "Reset Onboarding Panels"
+  },
+  "onboardingToggle": {
+    "message": "Toggle this to see the onboarding panels again."
+  },
+  "tabBehavior": {
+    "message": "Tab behavior:"
+  },
+  "firefoxAccountsSync": {
+    "message": "Firefox Accounts Sync:"
+  },
+  "enableBookMarkMenus": {
+    "message": "Enable Bookmark Menus"
+  },
+  "enableSync": {
+    "message": "Enable Sync"
+  },
+  "enableBookMarkMenusDescription": {
+    "message": "This setting allows you to open a bookmark or folder of bookmarks in a container."
+  },
+  "enableSyncDescription": {
+    "message": "This setting allows you to sync your containers and site assignments across devices."
+  },
+  "replaceTab": {
+    "message": "This setting allows you to sync your containers and site assignments across devices."
+  },
+  "replaceTabDescription": {
+    "message": "Replace the current tab if a page which is assigned to another container is opened (instead of keeping the current tab open). Opening tabs with middle mouse button is not affected."
+  },
+  "editWhichContainer": {
+    "message": "Edit which container is opened when using the numbered shortcuts."
+  },
+  "keyboardShortCut": {
+    "message": "Container to open with Keyboard Shortcut $keyId$",
+    "placeholders": {
+      "keyId": {
+          "content": "$1"
+      }
+    }
+  },
+  "confirmNavigationTitle": {
+    "message": "Multi-Account Containers Confirm Navigation",
+    "description": "This is the title of a confirmation page. Please do not translate \"Multi-Account Containers\"."
+  },
+  "openInContainer": {
+    "message": "Open in $containerName$ Container",
+    "placeholders": {
+      "containerName": {
+        "content": "$1"
+      }
+    }
+  },
+  "youAskedFirefox": {
+    "message": "You asked Firefox to always open $containerName$ for this site:",
+    "placeholders": {
+      "containerName": {
+        "content": "$1"
+      }
+    }
+  }
+}

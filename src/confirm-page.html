@@ -1,31 +1,30 @@
 <html>
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <title>Multi-Account Containers Confirm Navigation</title>
+  <title data-i18n-message-id="confirmNavigationTitle"></title>
   <link xmlns="http://www.w3.org/1999/xhtml" rel="stylesheet" href="chrome://browser/skin/aboutNetError.css" type="text/css" media="all" />
+  <script type="text/javascript" src="./js/i18n.js"></script>
   <link rel="stylesheet" href="/css/confirm-page.css" />
 </head>
 <body>
   <main>
     <div class="title">
-      <h1 class="title-text">Open this site in your assigned container?</h1>
+      <h1 class="title-text" data-i18n-message-id="openThisSiteConfirmation"></h1>
     </div>
     <form id="redirect-form">
-      <p>
-        You asked <dfn id="browser-name" title="Thanks for trying out Containers. Sorry we may have got your browser name wrong. #FxNightly" >Firefox</dfn> to always open <dfn class="container-name"></dfn> for this site:<br />
-      </p>
+      <p data-message-id="youAskedFireFox" data-message-arg="container-name"></p>
       <div id="redirect-url"></div>
-      <p>Would you still like to open in this current container?</p>
+      <p data-i18n-message-id="wouldYouStillLikeToOpenConfirmation"></p>
       <br />
       <br />
       <label for="never-ask" class="check-label">
         <input id="never-ask" type="checkbox" />
-        Remember my decision for this site
+        <span data-i18n-message-id="rememberMyDecision"></span>
       </label>
       <br />
       <div class="button-container">
-        <button id="deny" class="button">Open in <dfn id="current-container-name">Current</dfn> Container</button>
-        <button id="confirm" class="button primary" autofocus>Open in <dfn class="container-name"></dfn> Container</button>
+        <button id="deny" class="button" data-message-id="openInContainer" data-message-arg="current-container-name"></button>
+        <button id="confirm" class="button primary" data-message-id="openInContainer" data-message-arg="container-name"></button>
       </div>
     </form>
   </main>
