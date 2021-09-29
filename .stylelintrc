@@ -9,7 +9,6 @@
 
   "rules": {
     "declaration-block-no-duplicate-properties": true,
-    "order/properties-alphabetical-order": true,
     "property-no-unknown": [
       true, {
         ignoreProperties:
