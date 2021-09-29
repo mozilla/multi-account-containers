@@ -1428,11 +1428,11 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       iconInput.checked = iconInput.value === identity.icon;
     });
 
+    // Query if user has proxy permissions. 
+    // If so, we want to show the custom proxy settings options for the container: 
     const hasProxyPermission = await browser.runtime.sendMessage({
       method: "proxyPermissionCheck",
     });
-
-    console.log("hasProxyPermission: ", hasProxyPermission);
 
     if (hasProxyPermission) {
       document.querySelector(".proxy-container-settings").classList.remove("is-hidden");
