@@ -11,11 +11,15 @@
     <form>
       <h3 data-i18n-message-id="optionalPermissions"></h3>
       <label >
-        <input type="checkbox" id="bookmarksPermissions">
+        <input class="permissionCheckbox" data-permission="bookmarks" type="checkbox" id="bookmarksPermission">
         <span data-i18n-message-id="enableBookMarkMenus"></span>
-
       </label>
       <p><em data-i18n-message-id="enableBookMarkMenusDescription"></em></p>
+      <label > 
+        <input class="permissionCheckbox" data-permission="proxy" type="checkbox" id="proxyPermission">
+        <span data-i18n-message-id="enableProxy"></span>
+      </label>
+      <p><em data-i18n-message-id="enableProxyDescription"></em></p>
       <h3 data-i18n-message-id="firefoxAccountsSync"></h3>
       <label>
         <input type="checkbox" id="syncCheck">

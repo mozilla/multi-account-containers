@@ -221,6 +221,12 @@
   "enableBookMarkMenus": {
     "message": "Enable Bookmark Menus"
   },
+  "enableProxy": {
+    "message": "Enable custom per-container proxy settings"
+  },
+  "enableProxyDescription": {
+    "message": "This setting allows you to route all traffic from a specific Container through a proxy. This feature requires the proxy permission. This permission grants the add-on to control browser proxy settings."
+  },
   "enableSync": {
     "message": "Enable Sync"
   },

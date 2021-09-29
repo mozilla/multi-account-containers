@@ -585,6 +585,10 @@ manage things like container crud */
   padding-inline-start: 0;
 }
 
+.edit-container-panel fieldset.proxy-container-settings.is-hidden {
+  display: none;
+}
+
 .edit-container-panel fieldset:last-of-type {
   margin-block-start: 16px;
 }

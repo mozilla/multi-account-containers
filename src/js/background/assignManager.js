@@ -372,7 +372,7 @@ window.assignManager = {
     return currentContainerState && currentContainerState.isIsolated;
   },
 
-  init() {
+  async init() {
     browser.contextMenus.onClicked.addListener((info, tab) => {
       info.bookmarkId ?
         this._onClickedBookmark(info) :
@@ -380,7 +380,15 @@ window.assignManager = {
     });
 
     // Before anything happens we decide if the request should be proxified
-    browser.proxy.onRequest.addListener(this.handleProxifiedRequest, {urls: ["<all_urls>"]});
+    const hasProxyPermission = await browser.permissions.contains({
+      permissions: ["proxy"]
+    });
+
+    console.log("hasProxyPermission: ", hasProxyPermission);
+    
+    if (hasProxyPermission) {
+      browser.proxy.onRequest.addListener(this.handleProxifiedRequest, {urls: ["<all_urls>"]});
+    }
 
     // Before a request is handled by the browser we decide if we should
     // route through a different container

@@ -28,11 +28,11 @@
     "unlimitedStorage",
     "tabs",
     "webRequestBlocking",
-    "webRequest",
-    "proxy"
+    "webRequest"
   ],
   "optional_permissions": [
-    "bookmarks"
+    "bookmarks",
+    "proxy"
   ],
   "commands": {
     "_execute_browser_action": {

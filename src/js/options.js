@@ -1,17 +1,24 @@
 const NUMBER_OF_KEYBOARD_SHORTCUTS = 10;
 
-async function requestPermissions() {
-  const checkbox = document.querySelector("#bookmarksPermissions");
+async function requestPermissions(event) {
+  const checkbox = event.target;
+  const permission = checkbox.dataset.permission;
   if (checkbox.checked) {
-    const granted = await browser.permissions.request({permissions: ["bookmarks"]});
+    const granted = await browser.permissions.request({
+      permissions: [permission],
+    });
     if (!granted) { 
       checkbox.checked = false; 
       return;
     }
   } else {
-    await browser.permissions.remove({permissions: ["bookmarks"]});
+    await browser.permissions.remove({ permissions: [permission] });
   }
-  browser.runtime.sendMessage({ method: "resetBookmarksContext" });
+  
+  if (permission === "bookmarks") {
+    browser.runtime.sendMessage({ method: "resetBookmarksContext" });
+  }
+
 }
 
 async function enableDisableSync() {
@@ -26,11 +33,15 @@ async function enableDisableReplaceTab() {
 }
 
 async function setupOptions() {
-  const hasPermission = await browser.permissions.contains({permissions: ["bookmarks"]});
+  const hasBookmarksPermission = await browser.permissions.contains({permissions: ["bookmarks"]});
+  const hasProxyPermission = await browser.permissions.contains({permissions: ["proxy"]});
   const { syncEnabled } = await browser.storage.local.get("syncEnabled");
   const { replaceTabEnabled } = await browser.storage.local.get("replaceTabEnabled");
-  if (hasPermission) {
-    document.querySelector("#bookmarksPermissions").checked = true;
+  if (hasBookmarksPermission) {
+    document.querySelector("#bookmarksPermission").checked = true;
+  }
+  if (hasProxyPermission) {
+    document.querySelector("#proxyPermission").checked = true;
   }
   document.querySelector("#syncCheck").checked = !!syncEnabled;
   document.querySelector("#replaceTabCheck").checked = !!replaceTabEnabled;
@@ -79,7 +90,10 @@ function resetOnboarding() {
 }
 
 document.addEventListener("DOMContentLoaded", setupOptions);
-document.querySelector("#bookmarksPermissions").addEventListener( "change", requestPermissions);
+document
+  .querySelectorAll(".permissionCheckbox").forEach(  checkbox =>{
+    checkbox.addEventListener("change", requestPermissions);
+  });
 document.querySelector("#syncCheck").addEventListener( "change", enableDisableSync);
 document.querySelector("#replaceTabCheck").addEventListener( "change", enableDisableReplaceTab);
 document.querySelector("button").addEventListener("click", resetOnboarding);

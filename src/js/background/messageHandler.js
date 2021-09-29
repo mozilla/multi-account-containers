@@ -106,6 +106,10 @@ const messageHandler = {
           return assignManager._setOrRemoveAssignment(tab.id, m.url, m.newUserContextId, m.value);
         });
         break;
+      case "proxyPermissionCheck":
+        return await browser.permissions.contains({
+          permissions: ["proxy"],
+        });
       }
       return response;
     });

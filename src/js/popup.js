@@ -1428,6 +1428,16 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       iconInput.checked = iconInput.value === identity.icon;
     });
 
+    const hasProxyPermission = await browser.runtime.sendMessage({
+      method: "proxyPermissionCheck",
+    });
+
+    console.log("hasProxyPermission: ", hasProxyPermission);
+
+    if (hasProxyPermission) {
+      document.querySelector(".proxy-container-settings").classList.remove("is-hidden");
+    }
+
     // Clear the proxy field before doing the retrieval requests below
     document.querySelector("#edit-container-panel-proxy").value = "";
 
