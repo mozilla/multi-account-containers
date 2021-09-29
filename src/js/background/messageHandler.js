@@ -23,6 +23,9 @@ const messageHandler = {
       case "resetBookmarksContext":
         response = assignManager.resetBookmarksMenuItem();
         break;
+      case "resetProxySupport":
+        response = assignManager.init();
+        break;
       case "deleteContainer":
         response = backgroundLogic.deleteContainer(m.message.userContextId);
         break;

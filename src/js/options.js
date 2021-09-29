@@ -18,6 +18,10 @@ async function requestPermissions(event) {
   if (permission === "bookmarks") {
     browser.runtime.sendMessage({ method: "resetBookmarksContext" });
   }
+  
+  if (permission === "proxy") {
+    browser.runtime.sendMessage({ method: "resetProxySupport" });
+  }
 
 }
 

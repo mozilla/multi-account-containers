@@ -384,8 +384,6 @@ window.assignManager = {
       permissions: ["proxy"]
     });
 
-    console.log("hasProxyPermission: ", hasProxyPermission);
-    
     if (hasProxyPermission) {
       browser.proxy.onRequest.addListener(this.handleProxifiedRequest, {urls: ["<all_urls>"]});
     }
