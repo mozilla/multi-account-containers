@@ -28,7 +28,8 @@
     "unlimitedStorage",
     "tabs",
     "webRequestBlocking",
-    "webRequest"
+    "webRequest",
+    "proxy"
   ],
   "optional_permissions": [
     "bookmarks"

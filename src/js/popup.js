@@ -307,6 +307,10 @@ const Logic = {
     return Utils.userContextId(identity.cookieStoreId);
   },
 
+  cookieStoreId(userContextId) {
+    return `firefox-container-${userContextId}`;
+  },
+
   currentCookieStoreId() {
     const identity = Logic.currentIdentity();
     return identity.cookieStoreId;
@@ -1348,8 +1352,9 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
           params: {
             name: document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName(),
             icon: formValues.get("container-icon") || DEFAULT_ICON,
-            color: formValues.get("container-color") || DEFAULT_COLOR,
-          }
+            color: formValues.get("container-color") || DEFAULT_COLOR
+          },
+          proxy: proxifiedContainers.parseProxy(document.getElementById("edit-container-panel-proxy").value) || Utils.DEFAULT_PROXY
         }
       });
       await Logic.refreshIdentities();
@@ -1421,6 +1426,37 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     });
     [...document.querySelectorAll("[name='container-icon']")].forEach(iconInput => {
       iconInput.checked = iconInput.value === identity.icon;
+    });
+
+    // Clear the proxy field before doing the retrieval requests below
+    document.querySelector("#edit-container-panel-proxy").value = "";
+
+    const edit_proxy_dom = function(result) {
+      const proxyInput = document.querySelector("#edit-container-panel-proxy");
+      if (result.type === "direct" || typeof result.type === "undefined") {
+        proxyInput.value = "";
+        return;
+      }
+      proxyInput.value = `${result.type}://${result.host}:${result.port}`;
+    };
+
+    proxifiedContainers.retrieve(identity.cookieStoreId).then((result) => {
+      edit_proxy_dom(result.proxy);
+    }, (error) => {
+      if(error.error === "uninitialized" || error.error === "doesnotexist") {
+        proxifiedContainers.set(identity.cookieStoreId, Utils.DEFAULT_PROXY, error.error === "uninitialized").then((result) => {
+          edit_proxy_dom(result);
+        }, (error) => {
+          proxifiedContainers.report_proxy_error(error, "popup.js: unexpected set(...) error");
+        }).catch((error) => {
+          proxifiedContainers.report_proxy_error(error, "popup.js: unexpected set(...) exception");
+        });
+      }
+      else {
+        proxifiedContainers.report_proxy_error(error, "popup.js: unknown error");
+      }
+    }).catch((err) => {
+      proxifiedContainers.report_proxy_error(err, "popup.js: unexpected retrieve error");
     });
 
     const deleteButton = document.getElementById("delete-container-button");
