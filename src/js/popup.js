@@ -1047,8 +1047,6 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
 
   // This method is called when the panel is shown.
   async prepare() {
-    await browser.runtime.sendMessage({ method: "getMozillaVpnStatus" });
-
     Logic.listenToPickerBackButton();
     const closeContEl = document.querySelector("#close-container-picker-panel");
     if (!this._listenerSet) {
@@ -1273,7 +1271,6 @@ Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
   // This method is called when the panel is shown.
   async prepare() {
     const identities = Logic.identities();
-    const proxies = await MozillaVPN.getProxies(identities);
     Logic.listenToPickerBackButton();
     document.getElementById("picker-title").textContent = browser.i18n.getMessage("alwaysOpenIn");
     const fragment = document.createDocumentFragment();
@@ -1281,7 +1278,6 @@ Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
     document.getElementById("new-container-div").innerHTML = "";
 
     for (const identity of identities) {
-      const flag = await MozillaVPN.getFlag(proxies[identity.cookieStoreId]);
       const tr = document.createElement("tr");
       tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
       tr.setAttribute("tabindex", "0");
@@ -1295,8 +1291,6 @@ Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
           </div>
         </div>
         <span class="menu-text">${identity.name}</span>
-        <img alt="${flag.imgAlt}" class="always-open-in-flag flag-img ${flag.elemClasses}" src="/img/flags/${flag.imgCode}.png"/>
-
         `;
 
       fragment.appendChild(tr);
