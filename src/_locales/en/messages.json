@@ -44,32 +44,17 @@
   "onboarding-1-description": {
     "message": "Use containers to organize tasks, manage accounts, and keep your focus where you want it."
   },
-  "onboarding-1-sec-header": {
-    "message": "A simple and secure way to manage your online life"
-  },
-  "onboarding-1-sec-description": {
-    "message" : "Use containers to organize tasks, manage accounts, and store sensitive data."
-  },
   "onboarding-2-header": {
     "message": "Put containers to work for you."
   },
   "onboarding-2-description": {
     "message": "Features like color-coding and separate container tabs help you find things easily, focus your attention, and minimize distractions."
   },
-  "onboarding-2-sec-description": {
-    "message": "Color-coding helps you categorize your online life, find things easily, and minimize distractions."
-  },
   "onboarding-3-header": {
     "message": "A place for everything, and everything in its place."
   },
   "onboarding-3-description": {
     "message": "Start with the containers we've created, or create your own."
-  },
-  "onboarding-3-sec-header": {
-    "message": "Set boundaries for your browsing."
-  },
-  "onboarding-3-sec-description": {
-    "message": "Cookies are stored within a container, so you can segment sensitive data and browsing history to stay organized and to limit the impact of online trackers."
   },
   "onboarding-4-header": {
     "message": "Always open sites in the containers you want."
@@ -94,6 +79,9 @@
   },
   "onboarding-7-description": {
     "message": "Click Sign In to confirm that your Firefox Account is active."
+  },
+  "onboarding-8-description": {
+    "message": "This is a really exciting message about how per-container proxies are now supported and about how it's now really easy to do with Mozilla VPN..."
   },
   "oneHundredTabsHeader": {
     "message": "100 tabs!"
@@ -266,5 +254,59 @@
         "content": "$1"
       }
     }
+  },
+  "chooseLocation": {
+    "message": "Choose location"
+  },
+  "hide": {
+    "message": "Hide"
+  },
+  "show": {
+    "message": "Show"
+  },
+  "protectEachContainer": {
+    "message": "Protect each container with Mozilla VPN"
+  },
+  "protectThisContainer": {
+    "message": "Protect this container with Mozilla VPN"
+  },
+  "advancedProxySettings": {
+    "message": "Advanced proxy settings"
+  },
+  "proxyInputLabel": {
+    "message": "Enter custom proxy"
+  },
+  "useCustomLocation": {
+    "message": "Use custom location for this container"
+  },
+  "clearproxylabel": {
+    "message": "Clear proxy"
+  },
+  "moz-vpn-connected": {
+    "message": "Mozilla VPN is on"
+  },
+  "moz-vpn-disconnected": {
+    "message": "Mozilla VPN is off"
+  },
+  "invalidProxyAlert": {
+    "message": "Please enter a valid proxy url"
+  },
+  "mozillaVpnMustBeOn": {
+    "message": "Mozilla VPN app must be on to use this feature."
+  },
+  "learnMore": {
+    "message": "Learn more"
+  },
+  "proxyNowAvailable": {
+    "message": "Mozilla VPN and proxy integration is now available!"
+  },
+  "getMozillaVpn": {
+    "message": "Get Mozilla VPN"
+  },
+  "integratewithmozillavpn": {
+    "message": "Integrate your containers with Mozilla VPN"
+  },
+  "applyToThisContainer": {
+    "message": "Apply to this container"
   }
 }

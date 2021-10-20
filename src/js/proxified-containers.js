@@ -2,9 +2,13 @@
 proxifiedContainers = {
 
   // Slightly modified version of 'retrieve' which returns a direct proxy whenever an error is met.
-  retrieveFromBackground(cookieStoreId = null) {
+  async retrieveFromBackground(cookieStoreId = null) {
     return new Promise((resolve, reject) => {
       proxifiedContainers.retrieve(cookieStoreId).then((success) => {
+        // TODO consider better methods of handling containers with MozillaVPN proxy
+        // configs when MozillaVPN is not connected. Currently we are only messaging this
+        // in the main panel.
+        // if (mozProxyIsEnabled && !mozillaVpnConnected) { something better here ? }
         resolve(success.proxy);
       }, function() {
         resolve(Utils.DEFAULT_PROXY);
@@ -31,7 +35,6 @@ proxifiedContainers = {
         // 4. Normal operation - if the cookieStoreId exists in the map, we can simply resolve with the correct proxy value
 
         const results_array = results["proxifiedContainersKey"];
-
         if (Object.getOwnPropertyNames(results).length === 0) {
           reject({
             error: "uninitialized",
@@ -76,6 +79,7 @@ proxifiedContainers = {
           proxifiedContainersKey: proxifiedContainersStore
         });
 
+
         resolve(proxy);
       }
 
@@ -110,13 +114,22 @@ proxifiedContainers = {
   },
 
   //Parses a proxy description string of the format type://host[:port] or type://username:password@host[:port] (port is optional)
-  parseProxy(proxy_str) {
+  parseProxy(proxy_str, mozillaVpnData = null) {
     const proxyRegexp = /(?<type>(https?)|(socks4?)):\/\/(\b(?<username>\w+):(?<password>\w+)@)?(?<host>((?:\d{1,3}\.){3}\d{1,3}\b)|(\b([\w.-]+)(\.([\w.-]+))+))(:(?<port>\d+))?/;
     if (proxyRegexp.test(proxy_str) !== true) {
       return false;
     }
     const matches = proxyRegexp.exec(proxy_str);
-    return matches.groups;
+
+    if (mozillaVpnData && mozillaVpnData.mozProxyEnabled === undefined) {
+      matches.groups.type = "direct";
+    }
+
+    if (!mozillaVpnData) {
+      mozillaVpnData = MozillaVPN.getMozillaProxyInfoObj();
+    }
+
+    return {...matches.groups,...mozillaVpnData};
   },
 
   // Deletes the proxy information object for a specified cookieStoreId [useful for cleaning]
@@ -126,9 +139,7 @@ proxifiedContainers = {
       proxifiedContainers.retrieve().then((proxifiedContainersStore) => {
         const index = proxifiedContainersStore.findIndex(i => i.cookieStoreId === cookieStoreId);
 
-        if (index === -1) {
-          reject({error: "not-found", message: `Container '${cookieStoreId}' not found.`});
-        } else {
+        if (index !== -1) {
           proxifiedContainersStore.splice(index, 1);
         }
 

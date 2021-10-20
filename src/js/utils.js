@@ -165,7 +165,7 @@ const Utils = {
       assignedUserContextId,
       false
     );
-  }
+  },
 };
 
 window.Utils = Utils;

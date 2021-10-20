@@ -83,18 +83,27 @@ const messageHandler = {
         break;
       case "reloadInContainer":
         response = assignManager.reloadPageInContainer(
-          m.url, 
-          m.currentUserContextId, 
-          m.newUserContextId, 
+          m.url,
+          m.currentUserContextId,
+          m.newUserContextId,
           m.tabIndex, 
           m.active,
           true
         );
         break;
+      case "mozillaVpnAttemptPort":
+        MozillaVPN_Background.maybeInitPort();
+        break;
+      case "getMozillaVpnServers":
+        MozillaVPN_Background.postToApp("servers");
+        break;
+      case "getMozillaVpnStatus":
+        response = MozillaVPN_Background.postToApp("status");
+        break;
       case "assignAndReloadInContainer":
         tab = await assignManager.reloadPageInContainer(
           m.url, 
-          m.currentUserContextId, 
+          m.currentUserContextId,
           m.newUserContextId, 
           m.tabIndex, 
           m.active,

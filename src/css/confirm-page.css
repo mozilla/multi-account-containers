@@ -5,8 +5,8 @@
 
 main {
   background: url(/img/onboarding-4.png) no-repeat;
-  background-position: -10px -15px;
-  background-size: 300px;
+  background-position: 200px 0;
+  background-size: 120px;
   margin-inline-start: -350px;
   padding-inline-start: 350px;
 }
@@ -20,7 +20,7 @@ button .container-name,
   font-weight: bold;
 }
 
-@media only screen and (max-width: 1300px) {
+@media only screen and (max-width: 900px) {
   main {
     background: none;
   }

@@ -19,7 +19,9 @@ module.exports = {
     "OS": true,
     "ADDON_UNINSTALL": true,
     "ADDON_DISABLE": true,
-    "proxifiedContainers": true
+    "proxifiedContainers": true,
+    "MozillaVPN": true,
+    "MozillaVPN_Background": true
   },
   "plugins": [
     "promise",
