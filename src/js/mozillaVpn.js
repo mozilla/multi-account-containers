@@ -24,7 +24,10 @@ const MozillaVPN = {
         }
         if (!mozillaVpnConnected && proxy.mozProxyEnabled) {
           flag.classList.add("proxy-unavailable");
-          el.querySelector(".menu-item-name").dataset.mozProxyWarning = "proxy-unavailable";
+          const menuItemName = el.querySelector(".menu-item-name");
+          if (menuItemName) {
+            el.querySelector(".menu-item-name").dataset.mozProxyWarning = "proxy-unavailable";
+          }
         }
       }
     }
