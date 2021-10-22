@@ -1455,7 +1455,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
               if (!deactivatedMozProxy) {
                 return;
               }
-              proxifiedContainers.set(id.cookieStoreId, deactivatedMozProxy);
+
+              await proxifiedContainers.set(id.cookieStoreId, deactivatedMozProxy);
               this.switch.checked = false;
               return;
             }
@@ -1485,7 +1486,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
             }
 
             if (proxy) {
-              proxifiedContainers.set(id.cookieStoreId, proxy);
+              await proxifiedContainers.set(id.cookieStoreId, proxy);
               this.switch.checked = true;
               this.updateProxyDependentUi(proxy);
 
@@ -1810,30 +1811,21 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const mozillaVpnUi = document.querySelector(".moz-vpn-controller-content");
     mozillaVpnUi.updateMozVpnStatusDependentUi();
 
-    if (userContextId) {
-      proxifiedContainers.retrieve(identity.cookieStoreId).then((result) => {
-        if (result.proxy && result.proxy.mozProxyEnabled && !mozillaVpnConnected) {
-          return;
-        }
-        mozillaVpnUi.updateProxyDependentUi(result.proxy);
-      }, (error) => {
-        if(error.error === "uninitialized" || error.error === "doesnotexist") {
-          proxifiedContainers.set(identity.cookieStoreId, Utils.DEFAULT_PROXY, error.error === "uninitialized").then((result) => {
-            mozillaVpnUi.updateProxyDependentUi(result.proxy);
-          }, (error) => {
-            proxifiedContainers.report_proxy_error(error, "popup.js: unexpected set(...) error");
-          }).catch((error) => {
-            proxifiedContainers.report_proxy_error(error, "popup.js: unexpected set(...) exception");
-          });
-        }
-        else {
-          proxifiedContainers.report_proxy_error(error, "popup.js: unknown error");
-        }
-      }).catch((err) => {
-        proxifiedContainers.report_proxy_error(err, "popup.js: unexpected retrieve error");
-      });
+    if (!userContextId) {
+      return;
     }
-    return Promise.resolve(null);
+
+    const proxyData = await proxifiedContainers.retrieve(identity.cookieStoreId);
+    if (proxyData) {
+      if (proxyData.proxy && proxyData.proxy.mozProxyEnabled && !mozillaVpnConnected) {
+        return;
+      }
+      mozillaVpnUi.updateProxyDependentUi(proxyData.proxy);
+      return;
+    }
+
+    await proxifiedContainers.set(identity.cookieStoreId, Utils.DEFAULT_PROXY);
+    mozillaVpnUi.updateProxyDependentUi(Utils.DEFAULT_PROXY);
   },
 });
 
@@ -1909,10 +1901,10 @@ Logic.registerPanel(P_ADVANCED_PROXY_SETTINGS, {
       advancedProxyInput.value = `${proxy.type}://${proxy.host}:${proxy.port}`;
     };
 
-    try {
-      const { proxy } = await proxifiedContainers.retrieve(identity.cookieStoreId);
-      edit_proxy_dom(proxy);
-    } catch (e) {
+    const proxyData = await proxifiedContainers.retrieve(identity.cookieStoreId);
+    if (proxyData) {
+      edit_proxy_dom(proxyData.proxy);
+    } else {
       advancedProxyInput.value = "";
     }
 
@@ -1940,7 +1932,7 @@ Logic.registerPanel(P_MOZILLA_VPN_SERVER_LIST, {
         mozillaVpnServers
       );
 
-      proxifiedContainers.set(identity.cookieStoreId, proxy);
+      await proxifiedContainers.set(identity.cookieStoreId, proxy);
       Logic.showPanel(P_CONTAINER_EDIT, identity, false, false);
       Logic.showPreviousPanel();
     });
@@ -2052,14 +2044,10 @@ Logic.registerPanel(P_MOZILLA_VPN_SERVER_LIST, {
       this.makeServerList(mozillaVpnServers);
     }
 
-    try {
-      const {proxy} = await proxifiedContainers.retrieve(identity.cookieStoreId);
-      this.checkActiveServer(proxy);
-
-    } catch(e) {
-      proxifiedContainers.report_proxy_error(e, "MozillaVPN server list");
+    const proxyData = await proxifiedContainers.retrieve(identity.cookieStoreId);
+    if (proxyData) {
+      this.checkActiveServer(proxyData.proxy);
     }
-    return Promise.resolve(null);
   }
 });
 

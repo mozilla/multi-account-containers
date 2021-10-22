@@ -199,8 +199,11 @@ window.assignManager = {
     }
 
     const tab = await browser.tabs.get(requestInfo.tabId);
-    const proxy = await proxifiedContainers.retrieveFromBackground(tab.cookieStoreId);
-    return proxy;
+    const result = await proxifiedContainers.retrieve(tab.cookieStoreId);
+    if (result) {
+      return result.proxy;
+    }
+    return Utils.DEFAULT_PROXY;
   },
 
   // Before a request is handled by the browser we decide if we should
