@@ -5,6 +5,8 @@ const MozillaVPN_Background = {
   MOZILLA_VPN_HIDE_MAIN_TOUT_KEY: "mozillaVpnHideMainTout",
   MOZILLA_VPN_SERVERS_KEY: "mozillaVpnServers",
 
+  _isolationKey: 0,
+
   async maybeInitPort() {
     if (this.port && this.port.error === null) {
       return;
@@ -17,9 +19,16 @@ const MozillaVPN_Background = {
       */
       this.port = await browser.runtime.connectNative("mozillavpn");
       await browser.storage.local.set({ [this.MOZILLA_VPN_INSTALLED_KEY]: true});
-      this.port.onMessage.addListener(this.handleResponse);
+      this.port.onMessage.addListener(response => this.handleResponse(response));
+
       this.postToApp("status");
       this.postToApp("servers");
+
+      // When the mozillavpn dies or the VPN disconnects, we need to increase
+      // the isolation key in order to create new proxy connections. Otherwise
+      // we could see random timeout when the browser tries to connect to an
+      // invalid proxy connection.
+      this.port.onDisconnect.addListener(() => this.increaseIsolationKey());
 
     } catch(e) {
       browser.storage.local.set({ [this.MOZILLA_VPN_INSTALLED_KEY]: false });
@@ -54,9 +63,9 @@ const MozillaVPN_Background = {
 
   // Handle responses from MozillaVPN client
   async handleResponse(response) {
-
     if (response.error && response.error === "vpn-client-down") {
       browser.storage.local.set({ [MozillaVPN_Background.MOZILLA_VPN_CONNECTED_KEY]: false });
+      this.increaseIsolationKey();
       return;
     }
     if (response.servers) {
@@ -65,10 +74,10 @@ const MozillaVPN_Background = {
       return;
     }
 
-    if (response.status && response.status.vpn) {
+    if ((response.status && response.status.vpn) || response.t === "status") {
       browser.storage.local.set({ [MozillaVPN_Background.MOZILLA_VPN_INSTALLED_KEY]: true });
 
-      const status = response.status.vpn;
+      const status = response.status ? response.status.vpn : response.vpn;
 
       if (status === "StateOn") {
         browser.storage.local.set({ [MozillaVPN_Background.MOZILLA_VPN_CONNECTED_KEY]: true });
@@ -77,8 +86,19 @@ const MozillaVPN_Background = {
       if (status === "StateOff" || status === "StateDisconnecting") {
         browser.storage.local.set({ [MozillaVPN_Background.MOZILLA_VPN_CONNECTED_KEY]: false });
       }
+
+      // Let's increase the network key isolation at any vpn status change.
+      this.increaseIsolationKey();
     }
-  }
+  },
+
+  increaseIsolationKey() {
+    ++this._isolationKey;
+  },
+
+  get isolationKey() {
+    return this._isolationKey;
+  },
 };
 
 MozillaVPN_Background.init();

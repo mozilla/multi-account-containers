@@ -200,10 +200,16 @@ window.assignManager = {
 
     const tab = await browser.tabs.get(requestInfo.tabId);
     const result = await proxifiedContainers.retrieve(tab.cookieStoreId);
-    if (result) {
+    if (!result || !result.proxy) {
+      return Utils.DEFAULT_PROXY;
+    }
+
+    if (!result.proxy.mozProxyEnabled) {
       return result.proxy;
     }
-    return Utils.DEFAULT_PROXY;
+
+    // Let's add the isolation key.
+    return [{ ...result.proxy, connectionIsolationKey: "" + MozillaVPN_Background.isolationKey }];
   },
 
   // Before a request is handled by the browser we decide if we should
