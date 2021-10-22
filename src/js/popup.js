@@ -1588,8 +1588,6 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       }
 
       async updateProxyDependentUi(proxyInfo) {
-        const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
-
         const containerHasProxy = typeof(proxyInfo) !== "undefined";
 
         const mozillaVpnProxyLocationAvailable = (proxy) => {
@@ -1604,6 +1602,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         this.updateProxyInputs(proxyInfo);
         this.enableDisableProxyButtons();
 
+        const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
         if (
           !containerHasProxy ||
           !mozillaVpnProxyLocationAvailable(proxyInfo) ||

@@ -44,11 +44,11 @@ const MozillaVPN_Background = {
     this.maybeInitPort();
   },
 
-  async getConnectionStatus() {
+  getConnectionStatus() {
     return this._connected;
   },
 
-  async getInstallationStatus() {
+  getInstallationStatus() {
     return this._installed;
   },
 

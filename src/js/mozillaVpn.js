@@ -38,7 +38,6 @@ const MozillaVPN = {
   },
 
   async setStatusIndicatorIcons(mozillaVpnInstalled) {
-    const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
 
     const statusIconEls = document.querySelectorAll(".moz-vpn-connection-status-indicator");
 
@@ -56,6 +55,7 @@ const MozillaVPN = {
     const connectedIndicatorSrc = "url(./img/moz-vpn-connected.svg)";
     const disconnectedIndicatorSrc = "url(./img/moz-vpn-disconnected.svg)";
 
+    const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
     const connectionStatusStringId = mozillaVpnConnected ? "moz-vpn-connected" : "moz-vpn-disconnected";
     const connectionStatusLocalizedString = browser.i18n.getMessage(connectionStatusStringId);
 
@@ -127,9 +127,9 @@ const MozillaVPN = {
   },
 
   async getProxies(identities) {
+    const proxies = {};
     const mozillaVpnInstalled = await browser.runtime.sendMessage({ method: "MozillaVPN_getInstallationStatus" });
 
-    const proxies = {};
     if (mozillaVpnInstalled) {
       for (const identity of identities) {
         try {
@@ -151,9 +151,8 @@ const MozillaVPN = {
     };
   },
 
-  async getProxyWarnings(proxyObj) {
-    const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
 
+  async getProxyWarnings(proxyObj) {
     if (!proxyObj) {
       return "";
     }
@@ -164,15 +163,13 @@ const MozillaVPN = {
       return "";
     }
 
+    const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
     if (typeof(proxy.mozProxyEnabled) !== "undefined" && !mozillaVpnConnected) {
       return "proxy-unavailable";
     }
   },
 
   async getFlag(proxyObj) {
-    const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
-    const mozillaVpnInstalled = await browser.runtime.sendMessage({ method: "MozillaVPN_getInstallationStatus" });
-
     const flag = {
       imgCode: "default",
       elemClasses: "display-none",
@@ -184,10 +181,12 @@ const MozillaVPN = {
     }
 
     const { proxy } = proxyObj;
+    const mozillaVpnInstalled = await browser.runtime.sendMessage({ method: "MozillaVPN_getInstallationStatus" });
     if (typeof(proxy) === "undefined"  || !mozillaVpnInstalled) {
       return flag;
     }
 
+    const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
     if (mozillaVpnInstalled && typeof(proxy.cityName) !== "undefined") {
       flag.imgCode = proxy.countryCode.toUpperCase();
       flag.imgAlt = proxy.cityName;
