@@ -1824,8 +1824,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       return;
     }
 
-    await proxifiedContainers.set(identity.cookieStoreId, Utils.DEFAULT_PROXY);
-    mozillaVpnUi.updateProxyDependentUi(Utils.DEFAULT_PROXY);
+    mozillaVpnUi.updateProxyDependentUi({});
   },
 });
 

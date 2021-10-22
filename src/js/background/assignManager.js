@@ -187,21 +187,14 @@ window.assignManager = {
   async handleProxifiedRequest(requestInfo) {
     // The following blocks potentially dangerous requests for privacy that come without a tabId
 
-    // Dupe of Utils.DEFAULT_PROXY, which was occasionally and unreliably
-    // not being found on startup and causing significant UI grief.
     if(requestInfo.tabId === -1) {
-      return {
-        value: Object.freeze({type: "direct"}),
-        writable: false,
-        enumerable: true,
-        configurable: false
-      };
+      return {type: "direct"};
     }
 
     const tab = await browser.tabs.get(requestInfo.tabId);
     const result = await proxifiedContainers.retrieve(tab.cookieStoreId);
     if (!result || !result.proxy) {
-      return Utils.DEFAULT_PROXY;
+      return {type: "direct"};
     }
 
     if (!result.proxy.mozProxyEnabled) {
