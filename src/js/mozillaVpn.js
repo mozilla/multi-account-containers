@@ -1,8 +1,8 @@
 const MozillaVPN = {
 
   async handleContainerList(identities) {
-    const { mozillaVpnConnected } = await browser.storage.local.get("mozillaVpnConnected");
-    const { mozillaVpnInstalled } = await browser.storage.local.get("mozillaVpnInstalled");
+    const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
+    const mozillaVpnInstalled = await browser.runtime.sendMessage({ method: "MozillaVPN_getInstallationStatus" });
     this.handleStatusIndicatorsInContainerLists(mozillaVpnInstalled);
 
     const proxies = await this.getProxies(identities);
@@ -38,7 +38,7 @@ const MozillaVPN = {
   },
 
   async setStatusIndicatorIcons(mozillaVpnInstalled) {
-    const { mozillaVpnConnected } = await browser.storage.local.get("mozillaVpnConnected");
+    const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
 
     const statusIconEls = document.querySelectorAll(".moz-vpn-connection-status-indicator");
 
@@ -127,7 +127,7 @@ const MozillaVPN = {
   },
 
   async getProxies(identities) {
-    const { mozillaVpnInstalled } = await browser.storage.local.get("mozillaVpnInstalled");
+    const mozillaVpnInstalled = await browser.runtime.sendMessage({ method: "MozillaVPN_getInstallationStatus" });
 
     const proxies = {};
     if (mozillaVpnInstalled) {
@@ -152,7 +152,7 @@ const MozillaVPN = {
   },
 
   async getProxyWarnings(proxyObj) {
-    const { mozillaVpnConnected } = await browser.storage.local.get("mozillaVpnConnected");
+    const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
 
     if (!proxyObj) {
       return "";
@@ -170,8 +170,8 @@ const MozillaVPN = {
   },
 
   async getFlag(proxyObj) {
-    const { mozillaVpnConnected } = await browser.storage.local.get("mozillaVpnConnected");
-    const { mozillaVpnInstalled } = await browser.storage.local.get("mozillaVpnInstalled");
+    const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
+    const mozillaVpnInstalled = await browser.runtime.sendMessage({ method: "MozillaVPN_getInstallationStatus" });
 
     const flag = {
       imgCode: "default",

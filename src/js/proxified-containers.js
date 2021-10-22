@@ -24,7 +24,7 @@ proxifiedContainers = {
     let proxifiedContainersStore = await proxifiedContainers.retrieveAll();
     if (!proxifiedContainersStore) proxifiedContainersStore = [];
 
-    let index = proxifiedContainersStore.findIndex(i => i.cookieStoreId === cookieStoreId);
+    const index = proxifiedContainersStore.findIndex(i => i.cookieStoreId === cookieStoreId);
     if (index === -1) {
       proxifiedContainersStore.push({
         cookieStoreId: cookieStoreId,

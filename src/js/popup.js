@@ -63,7 +63,7 @@ const Logic = {
 
   async init() {
     browser.runtime.sendMessage({
-      method: "mozillaVpnAttemptPort"
+      method: "MozillaVPN_attemptPort"
     }),
 
     // Remove browserAction "upgraded" badge when opening panel
@@ -662,14 +662,23 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
   // This method is called when the object is registered.
   async initialize() {
-    await browser.runtime.sendMessage({ method: "getMozillaVpnStatus" });
+    const mozillaVpnToutName = "moz-tout-main-panel";
+
+    await browser.runtime.sendMessage({ method: "MozillaVPN_queryStatus" });
     Utils.addEnterHandler(document.querySelector("#moz-vpn-learn-more"), () => {
       MozillaVPN.handleMozillaCtaClick("mac-main-panel-btn");
       window.close();
     });
     Utils.addEnterHandler(document.querySelector(".dismiss-moz-vpn-tout"), async() => {
+      const { mozillaVpnHiddenToutsList } = await browser.storage.local.get("mozillaVpnHiddenToutsList");
+      if (typeof(mozillaVpnHiddenToutsList) === "undefined") {
+        await browser.storage.local.set({ "mozillaVpnHiddenToutsList": [] });
+      }
       document.querySelector("#moz-vpn-tout").classList.add("disappear");
-      browser.storage.local.set({ "mozillaVpnHideMainTout": true });
+      mozillaVpnHiddenToutsList.push({
+        name: mozillaVpnToutName
+      });
+      await browser.storage.local.set({ mozillaVpnHiddenToutsList });
     });
     Utils.addEnterHandler(document.querySelector("#manage-containers-link"), (e) => {
       if (!e.target.classList.contains("disable-edit-containers")) {
@@ -699,11 +708,11 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       }
     });
 
-    const { mozillaVpnHideMainTout } = await browser.storage.local.get("mozillaVpnHideMainTout");
-    const { mozillaVpnInstalled } = await browser.storage.local.get("mozillaVpnInstalled");
+    const { mozillaVpnHiddenToutsList } = await browser.storage.local.get("mozillaVpnHiddenToutsList");
+    const mozillaVpnToutShouldBeHidden = mozillaVpnHiddenToutsList && mozillaVpnHiddenToutsList.find(tout => tout.name === mozillaVpnToutName);
 
     const mozVpnTout = document.getElementById("moz-vpn-tout");
-    if (mozillaVpnHideMainTout || mozillaVpnInstalled) {
+    if (mozillaVpnToutShouldBeHidden) {
       mozVpnTout.remove();
     }
   },
@@ -1391,8 +1400,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
   async initialize() {
     this.initializeRadioButtons();
 
-    await browser.runtime.sendMessage({ method: "getMozillaVpnServers" });
-    await browser.runtime.sendMessage({ method: "getMozillaVpnStatus" });
+    await browser.runtime.sendMessage({ method: "MozillaVPN_queryServers" });
+    await browser.runtime.sendMessage({ method: "MozillaVPN_queryStatus" });
 
     class MozVpnContainerUi extends HTMLElement {
       constructor() {
@@ -1405,6 +1414,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         this.hideShowButton = this.querySelector(".expand-collapse");
         this.primaryCta = this.querySelector("#get-mozilla-vpn");
         this.advancedProxySettingsButton = document.querySelector(".advanced-proxy-settings-btn");
+        this.toutName = "moz-tout-edit-container-panel";
 
         // Switch
         this.switch = this.querySelector("#moz-vpn-switch");
@@ -1425,7 +1435,9 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       }
 
       async connectedCallback() {
-        const { mozillaVpnCollapseEditContainerTout } = await browser.storage.local.get("mozillaVpnCollapseEditContainerTout");
+        const { mozillaVpnHiddenToutsList } = await browser.storage.local.get("mozillaVpnHiddenToutsList");
+        const mozillaVpnCollapseEditContainerTout = mozillaVpnHiddenToutsList && mozillaVpnHiddenToutsList.find(tout => tout.name === this.toutName);
+
         this.hideShowButton.addEventListener("click", this);
 
         if (mozillaVpnCollapseEditContainerTout) {
@@ -1502,8 +1514,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       }
 
       async updateMozVpnStatusDependentUi() {
-        const { mozillaVpnInstalled } = await browser.storage.local.get("mozillaVpnInstalled");
-        const { mozillaVpnConnected } = await browser.storage.local.get("mozillaVpnConnected");
+        const mozillaVpnInstalled = await browser.runtime.sendMessage({ method: "MozillaVPN_getInstallationStatus" });
+        const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
 
         if (!mozillaVpnInstalled) {
 
@@ -1534,7 +1546,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
 
       async enableDisableProxyButtons() {
-        const { mozillaVpnConnected } = await browser.storage.local.get("mozillaVpnConnected");
+        const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
 
         if (!this.switch.checked || this.switch.disabled || !mozillaVpnConnected) {
           this.currentServerButton.disabled = true;
@@ -1576,7 +1588,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       }
 
       async updateProxyDependentUi(proxyInfo) {
-        const { mozillaVpnConnected } = await browser.storage.local.get("mozillaVpnConnected");
+        const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
 
         const containerHasProxy = typeof(proxyInfo) !== "undefined";
 
@@ -1633,7 +1645,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         });
       }
 
-      handleEvent(e) {
+      async handleEvent(e) {
         e.preventDefault();
         e.stopPropagation();
         if (e.type === "keyup" && e.key !== " ") {
@@ -1641,12 +1653,19 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         }
         this.classList.toggle("expanded");
 
-        if (!this.classList.contains("expanded")) {
-          browser.storage.local.set({ "mozillaVpnCollapseEditContainerTout": true });
-          return;
+        const { mozillaVpnHiddenToutsList } = await browser.storage.local.get("mozillaVpnHiddenToutsList");
+        if (typeof(mozillaVpnHiddenToutsList) === "undefined") {
+          await browser.storage.local.set({ "mozillaVpnHiddenToutsList":[] });
         }
-        this.expandUi();
-        browser.storage.local.set({ "mozillaVpnCollapseEditContainerTout": false });
+
+        const toutIndex = mozillaVpnHiddenToutsList.findIndex(tout => tout.name === mozillaVpnUi.toutName);
+        if (toutIndex === -1) {
+          mozillaVpnHiddenToutsList.push({ name: mozillaVpnUi.toutName });
+        } else {
+          this.expandUi();
+          mozillaVpnHiddenToutsList.splice(toutIndex, 1);
+        }
+        return await browser.storage.local.set({ mozillaVpnHiddenToutsList });
       }
 
     }
@@ -1765,8 +1784,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
   // This method is called when the panel is shown.
   async prepare() {
-    browser.runtime.sendMessage({ method: "getMozillaVpnServers" });
-    browser.runtime.sendMessage({ method: "getMozillaVpnStatus" });
+    browser.runtime.sendMessage({ method: "MozillaVPN_queryServers" });
+    browser.runtime.sendMessage({ method: "MozillaVPN_queryStatus" });
 
     const identity = Logic.currentIdentity();
 
@@ -1806,7 +1825,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     Utils.addEnterHandler(deleteButton, () => {
       Logic.showPanel(P_CONTAINER_DELETE, this.getEditInProgressIdentity(), false, false);
     });
-    const { mozillaVpnConnected } = await browser.storage.local.get("mozillaVpnConnected");
+    const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
+
 
     const mozillaVpnUi = document.querySelector(".moz-vpn-controller-content");
     mozillaVpnUi.updateMozVpnStatusDependentUi();
@@ -1916,8 +1936,8 @@ Logic.registerPanel(P_ADVANCED_PROXY_SETTINGS, {
 Logic.registerPanel(P_MOZILLA_VPN_SERVER_LIST, {
   panelSelector: "#moz-vpn-server-list-panel",
   async initialize() {
-    await browser.runtime.sendMessage({ method: "getMozillaVpnStatus" });
-    await browser.runtime.sendMessage({ method: "getMozillaVpnServers" });
+    await browser.runtime.sendMessage({ method: "MozillaVPN_queryStatus" });
+    await browser.runtime.sendMessage({ method: "MozillaVPN_queryServers" });
 
     Utils.addEnterHandler(document.getElementById("moz-vpn-return"), async () => {
       const identity = Logic.currentIdentity();
