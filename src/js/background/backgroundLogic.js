@@ -55,23 +55,13 @@ const backgroundLogic = {
   },
 
   async createOrUpdateContainer(options) {
-    let donePromise;
     if (options.userContextId !== "new") {
-      donePromise = browser.contextualIdentities.update(
+      return await browser.contextualIdentities.update(
         this.cookieStoreId(options.userContextId),
         options.params
       );
-    } else {
-      donePromise = browser.contextualIdentities.create(options.params);
-      // We cannot yet access the new cookieStoreId via this.cookieStoreId(...), so we take this from the resolved promise
-      donePromise.then((identity) => {
-        (identity.cookieStoreId, options.proxy);
-      }).catch(() => {
-        // Empty because this should never happen theoretically.
-      });
     }
-
-    await donePromise;
+    return await browser.contextualIdentities.create(options.params);
   },
 
   async openNewTab(options) {

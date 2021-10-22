@@ -12,6 +12,10 @@ const MozillaVPN = {
 
     for (const el of document.querySelectorAll("[data-cookie-store-id]")) {
       const cookieStoreId = el.dataset.cookieStoreId;
+
+      if (!proxies[cookieStoreId]) {
+        continue;
+      }
       const { proxy } = proxies[cookieStoreId];
 
       if (typeof(proxy) !== "undefined") {
@@ -139,7 +143,7 @@ const MozillaVPN = {
     return proxies;
   },
 
-  getMozillaProxyInfoObj () {
+  getMozillaProxyInfoObj() {
     return {
       countryCode: undefined,
       cityName: undefined,
@@ -211,7 +215,7 @@ const MozillaVPN = {
     return `socks://${socksName}.mullvad.net:1080`;
   },
 
-  async pickRandomServer() {
+  async pickRandomLocation() {
     const { mozillaVpnServers } = await browser.storage.local.get("mozillaVpnServers");
     const randomInteger = this.getRandomInteger(0, mozillaVpnServers.length - 1);
     const randomServerCountry = mozillaVpnServers[randomInteger];

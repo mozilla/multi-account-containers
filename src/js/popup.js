@@ -1474,7 +1474,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
             } else {
               // No saved Mozilla VPN proxy information. Get something new.
-              const { randomServerCountryCode, randomServerCityName } = await MozillaVPN.pickRandomServer();
+              const { randomServerCountryCode, randomServerCityName } = await MozillaVPN.pickRandomLocation();
 
               proxy = MozillaVPN.getProxy(
                 randomServerCountryCode,

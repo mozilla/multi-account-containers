@@ -1490,7 +1490,7 @@ manage things like container crud */
 }
 
 #edit-container-panel-choose-icon .radio-container:hover .usercontext-icon::before {
-  fill: #fff !important;
+  fill: var(--grey50) !important;
 }
 
 .mac-icon {
@@ -2181,5 +2181,9 @@ tr:hover > td > .trash-button {
 
   .radio-choice > .radio-container > [type="radio"]:checked + label {
     background: var(--bgDark);
+  }
+
+  #edit-container-panel-choose-icon .radio-container:hover .usercontext-icon::before {
+    fill: #fff !important;
   }
 }

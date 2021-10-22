@@ -3,19 +3,12 @@ proxifiedContainers = {
 
   // Slightly modified version of 'retrieve' which returns a direct proxy whenever an error is met.
   async retrieveFromBackground(cookieStoreId = null) {
-    return new Promise((resolve, reject) => {
-      proxifiedContainers.retrieve(cookieStoreId).then((success) => {
-        // TODO consider better methods of handling containers with MozillaVPN proxy
-        // configs when MozillaVPN is not connected. Currently we are only messaging this
-        // in the main panel.
-        // if (mozProxyIsEnabled && !mozillaVpnConnected) { something better here ? }
-        resolve(success.proxy);
-      }, function() {
-        resolve(Utils.DEFAULT_PROXY);
-      }).catch((error) => {
-        reject(error);
-      });
-    });
+    try {
+      const success = await proxifiedContainers.retrieve(cookieStoreId);
+      return success.proxy;
+    } catch (e) {
+      return Utils.DEFAULT_PROXY;
+    }
   },
 
   report_proxy_error(error, identifier = null) {
@@ -66,52 +59,39 @@ proxifiedContainers = {
     });
   },
 
-  set(cookieStoreId, proxy, initialize = false) {
-    return new Promise((resolve, reject) => {
-      if (initialize === true) {
-        const proxifiedContainersStore = [];
-        proxifiedContainersStore.push({
-          cookieStoreId: cookieStoreId,
-          proxy: proxy
-        });
-
-        browser.storage.local.set({
-          proxifiedContainersKey: proxifiedContainersStore
-        });
-
-
-        resolve(proxy);
-      }
-
-      // Assumes proxy is a properly formatted object
-      proxifiedContainers.retrieve().then((proxifiedContainersStore) => {
-        let index = proxifiedContainersStore.findIndex(i => i.cookieStoreId === cookieStoreId);
-
-        if (index === -1) {
-          proxifiedContainersStore.push({
-            cookieStoreId: cookieStoreId,
-            proxy: proxy
-          });
-          index = proxifiedContainersStore.length - 1;
-        } else {
-          proxifiedContainersStore[index] = {
-            cookieStoreId: cookieStoreId,
-            proxy: proxy
-          };
-        }
-
-        browser.storage.local.set({
-          proxifiedContainersKey: proxifiedContainersStore
-        });
-
-        resolve(proxifiedContainersStore[index]);
-      }, (errorObj) => {
-        reject(errorObj);
-      }).catch((error) => {
-        throw error;
+  async set(cookieStoreId, proxy, initialize = false) {
+    if (initialize === true) {
+      const proxifiedContainersStore = [];
+      proxifiedContainersStore.push({
+        cookieStoreId: cookieStoreId,
+        proxy: proxy
       });
+      await browser.storage.local.set({
+        proxifiedContainersKey: proxifiedContainersStore
+      });
+      return proxy;
+    }
+    // Assumes proxy is a properly formatted object
+    const proxifiedContainersStore = await proxifiedContainers.retrieve();
+    let index = proxifiedContainersStore.findIndex(i => i.cookieStoreId === cookieStoreId);
+    if (index === -1) {
+      proxifiedContainersStore.push({
+        cookieStoreId: cookieStoreId,
+        proxy: proxy
+      });
+      index = proxifiedContainersStore.length - 1;
+    } else {
+      proxifiedContainersStore[index] = {
+        cookieStoreId: cookieStoreId,
+        proxy: proxy
+      };
+    }
+    await browser.storage.local.set({
+      proxifiedContainersKey: proxifiedContainersStore
     });
+    return proxifiedContainersStore[index];
   },
+
 
   //Parses a proxy description string of the format type://host[:port] or type://username:password@host[:port] (port is optional)
   parseProxy(proxy_str, mozillaVpnData = null) {
@@ -133,26 +113,15 @@ proxifiedContainers = {
   },
 
   // Deletes the proxy information object for a specified cookieStoreId [useful for cleaning]
-  delete(cookieStoreId) {
-    return new Promise((resolve, reject) => {
-      // Assumes proxy is a properly formatted object
-      proxifiedContainers.retrieve().then((proxifiedContainersStore) => {
-        const index = proxifiedContainersStore.findIndex(i => i.cookieStoreId === cookieStoreId);
-
-        if (index !== -1) {
-          proxifiedContainersStore.splice(index, 1);
-        }
-
-        browser.storage.local.set({
-          proxifiedContainersKey: proxifiedContainersStore
-        });
-
-        resolve();
-      }, (errorObj) => {
-        reject(errorObj);
-      }).catch((error) => {
-        throw error;
-      });
+  async delete(cookieStoreId) {
+    // Assumes proxy is a properly formatted object
+    const proxifiedContainersStore = await proxifiedContainers.retrieve();
+    const index = proxifiedContainersStore.findIndex(i => i.cookieStoreId === cookieStoreId);
+    if (index !== -1) {
+      proxifiedContainersStore.splice(index, 1);
+    }
+    await browser.storage.local.set({
+      proxifiedContainersKey: proxifiedContainersStore
     });
   }
 };
