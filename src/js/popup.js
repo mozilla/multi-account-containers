@@ -2159,8 +2159,8 @@ window.addEventListener("resize", function () {
   const difference = window.innerWidth - document.body.offsetWidth;
   if (difference > 2) {
     //if popup is in the overflow menu, window will be larger than 300px
+
     const root = document.documentElement;
-    root.style.setProperty("--overflow-size", difference + "px");
-    root.style.setProperty("--icon-fit", "12");
+    root.classList.add("overflow");
   }
 });

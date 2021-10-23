@@ -62,6 +62,19 @@ body {
   color: var(--text-grey);
 }
 
+.overflow body,
+.overflow html {
+  inline-size: 100%;
+}
+
+.overflow .container-panel {
+  min-block-size: 100%;
+}
+
+.overflow .panel.onboarding {
+  margin-block: auto;
+}
+
 html,
 body {
   block-size: 100%; /* Bugfix: issue 948 */
