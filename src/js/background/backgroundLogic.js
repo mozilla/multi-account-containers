@@ -41,9 +41,11 @@ const backgroundLogic = {
 
   async deleteContainer(userContextId, removed = false) {
     await this._closeTabs(userContextId);
+
     if (!removed) {
       await browser.contextualIdentities.remove(this.cookieStoreId(userContextId));
     }
+
     assignManager.deleteContainer(userContextId);
 
     // Now remove the identity->proxy association in proxifiedContainers also
@@ -53,25 +55,13 @@ const backgroundLogic = {
   },
 
   async createOrUpdateContainer(options) {
-    let donePromise;
     if (options.userContextId !== "new") {
-      donePromise = browser.contextualIdentities.update(
+      return await browser.contextualIdentities.update(
         this.cookieStoreId(options.userContextId),
         options.params
       );
-
-      proxifiedContainers.set(this.cookieStoreId(options.userContextId), options.proxy);
-    } else {
-      donePromise = browser.contextualIdentities.create(options.params);
-
-      // We cannot yet access the new cookieStoreId via this.cookieStoreId(...), so we take this from the resolved promise
-      donePromise.then((identity) => {
-        proxifiedContainers.set(identity.cookieStoreId, options.proxy);
-      }).catch(() => {
-        // Empty because this should never happen theoretically.
-      });
     }
-    await donePromise;
+    return await browser.contextualIdentities.create(options.params);
   },
 
   async openNewTab(options) {
@@ -160,7 +150,7 @@ const backgroundLogic = {
       }
       return await identityState.storageArea.set(cookieStoreId, containerState);
     } catch (error) {
-      console.error(`No container: ${cookieStoreId}`);
+      // console.error(`No container: ${cookieStoreId}`);
     }
   },
 

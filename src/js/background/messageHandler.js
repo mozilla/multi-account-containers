@@ -83,10 +83,10 @@ const messageHandler = {
         break;
       case "reloadInContainer":
         response = assignManager.reloadPageInContainer(
-          m.url, 
-          m.currentUserContextId, 
-          m.newUserContextId, 
-          m.tabIndex, 
+          m.url,
+          m.currentUserContextId,
+          m.newUserContextId,
+          m.tabIndex,
           m.active,
           true
         );
@@ -94,7 +94,7 @@ const messageHandler = {
       case "assignAndReloadInContainer":
         tab = await assignManager.reloadPageInContainer(
           m.url, 
-          m.currentUserContextId, 
+          m.currentUserContextId,
           m.newUserContextId, 
           m.tabIndex, 
           m.active,
@@ -105,6 +105,22 @@ const messageHandler = {
         response = browser.tabs.get(tab.id).then((tab) => {
           return assignManager._setOrRemoveAssignment(tab.id, m.url, m.newUserContextId, m.value);
         });
+        break;
+
+      case "MozillaVPN_attemptPort":
+        MozillaVPN_Background.maybeInitPort();
+        break;
+      case "MozillaVPN_queryServers":
+        MozillaVPN_Background.postToApp("servers");
+        break;
+      case "MozillaVPN_queryStatus":
+        response = MozillaVPN_Background.postToApp("status");
+        break;
+      case "MozillaVPN_getConnectionStatus":
+        response = MozillaVPN_Background.getConnectionStatus();
+        break;
+      case "MozillaVPN_getInstallationStatus":
+        response = MozillaVPN_Background.getInstallationStatus();
         break;
       }
       return response;

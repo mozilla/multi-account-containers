@@ -14,7 +14,7 @@
         ignoreProperties:
           ["inset-block-end", "inset-block-start"]
     }],
-    "property-blacklist": [
+    "property-disallowed-list": [
       "/(min[-]|max[-])height/",
       "/width/",
       "/top/",

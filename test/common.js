@@ -88,7 +88,8 @@ const initializeWithTab = async (details = {
             "onboarding-stage": 7,
             "achievements": [], 
             "syncEnabled": true,
-            "replaceTabEnabled": false
+            "replaceTabEnabled": false,
+            "mozillaVpnInstalled": false,
           });
           window.browser.storage.local.set.resetHistory();
           window.browser.storage.sync.clear();

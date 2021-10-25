@@ -186,13 +186,23 @@ window.assignManager = {
 
   async handleProxifiedRequest(requestInfo) {
     // The following blocks potentially dangerous requests for privacy that come without a tabId
-    if(requestInfo.tabId === -1)
-      return Utils.getBogusProxy();
+
+    if(requestInfo.tabId === -1) {
+      return {type: "direct"};
+    }
 
     const tab = await browser.tabs.get(requestInfo.tabId);
-    const proxy = await proxifiedContainers.retrieveFromBackground(tab.cookieStoreId);
+    const result = await proxifiedContainers.retrieve(tab.cookieStoreId);
+    if (!result || !result.proxy) {
+      return {type: "direct"};
+    }
 
-    return proxy;
+    if (!result.proxy.mozProxyEnabled) {
+      return result.proxy;
+    }
+
+    // Let's add the isolation key.
+    return [{ ...result.proxy, connectionIsolationKey: "" + MozillaVPN_Background.isolationKey }];
   },
 
   // Before a request is handled by the browser we decide if we should
