@@ -58,6 +58,21 @@ Here is a [video](https://www.youtube.com/watch?v=cer9EUKegG4) that demonstrates
 
 There is a timeout test that sometimes fails on certain machines, so make sure to run the tests on your clone before you make any changes to see if you have this problem.
 
+#### Add/update messages for translation
+The `src/_locales` directory is a git repository like any other, so to make changes to the messages:
+
+1. Make whatever changes you need in `src/_locales/en` as you work.
+
+2. `cd src/_locales/en`
+
+3. `git branch message-updates-yyyymmdd`
+
+4. `git push -u origin message-updates-yyyymmdd`
+
+You can then open a pull request from the `message-updates-yyyymmdd` branch to
+
+[the l10n repo](https://github.com/mozilla-l10n/multi-account-containers-l10n/) `main` branch.
+
 ### Distributing
 #### Make the new version
 
