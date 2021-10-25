@@ -1,0 +1,3 @@
+[submodule "src/_locales"]
+	path = src/_locales
+	url = https://github.com/mozilla-l10n/multi-account-containers-l10n.git 
