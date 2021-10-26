@@ -1,0 +1,30 @@
+name: Builds
+on:
+  push:
+    branches:
+      - main
+      - production
+  pull_request:
+    branches:
+      - main
+      - production
+
+jobs:
+  builds:
+    name: Builds
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v2
+
+      - name: Create the package
+        shell: bash
+        run: |
+          ./bin/build-addon.sh
+
+      - name: Uploading
+        uses: actions/upload-artifact@v1
+        with:
+            name: ${{matrix.config.name}} Build
+            path: src/web-ext-artifacts

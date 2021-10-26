@@ -22,17 +22,19 @@ For more info, see:
 
 #### Via WebExtensions API (web-ext)
 
-1. Install the [web-ext](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Getting_started_with_web-ext) tool.
-2. Run `web-ext run -s src/`. This launches Firefox and installs the extension automatically.
+1. Fetch the locales updating the git-submodules: `git submodule init && git submodule update --remote --depth 1 src/_locales`
+2. Install the [web-ext](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Getting_started_with_web-ext) tool.
+3. Run `web-ext run -s src/`. This launches Firefox and installs the extension automatically.
 
 This tool provides some additional development features, such as [automatic reloading](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Getting_started_with_web-ext#Automatic_extension_reloading).
 
 #### Via about:debugging in Firefox
 
-1. Open the `about:debugging` page in Firefox.
-2. Click on `This Firefox`.
-3. Click on [Load Temporary Add-on](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Temporary_Installation_in_Firefox).
-4. Select `src/manifest.json`.
+1. Fetch the locales updating the git-submodules: `git submodule init && git submodule update --remote --depth 1 src/_locales`
+2. Open the `about:debugging` page in Firefox.
+3. Click on `This Firefox`.
+4. Click on [Load Temporary Add-on](https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Temporary_Installation_in_Firefox).
+5. Select `src/manifest.json`.
 
 Here is a [video](https://www.youtube.com/watch?v=cer9EUKegG4) that demonstrates how to do this.
 
@@ -59,6 +61,7 @@ Here is a [video](https://www.youtube.com/watch?v=cer9EUKegG4) that demonstrates
 There is a timeout test that sometimes fails on certain machines, so make sure to run the tests on your clone before you make any changes to see if you have this problem.
 
 #### Add/update messages for translation
+
 The `src/_locales` directory is a git repository like any other, so to make changes to the messages:
 
 1. Make whatever changes you need in `src/_locales/en` as you work.
@@ -83,10 +86,11 @@ You can then open a pull request from the `message-updates-yyyymmdd` branch to
 
 #### Publish to AMO
 
-1. `npm run-script build`
+1. `./bin/build-addon.sh`
 2. [Upload the `.zip` to AMO](https://addons.mozilla.org/developers/addon/multi-account-containers/versions/submit/)
 
 #### Publish to GitHub
+
 Finally, we also publish the release to GitHub for those followers.
 
 1. Download the signed `.xpi` from [the addon versions page](https://addons.mozilla.org/developers/addon/multi-account-containers/versions)

@@ -36,10 +36,9 @@
     "url": "git+https://github.com/mozilla/multi-account-containers.git"
   },
   "scripts": {
-    "build": "npm test && cd src && web-ext build --overwrite-dest",
     "webext": "web-ext run -s src/",
     "lint": "npm-run-all lint:*",
-    "lint:addon": "addons-linter src --self-hosted",
+    "lint:addon": "./bin/addons-linter.sh",
     "lint:css": "stylelint src/css/*.css",
     "lint:html": "htmllint *.html",
     "lint:js": "eslint .",
