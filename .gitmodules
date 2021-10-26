@@ -1,3 +1,5 @@
 [submodule "src/_locales"]
+	branch = main
 	path = src/_locales
 	url = https://github.com/mozilla-l10n/multi-account-containers-l10n.git 
+	ignore=all
