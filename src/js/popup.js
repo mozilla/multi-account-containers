@@ -938,7 +938,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     hideShowIcon.src = identity.hasHiddenTabs ? CONTAINER_UNHIDE_SRC : CONTAINER_HIDE_SRC;
 
     const hideShowLabel = document.getElementById("container-info-hideorshow-label");
-    hideShowLabel.textContent = identity.hasHiddenTabs ? "Show this container" : "Hide this container";
+    hideShowLabel.textContent = browser.i18n.getMessage(identity.hasHiddenTabs ? "showThisContainer" : "hideThisContainer");
     return;
   },
 
