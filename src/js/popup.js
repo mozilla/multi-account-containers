@@ -708,12 +708,15 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       }
     });
 
+    const mozVpnTout = document.getElementById("moz-vpn-tout");
+    const mozillaVpnInstalled = await browser.runtime.sendMessage({ method: "MozillaVPN_getInstallationStatus" });
+    if (mozillaVpnInstalled) {
+      return mozVpnTout.remove();
+    }
     const { mozillaVpnHiddenToutsList } = await browser.storage.local.get("mozillaVpnHiddenToutsList");
     const mozillaVpnToutShouldBeHidden = mozillaVpnHiddenToutsList && mozillaVpnHiddenToutsList.find(tout => tout.name === mozillaVpnToutName);
-
-    const mozVpnTout = document.getElementById("moz-vpn-tout");
     if (mozillaVpnToutShouldBeHidden) {
-      mozVpnTout.remove();
+      return mozVpnTout.remove();
     }
   },
 
