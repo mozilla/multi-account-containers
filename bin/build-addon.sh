@@ -18,4 +18,9 @@ npm test
 
 print Y "Creating the final package..."
 cd src || die
-$(npm bin)/web-ext build --overwrite-dest || die
+
+if [[ $# -gt 0 ]]; then
+  EXTRA_PARAMS="--filename $1"
+fi
+
+$(npm bin)/web-ext build --overwrite-dest $EXTRA_PARAMS || die
