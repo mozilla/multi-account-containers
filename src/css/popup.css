@@ -1764,7 +1764,7 @@ h3.title {
 .menu-item td {
   align-items: center;
   display: flex;
-  width: 100%;
+  inline-size: 100%;
 }
 
 .menu-item.drag-over td {
