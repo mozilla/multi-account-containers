@@ -10,7 +10,7 @@
   },
   "applications": {
     "gecko": {
-      "id": "vpn@mozilla.org",
+      "id": "@testpilot-containers",
       "strict_min_version": "67.0"
     }
   },
@@ -37,7 +37,7 @@
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "vpn@mozilla.org"
+      "id": "@testpilot-containers"
     }
   },
   "commands": {
