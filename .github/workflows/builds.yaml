@@ -21,18 +21,10 @@ jobs:
       - name: Create the package
         shell: bash
         run: |
-          ./bin/build-addon.sh nightly.zip
-
-      - name: Repackaging
-        shell: bash
-        run: |
-          cd src/web-ext-artifacts
-          mkdir nightly
-          cd nightly
-          unzip ../nightly.zip
+          ./bin/build-addon.sh nightly.xpi
 
       - name: Uploading
         uses: actions/upload-artifact@v1
         with:
             name: ${{matrix.config.name}} Build
-            path: src/web-ext-artifacts/nightly
+            path: src/web-ext-artifacts
