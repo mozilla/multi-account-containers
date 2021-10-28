@@ -1753,6 +1753,8 @@ h3.title {
   block-size: var(--menuItemHeight);
   inline-size: 100%;
   line-height: var(--menuItemHeight);
+  display: flex;
+  align-items: center;
 }
 
 .menu-text {
@@ -1763,6 +1765,7 @@ h3.title {
 .menu-item td {
   align-items: center;
   display: flex;
+  inline-size: 100%;
 }
 
 .menu-item.drag-over td {
