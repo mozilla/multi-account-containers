@@ -8,6 +8,8 @@ on:
     branches:
       - main
       - production
+  schedule:
+    - cron: '0 2 * * *' # Daily at 2AM UTC      
 
 jobs:
   builds:
