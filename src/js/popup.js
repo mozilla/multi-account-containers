@@ -1855,42 +1855,47 @@ Logic.registerPanel(P_ADVANCED_PROXY_SETTINGS, {
 
   initialize(){
     this._proxyForm = document.querySelector(".advanced-proxy-panel-content");
-    const advancedProxyInput = this._proxyForm.querySelector("#edit-advanced-proxy-input");
-    const clearadvancedProxyInput = this._proxyForm.querySelector("#clear-advanced-proxy-input");
+    this._advancedProxyInput = this._proxyForm.querySelector("#edit-advanced-proxy-input");
+    const clearAdvancedProxyInput = this._proxyForm.querySelector("#clear-advanced-proxy-input");
     this._submitadvancedProxy = this._proxyForm.querySelector("#submit-advanced-proxy");
-    advancedProxyInput.addEventListener("keydown", () => {
-      advancedProxyInput.dataset.editedStatus = "edited";
+
+    this._advancedProxyInput.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter") {
+        this.hideInvalidEntryWarning();
+      }
     });
 
     this._submitadvancedProxy.addEventListener("click", (e) => {
       e.preventDefault();
-      const parsedProxy = proxifiedContainers.parseProxy(advancedProxyInput.value);
-      if (advancedProxyInput.value.length > 0 && !parsedProxy) {
-        this._proxyForm.classList.add("invalid");
-        return;
-      }
-      const identity = Logic.currentIdentity();
-      proxifiedContainers.set(identity.cookieStoreId, parsedProxy);
-      Logic.showPanel(P_CONTAINER_EDIT, Logic.currentIdentity(), false, false);
+      this.submitProxyForm();
     });
 
-    clearadvancedProxyInput.addEventListener("click", (e) => {
-      e.stopPropagation();
+    clearAdvancedProxyInput.addEventListener("click", (e) => {
       e.preventDefault();
-      this._proxyForm.classList.remove("invalid");
-      advancedProxyInput.value = "";
-    });
 
-    advancedProxyInput.addEventListener("blur", () => {
-      if (advancedProxyInput.value.length === 0) {
+      const activeEl = document.activeElement;
+      if (activeEl === this._advancedProxyInput) {
+        return this.submitProxyForm();
+      }
+      if (activeEl !== clearAdvancedProxyInput) {
         return;
       }
-      if(!proxifiedContainers.parseProxy(advancedProxyInput.value)) {
-        this._proxyForm.classList.add("invalid");
+      this.hideInvalidEntryWarning();
+      this._advancedProxyInput.value = "";
+      this._advancedProxyInput.focus();
+    });
+
+    this._advancedProxyInput.addEventListener("blur", () => {
+      if (this._advancedProxyInput.value.length === 0) {
+        return;
+      }
+      if(!proxifiedContainers.parseProxy(this._advancedProxyInput.value)) {
+        this.showInvalidEntryWarning();
       }
     });
-    advancedProxyInput.addEventListener("focus", () => {
-      this._proxyForm.classList.remove("invalid");
+
+    this._advancedProxyInput.addEventListener("focus", () => {
+      this.hideInvalidEntryWarning();
     });
 
     const returnButton = document.getElementById("advanced-proxy-settings-return");
@@ -1904,31 +1909,52 @@ Logic.registerPanel(P_ADVANCED_PROXY_SETTINGS, {
     });
   },
 
+  showInvalidEntryWarning() {
+    this._proxyForm.classList.add("invalid");
+  },
+
+  hideInvalidEntryWarning() {
+    this._proxyForm.classList.remove("invalid");
+  },
+
+  async submitProxyForm() {
+    const parsedProxy = proxifiedContainers.parseProxy(this._advancedProxyInput.value);
+    if (this._advancedProxyInput.value.length > 0 && !parsedProxy) {
+      this.showInvalidEntryWarning();
+      return;
+    }
+    const identity = Logic.currentIdentity();
+    proxifiedContainers.set(identity.cookieStoreId, parsedProxy);
+
+    Logic.showPanel(P_CONTAINER_EDIT, Logic.currentIdentity(), false, false);
+  },
+
   async prepare() {
     const identity = Logic.currentIdentity();
+    console.log(this._advancedProxyInput);
 
-    const advancedProxyInput = document.getElementById("edit-advanced-proxy-input");
+    // reset input
+    this._advancedProxyInput.value = "";
+    this.hideInvalidEntryWarning();
 
-    // Clear the proxy field, reset form validity and edited classes
-    advancedProxyInput.value = "";
-    advancedProxyInput.dataset.editedStatus = "";
-    this._proxyForm.classList.remove("invalid");
+    const setProxyInputPlaceholder = (proxy) => {
+      this._advancedProxyInput.value =  `${proxy.type}://${proxy.host}:${proxy.port}`;
+    };
 
     const edit_proxy_dom = function(proxy) {
       if (proxy.type === "direct" || typeof proxy.type === "undefined" || MozillaVPN.proxyIsDisabled(proxy)) {
-        advancedProxyInput.value = "";
+        this._advancedProxyInput.value = "";
         return;
       }
-      advancedProxyInput.value = `${proxy.type}://${proxy.host}:${proxy.port}`;
+      return setProxyInputPlaceholder(proxy);
     };
 
     const proxyData = await proxifiedContainers.retrieve(identity.cookieStoreId);
     if (proxyData) {
       edit_proxy_dom(proxyData.proxy);
     } else {
-      advancedProxyInput.value = "";
+      this._advancedProxyInput.value = "";
     }
-
     const containerColor = document.querySelector(".proxy-title-container-color");
     containerColor.dataset.identityColor = identity.color;
     return Promise.resolve(null);
