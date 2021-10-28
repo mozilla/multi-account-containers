@@ -749,7 +749,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             </div>
           </div>
           <span class="menu-text">${identity.name}</span>
-          <span class="tooltip proxy-unavailable">This container has been configured to use a Mozilla VPN proxy, but Mozilla VPN is not on. Turn Mozilla VPN on to use this proxy.</span>
+          <span class="tooltip proxy-unavailable"></span>
         </div>
         <span class="menu-right-float">
           <img alt="" class="always-open-in-flag flag-img" src="/img/flags/.png"/>
@@ -767,8 +767,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       tr.appendChild(td);
 
       const openInThisContainer = tr.querySelector(".menu-item-name");
-      // const mozProxyWarning = await MozillaVPN.getProxyWarnings(proxies[identity.cookieStoreId]);
-      // openInThisContainer.dataset.mozProxyWarning = mozProxyWarning;
       Utils.addEnterHandler(openInThisContainer, (e) => {
         e.preventDefault();
         if (openInThisContainer.dataset.mozProxyWarning === "proxy-unavailable") {
