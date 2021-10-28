@@ -895,6 +895,7 @@ input.proxies {
   block-size: var(--panelSize);
   max-block-size: var(--panelSize);
   min-block-size: var(--panelSize);
+  overflow-x: hidden;
 }
 
 .proxy-panel-title {

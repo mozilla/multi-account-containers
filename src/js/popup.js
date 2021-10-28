@@ -1943,17 +1943,6 @@ Logic.registerPanel(P_MOZILLA_VPN_SERVER_LIST, {
 
     Utils.addEnterHandler(document.getElementById("moz-vpn-return"), async () => {
       const identity = Logic.currentIdentity();
-      const { mozillaVpnServers } = await browser.storage.local.get("mozillaVpnServers");
-
-      const selectedServer = document.querySelector(".server-radio-btn:checked");
-      const proxy = MozillaVPN.getProxy(
-        selectedServer.dataset.countryCode,
-        selectedServer.dataset.cityName,
-        true,
-        mozillaVpnServers
-      );
-
-      await proxifiedContainers.set(identity.cookieStoreId, proxy);
       Logic.showPanel(P_CONTAINER_EDIT, identity, false, false);
       Logic.showPreviousPanel();
     });
@@ -1996,6 +1985,21 @@ Logic.registerPanel(P_MOZILLA_VPN_SERVER_LIST, {
         radioBtn.dataset.countryCode = serverCountry.code;
         radioBtn.dataset.cityName = city.name;
         radioBtn.name = "server-city";
+
+        const cityListItem = cityTemplateClone.querySelector(".server-city-list-item");
+        Utils.addEnterHandler((cityListItem), async(e) => {
+          if (e.key === "Enter") {
+            radioBtn.checked = true;
+          }
+          const identity = Logic.currentIdentity();
+          const proxy = MozillaVPN.getProxy(
+            radioBtn.dataset.countryCode,
+            radioBtn.dataset.cityName,
+            true,
+            mozillaVpnServers
+          );
+          await proxifiedContainers.set(identity.cookieStoreId, proxy);
+        });
 
         // Set city name
         cityName.textContent = city.name;
