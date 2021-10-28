@@ -749,7 +749,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             </div>
           </div>
           <span class="menu-text">${identity.name}</span>
-          <span class="tooltip proxy-unavailable">This container has been configured to use a Mozilla VPN proxy, but Mozilla VPN is not on. Turn Mozilla VPN on to use this proxy.</span>
+          <span class="tooltip proxy-unavailable">This Container is set up to use a Mozilla VPN proxy, but Mozilla VPN is not on. Turn Mozilla VPN on to use this Container.</span>
         </div>
         <span class="menu-right-float">
           <img alt="" class="always-open-in-flag flag-img" src="/img/flags/.png"/>
