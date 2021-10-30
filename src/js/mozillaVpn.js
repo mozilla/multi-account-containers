@@ -10,6 +10,7 @@ const MozillaVPN = {
       return;
     }
 
+    const tooltipProxyWarning = browser.i18n.getMessage("tooltipWarning");
     for (const el of document.querySelectorAll("[data-cookie-store-id]")) {
       const cookieStoreId = el.dataset.cookieStoreId;
 
@@ -28,6 +29,10 @@ const MozillaVPN = {
         }
         if (!mozillaVpnConnected && proxy.mozProxyEnabled) {
           flag.classList.add("proxy-unavailable");
+          const tooltip = el.querySelector(".tooltip.proxy-unavailable");
+          if (tooltip) {
+            tooltip.textContent = tooltipProxyWarning;
+          }
           const menuItemName = el.querySelector(".menu-item-name");
           if (menuItemName) {
             el.querySelector(".menu-item-name").dataset.mozProxyWarning = "proxy-unavailable";
