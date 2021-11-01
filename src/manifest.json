@@ -11,7 +11,7 @@
   "applications": {
     "gecko": {
       "id": "@testpilot-containers",
-      "strict_min_version": "67.0"
+      "strict_min_version": "91.1.0"
     }
   },
   "homepage_url": "https://github.com/mozilla/multi-account-containers#readme",
