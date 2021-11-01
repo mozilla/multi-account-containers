@@ -1929,10 +1929,18 @@ Logic.registerPanel(P_ADVANCED_PROXY_SETTINGS, {
 
   async prepare() {
     const identity = Logic.currentIdentity();
-    console.log(this._advancedProxyInput);
+    const advancedProxyInput = document.getElementById("edit-advanced-proxy-input");
 
     // reset input
-    this._advancedProxyInput.value = "";
+    const resetProxyInput = () => {
+      if (!advancedProxyInput) {
+        return;
+      }
+      advancedProxyInput.value = "";
+    };
+
+    resetProxyInput();
+
     this.hideInvalidEntryWarning();
 
     const setProxyInputPlaceholder = (proxy) => {
@@ -1941,7 +1949,7 @@ Logic.registerPanel(P_ADVANCED_PROXY_SETTINGS, {
 
     const edit_proxy_dom = function(proxy) {
       if (proxy.type === "direct" || typeof proxy.type === "undefined" || MozillaVPN.proxyIsDisabled(proxy)) {
-        this._advancedProxyInput.value = "";
+        resetProxyInput();
         return;
       }
       return setProxyInputPlaceholder(proxy);
@@ -1951,7 +1959,7 @@ Logic.registerPanel(P_ADVANCED_PROXY_SETTINGS, {
     if (proxyData) {
       edit_proxy_dom(proxyData.proxy);
     } else {
-      this._advancedProxyInput.value = "";
+      resetProxyInput();
     }
     const containerColor = document.querySelector(".proxy-title-container-color");
     containerColor.dataset.identityColor = identity.color;
