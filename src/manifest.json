@@ -8,12 +8,6 @@
     "48": "img/container-site-d-48.png",
     "96": "img/container-site-d-96.png"
   },
-  "applications": {
-    "gecko": {
-      "id": "@testpilot-containers",
-      "strict_min_version": "91.1.0"
-    }
-  },
   "homepage_url": "https://github.com/mozilla/multi-account-containers#readme",
   "permissions": [
     "<all_urls>",
@@ -37,7 +31,8 @@
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "@testpilot-containers"
+      "id": "@testpilot-containers",
+      "strict_min_version": "91.1.0"
     }
   },
   "commands": {
