@@ -1813,7 +1813,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       return Utils.escaped`<input type="radio" value="${containerColor}" name="container-color" id="edit-container-panel-choose-color-${containerColor}" />
      <label for="edit-container-panel-choose-color-${containerColor}" class="usercontext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="${containerColor}">`;
     };
-    const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"];
+    const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple", "toolbar"];
     const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
     colors.forEach((containerColor) => {
       const templateInstance = document.createElement("div");
