@@ -1,4 +1,4 @@
-const MAJOR_VERSIONS = ["2.3.0", "2.4.0", "6.2.0", "8.0.0"];
+const MAJOR_VERSIONS = ["2.3.0", "2.4.0", "6.2.0", "8.0.2"];
 const badge = {
   async init() {
     const currentWindow = await browser.windows.getCurrent();
