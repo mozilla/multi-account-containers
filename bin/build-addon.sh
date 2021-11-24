@@ -23,4 +23,5 @@ if [[ $# -gt 0 ]]; then
   EXTRA_PARAMS="--filename $1"
 fi
 
-$(npm bin)/web-ext build --overwrite-dest $EXTRA_PARAMS || die
+# Let's include just 'en' for this release
+$(npm bin)/web-ext build --overwrite-dest $EXTRA_PARAMS --ignore-files $(find _locales/* | grep  \/en -v) $(find _locales/* | grep en_) || die
