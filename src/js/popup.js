@@ -1877,7 +1877,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
     if (baseURL !== null) {
       // Assign URL to container
-      await Logic.setOrRemoveAssignment(tabId, baseURL, userContextId, false);
+      await Utils.setOrRemoveAssignment(tabId, baseURL, userContextId, false);
 
       // Clear form
       document.querySelector("#edit-container-panel-site-input").value = "";
@@ -1963,7 +1963,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
           // Lets show the message to the current tab
           // TODO remove then when firefox supports arrow fn async
           const currentTab = await Logic.currentTab();
-          Logic.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
+          Utils.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
           delete assignments[siteKey];
           that.showAssignedContainers(assignments);
         });
