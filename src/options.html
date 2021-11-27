@@ -10,72 +10,100 @@
   <body>
     <form>
       <h3 data-i18n-message-id="optionalPermissions"></h3>
-      <label >
-        <input type="checkbox" id="bookmarksPermissions">
-        <span data-i18n-message-id="enableBookMarkMenus"></span>
 
-      </label>
-      <p><em data-i18n-message-id="enableBookMarkMenusDescription"></em></p>
+      <div class="settings-group">
+        <label class="permission">
+          <input type="checkbox" data-permission-id="bookmarks" id="bookmarksPermissions">
+          <span data-i18n-message-id="enableBookMarkMenus"></span>
+        </label>
+        <p data-i18n-message-id="enableBookMarkMenusDescription"></p>
+      </div>
+      <div class="settings-group">
+        <label class="permission">
+          <input type="checkbox" data-permission-id="nativeMessaging" id="nativeMessaging">
+          <span data-i18n-message-id="enableNativeMessaging"></span>
+        </label>
+        <p data-i18n-message-id="enableNativeMessagingDescription"></p>
+        <p><em data-i18n-message-id="permissionsNote"></em></p>
+      </div>
+
+      <div class="settings-group">
+        <label class="permission">
+          <input type="checkbox" data-permission-id="proxy" id="proxy">
+          <span data-i18n-message-id="enableProxyPermissions"></span>
+        </label>
+        <p data-i18n-message-id="enableProxyPermissionsDescription"></p>
+        <p><em data-i18n-message-id="permissionsNote"></em></p>
+      </div>
+
       <h3 data-i18n-message-id="firefoxAccountsSync"></h3>
-      <label>
-        <input type="checkbox" id="syncCheck">
-        <span data-i18n-message-id="enableSync"></span>
-      </label>
-      <p><em data-i18n-message-id="enableSyncDescription"></em></p>
+      <div class="settings-group">
+        <label>
+          <input type="checkbox" id="syncCheck">
+          <span data-i18n-message-id="enableSync"></span>
+        </label>
+        <p><em data-i18n-message-id="enableSyncDescription"></em></p>
+      </div>
+
       <h3 data-i18n-message-id="tabBehavior"></h3>
-      <label>
-        <input type="checkbox" id="replaceTabCheck">
-        <span data-i18n-message-id="replaceTab"></span>
-      </label>
-      <p><em data-i18n-message-id="replaceTabDescription"></em></p>
+
+      <div class="settings-group">
+        <label>
+          <input type="checkbox" id="replaceTabCheck">
+          <span data-i18n-message-id="replaceTab"></span>
+        </label>
+        <p><em data-i18n-message-id="replaceTabDescription"></em></p>
+      </div>
+
       <h3 data-i18n-message-id="keyboardShortCuts"></h3>
       <p><em data-i18n-message-id="editWhichContainer"></em></p>
-      <p><label>
+
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="1"></span>
         <select id="open_container_0">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="2"></span>
         <select id="open_container_1">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="3"></span>
         <select id="open_container_2">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="4"></span>
         <select id="open_container_3">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="5"></span>
         <select id="open_container_4">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="6"></span>
         <select id="open_container_5">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="7"></span>
         <select id="open_container_6">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="8"></span>
         <select id="open_container_7">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="9"></span>
         <select id="open_container_8">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="10"></span>
         <select id="open_container_9">
         </select>

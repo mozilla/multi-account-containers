@@ -1,18 +1,36 @@
 const NUMBER_OF_KEYBOARD_SHORTCUTS = 10;
 
-async function requestPermissions() {
-  const checkbox = document.querySelector("#bookmarksPermissions");
-  if (checkbox.checked) {
-    const granted = await browser.permissions.request({permissions: ["bookmarks"]});
-    if (!granted) { 
-      checkbox.checked = false; 
-      return;
+document.querySelectorAll("[data-permission-id]").forEach( async(el) => {
+  const permissionId = el.dataset.permissionId;
+  const permissionEnabled = await browser.permissions.contains({ permissions: [permissionId] });
+  el.checked = !!permissionEnabled;
+  el.addEventListener("change", async() => {
+    if (el.checked) {
+      const granted = await browser.permissions.request({ permissions: [permissionId] });
+      if (!granted) {
+        el.checked = false;
+        return;
+      }
+    } else {
+      await browser.permissions.remove({ permissions: [permissionId] });
     }
-  } else {
-    await browser.permissions.remove({permissions: ["bookmarks"]});
-  }
-  browser.runtime.sendMessage({ method: "resetBookmarksContext" });
-}
+
+    switch (permissionId) {
+    case "bookmarks":
+      browser.runtime.sendMessage({ method: "resetBookmarksContext" });
+      break;
+
+    case "nativeMessaging":
+      console.log("do native messaging things");
+      console.log("if disabled - remove mozilla vpn proxy configurations");
+      break;
+
+    case "proxy":
+      console.log("do proxy things...");
+      console.log("if disabled - remove proxy configurations");
+    }
+  });
+});
 
 async function enableDisableSync() {
   const checkbox = document.querySelector("#syncCheck");
@@ -26,12 +44,8 @@ async function enableDisableReplaceTab() {
 }
 
 async function setupOptions() {
-  const hasPermission = await browser.permissions.contains({permissions: ["bookmarks"]});
   const { syncEnabled } = await browser.storage.local.get("syncEnabled");
   const { replaceTabEnabled } = await browser.storage.local.get("replaceTabEnabled");
-  if (hasPermission) {
-    document.querySelector("#bookmarksPermissions").checked = true;
-  }
   document.querySelector("#syncCheck").checked = !!syncEnabled;
   document.querySelector("#replaceTabCheck").checked = !!replaceTabEnabled;
   setupContainerShortcutSelects();
@@ -79,7 +93,6 @@ function resetOnboarding() {
 }
 
 document.addEventListener("DOMContentLoaded", setupOptions);
-document.querySelector("#bookmarksPermissions").addEventListener( "change", requestPermissions);
 document.querySelector("#syncCheck").addEventListener( "change", enableDisableSync);
 document.querySelector("#replaceTabCheck").addEventListener( "change", enableDisableReplaceTab);
 document.querySelector("button").addEventListener("click", resetOnboarding);

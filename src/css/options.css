@@ -3,17 +3,53 @@ body {
   color: #202023;
 }
 
-h3 {
+h3:first-of-type {
   margin-block-start: 2.5rem;
 }
 
-h3:first-of-type {
-  margin-block-start: 1rem;
+label {
+  font-weight: bold;
+  display: flex;
+  align-items: flex-start;
 }
 
-p,
-label {
+label > span {
+  padding-block-start: 3px;
+}
+
+.settings-group {
+  margin-block-end: 16px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+p {
   color: rgb(74, 74, 79);
+}
+
+.settings-group p {
+  margin-inline-start: 24px;
+  margin-block: 4px 8px;
+}
+
+input[type="checkbox"] {
+  margin-inline: 0 8px;
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+button {
+  margin-inline: 0 auto;
+}
+
+.keyboard-shortcut {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  max-width: 70%;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -22,8 +58,7 @@ label {
     color: #fff;
   }
 
-  p,
-  label {
+  p {
     color: rgb(177, 177, 179);
   }
 }
