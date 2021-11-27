@@ -1851,11 +1851,44 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 Logic.registerPanel(P_ADVANCED_PROXY_SETTINGS, {
   panelSelector: "#advanced-proxy-settings-panel",
 
-  initialize(){
+  async initialize(){
     this._proxyForm = document.querySelector(".advanced-proxy-panel-content");
     this._advancedProxyInput = this._proxyForm.querySelector("#edit-advanced-proxy-input");
     const clearAdvancedProxyInput = this._proxyForm.querySelector("#clear-advanced-proxy-input");
     this._submitadvancedProxy = this._proxyForm.querySelector("#submit-advanced-proxy");
+
+    const proxyPermissionEnabled = await browser.permissions.contains({ permissions: ["proxy"] });
+    if (!proxyPermissionEnabled) {
+
+      // Restrict tabbing inside advanced proxy panel to proxy permissions ui
+      const panel = document.getElementById("advanced-proxy-settings-panel");
+      const clickableEls = panel.querySelectorAll("button, a, input");
+      clickableEls.forEach(el => {
+        if (!el.dataset.tabGroup && el.id !== "advanced-proxy-settings-return") {
+          el.tabindex = "-1";
+          el.disabled = true;
+        }
+      });
+
+      // Show proxy permission overlay
+      const permissionsOverlay = document.getElementById("permissions-overlay");
+      permissionsOverlay.style.display = "flex";
+
+      // Add "enable" button handling
+      const enableProxyPermissionsButton = document.getElementById("enable-proxy-permissions");
+      enableProxyPermissionsButton.focus();
+      enableProxyPermissionsButton.addEventListener("click", async() => {
+        const granted = await browser.permissions.request({ permissions: ["proxy"] });
+        if (granted) {
+          permissionsOverlay.style.display = "none";
+          // restore normal panel tabbing
+          clickableEls.forEach(el => {
+            el.tabindex = "0";
+            el.disabled = false;
+          });
+        }
+      });
+    }
 
     this._advancedProxyInput.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") {

@@ -2031,6 +2031,38 @@ tr:hover > td > .trash-button {
   margin-inline-start: 8px;
 }
 
+/* ----- Permissions Overlay ---------- */
+
+#advanced-proxy-settings-panel,
+.advanced-proxy-panel-content {
+  block-size: 100%;
+}
+
+.permissions-overlay {
+  position: absolute;
+  inset-inline: 0 0;
+  inset-block-start: 40px;
+  inset-block-end: 0;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  background-color: white;
+  padding: 2.25rem;
+  display: none;
+}
+
+#enable-proxy-permissions {
+  block-size: var(--rowHeight);
+  text-align: center;
+  font-family: var(--fontMetropolis);
+  font-size: 14px;
+  margin-block-start: 1rem;
+}
+
+.permissions-overlay-copy {
+  text-align: center;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --iconCloseX: url("/img/close-light.svg");
