@@ -49,7 +49,7 @@ button {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  max-width: 70%;
+  max-inline-size: 70%;
 }
 
 @media (prefers-color-scheme: dark) {
