@@ -1582,7 +1582,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         this.mozProxyEnabledInput.value = proxyInfo.mozProxyEnabled;
         this.proxyAddressInput.value = `${proxyInfo.type}://${proxyInfo.host}:${proxyInfo.port}`;
 
-        if (typeof(proxyInfo.countryCode) === "undefined" && proxyInfo.type !== "direct") {
+        if (typeof(proxyInfo.countryCode) === "undefined" && proxyInfo.type) {
           // Set custom proxy URL below 'Advanced proxy settings' button label
           this.advancedProxyAddress.textContent = `${proxyInfo.type}://${proxyInfo.host}:${proxyInfo.port}`;
         }
@@ -1948,7 +1948,7 @@ Logic.registerPanel(P_ADVANCED_PROXY_SETTINGS, {
     };
 
     const edit_proxy_dom = function(proxy) {
-      if (proxy.type === "direct" || typeof proxy.type === "undefined" || MozillaVPN.proxyIsDisabled(proxy)) {
+      if (!proxy.type || MozillaVPN.proxyIsDisabled(proxy)) {
         resetProxyInput();
         return;
       }

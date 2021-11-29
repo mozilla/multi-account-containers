@@ -51,7 +51,7 @@ proxifiedContainers = {
     }
 
     if (mozillaVpnData && mozillaVpnData.mozProxyEnabled === undefined) {
-      matches.groups.type = "direct";
+      matches.groups.type = null;
     }
 
     if (!mozillaVpnData) {
