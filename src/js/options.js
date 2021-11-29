@@ -14,20 +14,14 @@ document.querySelectorAll("[data-permission-id]").forEach( async(el) => {
     } else {
       await browser.permissions.remove({ permissions: [permissionId] });
     }
-
     switch (permissionId) {
     case "bookmarks":
-      browser.runtime.sendMessage({ method: "resetBookmarksContext" });
-      break;
-
+      return await browser.runtime.sendMessage({ method: "resetBookmarksContext" });
     case "nativeMessaging":
-      console.log("do native messaging things");
-      console.log("if disabled - remove mozilla vpn proxy configurations");
-      break;
-
+      await MozillaVPN.removeMozillaVpnProxies();
+      return await browser.runtime.reload();
     case "proxy":
-      console.log("do proxy things...");
-      console.log("if disabled - remove proxy configurations");
+      return await browser.runtime.sendMessage({ method: "maybeAddProxyListeners" });
     }
   });
 });

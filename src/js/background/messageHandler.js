@@ -91,6 +91,9 @@ const messageHandler = {
           true
         );
         break;
+      case "maybeAddProxyListeners":
+        response = await assignManager.maybeAddProxyListeners();
+        break;
       case "assignAndReloadInContainer":
         tab = await assignManager.reloadPageInContainer(
           m.url, 

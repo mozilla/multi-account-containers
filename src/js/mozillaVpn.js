@@ -251,6 +251,19 @@ const MozillaVPN = {
       randomInteger = (randomInteger - server.weight);
     }
     return nextServer;
+  },
+
+  async removeMozillaVpnProxies() {
+    const proxies = await proxifiedContainers.retrieveAll();
+    if (!proxies) {
+      return;
+    }
+    for (const proxyObj of proxies) {
+      const { proxy } = proxyObj;
+      if (proxy.countryCode !== undefined) {
+        await proxifiedContainers.delete(proxyObj.cookieStoreId);
+      }
+    }
   }
 };
 
