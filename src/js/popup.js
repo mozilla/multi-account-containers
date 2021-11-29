@@ -1438,6 +1438,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       async connectedCallback() {
         const { mozillaVpnHiddenToutsList } = await browser.storage.local.get("mozillaVpnHiddenToutsList");
         const mozillaVpnCollapseEditContainerTout = mozillaVpnHiddenToutsList && mozillaVpnHiddenToutsList.find(tout => tout.name === this.toutName);
+        this.requiredPermissionsEnabled = await MozillaVPN.requiredPermissionsEnabled();
 
         this.hideShowButton.addEventListener("click", this);
 
@@ -1448,8 +1449,12 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         // Add listeners
         if (!this.classList.contains("has-attached-listeners")) {
 
-          this.primaryCta.addEventListener("click", () => {
-            MozillaVPN.handleMozillaCtaClick("mac-edit-container-panel-btn");
+          this.primaryCta.addEventListener("click", async() => {
+            if (!this.requiredPermissionsEnabled) {
+              await browser.permissions.request({ permissions: ["proxy", "nativeMessaging"] });
+            } else {
+              MozillaVPN.handleMozillaCtaClick("mac-edit-container-panel-btn");
+            }
           });
 
           this.switch.addEventListener("click", async() => {
@@ -1519,11 +1524,18 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
 
         if (!mozillaVpnInstalled) {
-
           this.hideEls(this.switch, this.switchLabel, this.currentServerButton);
-          this.subtitle.textContent = browser.i18n.getMessage("protectThisContainer");
-          this.primaryCta.addEventListener("click", this);
 
+          if (!this.requiredPermissionsEnabled) {
+            this.subtitle.textContent = "This feature requires Native Messaging and Proxy permissions";
+            this.subtitle.style.flex = "1 1 100%";
+            this.subtitle.style.textAlign = "center";
+            this.primaryCta.style.marginBlockStart = "8px";
+            this.primaryCta.textContent = "Enable now"; // TODO
+            return this.expandUi();
+          } else {
+            this.subtitle.textContent = browser.i18n.getMessage("protectThisContainer");
+          }
         } else {
 
           // Mozilla VPN installed...
@@ -1835,60 +1847,29 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       return;
     }
 
-    const proxyData = await proxifiedContainers.retrieve(identity.cookieStoreId);
-    if (proxyData) {
-      if (proxyData.proxy && proxyData.proxy.mozProxyEnabled && !mozillaVpnConnected) {
+    mozillaVpnUi.updateProxyDependentUi({});
+    const proxyPermissionEnabled = await browser.permissions.contains({ permissions: ["proxy"] });
+    if (proxyPermissionEnabled) {
+      const proxyData = await proxifiedContainers.retrieve(identity.cookieStoreId);
+      if (proxyData) {
+        if (proxyData.proxy && proxyData.proxy.mozProxyEnabled && !mozillaVpnConnected) {
+          return;
+        }
+        mozillaVpnUi.updateProxyDependentUi(proxyData.proxy);
         return;
       }
-      mozillaVpnUi.updateProxyDependentUi(proxyData.proxy);
-      return;
     }
-
-    mozillaVpnUi.updateProxyDependentUi({});
   },
 });
 
 Logic.registerPanel(P_ADVANCED_PROXY_SETTINGS, {
   panelSelector: "#advanced-proxy-settings-panel",
 
-  async initialize(){
+  async initialize() {
     this._proxyForm = document.querySelector(".advanced-proxy-panel-content");
     this._advancedProxyInput = this._proxyForm.querySelector("#edit-advanced-proxy-input");
     const clearAdvancedProxyInput = this._proxyForm.querySelector("#clear-advanced-proxy-input");
     this._submitadvancedProxy = this._proxyForm.querySelector("#submit-advanced-proxy");
-
-    const proxyPermissionEnabled = await browser.permissions.contains({ permissions: ["proxy"] });
-    if (!proxyPermissionEnabled) {
-
-      // Restrict tabbing inside advanced proxy panel to proxy permissions ui
-      const panel = document.getElementById("advanced-proxy-settings-panel");
-      const clickableEls = panel.querySelectorAll("button, a, input");
-      clickableEls.forEach(el => {
-        if (!el.dataset.tabGroup && el.id !== "advanced-proxy-settings-return") {
-          el.tabindex = "-1";
-          el.disabled = true;
-        }
-      });
-
-      // Show proxy permission overlay
-      const permissionsOverlay = document.getElementById("permissions-overlay");
-      permissionsOverlay.style.display = "flex";
-
-      // Add "enable" button handling
-      const enableProxyPermissionsButton = document.getElementById("enable-proxy-permissions");
-      enableProxyPermissionsButton.focus();
-      enableProxyPermissionsButton.addEventListener("click", async() => {
-        const granted = await browser.permissions.request({ permissions: ["proxy"] });
-        if (granted) {
-          permissionsOverlay.style.display = "none";
-          // restore normal panel tabbing
-          clickableEls.forEach(el => {
-            el.tabindex = "0";
-            el.disabled = false;
-          });
-        }
-      });
-    }
 
     this._advancedProxyInput.addEventListener("keydown", (e) => {
       if (e.key !== "Enter") {
@@ -1963,6 +1944,40 @@ Logic.registerPanel(P_ADVANCED_PROXY_SETTINGS, {
   async prepare() {
     const identity = Logic.currentIdentity();
     const advancedProxyInput = document.getElementById("edit-advanced-proxy-input");
+
+    const proxyPermissionEnabled = await browser.permissions.contains({ permissions: ["proxy"] });
+    if (!proxyPermissionEnabled) {
+
+      // Restrict tabbing inside advanced proxy panel to proxy permissions ui
+      const panel = document.getElementById("advanced-proxy-settings-panel");
+      const clickableEls = panel.querySelectorAll("button, a, input");
+      clickableEls.forEach(el => {
+        if (!el.dataset.tabGroup && el.id !== "advanced-proxy-settings-return") {
+          el.setAttribute("tabindex", "-1");
+          el.disabled = true;
+        }
+      });
+
+      // Show proxy permission overlay
+      const permissionsOverlay = document.getElementById("permissions-overlay");
+      permissionsOverlay.style.display = "flex";
+
+      // Add "enable" button handling
+      const enableProxyPermissionsButton = document.getElementById("enable-proxy-permissions");
+
+      enableProxyPermissionsButton.addEventListener("click", async() => {
+        const granted = await browser.permissions.request({ permissions: ["proxy"] });
+        if (granted) {
+          permissionsOverlay.style.display = "none";
+          // restore normal panel tabbing
+          clickableEls.forEach(el => {
+            el.tabindex = "0";
+            el.disabled = false;
+          });
+        }
+      });
+    }
+
 
     // reset input
     const resetProxyInput = () => {

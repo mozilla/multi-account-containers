@@ -156,6 +156,12 @@ const MozillaVPN = {
     };
   },
 
+  async requiredPermissionsEnabled() {
+    const proxyPermissionEnabled = await browser.permissions.contains({ permissions: ["proxy"] });
+    const nativeMessagingPermissionEnabled = await browser.permissions.contains({ permissions: ["nativeMessaging"] });
+    return (proxyPermissionEnabled && nativeMessagingPermissionEnabled);
+  },
+
 
   async getProxyWarnings(proxyObj) {
     if (!proxyObj) {
