@@ -14,15 +14,6 @@ document.querySelectorAll("[data-permission-id]").forEach( async(el) => {
     } else {
       await browser.permissions.remove({ permissions: [permissionId] });
     }
-    switch (permissionId) {
-    case "bookmarks":
-      return await browser.runtime.sendMessage({ method: "resetBookmarksContext" });
-    case "nativeMessaging":
-      await MozillaVPN.removeMozillaVpnProxies();
-      return await browser.runtime.reload();
-    case "proxy":
-      return await browser.runtime.sendMessage({ method: "maybeAddProxyListeners" });
-    }
   });
 });
 

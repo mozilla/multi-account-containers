@@ -20,9 +20,6 @@ const messageHandler = {
       case "resetSync":
         response = sync.resetSync();
         break;
-      case "resetBookmarksContext":
-        response = assignManager.resetBookmarksMenuItem();
-        break;
       case "deleteContainer":
         response = backgroundLogic.deleteContainer(m.message.userContextId);
         break;
@@ -90,9 +87,6 @@ const messageHandler = {
           m.active,
           true
         );
-        break;
-      case "maybeAddProxyListeners":
-        response = await assignManager.maybeAddProxyListeners();
         break;
       case "assignAndReloadInContainer":
         tab = await assignManager.reloadPageInContainer(

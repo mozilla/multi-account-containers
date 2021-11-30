@@ -386,7 +386,6 @@ window.assignManager = {
     if (browser.proxy) {
       browser.proxy.onRequest.addListener(this.handleProxifiedRequest, {urls: ["<all_urls>"]});
     }
-    return;
   },
 
   init() {

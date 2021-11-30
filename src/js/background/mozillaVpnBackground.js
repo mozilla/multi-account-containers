@@ -100,6 +100,19 @@ const MozillaVPN_Background = {
   get isolationKey() {
     return this._isolationKey;
   },
+
+  async removeMozillaVpnProxies() {
+    const proxies = await proxifiedContainers.retrieveAll();
+    if (!proxies) {
+      return;
+    }
+    for (const proxyObj of proxies) {
+      const { proxy } = proxyObj;
+      if (proxy.countryCode !== undefined) {
+        await proxifiedContainers.delete(proxyObj.cookieStoreId);
+      }
+    }
+  },
 };
 
 MozillaVPN_Background.init();
