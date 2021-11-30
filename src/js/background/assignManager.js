@@ -188,13 +188,13 @@ window.assignManager = {
     // The following blocks potentially dangerous requests for privacy that come without a tabId
 
     if(requestInfo.tabId === -1) {
-      return {type: "direct"};
+      return {};
     }
 
     const tab = await browser.tabs.get(requestInfo.tabId);
     const result = await proxifiedContainers.retrieve(tab.cookieStoreId);
     if (!result || !result.proxy) {
-      return {type: "direct"};
+      return {};
     }
 
     if (!result.proxy.mozProxyEnabled) {
