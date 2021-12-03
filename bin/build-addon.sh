@@ -11,7 +11,7 @@ git submodule init || die
 git submodule update --remote --depth 1 src/_locales || die
 
 print Y "Installing dependencies..."
-npm install || die
+npm install --legacy-peer-deps || die
 
 print Y "Running tests..."
 npm test

@@ -27,18 +27,18 @@ const backgroundLogic = {
   resetPermissions(permissions) {
     permissions.permissions.forEach(async permission => {
       switch (permission) {
-        case "bookmarks":
-          assignManager.resetBookmarksMenuItem();
-          break;
+      case "bookmarks":
+        assignManager.resetBookmarksMenuItem();
+        break;
 
-        case "nativeMessaging":
-          await MozillaVPN_Background.removeMozillaVpnProxies();
-          await browser.runtime.reload();
-          break;
+      case "nativeMessaging":
+        await MozillaVPN_Background.removeMozillaVpnProxies();
+        await browser.runtime.reload();
+        break;
 
-        case "proxy":
-          assignManager.maybeAddProxyListeners();
-          break;
+      case "proxy":
+        assignManager.maybeAddProxyListeners();
+        break;
       }
     });
   },
