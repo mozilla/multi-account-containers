@@ -17,6 +17,16 @@ document.querySelectorAll("[data-permission-id]").forEach( async(el) => {
   });
 });
 
+async function maybeShowPermissionsWarningIcon() {
+  const bothMozillaVpnPermissionsEnabled = await MozillaVPN.bothPermissionsEnabled();
+  if (!bothMozillaVpnPermissionsEnabled) {
+    const permissionsWarningEl = document.querySelector(".moz-vpn-proxy-permissions-title");
+    if (permissionsWarningEl) {
+      permissionsWarningEl.classList.add("show-warning");
+    }
+  }
+}
+
 async function enableDisableSync() {
   const checkbox = document.querySelector("#syncCheck");
   await browser.storage.local.set({syncEnabled: !!checkbox.checked});
@@ -81,7 +91,7 @@ document.addEventListener("DOMContentLoaded", setupOptions);
 document.querySelector("#syncCheck").addEventListener( "change", enableDisableSync);
 document.querySelector("#replaceTabCheck").addEventListener( "change", enableDisableReplaceTab);
 document.querySelector("button").addEventListener("click", resetOnboarding);
-
+maybeShowPermissionsWarningIcon();
 for (let i=0; i < NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
   document.querySelector("#open_container_"+i)
     .addEventListener("change", storeShortcutChoice);

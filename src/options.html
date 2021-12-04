@@ -13,36 +13,37 @@
     <form>
       <h3 data-i18n-message-id="optionalPermissions"></h3>
 
+      <div id="moz-vpn-proxy-permissions" class="moz-vpn-proxy-permissions">
+        <h3 class="moz-vpn-proxy-permissions-title" data-i18n-message-id="mozillaVpnAndProxyPermissionsTitle"></h3>
+        <div class="moz-vpn-proxy-permissions-content">
+          <div class="settings-group">
+            <label class="permission">
+              <input type="checkbox" data-permission-id="nativeMessaging">
+              <span class="bold" data-i18n-message-id="nativeMessagingPermissionTitle"></span>
+            </label>
+            <p><em data-i18n-message-id="nativeMessagingPermissionDescription"></em></p>
+          </div>
+          <div class="settings-group">
+            <label class="permission">
+              <input type="checkbox" data-permission-id="proxy">
+              <span class="bold" data-i18n-message-id="proxyPermissionTitle"></span>
+            </label>
+            <p><em data-i18n-message-id="proxyPermissionDescription"></em></p>
+          </div>
+        </div>
+      </div>
       <div class="settings-group">
         <label class="permission">
           <input type="checkbox" data-permission-id="bookmarks" id="bookmarksPermissions">
-          <span data-i18n-message-id="enableBookMarkMenus"></span>
+          <span class="bold" data-i18n-message-id="enableBookMarkMenus"></span>
         </label>
-        <p data-i18n-message-id="enableBookMarkMenusDescription"></p>
+        <p><em data-i18n-message-id="enableBookMarkMenusDescription"></em></p>
       </div>
-      <div class="settings-group">
-        <label class="permission">
-          <input type="checkbox" data-permission-id="nativeMessaging" id="nativeMessaging">
-          <span data-i18n-message-id="enableNativeMessaging"></span>
-        </label>
-        <p data-i18n-message-id="enableNativeMessagingDescription"></p>
-        <p><em data-i18n-message-id="permissionsNote"></em></p>
-      </div>
-
-      <div class="settings-group">
-        <label class="permission">
-          <input type="checkbox" data-permission-id="proxy" id="proxy">
-          <span data-i18n-message-id="enableProxyPermissions"></span>
-        </label>
-        <p data-i18n-message-id="enableProxyPermissionsDescription"></p>
-        <p><em data-i18n-message-id="permissionsNote"></em></p>
-      </div>
-
       <h3 data-i18n-message-id="firefoxAccountsSync"></h3>
       <div class="settings-group">
         <label>
           <input type="checkbox" id="syncCheck">
-          <span data-i18n-message-id="enableSync"></span>
+          <span class="bold" data-i18n-message-id="enableSync"></span>
         </label>
         <p><em data-i18n-message-id="enableSyncDescription"></em></p>
       </div>
@@ -52,7 +53,7 @@
       <div class="settings-group">
         <label>
           <input type="checkbox" id="replaceTabCheck">
-          <span data-i18n-message-id="replaceTab"></span>
+          <span class="bold" data-i18n-message-id="replaceTab"></span>
         </label>
         <p><em data-i18n-message-id="replaceTabDescription"></em></p>
       </div>
