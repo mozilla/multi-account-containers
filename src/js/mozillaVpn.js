@@ -156,7 +156,7 @@ const MozillaVPN = {
     };
   },
 
-  async requiredPermissionsEnabled() {
+  async bothPermissionsEnabled() {
     const proxyPermissionEnabled = await browser.permissions.contains({ permissions: ["proxy"] });
     const nativeMessagingPermissionEnabled = await browser.permissions.contains({ permissions: ["nativeMessaging"] });
     return (proxyPermissionEnabled && nativeMessagingPermissionEnabled);

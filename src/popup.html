@@ -98,7 +98,7 @@
   <div class="panel menu-panel container-panel hide" id="container-panel">
     <h3 class="title">Multi-Account Containers</h3>
     <a href="#" class="info-icon" id="info-icon" tabindex="10">
-      <img data-i18n-attribute-message-id="info" data-i18n-attribute="alt" alt="" ="info" src="/img/info.svg" / >
+      <img data-i18n-attribute-message-id="info" data-i18n-attribute="alt" alt="" src="/img/info.svg" / >
     </a>
     <hr>
     <table class="menu">
@@ -170,18 +170,18 @@
       </table>
     </div>
     <div id="moz-vpn-tout" class="moz-vpn-content expanded">
-        <div class="flx-row button-wrapper">
-          <h4 class="moz-vpn-logo">Mozilla VPN</h4>
-          <button class="controller dismiss-moz-vpn-tout" tab-index="0"></button>
-        </div>
-        <div class="collapsible-content flx-col controller-collapsible-content">
-            <div class="flx-row flx-space-between">
-              <span class="moz-vpn-subtitle" data-i18n-message-id="protectYourContainers"></span>
-            </div>
-          <button id="moz-vpn-learn-more" class="moz-vpn-cta primary-cta" data-i18n-message-id="learnMore"></button>
-        </div>
+      <div class="flx-row button-wrapper">
+        <h4 class="moz-vpn-logo">Mozilla VPN</h4>
+        <button class="controller dismiss-moz-vpn-tout" tab-index="0"></button>
       </div>
-    <v-padding-hack-footer></v-padding-hack-footer> <!--presents last container from getting covered up by the 'manage containers button' when list is long-->
+      <div class="collapsible-content flx-col controller-collapsible-content">
+        <div class="flx-row flx-space-between">
+          <span class="moz-vpn-subtitle" data-i18n-message-id="protectYourContainers"></span>
+        </div>
+        <button id="moz-vpn-learn-more" class="moz-vpn-cta primary-cta" data-i18n-message-id="getMozillaVpn"></button>
+      </div>
+    </div>
+    <v-padding-hack-footer></v-padding-hack-footer> <!--prevents last container from getting covered up by the 'manage containers button' when list is long-->
     <div class="bottom-btn keyboard-nav controller" id="manage-containers-link" tabindex="0" data-i18n-message-id="manageContainers"></div>
   </div>
 
@@ -324,7 +324,7 @@
               <span class="slider round"></span>
             </label>
           </div>
-        <button id="get-mozilla-vpn" class="moz-vpn-cta primary-cta" data-i18n-message-id="learnMore"></button>
+        <button id="get-mozilla-vpn" class="moz-vpn-cta primary-cta" data-i18n-message-id="getMozillaVpn"></button>
         <button id="moz-vpn-current-server" class="controller">
           <span class="current-country-flag"></span>
           <span class="current-city-name"></span>
@@ -438,7 +438,7 @@
       <a id="advanced-proxy-settings-learn-more" href="" class="blue-link" data-i18n-message-id="learnMore"></a>
     </form>
     <div id="permissions-overlay" class="permissions-overlay" data-tab-group="proxy-disabled">
-      <p class="permissions-overlay-copy" data-tab-group="proxy-disabled">This feature requires that Proxy permissions. This permission can be revoked at any time in Settings.</p>
+      <p data-tab-group="proxy-disabled" data-i18n-message-id="additionalPermissionNeeded"></p>
       <button id="enable-proxy-permissions" class="primary-cta" data-tab-group="proxy-disabled">Enable</button>
     </div>
   </div>
