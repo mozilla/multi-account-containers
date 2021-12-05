@@ -5,6 +5,11 @@ const MozillaVPN = {
     const mozillaVpnInstalled = await browser.runtime.sendMessage({ method: "MozillaVPN_getInstallationStatus" });
     this.handleStatusIndicatorsInContainerLists(mozillaVpnInstalled);
 
+    const permissionsEnabled = await this.bothPermissionsEnabled();
+    if (!permissionsEnabled) {
+      return;
+    }
+
     const proxies = await this.getProxies(identities);
     if (Object.keys(proxies).length === 0) {
       return;
