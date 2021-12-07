@@ -12,9 +12,17 @@
   <body>
     <form>
       <h3 data-i18n-message-id="optionalPermissions"></h3>
-
+      <div class="settings-group">
+        <label class="permission">
+          <input type="checkbox" data-permission-id="bookmarks" id="bookmarksPermissions">
+          <span class="bold" data-i18n-message-id="enableBookMarkMenus"></span>
+        </label>
+        <p><em data-i18n-message-id="enableBookMarkMenusDescription"></em></p>
+      </div>
       <div id="moz-vpn-proxy-permissions" class="moz-vpn-proxy-permissions">
-        <h3 class="moz-vpn-proxy-permissions-title" data-i18n-message-id="mozillaVpnAndProxyPermissionsTitle"></h3>
+        <h3 class="moz-vpn-proxy-permissions-title">
+          <span data-i18n-message-id="mozillaVpnAndProxyPermissionsTitle" class="warning-icon"></span>
+        </h3>
         <div class="moz-vpn-proxy-permissions-content">
           <div class="settings-group">
             <label class="permission">
@@ -31,13 +39,6 @@
             <p><em data-i18n-message-id="proxyPermissionDescription"></em></p>
           </div>
         </div>
-      </div>
-      <div class="settings-group">
-        <label class="permission">
-          <input type="checkbox" data-permission-id="bookmarks" id="bookmarksPermissions">
-          <span class="bold" data-i18n-message-id="enableBookMarkMenus"></span>
-        </label>
-        <p><em data-i18n-message-id="enableBookMarkMenusDescription"></em></p>
       </div>
       <h3 data-i18n-message-id="firefoxAccountsSync"></h3>
       <div class="settings-group">

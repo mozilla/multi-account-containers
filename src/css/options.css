@@ -60,41 +60,59 @@ button {
 }
 
 .moz-vpn-proxy-permissions {
-  border-radius: 1rem;
-  padding-inline: 4rem;
-  padding-block: 2rem 1rem;
   margin-block: 0 2rem;
-  border: 1px solid var(--grey10);
+  padding-block-end: 1rem;
+  border-block-end: 1px solid var(--grey10);
+  display: flex;
+  flex-direction: column;
 }
 
 h3.moz-vpn-proxy-permissions-title {
-  margin-block: 0 1rem;
-  margin-inline: 0;
+  margin-block-start: 0;
   position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.moz-vpn-proxy-permissions-title.show-warning::before {
+.warning-icon {
+  display: flex;
+  align-items: center;
+}
+
+.warning-icon.show-warning::before {
   background-image: url("/img/warning.svg");
   background-size: 24px;
   background-repeat: no-repeat;
   background-position: center;
-  position: absolute;
-  inset-inline-start: -2.5rem;
   content: "";
   display: block;
   block-size: 24px;
   inline-size: 24px;
+  margin-inline-end: 0.5rem;
+}
+
+.moz-vpn-proxy-permissions-title::before,
+.moz-vpn-proxy-permissions-title::after {
+  background-color: var(--grey10);
+  content: "";
+  height: 1px;
+  flex: 1 1 0%;
+}
+
+h3.moz-vpn-proxy-permissions-title::before {
+  margin-inline-end: 2rem;
+  margin-inline-start: -50%;
+}
+
+h3.moz-vpn-proxy-permissions-title::after {
+  margin-inline-start: 2rem;
+  margin-inline-end: -50%;
 }
 
 @media (prefers-color-scheme: dark) {
   body {
     background: #23212a;
     color: #fff;
-  }
-
-  .moz-vpn-proxy-permissions {
-    border-color: transparent;
-    background-color: rgba(255, 255, 255, 0.05);
   }
 
   p {

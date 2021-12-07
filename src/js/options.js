@@ -20,7 +20,7 @@ document.querySelectorAll("[data-permission-id]").forEach( async(el) => {
 async function maybeShowPermissionsWarningIcon() {
   const bothMozillaVpnPermissionsEnabled = await MozillaVPN.bothPermissionsEnabled();
   if (!bothMozillaVpnPermissionsEnabled) {
-    const permissionsWarningEl = document.querySelector(".moz-vpn-proxy-permissions-title");
+    const permissionsWarningEl = document.querySelector(".warning-icon");
     if (permissionsWarningEl) {
       permissionsWarningEl.classList.add("show-warning");
     }
