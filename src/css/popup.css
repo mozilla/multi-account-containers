@@ -1318,6 +1318,43 @@ input[type=text] {
   min-block-size: 360px;
 }
 
+.panel.onboarding-panel-8.optional-permissions-disabled {
+  min-block-size: 420px;
+  margin-block-end: 0;
+  margin-inline: 0;
+}
+
+.optional-permissions-disabled #moz-vpn-fw-onboarding-done {
+  display: none !important;
+}
+
+.moz-vpn-permissions {
+  padding-block: var(--marginInline);
+  padding-inline: var(--marginInline);
+  background-color: #cececf1c;
+  border-block-start: 1px solid var(--hr-grey);
+  display: none;
+}
+
+.optional-permissions-disabled .moz-vpn-permissions {
+  display: block;
+}
+
+.moz-vpn-onboarding-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding-inline: var(--marginInline);
+  padding-block-end: var(--marginInline);
+}
+
+.moz-vpn-permissions-copy {
+  padding-inline: 20px;
+  font-size: 12px;
+  margin-block-end: 16px;
+}
+
 .panel-content {
   flex: 1;
   padding-block-start: 16px;
@@ -1344,8 +1381,7 @@ input[type=text] {
 .onboarding-title {
   color: #43484e;
   font-size: var(--font-size-heading);
-  margin-block-end: 0;
-  margin-block-start: 0;
+  margin-block: 12px;
   margin-inline-end: 0;
   margin-inline-start: 0;
   max-inline-size: 80%;
@@ -2098,6 +2134,10 @@ tr:hover > td > .trash-button {
 
   #moz-vpn-tout {
     box-shadow: 0 0 21px 3px #323139;
+  }
+
+  .moz-vpn-permissions {
+    background-color: #322f3e;
   }
 
   .blue-link {

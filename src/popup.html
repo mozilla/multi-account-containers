@@ -62,11 +62,22 @@
   </div>
 
   <div class="panel onboarding onboarding-panel-8 hide" id="onboarding-panel-8">
-    <img class="onboarding-img" alt="" src="/img/moz-vpn-onboarding.svg" />
-    <h3 class="onboarding-title" data-i18n-message-id="proxyNowAvailable"></h3>
-    <p data-i18n-message-id="onboarding-8-description"></p>
-    <div class="half-button-wrapper">
-      <a href="#" id="onboarding-done-btn" class="half-onboarding-button keyboard-nav" tabindex="0" data-i18n-message-id="done"></a>
+    <div class="moz-vpn-onboarding-content">
+      <img class="onboarding-img" alt="" src="/img/moz-vpn-onboarding.svg" />
+      <h3 class="onboarding-title" data-i18n-message-id="proxyNowAvailable"></h3>
+      <p data-i18n-message-id="onboarding-8-description"></p>
+    </div>
+    <div id="moz-vpn-fw-onboarding-done" class="half-button-wrapper">
+      <a id="moz-vpn-fw-onboarding-done" href="#" class="half-onboarding-button keyboard-nav onboarding-done" tabindex="0" data-i18n-message-id="done"></a>
+    </div>
+    <div class="moz-vpn-permissions">
+      <div class="moz-vpn-permissions-copy">
+        <span data-i18n-message-id="mozillaVpnRequiresAdditionalPermissions"></span>
+      </div>
+      <div class="half-button-wrapper">
+        <a href="#" id="permissions-not-now" class="half-onboarding-button grey-button keyboard-nav onboarding-done" tabindex="0" data-i18n-message-id="notNow"></a>
+        <a href="#" id="onboarding-enable-permissions" class="half-onboarding-button keyboard-nav" tabindex="0" data-i18n-message-id="enable"></a>
+      </div>
     </div>
   </div>
 
@@ -176,7 +187,7 @@
       </div>
       <div class="collapsible-content flx-col controller-collapsible-content">
         <div class="flx-row flx-space-between">
-          <span class="moz-vpn-subtitle" data-i18n-message-id="protectYourContainers"></span>
+          <span class="moz-vpn-subtitle" data-i18n-message-id="integrateContainers"></span>
         </div>
         <button id="moz-vpn-learn-more" class="moz-vpn-cta primary-cta" data-i18n-message-id="getMozillaVpn"></button>
       </div>

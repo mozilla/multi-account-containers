@@ -643,14 +643,29 @@ Logic.registerPanel(P_ONBOARDING_8, {
 
   // This method is called when the object is registered.
   initialize() {
-    Utils.addEnterHandler(document.querySelector("#onboarding-done-btn"), async () => {
-      await Logic.setOnboardingStage(8);
-      Logic.showPanel(P_CONTAINERS_LIST);
+    document.querySelectorAll(".onboarding-done").forEach(el => {
+      Utils.addEnterHandler(el, async () => {
+        await Logic.setOnboardingStage(8);
+        Logic.showPanel(P_CONTAINERS_LIST);
+      });
     });
+
   },
 
   // This method is called when the panel is shown.
-  prepare() {
+  async prepare() {
+    const mozillaVpnPermissionsEnabled = await MozillaVPN.bothPermissionsEnabled();
+    if (!mozillaVpnPermissionsEnabled) {
+      const panel = document.querySelector(".onboarding-panel-8");
+      panel.classList.add("optional-permissions-disabled");
+
+      Utils.addEnterHandler(panel.querySelector("#onboarding-enable-permissions"), async () => {
+        const granted = await browser.permissions.request({ permissions: ["proxy", "nativeMessaging"] });
+        if (granted) {
+          await Logic.setOnboardingStage(8);
+        }
+      });
+    }
     return Promise.resolve(null);
   },
 });
@@ -1543,7 +1558,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         const mozillaVpnInstalled = await browser.runtime.sendMessage({ method: "MozillaVPN_getInstallationStatus" });
         const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
 
-        this.subtitle.textContent = browser.i18n.getMessage("protectThisContainer");
+        this.subtitle.textContent = browser.i18n.getMessage("integrateContainers");
 
         const bothMozillaVpnPermissionsEnabled = await MozillaVPN.bothPermissionsEnabled();
 
