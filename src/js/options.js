@@ -99,10 +99,24 @@ browser.permissions.onRemoved.addListener(resetPermissionsUi);
 document.addEventListener("DOMContentLoaded", setupOptions);
 document.querySelector("#syncCheck").addEventListener( "change", enableDisableSync);
 document.querySelector("#replaceTabCheck").addEventListener( "change", enableDisableReplaceTab);
-document.querySelector("button").addEventListener("click", resetOnboarding);
 maybeShowPermissionsWarningIcon();
 for (let i=0; i < NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
   document.querySelector("#open_container_"+i)
     .addEventListener("change", storeShortcutChoice);
 }
+
+document.querySelectorAll("[data-btn-id]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    switch (btn.dataset.btnId) {
+    case "reset-onboarding":
+      resetOnboarding();
+      break;
+    case "moz-vpn-learn-more":
+      browser.tabs.create({
+        url: MozillaVPN.attachUtmParameters("https://support.mozilla.org/kb/protect-your-container-tabs-mozilla-vpn", "options-learn-more")
+      });
+      break;
+    }
+  });
+});
 resetPermissionsUi();

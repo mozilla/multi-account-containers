@@ -29,6 +29,7 @@ label > span {
 form {
   display: flex;
   flex-direction: column;
+  padding-block-end: 1rem;
 }
 
 .settings-group p {
