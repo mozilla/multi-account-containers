@@ -1570,7 +1570,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
           this.subtitle.textContent = browser.i18n.getMessage("additionalPermissionNeeded");
           this.hideEls(this.hideShowButton, this.switch, this.switchLabel, this.currentServerButton);
           this.primaryCta.style.display = "block";
-          this.primaryCta.textContent = "Enable";
+          this.primaryCta.textContent = browser.i18n.getMessage("enable");
           return;
         }
 
