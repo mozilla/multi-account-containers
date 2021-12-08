@@ -1488,9 +1488,11 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
           const bothMozillaVpnPermissionsEnabled = await MozillaVPN.bothPermissionsEnabled();
           this.primaryCta.addEventListener("click", async() => {
             if (!bothMozillaVpnPermissionsEnabled && mozillaVpnInstalled) {
-              return await browser.permissions.request({ permissions: ["proxy", "nativeMessaging"] });
+              await browser.permissions.request({ permissions: ["proxy", "nativeMessaging"] });
+            } else {
+              MozillaVPN.handleMozillaCtaClick("mac-edit-container-panel-btn");
             }
-            MozillaVPN.handleMozillaCtaClick("mac-edit-container-panel-btn");
+           
           });
 
           this.switch.addEventListener("click", async() => {
@@ -1564,8 +1566,10 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
         if (mozillaVpnInstalled && !bothMozillaVpnPermissionsEnabled) {
           this.subtitle.style.flex = "1 1 100%";
+          this.classList.remove("show-server-button");
           this.subtitle.textContent = browser.i18n.getMessage("additionalPermissionNeeded");
-          this.hideEls(this.hideShowButton, this.switch, this.switchLabel);
+          this.hideEls(this.hideShowButton, this.switch, this.switchLabel, this.currentServerButton);
+          this.primaryCta.style.display = "block";
           this.primaryCta.textContent = "Enable";
           return;
         }
@@ -1576,6 +1580,8 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
           // Update subtitle
           this.subtitle.textContent = mozillaVpnConnected ? browser.i18n.getMessage("useCustomLocation") : browser.i18n.getMessage("mozillaVpnMustBeOn");
+          this.subtitle.style.flex = "1 1 80%";
+          this.currentServerButton.style.display = "flex";
         }
 
         if (mozillaVpnConnected) {
@@ -1716,6 +1722,10 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     customElements.define("moz-vpn-container-ui", MozVpnContainerUi);
     const mozillaVpnUi = document.querySelector("moz-vpn-container-ui");
     mozillaVpnUi.updateMozVpnStatusDependentUi();
+
+    browser.permissions.onAdded.addListener(() => { mozillaVpnUi.updateMozVpnStatusDependentUi(); });
+    browser.permissions.onRemoved.addListener(() => { mozillaVpnUi.updateMozVpnStatusDependentUi(); });
+
     const advancedProxySettingsButton = document.querySelector(".advanced-proxy-settings-btn");
     Utils.addEnterHandler(advancedProxySettingsButton, () => {
       Logic.showPanel(P_ADVANCED_PROXY_SETTINGS, this.getEditInProgressIdentity(), false, false);
