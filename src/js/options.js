@@ -1,30 +1,31 @@
 const NUMBER_OF_KEYBOARD_SHORTCUTS = 10;
 
-document.querySelectorAll("[data-permission-id]").forEach( async(el) => {
+async function setUpCheckBoxes() {
+  document.querySelectorAll("[data-permission-id]").forEach(async(el) => {
+    const permissionId = el.dataset.permissionId;
+    const permissionEnabled = await browser.permissions.contains({ permissions: [permissionId] });
+    el.checked = !!permissionEnabled;
+  });
+}
+
+document.querySelectorAll("[data-permission-id").forEach(async(el) => {
   const permissionId = el.dataset.permissionId;
-  const permissionEnabled = await browser.permissions.contains({ permissions: [permissionId] });
-  el.checked = !!permissionEnabled;
   el.addEventListener("change", async() => {
     if (el.checked) {
       const granted = await browser.permissions.request({ permissions: [permissionId] });
       if (!granted) {
         el.checked = false;
-        return;
       }
-    } else {
-      await browser.permissions.remove({ permissions: [permissionId] });
+      return;
     }
+    await browser.permissions.remove({ permissions: [permissionId] });
   });
 });
 
 async function maybeShowPermissionsWarningIcon() {
   const bothMozillaVpnPermissionsEnabled = await MozillaVPN.bothPermissionsEnabled();
-  if (!bothMozillaVpnPermissionsEnabled) {
-    const permissionsWarningEl = document.querySelector(".warning-icon");
-    if (permissionsWarningEl) {
-      permissionsWarningEl.classList.add("show-warning");
-    }
-  }
+  const permissionsWarningEl = document.querySelector(".warning-icon");
+  permissionsWarningEl.classList.toggle("show-warning", !bothMozillaVpnPermissionsEnabled);
 }
 
 async function enableDisableSync() {
@@ -87,6 +88,14 @@ function resetOnboarding() {
   browser.storage.local.set({"onboarding-stage": 0});
 }
 
+async function resetPermissionsUi() {
+  await maybeShowPermissionsWarningIcon();
+  await setUpCheckBoxes();
+}
+
+browser.permissions.onAdded.addListener(resetPermissionsUi);
+browser.permissions.onRemoved.addListener(resetPermissionsUi);
+
 document.addEventListener("DOMContentLoaded", setupOptions);
 document.querySelector("#syncCheck").addEventListener( "change", enableDisableSync);
 document.querySelector("#replaceTabCheck").addEventListener( "change", enableDisableReplaceTab);
@@ -96,3 +105,4 @@ for (let i=0; i < NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
   document.querySelector("#open_container_"+i)
     .addEventListener("change", storeShortcutChoice);
 }
+resetPermissionsUi();
