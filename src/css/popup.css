@@ -1338,7 +1338,7 @@ input[type=text] {
 
 .optional-permissions-disabled .moz-vpn-permissions {
   display: block;
-  width: 100%;
+  inline-size: 100%;
 }
 
 .moz-vpn-onboarding-content {
