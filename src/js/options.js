@@ -8,13 +8,27 @@ async function setUpCheckBoxes() {
   });
 }
 
+function disablePermissionsInputs() {
+  document.querySelectorAll("[data-permission-id").forEach(el => {
+    el.disabled = true;
+  });
+}
+
+function enablePermissionsInputs() {
+  document.querySelectorAll("[data-permission-id").forEach(el => {
+    el.disabled = false;
+  });
+}
+
 document.querySelectorAll("[data-permission-id").forEach(async(el) => {
   const permissionId = el.dataset.permissionId;
   el.addEventListener("change", async() => {
     if (el.checked) {
+      disablePermissionsInputs();
       const granted = await browser.permissions.request({ permissions: [permissionId] });
       if (!granted) {
         el.checked = false;
+        enablePermissionsInputs();
       }
       return;
     }
@@ -91,6 +105,7 @@ function resetOnboarding() {
 async function resetPermissionsUi() {
   await maybeShowPermissionsWarningIcon();
   await setUpCheckBoxes();
+  enablePermissionsInputs();
 }
 
 browser.permissions.onAdded.addListener(resetPermissionsUi);
