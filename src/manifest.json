@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Firefox Multi-Account Containers",
-  "version": "8.0.3",
+  "version": "8.0.4",
   "incognito": "not_allowed",
   "description": "__MSG_extensionDescription__",
   "icons": {
