@@ -18,16 +18,16 @@
     "history",
     "idle",
     "management",
-    "nativeMessaging",
     "storage",
     "unlimitedStorage",
     "tabs",
     "webRequestBlocking",
-    "webRequest",
-    "proxy"
+    "webRequest"
   ],
   "optional_permissions": [
-    "bookmarks"
+    "bookmarks",
+    "nativeMessaging",
+    "proxy"
   ],
   "browser_specific_settings": {
     "gecko": {

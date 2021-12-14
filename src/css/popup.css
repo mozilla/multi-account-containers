@@ -445,6 +445,7 @@ input:checked + .slider::before {
 /* Primary CTA Buttons */
 
 .primary-cta {
+  block-size: 32px;
   background-color: var(--primaryCtaDefault);
   border: transparent;
   border-radius: 4px;
@@ -481,10 +482,6 @@ input:checked + .slider::before {
   transition: opacity 0.1s ease-in-out, max-height 0.3s ease-in-out;
 }
 
-#moz-vpn-tout.disappear {
-  animation: hideTout 0.2s ease-in forwards;
-}
-
 @keyframes appear {
   0% {
     opacity: 0;
@@ -497,22 +494,6 @@ input:checked + .slider::before {
   }
 }
 
-@keyframes hideTout {
-  0% {
-    transform: translateY(0%);
-    opacity: 1;
-  }
-
-  50% {
-    opacity: 1;
-  }
-
-  100% {
-    transform: translateY(20%);
-    opacity: 0;
-  }
-}
-
 /* Mozilla VPN Controller UI in Container Management Panel */
 
 .moz-vpn-content,
@@ -522,9 +503,6 @@ input:checked + .slider::before {
   flex-direction: column;
   padding-block: 16px;
   transition: max-height 0.3s ease-in-out, padding-block-end 0.2s ease-in-out;
-
-  /* max-block-size: 56px; */
-  min-block-size: 56px;
   box-shadow: 0 0 0 1px var(--hr-grey);
 }
 
@@ -610,7 +588,8 @@ input.proxies {
 
 .moz-vpn-cta {
   block-size: 32px;
-  margin-block: 16px;
+  margin-block-start: 16px;
+  margin-block-end: 4px;
   margin-inline: var(--marginInline);
   text-align: center;
 }
@@ -685,6 +664,7 @@ input.proxies {
   max-block-size: 0;
   opacity: 0;
   visibility: hidden;
+  display: none;
   background-color: var(--bgColor);
   transition: max-height 0.2s ease-in-out, opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
 }
@@ -713,6 +693,7 @@ input.proxies {
 }
 
 .expanded .collapsible-content {
+  display: flex;
   max-block-size: 500px;
   opacity: 1;
   visibility: visible;
@@ -1337,6 +1318,44 @@ input[type=text] {
   min-block-size: 360px;
 }
 
+.panel.onboarding-panel-8.optional-permissions-disabled {
+  min-block-size: 420px;
+  margin-block-end: 0;
+  margin-inline: 0;
+}
+
+.optional-permissions-disabled #moz-vpn-fw-onboarding-done {
+  display: none !important;
+}
+
+.moz-vpn-permissions {
+  padding-block: var(--marginInline);
+  padding-inline: var(--marginInline);
+  background-color: #cececf1c;
+  border-block-start: 1px solid var(--hr-grey);
+  display: none;
+}
+
+.optional-permissions-disabled .moz-vpn-permissions {
+  display: block;
+  inline-size: 100%;
+}
+
+.moz-vpn-onboarding-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding-inline: var(--marginInline);
+  padding-block-end: var(--marginInline);
+}
+
+.moz-vpn-permissions-copy {
+  padding-inline: 20px;
+  font-size: 12px;
+  margin-block-end: 16px;
+}
+
 .panel-content {
   flex: 1;
   padding-block-start: 16px;
@@ -1363,8 +1382,7 @@ input[type=text] {
 .onboarding-title {
   color: #43484e;
   font-size: var(--font-size-heading);
-  margin-block-end: 0;
-  margin-block-start: 0;
+  margin-block: 12px;
   margin-inline-end: 0;
   margin-inline-start: 0;
   max-inline-size: 80%;
@@ -1518,9 +1536,7 @@ manage things like container crud */
 /* Panel footer */
 .panel-footer {
   align-items: center;
-  background: #efefef;
   block-size: var(--footerHeight);
-  border-block-end: 1px solid #d8d8d8;
   color: #000;
   display: flex;
   font-size: 13px;
@@ -1994,6 +2010,24 @@ input {
   text-decoration: none;
 }
 
+.info-icon-alert::after {
+  block-size: 12px;
+  inline-size: 12px;
+  background-color: var(--alertColor);
+  content: "1";
+  border-radius: 50%;
+  position: absolute;
+  inset-block: -5px;
+  inset-inline-end: -6px;
+  box-shadow: 0 0 1px #00000075;
+  font-size: 8px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bolder;
+}
+
 .delete-warning {
   padding-block-end: 8px;
   padding-block-start: 8px;
@@ -2031,6 +2065,36 @@ tr:hover > td > .trash-button {
   margin-inline-start: 8px;
 }
 
+/* ----- Permissions Overlay ---------- */
+
+#advanced-proxy-settings-panel,
+.advanced-proxy-panel-content {
+  position: absolute;
+  inset-block: 0;
+  inset-inline: 0;
+}
+
+.permissions-overlay {
+  position: absolute;
+  inset-inline: 0 0;
+  inset-block-start: 40px;
+  inset-block-end: 0;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  background-color: white;
+  padding-block: 2.25rem;
+  padding-inline: 2.25rem;
+  display: none;
+}
+
+#enable-proxy-permissions {
+  text-align: center;
+  font-family: var(--fontMetropolis);
+  font-size: 14px;
+  margin-block-start: 1rem;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --iconCloseX: url("/img/close-light.svg");
@@ -2061,12 +2125,20 @@ tr:hover > td > .trash-button {
     --text-grey: #fefffe;
   }
 
+  .permissions-overlay {
+    background-color: #494755;
+  }
+
   .tooltip {
     background-color: var(--controllerActive);
   }
 
   #moz-vpn-tout {
     box-shadow: 0 0 21px 3px #323139;
+  }
+
+  .moz-vpn-permissions {
+    background-color: #322f3e;
   }
 
   .blue-link {
@@ -2150,10 +2222,6 @@ tr:hover > td > .trash-button {
   .button.secondary:hover,
   .button.secondary:focus {
     background-color: #676767;
-  }
-
-  .panel-footer {
-    border-block-end: solid 1px #4a4a4a;
   }
 
   input[type="text"]:focus {

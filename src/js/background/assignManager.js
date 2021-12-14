@@ -382,6 +382,12 @@ window.assignManager = {
     return currentContainerState && currentContainerState.isIsolated;
   },
 
+  maybeAddProxyListeners() {
+    if (browser.proxy) {
+      browser.proxy.onRequest.addListener(this.handleProxifiedRequest, {urls: ["<all_urls>"]});
+    }
+  },
+
   init() {
     browser.contextMenus.onClicked.addListener((info, tab) => {
       info.bookmarkId ?
@@ -390,7 +396,7 @@ window.assignManager = {
     });
 
     // Before anything happens we decide if the request should be proxified
-    browser.proxy.onRequest.addListener(this.handleProxifiedRequest, {urls: ["<all_urls>"]});
+    this.maybeAddProxyListeners();
 
     // Before a request is handled by the browser we decide if we should
     // route through a different container

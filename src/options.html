@@ -4,85 +4,119 @@
   <head>
     <meta charset="utf-8">
     <script type="text/javascript" src="./js/i18n.js"></script>
+    <script type="text/javascript" src="./js/mozillaVpn.js"></script>
+    <script type="text/javascript" src="./js/proxified-containers.js"></script>
     <link rel="stylesheet" href="css/options.css">
   </head>
 
   <body>
     <form>
       <h3 data-i18n-message-id="optionalPermissions"></h3>
-      <label >
-        <input type="checkbox" id="bookmarksPermissions">
-        <span data-i18n-message-id="enableBookMarkMenus"></span>
-
-      </label>
-      <p><em data-i18n-message-id="enableBookMarkMenusDescription"></em></p>
+      <div class="settings-group">
+        <label class="permission">
+          <input type="checkbox" data-permission-id="bookmarks" id="bookmarksPermissions">
+          <span class="bold" data-i18n-message-id="enableBookMarkMenus"></span>
+        </label>
+        <p><em data-i18n-message-id="enableBookMarkMenusDescription"></em></p>
+      </div>
+      <div id="moz-vpn-proxy-permissions" class="moz-vpn-proxy-permissions">
+        <h3 class="moz-vpn-proxy-permissions-title">
+          <span data-i18n-message-id="mozillaVpnAndProxyPermissionsTitle" class="warning-icon"></span>
+        </h3>
+        <div class="moz-vpn-proxy-permissions-content">
+          <div class="settings-group">
+            <label class="permission">
+              <input type="checkbox" data-permission-id="nativeMessaging">
+              <span class="bold" data-i18n-message-id="nativeMessagingPermissionTitle"></span>
+            </label>
+            <p><em data-i18n-message-id="nativeMessagingPermissionDescription"></em></p>
+          </div>
+          <div class="settings-group">
+            <label class="permission">
+              <input type="checkbox" data-permission-id="proxy">
+              <span class="bold" data-i18n-message-id="proxyPermissionTitle"></span>
+            </label>
+            <p><em data-i18n-message-id="proxyPermissionDescription"></em></p>
+          </div>
+        </div>
+      </div>
       <h3 data-i18n-message-id="firefoxAccountsSync"></h3>
-      <label>
-        <input type="checkbox" id="syncCheck">
-        <span data-i18n-message-id="enableSync"></span>
-      </label>
-      <p><em data-i18n-message-id="enableSyncDescription"></em></p>
+      <div class="settings-group">
+        <label>
+          <input type="checkbox" id="syncCheck">
+          <span class="bold" data-i18n-message-id="enableSync"></span>
+        </label>
+        <p><em data-i18n-message-id="enableSyncDescription"></em></p>
+      </div>
+
       <h3 data-i18n-message-id="tabBehavior"></h3>
-      <label>
-        <input type="checkbox" id="replaceTabCheck">
-        <span data-i18n-message-id="replaceTab"></span>
-      </label>
-      <p><em data-i18n-message-id="replaceTabDescription"></em></p>
+
+      <div class="settings-group">
+        <label>
+          <input type="checkbox" id="replaceTabCheck">
+          <span class="bold" data-i18n-message-id="replaceTab"></span>
+        </label>
+        <p><em data-i18n-message-id="replaceTabDescription"></em></p>
+      </div>
+
       <h3 data-i18n-message-id="keyboardShortCuts"></h3>
       <p><em data-i18n-message-id="editWhichContainer"></em></p>
-      <p><label>
+
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="1"></span>
         <select id="open_container_0">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="2"></span>
         <select id="open_container_1">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="3"></span>
         <select id="open_container_2">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="4"></span>
         <select id="open_container_3">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="5"></span>
         <select id="open_container_4">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="6"></span>
         <select id="open_container_5">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="7"></span>
         <select id="open_container_6">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="8"></span>
         <select id="open_container_7">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="9"></span>
         <select id="open_container_8">
         </select>
       </label></p>
-      <p><label>
+      <p><label class="keyboard-shortcut">
         <span data-i18n-message-id="keyboardShortCut" data-i18n-placeholder="10"></span>
         <select id="open_container_9">
         </select>
       </label></p>
       <h3 data-i18n-message-id="onboarding"></h3>
-      <button data-i18n-message-id="resetOnboardingPanels"></button>
+      <button data-btn-id="reset-onboarding" data-i18n-message-id="resetOnboardingPanels"></button>
       <p><em data-i18n-message-id="onboardingToggle"></em></p>
+      <h3>Mozilla VPN</h3>
+      <button data-btn-id="moz-vpn-learn-more" data-i18n-message-id="learnMore"></button>
     </form>
     <script src="js/options.js"></script>
   </body>

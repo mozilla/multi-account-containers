@@ -1,29 +1,122 @@
 body {
-  background: #fff;
-  color: #202023;
-}
+  --grey10: #e7e7e7;
 
-h3 {
-  margin-block-start: 2.5rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background: #fff;
+  color: rgb(74, 74, 79);
+  font-size: 13px;
+  overflow: hidden;
 }
 
 h3:first-of-type {
-  margin-block-start: 1rem;
+  margin-block-start: 2.5rem;
 }
 
-p,
 label {
-  color: rgb(74, 74, 79);
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+label > span {
+  padding-inline-end: 4px;
+}
+
+.settings-group {
+  margin-block-end: 16px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  padding-block-end: 1rem;
+}
+
+.settings-group p {
+  margin-inline-start: 24px;
+  margin-block: 4px 8px;
+}
+
+input[type="checkbox"] {
+  margin-inline: 0 8px;
+  margin-block: 1px auto;
+  inline-size: 16px;
+  block-size: 16px;
+}
+
+button {
+  margin-inline: 0 auto;
+}
+
+.keyboard-shortcut {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  max-inline-size: 70%;
+  align-items: center;
+}
+
+.bold {
+  font-weight: 600;
+}
+
+.moz-vpn-proxy-permissions {
+  margin-block: 0 2rem;
+  padding-block-end: 1rem;
+  border-block-end: 1px solid var(--grey10);
+  display: flex;
+  flex-direction: column;
+}
+
+h3.moz-vpn-proxy-permissions-title {
+  margin-block-start: 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.warning-icon {
+  display: flex;
+  align-items: center;
+}
+
+.warning-icon.show-warning::before {
+  background-image: url("/img/warning.svg");
+  background-size: 24px;
+  background-repeat: no-repeat;
+  background-position: center;
+  content: "";
+  display: block;
+  block-size: 24px;
+  inline-size: 24px;
+  margin-inline-end: 0.5rem;
+}
+
+.moz-vpn-proxy-permissions-title::before,
+.moz-vpn-proxy-permissions-title::after {
+  background-color: var(--grey10);
+  content: "";
+  height: 1px;
+  flex: 1 1 0%;
+}
+
+h3.moz-vpn-proxy-permissions-title::before {
+  margin-inline-end: 2rem;
+  margin-inline-start: -50%;
+}
+
+h3.moz-vpn-proxy-permissions-title::after {
+  margin-inline-start: 2rem;
+  margin-inline-end: -50%;
 }
 
 @media (prefers-color-scheme: dark) {
   body {
-    background: #202023;
+    background: #23212a;
     color: #fff;
   }
 
-  p,
-  label {
+  p {
     color: rgb(177, 177, 179);
   }
 }

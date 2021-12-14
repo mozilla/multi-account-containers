@@ -5,6 +5,11 @@ const MozillaVPN = {
     const mozillaVpnInstalled = await browser.runtime.sendMessage({ method: "MozillaVPN_getInstallationStatus" });
     this.handleStatusIndicatorsInContainerLists(mozillaVpnInstalled);
 
+    const permissionsEnabled = await this.bothPermissionsEnabled();
+    if (!permissionsEnabled) {
+      return;
+    }
+
     const proxies = await this.getProxies(identities);
     if (Object.keys(proxies).length === 0) {
       return;
@@ -156,6 +161,10 @@ const MozillaVPN = {
     };
   },
 
+  async bothPermissionsEnabled() {
+    return await browser.permissions.contains({ permissions: ["proxy", "nativeMessaging"] });
+  },
+
 
   async getProxyWarnings(proxyObj) {
     if (!proxyObj) {
@@ -245,7 +254,7 @@ const MozillaVPN = {
       randomInteger = (randomInteger - server.weight);
     }
     return nextServer;
-  }
+  },
 };
 
 window.MozillaVPN = MozillaVPN;

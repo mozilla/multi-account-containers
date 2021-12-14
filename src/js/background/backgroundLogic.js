@@ -19,6 +19,28 @@ const backgroundLogic = {
         }
       }
     });
+
+    browser.permissions.onAdded.addListener(permissions => this.resetPermissions(permissions));
+    browser.permissions.onRemoved.addListener(permissions => this.resetPermissions(permissions));
+  },
+
+  resetPermissions(permissions) {
+    permissions.permissions.forEach(async permission => {
+      switch (permission) {
+      case "bookmarks":
+        assignManager.resetBookmarksMenuItem();
+        break;
+
+      case "nativeMessaging":
+        await MozillaVPN_Background.removeMozillaVpnProxies();
+        await browser.runtime.reload();
+        break;
+
+      case "proxy":
+        assignManager.maybeAddProxyListeners();
+        break;
+      }
+    });
   },
 
   async getExtensionInfo() {
