@@ -13,7 +13,7 @@ For more info, see:
 ## Requirements
 
 * node 7+ (for jpm)
-* Firefox 57+
+* Firefox 91.1.0+
 
 
 ## Development
