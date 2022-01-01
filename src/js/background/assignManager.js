@@ -198,11 +198,11 @@ window.assignManager = {
     }
 
     if (!result.proxy.mozProxyEnabled) {
-      return result.proxy;
+      return [{ ...result.proxy, proxyDNS: true }];
     }
 
     // Let's add the isolation key.
-    return [{ ...result.proxy, connectionIsolationKey: "" + MozillaVPN_Background.isolationKey }];
+    return [{ ...result.proxy, connectionIsolationKey: "" + MozillaVPN_Background.isolationKey, proxyDNS: true }];
   },
 
   // Before a request is handled by the browser we decide if we should
