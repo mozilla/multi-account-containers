@@ -2243,15 +2243,6 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
 
     // Populating the panel: name, icon, and warning message
     document.getElementById("container-delete-title").textContent = identity.name;
-
-    const totalNumberOfTabs = identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
-    let warningMessage = "";
-    if (totalNumberOfTabs > 0) {
-      const grammaticalNumTabs = totalNumberOfTabs > 1 ? "tabs" : "tab";
-      warningMessage = `If you remove this container now, ${totalNumberOfTabs} container ${grammaticalNumTabs} will be closed.`;
-    }
-    document.getElementById("delete-container-tab-warning").textContent = warningMessage;
-
     return Promise.resolve(null);
   },
 });

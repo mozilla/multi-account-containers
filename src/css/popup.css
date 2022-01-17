@@ -1542,6 +1542,7 @@ manage things like container crud */
   font-size: 13px;
   inline-size: 100%;
   justify-content: space-between;
+  box-shadow: 0 0 0 1px var(--hr-grey);
 }
 
 #container-info-panel {
