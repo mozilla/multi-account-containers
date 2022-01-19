@@ -877,6 +877,7 @@ input.proxies {
   max-block-size: var(--panelSize);
   min-block-size: var(--panelSize);
   overflow-x: hidden;
+  overflow-y: hidden;
 }
 
 .proxy-panel-title {
@@ -903,6 +904,7 @@ input.proxies {
   inset-inline-start: 0;
   inset-inline-end: 0;
   overflow: scroll;
+  overflow-x: hidden;
   overscroll-behavior: none;
   block-size: calc(var(--panelSize) - var(--rowHeight));
   min-block-size: calc(var(--panelSize) - var(--rowHeight));
