@@ -198,7 +198,7 @@ window.assignManager = {
     }
 
     if (!result.proxy.mozProxyEnabled) {
-      return [{ ...result.proxy, proxyDNS: true }];
+      return { ...result.proxy, proxyDNS: true };
     }
 
     // Let's add the isolation key.
