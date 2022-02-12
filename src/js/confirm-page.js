@@ -42,6 +42,7 @@ function confirmSubmit(redirectUrl, cookieStoreId) {
     browser.runtime.sendMessage({
       method: "neverAsk",
       neverAsk: true,
+      forceContainer: true,
       pageUrl: redirectUrl
     });
   }
@@ -56,6 +57,16 @@ function getCurrentTab() {
 }
 
 async function denySubmit(redirectUrl) {
+  const neverAsk = document.getElementById("never-ask").checked;
+  // Sending neverAsk message to background to store for next time we see this process
+  if (neverAsk) {
+    browser.runtime.sendMessage({
+      method: "neverAsk",
+      neverAsk: true,
+      forceContainer: false,
+      pageUrl: redirectUrl
+    });
+  }
   const tab = await getCurrentTab();
   await browser.runtime.sendMessage({
     method: "exemptContainerAssignment",

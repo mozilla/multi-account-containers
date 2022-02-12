@@ -169,6 +169,7 @@ window.assignManager = {
       this.storageArea.get(pageUrl).then((siteSettings) => {
         if (siteSettings) {
           siteSettings.neverAsk = true;
+          siteSettings.forceContainer = m.forceContainer;
           this.storageArea.set(pageUrl, siteSettings);
         }
       }).catch((e) => {
@@ -323,7 +324,8 @@ window.assignManager = {
         tab.index + 1,
         tab.active,
         siteSettings.neverAsk,
-        openTabId
+        openTabId,
+        siteSettings.forceContainer
       );
     }
     this.calculateContextMenu(tab);
@@ -726,13 +728,31 @@ window.assignManager = {
     browser.tabs.create({url, cookieStoreId, index, active, openerTabId});
   },
 
-  reloadPageInContainer(url, currentUserContextId, userContextId, index, active, neverAsk = false, openerTabId = null) {
+  reloadPageInContainer(url, currentUserContextId, userContextId, index, active, neverAsk = false, openerTabId = null, forceContainer = true) {
     const cookieStoreId = backgroundLogic.cookieStoreId(userContextId);
     const loadPage = browser.runtime.getURL("confirm-page.html");
     // False represents assignment is not permitted
-    // If the user has explicitly checked "Never Ask Again" on the warning page we will send them straight there
+    // If the user has explicitly checked "Never Ask Again" on the warning page we will:
+    // - If the user confirmed the use of assigned container, we use that
+    // - If the user denied the use of assigned container, we keep what they have
+    //
+    // As-is this behaviour then never makes use of the container assignment for links
+    // opened from the outside, so there's one exception: when a tab is opened without
+    // a currentUserContextId (and it *is* missing in outside links), it's forced
+    // into the assigned container despite forceContainer: false
     if (neverAsk) {
-      return browser.tabs.create({url, cookieStoreId, index, active, openerTabId});
+      let currentCookieStoreId;
+      if (currentUserContextId) {
+        currentCookieStoreId = backgroundLogic.cookieStoreId(currentUserContextId);
+      }
+      let desiredCookieStoreId;
+      if (forceContainer || !currentCookieStoreId) {
+        desiredCookieStoreId = cookieStoreId;
+      } else {
+        this.setExempted(url, index);
+        desiredCookieStoreId = currentCookieStoreId;
+      }
+      return browser.tabs.create({url, cookieStoreId: desiredCookieStoreId, index, active, openerTabId});
     } else {
       let confirmUrl = `${loadPage}?url=${this.encodeURLProperty(url)}&cookieStoreId=${cookieStoreId}`;
       let currentCookieStoreId;
