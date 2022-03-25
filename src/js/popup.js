@@ -51,6 +51,7 @@ async function getExtensionInfo() {
   return extensionInfo;
 }
 
+
 // This object controls all the panels, identities and many other things.
 const Logic = {
   _identities: [],
@@ -64,6 +65,9 @@ const Logic = {
     browser.runtime.sendMessage({
       method: "MozillaVPN_attemptPort"
     }),
+
+    // Set the theme
+    Utils.applyTheme();
 
     // Remove browserAction "upgraded" badge when opening panel
     this.clearBrowserActionBadge();
@@ -1492,7 +1496,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
             } else {
               MozillaVPN.handleMozillaCtaClick("mac-edit-container-panel-btn");
             }
-           
+
           });
 
           this.switch.addEventListener("click", async() => {
