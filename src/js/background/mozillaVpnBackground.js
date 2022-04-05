@@ -66,11 +66,11 @@ const MozillaVPN_Background = {
 
   // Handle responses from MozillaVPN client
   async handleResponse(response) {
+    MozillaVPN_Background._installed = true;
     if (response.error && response.error === "vpn-client-down") {
       MozillaVPN_Background._connected = false;
       return;
     }
-    MozillaVPN_Background._installed = true;
     if (response.servers) {
       const servers = response.servers.countries;
       browser.storage.local.set({ [MozillaVPN_Background.MOZILLA_VPN_SERVERS_KEY]: servers});
