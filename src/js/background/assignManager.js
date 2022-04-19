@@ -197,12 +197,17 @@ window.assignManager = {
       return {};
     }
 
+    // proxyDNS only works for SOCKS proxies
+    if (result.proxy.type === "socks" || result.proxy.type === "socks4" ) {
+      result.proxy.proxyDNS = true;
+    }
+
     if (!result.proxy.mozProxyEnabled) {
-      return { ...result.proxy, proxyDNS: true };
+      return result.proxy;
     }
 
     // Let's add the isolation key.
-    return [{ ...result.proxy, connectionIsolationKey: "" + MozillaVPN_Background.isolationKey, proxyDNS: true }];
+    return [{ ...result.proxy, connectionIsolationKey: "" + MozillaVPN_Background.isolationKey }];
   },
 
   // Before a request is handled by the browser we decide if we should
