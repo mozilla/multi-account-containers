@@ -198,7 +198,7 @@ window.assignManager = {
     }
 
     // proxyDNS only works for SOCKS proxies
-    if (result.proxy.type === "socks" || result.proxy.type === "socks4" ) {
+    if (["socks", "socks4"].includes(result.proxy.type)) {
       result.proxy.proxyDNS = true;
     }
 
