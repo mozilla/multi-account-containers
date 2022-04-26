@@ -1547,6 +1547,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
               this.updateProxyDependentUi(proxy);
             } else {
               this.switch.checked = false;
+              this.updateProxyDependentUi({});
               return;
             }
           });
@@ -1677,7 +1678,6 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
           this.currentCityName.textContent = proxyInfo.cityName;
           this.countryCode = proxyInfo.countryCode;
         }
-        return;
       }
 
       expandUi() {
@@ -1892,6 +1892,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     if (proxyPermissionEnabled) {
       const proxyData = await proxifiedContainers.retrieve(identity.cookieStoreId);
       if (proxyData && proxyData.proxy.mozProxyEnabled && !mozillaVpnConnected) {
+        mozillaVpnUi.updateProxyDependentUi({});
         return;
       }
       const proxy = proxyData ? proxyData.proxy : {};
