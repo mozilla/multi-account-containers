@@ -1,10 +1,12 @@
 # Multi-Account Containers
 
+[![Test](https://github.com/mozilla/multi-account-containers/actions/workflows/test.yaml/badge.svg)](https://github.com/mozilla/multi-account-containers/actions/workflows/test.yaml)
+
 The Firefox Multi-Account Containers extension lets you carve out a separate box for each of your online lives – no more opening a different browser just to check your work email! [Learn More Here](https://blog.mozilla.org/firefox/introducing-firefox-multi-account-containers/)
 
 [Available on addons.mozilla.org](https://addons.mozilla.org/firefox/addon/multi-account-containers/)
 
-For more info, see: 
+For more info, see:
 
 * [Test Pilot Product Hypothesis Document](https://docs.google.com/document/d/1WQdHTVXROk7dYkSFluc6_hS44tqZjIrG9I-uPyzevE8/edit#)
 * [Shield Product Hypothesis Document](https://docs.google.com/document/d/1vMD-fH_5hGDDqNvpRZk12_RhCN2WAe4_yaBamaNdtik/edit#)
@@ -43,7 +45,7 @@ Here is a [video](https://www.youtube.com/watch?v=cer9EUKegG4) that demonstrates
 * Install dependencies:
 
   ```
-  npm install
+  npm install --legacy-peer-deps
   ```
 
 * Run all tests:
