@@ -10,7 +10,6 @@ const DEFAULT_ICON = "circle";
 const NEW_CONTAINER_ID = "new";
 
 const ONBOARDING_STORAGE_KEY = "onboarding-stage";
-const CONTAINER_ORDER_STORAGE_KEY = "container-order";
 const CONTAINER_DRAG_DATA_TYPE = "firefox-container";
 
 // List of panels
