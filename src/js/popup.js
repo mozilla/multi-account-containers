@@ -1244,6 +1244,7 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
     if (currentTab.cookieStoreId !== "firefox-default") {
       const tr = document.createElement("tr");
       tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
+      tr.setAttribute("tabindex", "0");
       const td = document.createElement("td");
 
       td.innerHTML = Utils.escaped`
