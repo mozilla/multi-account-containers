@@ -2,6 +2,9 @@
 
 const DEFAULT_FAVICON = "/img/blank-favicon.svg";
 
+// eslint-disable-next-line
+const CONTAINER_ORDER_STORAGE_KEY = "container-order";
+
 // TODO use export here instead of globals
 const Utils = {
 

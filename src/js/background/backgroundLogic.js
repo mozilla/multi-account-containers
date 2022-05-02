@@ -1,4 +1,9 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 const DEFAULT_TAB = "about:newtab";
+
 const backgroundLogic = {
   NEW_TAB_PAGES: new Set([
     "about:startpage",
@@ -168,7 +173,7 @@ const backgroundLogic = {
       if ("isIsolated" in containerState || remove) {
         delete containerState.isIsolated;
       } else {
-        containerState.isIsolated = "locked";        
+        containerState.isIsolated = "locked";
       }
       return await identityState.storageArea.set(cookieStoreId, containerState);
     } catch (error) {
@@ -317,19 +322,29 @@ const backgroundLogic = {
         continue;
       }
 
-      const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(tab.cookieStoreId);
-      if (!map.has(userContextId)) {
-        map.set(userContextId, []);
+      if (!map.has(tab.cookieStoreId)) {
+        const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(tab.cookieStoreId);
+        map.set(tab.cookieStoreId, { order: userContextId, tabs: [] });
       }
-      map.get(userContextId).push(tab);
+      map.get(tab.cookieStoreId).tabs.push(tab);
+    }
+
+    const containerOrderStorage = await browser.storage.local.get([CONTAINER_ORDER_STORAGE_KEY]);
+    const containerOrder =
+      containerOrderStorage && containerOrderStorage[CONTAINER_ORDER_STORAGE_KEY];
+
+    if (containerOrder) {
+      map.forEach((obj, key) => {
+        obj.order = (key in containerOrder) ? containerOrder[key] : -1;
+      });
     }
 
     // Let's sort the map.
-    const sortMap = new Map([...map.entries()].sort((a, b) => a[0] > b[0]));
+    const sortMap = new Map([...map.entries()].sort((a, b) => a[1].order > b[1].order));
 
     // Let's move tabs.
-    sortMap.forEach(tabs => {
-      for (const tab of tabs) {
+    sortMap.forEach(obj => {
+      for (const tab of obj.tabs) {
         ++pos;
         browser.tabs.move(tab.id, {
           windowId: windowObj.id,
