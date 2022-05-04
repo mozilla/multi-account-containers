@@ -112,6 +112,9 @@ window.assignManager = {
           this.setExempted(pageUrlorUrlKey, tabId);
         });
       }
+      if (data.wildcardHostname) {
+        await this.removeDuplicateWildcardHostname(data.wildcardHostname, siteStoreKey);
+      }
       await this.removeWildcardLookup(siteStoreKey);
       // eslint-disable-next-line require-atomic-updates
       data.identityMacAddonUUID =
@@ -154,6 +157,24 @@ window.assignManager = {
       if (wildcardHostname) {
         const wildcardStoreKey = this.getWildcardStoreKey(wildcardHostname);
         await this.area.remove([wildcardStoreKey]);
+      }
+    },
+
+    // Must not set the same wildcardHostname property on multiple sites.
+    // E.g. 'google.com' on both 'www.google.com' and 'mail.google.com'.
+    //
+    // Necessary because the stored wildcardLookup map is 1-to-1, i.e. either
+    // 'google.com' => 'www.google.com', or
+    // 'google.com' => 'mail.google.com', but not both!
+    async removeDuplicateWildcardHostname(wildcardHostname, expectedSiteStoreKey) {
+      const wildcardStoreKey = this.getWildcardStoreKey(wildcardHostname);
+      const siteStoreKey = await this.getByUrlKey(wildcardStoreKey);
+      if (siteStoreKey && siteStoreKey !== expectedSiteStoreKey) {
+        const siteSettings = await this.getByUrlKey(siteStoreKey);
+        if (siteSettings && siteSettings.wildcardHostname === wildcardHostname) {
+          delete siteSettings.wildcardHostname;
+          await this.set(siteStoreKey, siteSettings); // Will cause wildcard mapping to be cleared
+        }
       }
     },
 
