@@ -20,6 +20,10 @@ window.assignManager = {
       }
     },
 
+    getWildcardStoreKey(wildcardHostname) {
+      return `wildcardMap@@_${wildcardHostname}`;
+    },
+
     setExempted(pageUrlorUrlKey, tabId) {
       const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       if (!(siteStoreKey in this.exemptedTabs)) {
@@ -46,6 +50,18 @@ window.assignManager = {
       return this.getByUrlKey(siteStoreKey);
     },
 
+    async getOrWildcardMatch(pageUrlorUrlKey) {
+      const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
+      const siteSettings = await this.getByUrlKey(siteStoreKey);
+      if (siteSettings) {
+        return {
+          siteStoreKey,
+          siteSettings
+        };
+      }
+      return this.getByWildcardMatch(siteStoreKey);
+    },
+
     async getSyncEnabled() {
       const { syncEnabled } = await browser.storage.local.get("syncEnabled");
       return !!syncEnabled;
@@ -69,6 +85,26 @@ window.assignManager = {
       });
     },
 
+    async getByWildcardMatch(siteStoreKey) {
+      // Keep stripping subdomains off site hostname until match a wildcard hostname
+      let remainingHostname = siteStoreKey.replace(/^siteContainerMap@@_/, "");
+      while (remainingHostname) {
+        const wildcardStoreKey = this.getWildcardStoreKey(remainingHostname);
+        siteStoreKey = await this.getByUrlKey(wildcardStoreKey);
+        if (siteStoreKey) {
+          const siteSettings = await this.getByUrlKey(siteStoreKey);
+          if (siteSettings) {
+            return {
+              siteStoreKey,
+              siteSettings
+            };
+          }
+        }
+        const indexOfDot = remainingHostname.indexOf(".");
+        remainingHostname = indexOfDot < 0 ? null : remainingHostname.substring(indexOfDot + 1);
+      }
+    },
+
     async set(pageUrlorUrlKey, data, exemptedTabIds, backup = true) {
       const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       if (exemptedTabIds) {
@@ -76,12 +112,16 @@ window.assignManager = {
           this.setExempted(pageUrlorUrlKey, tabId);
         });
       }
+      await this.removeWildcardLookup(siteStoreKey);
       // eslint-disable-next-line require-atomic-updates
       data.identityMacAddonUUID =
         await identityState.lookupMACaddonUUID(data.userContextId);
       await this.area.set({
         [siteStoreKey]: data
       });
+      if (data.wildcardHostname) {
+        await this.setWildcardLookup(siteStoreKey, data.wildcardHostname);
+      }
       const syncEnabled = await this.getSyncEnabled();
       if (backup && syncEnabled) {
         await sync.storageArea.backup({undeleteSiteStoreKey: siteStoreKey});
@@ -89,19 +129,46 @@ window.assignManager = {
       return;
     },
 
+    async setWildcardLookup(siteStoreKey, wildcardHostname) {
+      const wildcardStoreKey = this.getWildcardStoreKey(wildcardHostname);
+      return this.area.set({
+        [wildcardStoreKey]: siteStoreKey
+      });
+    },
+
     async remove(pageUrlorUrlKey, shouldSync = true) {
       const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       // When we remove an assignment we should clear all the exemptions
       this.removeExempted(pageUrlorUrlKey);
+      // When we remove an assignment we should clear the wildcard lookup
+      await this.removeWildcardLookup(siteStoreKey);
       await this.area.remove([siteStoreKey]);
       const syncEnabled = await this.getSyncEnabled();
       if (shouldSync && syncEnabled) await sync.storageArea.backup({siteStoreKey});
       return;
     },
 
+    async removeWildcardLookup(siteStoreKey) {
+      const siteSettings = await this.getByUrlKey(siteStoreKey);
+      const wildcardHostname = siteSettings && siteSettings.wildcardHostname;
+      if (wildcardHostname) {
+        const wildcardStoreKey = this.getWildcardStoreKey(wildcardHostname);
+        await this.area.remove([wildcardStoreKey]);
+      }
+    },
+
     async deleteContainer(userContextId) {
       const sitesByContainer = await this.getAssignedSites(userContextId);
       this.area.remove(Object.keys(sitesByContainer));
+      // Delete wildcard lookups
+      const wildcardStoreKeys = Object.values(sitesByContainer)
+        .map((site) => {
+          if (site && site.wildcardHostname) {
+            return this.getWildcardStoreKey(site.wildcardHostname);
+          }
+        })
+        .filter((wildcardStoreKey) => { return !!wildcardStoreKey; });
+      this.area.remove(wildcardStoreKeys);
     },
 
     async getAssignedSites(userContextId = null) {
@@ -166,10 +233,10 @@ window.assignManager = {
     if (m.neverAsk === true) {
       // If we have existing data and for some reason it hasn't been
       // deleted etc lets update it
-      this.storageArea.get(pageUrl).then((siteSettings) => {
-        if (siteSettings) {
-          siteSettings.neverAsk = true;
-          this.storageArea.set(pageUrl, siteSettings);
+      this.storageArea.getOrWildcardMatch(pageUrl).then((siteMatchResult) => {
+        if (siteMatchResult) {
+          siteMatchResult.siteSettings.neverAsk = true;
+          this.storageArea.set(siteMatchResult.siteStoreKey, siteMatchResult.siteSettings);
         }
       }).catch((e) => {
         throw e;
@@ -217,10 +284,11 @@ window.assignManager = {
       return {};
     }
     this.removeContextMenu();
-    const [tab, siteSettings] = await Promise.all([
+    const [tab, siteMatchResult] = await Promise.all([
       browser.tabs.get(options.tabId),
-      this.storageArea.get(options.url)
+      this.storageArea.getOrWildcardMatch(options.url)
     ]);
+    const siteSettings = siteMatchResult && siteMatchResult.siteSettings;
     let container;
     try {
       container = await browser.contextualIdentities
@@ -617,6 +685,14 @@ window.assignManager = {
 
 
       this.calculateContextMenu(tab);
+    }
+  },
+
+  async _setWildcardHostnameForAssignment(pageUrl, wildcardHostname) {
+    const siteSettings = await this.storageArea.get(pageUrl);
+    if (siteSettings) {
+      siteSettings.wildcardHostname = wildcardHostname;
+      await this.storageArea.set(pageUrl, siteSettings);
     }
   },
 

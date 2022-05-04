@@ -1812,6 +1812,14 @@ manage things like container crud */
   padding-inline-start: 16px;
 }
 
+#edit-sites-assigned .hostname .subdomain:hover {
+  text-decoration: underline;
+}
+
+#edit-sites-assigned .hostname .subdomain.wildcardSubdomain {
+  opacity: 0.2;
+}
+
 .assigned-sites-list > div {
   display: flex;
   padding-block-end: 6px;
