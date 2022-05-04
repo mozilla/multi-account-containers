@@ -1,0 +1,375 @@
+{
+  "extensionDescription": {
+    "message": "Met Multi-Account Containers kunt u alle onderdelen van uw onlineleven in verschillende tabbladen houden. Aangepaste labels en kleurgecodeerde tabbladen helpen verschillende activiteiten – zoals online winkelen, reisplanning of het lezen van zakelijke e-mail – gescheiden te houden. Deze addon komt ook met wildcard(*) ondersteuning.",
+    "description": "Description of the extension. DO NOT TRANSLATE \"Multi-Account Containers\"."
+  },
+  "openInNewTabTitle": {
+    "message": "Nieuw tabblad openen in…",
+    "description": "Menu title"
+  },
+  "reopenThisSiteIn": {
+    "message": "Deze website opnieuw openen in…",
+    "description": "Menu title"
+  },
+  "sortTabsByContainer": {
+    "message": "Tabbladen op container sorteren",
+    "description": "Menu title"
+  },
+  "alwaysOpenThisSiteIn": {
+    "message": "Deze website altijd openen in…",
+    "description": "Menu title"
+  },
+  "alwaysOpenIn": {
+    "message": "Altijd openen in…",
+    "description": "Menu title"
+  },
+  "alwaysOpenSiteInContainer": {
+    "message": "Website altijd in container openen"
+  },
+  "openANewTabIn": {
+    "message": "Nieuw tabblad openen in…"
+  },
+  "openNewTabInThisContainer": {
+    "message": "Nieuw tabblad openen in deze container"
+  },
+  "openTabs": {
+    "message": "Open tabbladen",
+    "description": "Section title for tabs that are currently open in that container"
+  },
+  "moveTabsToANewWindow": {
+    "message": "Tabbladen naar een nieuw venster verplaatsen"
+  },
+  "onboarding-1-header": {
+    "message": "Een betere manier om alle dingen die u online doet te beheren"
+  },
+  "onboarding-1-description": {
+    "message": "Gebruik containers om taken te organiseren, accounts te beheren en uw aandacht te houden waar u dat wilt."
+  },
+  "onboarding-2-header": {
+    "message": "Zet containers voor u aan het werk."
+  },
+  "onboarding-2-description": {
+    "message": "Functies als kleurcodering en aparte containertabbladen helpen u om dingen gemakkelijk te vinden, uw aandacht gericht te houden en afleiding te minimaliseren."
+  },
+  "onboarding-3-header": {
+    "message": "Een plek voor alles, en alles op zijn plek."
+  },
+  "onboarding-3-description": {
+    "message": "Begin met de containers die we hebben gemaakt, of maak er zelf een."
+  },
+  "onboarding-4-header": {
+    "message": "Open websites altijd in de containers die u wilt."
+  },
+  "onboarding-4-description": {
+    "message": "Klik met de rechtermuisknop in een containertabblad om de website altijd in de container te openen."
+  },
+  "onboarding-5-header": {
+    "message": "Containertabbladen wanneer u ze nodig heeft."
+  },
+  "onboarding-5-description": {
+    "message": "Houd de knop Nieuw tabblad lang ingedrukt om een nieuw containertabblad aan te maken."
+  },
+  "onboarding-6-header": {
+    "message": "Het synchroniseren van containers is nu beschikbaar!"
+  },
+  "onboarding-6-description": {
+    "message": "Schakel synchronisatie in om container- en websitetoewijzingen te delen met elke computer die is verbonden met uw Firefox-account."
+  },
+  "onboarding-7-header": {
+    "message": "Firefox-account is vereist om te synchroniseren."
+  },
+  "onboarding-7-description": {
+    "message": "Klik op Aanmelden om te bevestigen dat uw Firefox-account actief is."
+  },
+  "onboarding-8-description": {
+    "message": "Containers kunnen nu integreren met Mozilla VPN of uw eigen proxy om een veilige privéverbinding te creëren die uw activiteit beschermt."
+  },
+  "oneHundredTabsHeader": {
+    "message": "100 tabbladen!"
+  },
+  "youHaveOpened": {
+    "message": "U hebt 100 containertabbladen geopend."
+  },
+  "spreadTheWord": {
+    "message": "Als u van containers houdt, help ons dan om het verder te vertellen!"
+  },
+  "rate": {
+    "message": "Waarderen"
+  },
+  "share": {
+    "message": "Delen"
+  },
+  "tweet": {
+    "message": "Tweeten"
+  },
+  "default": {
+    "message": "Standaard"
+  },
+  "manageContainers": {
+    "message": "Containers beheren"
+  },
+  "newContainer": {
+    "message": "Nieuwe container"
+  },
+  "hideThisContainer": {
+    "message": "Deze container verbergen"
+  },
+  "showThisContainer": {
+    "message": "Deze container tonen"
+  },
+  "removeThisContainer": {
+    "message": "Deze container verwijderen"
+  },
+  "removeThisContainerConfirmation": {
+    "message": "Weet u zeker dat u deze container wilt verwijderen?"
+  },
+  "cancel": {
+    "message": "Annuleren"
+  },
+  "ok": {
+    "message": "OK"
+  },
+  "sitesAssignedToThisContainer": {
+    "message": "Websites toegewezen aan deze container"
+  },
+  "options": {
+    "message": "Opties"
+  },
+  "name": {
+    "message": "Naam"
+  },
+  "color": {
+    "message": "Kleur"
+  },
+  "icon": {
+    "message": "Pictogram"
+  },
+  "limitToDesignatedSites": {
+    "message": "Beperken tot aangewezen websites"
+  },
+  "deleteThisContainer": {
+    "message": "Deze container verwijderen"
+  },
+  "manageSiteList": {
+    "message": "Websitelijst beheren…"
+  },
+  "manageThisContainer": {
+    "message": "Deze container beheren"
+  },
+  "containers": {
+    "message": "Containers"
+  },
+  "done": {
+    "message": "Gereed"
+  },
+  "getStarted": {
+    "message": "Beginnen"
+  },
+  "signIn": {
+    "message": "Aanmelden"
+  },
+  "notNow": {
+    "message": "Niet nu"
+  },
+  "startSyncing": {
+    "message": "Beginnen met synchroniseren"
+  },
+  "info": {
+    "message": "info",
+    "description": "Alternative text for the i icon in the toolbar icon pop-up"
+  },
+  "next": {
+    "message": "Volgende"
+  },
+  "openThisSiteConfirmation": {
+    "message": "Deze website in uw toegewezen container openen?"
+  },
+  "wouldYouStillLikeToOpenConfirmation": {
+    "message": "Wilt u toch in deze huidige container openen?"
+  },
+  "rememberMyDecision": {
+    "message": "Beslissing onthouden voor deze website"
+  },
+  "optionalPermissions": {
+    "message": "Optionele toestemmingen:"
+  },
+  "keyboardShortCuts": {
+    "message": "Sneltoetsen:"
+  },
+  "onboarding": {
+    "message": "Welkomstbericht"
+  },
+  "resetOnboardingPanels": {
+    "message": "Welkomstpanelen herinitialiseren"
+  },
+  "onboardingToggle": {
+    "message": "Schakel dit om om de welkomstpanelen weer te zien."
+  },
+  "tabBehavior": {
+    "message": "Tabbladgedrag:"
+  },
+  "enableBookMarkMenus": {
+    "message": "Bladwijzermenu’s inschakelen"
+  },
+  "firefoxAccountsSync": {
+    "message": "Synchronisatie met Firefox-accounts:"
+  },
+  "enableSync": {
+    "message": "Synchronisatie inschakelen"
+  },
+  "enableBookMarkMenusDescription": {
+    "message": "Met deze instelling kunt u een bladwijzer of map met bladwijzers in een container openen."
+  },
+  "enableSyncDescription": {
+    "message": "Met deze instelling kunt u uw containers en websitetoewijzingen met andere apparaten synchroniseren."
+  },
+  "replaceTab": {
+    "message": "Tabblad vervangen in plaats van een nieuw maken"
+  },
+  "replaceTabDescription": {
+    "message": "Het huidige tabblad vervangen als een pagina die is toegewezen aan een andere container wordt geopend (in plaats van het huidige tabblad open te houden). Het openen van tabbladen met de middelste muisknop wordt niet beïnvloed."
+  },
+  "editWhichContainer": {
+    "message": "Bewerken welke container wordt geopend bij het gebruik van de genummerde sneltoetsen."
+  },
+  "keyboardShortCut": {
+    "message": "Te openen container met sneltoets $keyId$",
+    "placeholders": {
+      "keyId": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirmNavigationTitle": {
+    "message": "Multi-Account Containers – Navigatie bevestigen",
+    "description": "This is the title of a confirmation page. Please do not translate \"Multi-Account Containers\"."
+  },
+  "openInContainer": {
+    "message": "In container $containerName$ openen",
+    "placeholders": {
+      "containerName": {
+        "content": "$1"
+      }
+    }
+  },
+  "youAskedFirefox": {
+    "message": "U hebt Firefox gevraagd om voor deze website altijd $containerName$ te openen:",
+    "placeholders": {
+      "containerName": {
+        "content": "$1"
+      }
+    }
+  },
+  "chooseLocation": {
+    "message": "Locatie kiezen",
+    "description": "Location refers to the geographical position used by the VPN"
+  },
+  "hide": {
+    "message": "Verbergen"
+  },
+  "show": {
+    "message": "Tonen"
+  },
+  "protectYourContainers": {
+    "message": "Uw containers beschermen met Mozilla VPN"
+  },
+  "protectThisContainer": {
+    "message": "Deze container beschermen met Mozilla VPN"
+  },
+  "advancedProxySettings": {
+    "message": "Geavanceerde proxyinstellingen"
+  },
+  "proxyInputLabel": {
+    "message": "Aangepaste proxy invoeren"
+  },
+  "useCustomLocation": {
+    "message": "Een aangepaste locatie voor deze container gebruiken"
+  },
+  "clearproxylabel": {
+    "message": "Proxy wissen"
+  },
+  "moz-vpn-connected": {
+    "message": "Mozilla VPN is aan"
+  },
+  "moz-vpn-disconnected": {
+    "message": "Mozilla VPN is uit"
+  },
+  "invalidProxyAlert": {
+    "message": "Voer een geldige proxy-URL in"
+  },
+  "mozillaVpnMustBeOn": {
+    "message": "Mozilla VPN moet ingeschakeld zijn om deze functie te gebruiken."
+  },
+  "learnMore": {
+    "message": "Meer info"
+  },
+  "proxyNowAvailable": {
+    "message": "Nu met Mozilla VPN en geavanceerde proxyinstellingen"
+  },
+  "applyToContainer": {
+    "message": "Toepassen op container"
+  },
+  "tooltipWarning": {
+    "message": "Deze container is ingesteld om een Mozilla VPN-proxy te gebruiken, maar Mozilla VPN is niet ingeschakeld. Schakel Mozilla VPN in om deze container te gebruiken."
+  },
+  "getMozillaVpn": {
+    "message": "Mozilla VPN downloaden"
+  },
+  "integratewithmozillavpn": {
+    "message": "Uw containers integreren met Mozilla VPN"
+  },
+  "mozillaVpnAndProxyPermissionsTitle": {
+    "message": "Mozilla VPN- en proxytoestemmingen",
+    "description": "Section headline in settings"
+  },
+  "nativeMessagingPermissionTitle": {
+    "message": "Extensie toestaan om berichten met andere programma’s dan Firefox uit te wisselen",
+    "description": "Permission title"
+  },
+  "nativeMessagingPermissionDescription": {
+    "message": "Deze instelling laat de extensie berichten uitwisselen met de Mozilla VPN-client en is vereist om de integratiefuncties van Mozilla VPN te laten werken.",
+    "description": "'This setting' refers to the permission indicated in nativeMessagingPermissionTitle"
+  },
+  "proxyPermissionTitle": {
+    "message": "Extensie toestaan om proxy-instellingen te beheren",
+    "description": "Permission title"
+  },
+  "proxyPermissionDescription": {
+    "message": "Hierdoor kunt u geavanceerde proxy-instellingen gebruiken en Mozilla VPN-integratiefuncties inschakelen.",
+    "description": "'This' refers to the permission indicated in proxyPermissionTitle"
+  },
+  "additionalPermissionNeeded": {
+    "message": "Deze functie vereist een extra toestemming om te werken. Toestemmingen kunnen op elk moment worden uitgeschakeld op de instellingenpagina.",
+    "description": "'This feature' is the browser proxy permission. This string appears on the 'Advanced Proxy Settings' panel when the proxy permission is disabled."
+  },
+  "mozillaVpnRequiresAdditionalPermissions": {
+    "message": "Integratie met Mozilla VPN vereist een abonnement en aanvullende toestemmingen om te werken."
+  },
+  "enable": {
+    "message": "Inschakelen",
+    "description": "Button title "
+  },
+  "integrateContainers": {
+    "message": "Uw containers integreren met Mozilla VPN"
+  },
+  "theme": {
+    "message": "Thema:",
+    "description": "Theme section title in the option page"
+  },
+  "chooseTheme": {
+    "message": "Kies een thema",
+    "description": "Description for the theme option"
+  },
+  "themeAuto": {
+    "message": "Automatisch detecteren (standaard)",
+    "description": "Default value for the theme option select tag"
+  },
+  "themeLight": {
+    "message": "Licht",
+    "description": "Value for the theme option select tag"
+  },
+  "themeDark": {
+    "message": "Donker",
+    "description": "Value for the theme option select tag"
+  }
+}

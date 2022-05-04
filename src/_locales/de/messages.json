@@ -1,0 +1,375 @@
+{
+  "extensionDescription": {
+    "message": "Multi-Account-Containers hilft Ihnen, alle Teile Ihres Online-Lebens in verschiedene Tabs zu unterteilen. Benutzerdefinierte Etiketten und farbcodierte Tabs helfen dabei, verschiedene Aktivitäten – wie Online-Shopping, Reiseplanung oder das Abrufen von geschäftlichen E-Mails – voneinander zu trennen. Dieses Addon kommt mit Wildcard(*)-Unterstützung.",
+    "description": "Description of the extension. DO NOT TRANSLATE \"Multi-Account Containers\"."
+  },
+  "openInNewTabTitle": {
+    "message": "Neuen Tab öffnen in…",
+    "description": "Menu title"
+  },
+  "reopenThisSiteIn": {
+    "message": "Diese Website erneut öffnen in…",
+    "description": "Menu title"
+  },
+  "sortTabsByContainer": {
+    "message": "Tabs nach Umgebung sortieren",
+    "description": "Menu title"
+  },
+  "alwaysOpenThisSiteIn": {
+    "message": "Diese Website immer öffnen in…",
+    "description": "Menu title"
+  },
+  "alwaysOpenIn": {
+    "message": "Immer öffnen in…",
+    "description": "Menu title"
+  },
+  "alwaysOpenSiteInContainer": {
+    "message": "Website immer in Umgebung öffnen"
+  },
+  "openANewTabIn": {
+    "message": "Einen neuen Tab öffnen in…"
+  },
+  "openNewTabInThisContainer": {
+    "message": "Neuen Tab in dieser Umgebung öffnen"
+  },
+  "openTabs": {
+    "message": "Offene Tabs",
+    "description": "Section title for tabs that are currently open in that container"
+  },
+  "moveTabsToANewWindow": {
+    "message": "Tabs in neues Fenster verschieben"
+  },
+  "onboarding-1-header": {
+    "message": "Eine bessere Möglichkeit, all Ihre Online-Aktivitäten zu verwalten"
+  },
+  "onboarding-1-description": {
+    "message": "Verwenden Sie Umgebungen, um Aufgaben zu organisieren, Konten zu verwalten und Ihren Fokus gezielt auszurichten."
+  },
+  "onboarding-2-header": {
+    "message": "Lassen Sie Umgebungen für sich arbeiten."
+  },
+  "onboarding-2-description": {
+    "message": "Funktionen wie Farbcodierung und separate Tab-Umgebungen helfen Ihnen, Dinge leicht zu finden, Ihre Aufmerksamkeit zu lenken und Ablenkungen zu minimieren."
+  },
+  "onboarding-3-header": {
+    "message": "Ein Platz für alles und alles an seinem Platz."
+  },
+  "onboarding-3-description": {
+    "message": "Beginnen Sie mit den von uns erstellten Umgebungen oder erstellen Sie Ihre eigenen."
+  },
+  "onboarding-4-header": {
+    "message": "Öffnen Sie Websites immer in den gewünschten Umgebungen."
+  },
+  "onboarding-4-description": {
+    "message": "Klicken Sie mit der rechten Maustaste auf eine Tab-Umgebung, um festzulegen, dass die Website immer in der Umgebung geöffnet wird."
+  },
+  "onboarding-5-header": {
+    "message": "Tab-Umgebungen, wenn Sie sie brauchen."
+  },
+  "onboarding-5-description": {
+    "message": "Drücken Sie lange auf die Neuer-Tab-Schaltfläche, um eine neue Tab-Umgebung zu öffnen."
+  },
+  "onboarding-6-header": {
+    "message": "Das Synchronisieren von Umgebungen ist jetzt verfügbar!"
+  },
+  "onboarding-6-description": {
+    "message": "Aktivieren Sie die Synchronisierung, um Tab-Umgebungen und Website-Zuweisungen mit jedem Computer zu teilen, der mit Ihrem Firefox-Konto verbunden ist."
+  },
+  "onboarding-7-header": {
+    "message": "Zum Synchronisieren ist ein Firefox-Konto erforderlich."
+  },
+  "onboarding-7-description": {
+    "message": "Klicken Sie auf Anmelden, um zu bestätigen, dass Ihr Firefox-Konto aktiv ist."
+  },
+  "onboarding-8-description": {
+    "message": "Container können jetzt in Mozilla VPN oder Ihren eigenen Proxy integriert werden, um eine sichere, private Verbindung herzustellen, die Ihre Aktivitäten schützt."
+  },
+  "oneHundredTabsHeader": {
+    "message": "100 Tabs!"
+  },
+  "youHaveOpened": {
+    "message": "Sie haben 100 Tab-Umgebungen geöffnet."
+  },
+  "spreadTheWord": {
+    "message": "Wenn Ihnen Containers gefällt, erzählen Sie anderen davon!"
+  },
+  "rate": {
+    "message": "Bewerten"
+  },
+  "share": {
+    "message": "Teilen"
+  },
+  "tweet": {
+    "message": "Twittern"
+  },
+  "default": {
+    "message": "Standard"
+  },
+  "manageContainers": {
+    "message": "Tab-Umgebungen verwalten"
+  },
+  "newContainer": {
+    "message": "Neue Umgebung"
+  },
+  "hideThisContainer": {
+    "message": "Diese Umgebung ausblenden"
+  },
+  "showThisContainer": {
+    "message": "Diese Umgebung anzeigen"
+  },
+  "removeThisContainer": {
+    "message": "Diese Umgebung löschen"
+  },
+  "removeThisContainerConfirmation": {
+    "message": "Soll diese Umgebung wirklich entfernt werden?"
+  },
+  "cancel": {
+    "message": "Abbrechen"
+  },
+  "ok": {
+    "message": "OK"
+  },
+  "sitesAssignedToThisContainer": {
+    "message": "Dieser Umgebung zugewiesene Websites"
+  },
+  "options": {
+    "message": "Einstellungen"
+  },
+  "name": {
+    "message": "Name"
+  },
+  "color": {
+    "message": "Farbe"
+  },
+  "icon": {
+    "message": "Symbol"
+  },
+  "limitToDesignatedSites": {
+    "message": "Auf bestimmte Websites beschränken"
+  },
+  "deleteThisContainer": {
+    "message": "Diese Umgebung löschen"
+  },
+  "manageSiteList": {
+    "message": "Liste der Websites verwalten…"
+  },
+  "manageThisContainer": {
+    "message": "Diese Umgebung verwalten"
+  },
+  "containers": {
+    "message": "Umgebungen"
+  },
+  "done": {
+    "message": "Fertig"
+  },
+  "getStarted": {
+    "message": "Erste Schritte"
+  },
+  "signIn": {
+    "message": "Anmelden"
+  },
+  "notNow": {
+    "message": "Nicht jetzt"
+  },
+  "startSyncing": {
+    "message": "Mit Synchronisierung beginnen"
+  },
+  "info": {
+    "message": "Info",
+    "description": "Alternative text for the i icon in the toolbar icon pop-up"
+  },
+  "next": {
+    "message": "Weiter"
+  },
+  "openThisSiteConfirmation": {
+    "message": "Diese Website in Ihrer zugewiesenen Umgebung öffnen?"
+  },
+  "wouldYouStillLikeToOpenConfirmation": {
+    "message": "Soll diese Website trotzdem in dieser aktuellen Umgebung geöffnet werden?"
+  },
+  "rememberMyDecision": {
+    "message": "Meine Entscheidung für diese Website merken"
+  },
+  "optionalPermissions": {
+    "message": "Optionale Berechtigungen:"
+  },
+  "keyboardShortCuts": {
+    "message": "Tastenkombinationen:"
+  },
+  "onboarding": {
+    "message": "Einführung"
+  },
+  "resetOnboardingPanels": {
+    "message": "Einführungs-Panels zurücksetzen"
+  },
+  "onboardingToggle": {
+    "message": "Schalten Sie dies um, um die Einführungs-Panels wieder anzuzeigen."
+  },
+  "tabBehavior": {
+    "message": "Tab-Verhalten:"
+  },
+  "enableBookMarkMenus": {
+    "message": "Lesezeichenmenüs aktivieren"
+  },
+  "firefoxAccountsSync": {
+    "message": "Synchronisation mit Firefox-Konten:"
+  },
+  "enableSync": {
+    "message": "Synchronisierung aktivieren"
+  },
+  "enableBookMarkMenusDescription": {
+    "message": "Mit dieser Einstellung können Sie ein Lesezeichen oder einen Ordner mit Lesezeichen in einer Umgebung öffnen."
+  },
+  "enableSyncDescription": {
+    "message": "Mit dieser Einstellung können Sie Ihre Umgebungen und Website-Zuweisungen geräteübergreifend synchronisieren."
+  },
+  "replaceTab": {
+    "message": "Tab ersetzen, anstatt einen neuen zu erstellen"
+  },
+  "replaceTabDescription": {
+    "message": "Den aktuellen Tab ersetzen, wenn eine Seite geöffnet wird, die einer anderen Umgebung zugeordnet ist (anstatt den aktuellen Tab geöffnet zu lassen). Das Öffnen von Tabs mit der mittleren Maustaste ist davon nicht betroffen."
+  },
+  "editWhichContainer": {
+    "message": "Einstellen, welche Umgebung geöffnet wird, wenn Sie die nummerierten Tastenkombinationen verwenden."
+  },
+  "keyboardShortCut": {
+    "message": "Umgebung, die mit der Tastenkombination $keyId$ geöffnet wird",
+    "placeholders": {
+      "keyId": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirmNavigationTitle": {
+    "message": "Multi-Account-Container – Navigation bestätigen",
+    "description": "This is the title of a confirmation page. Please do not translate \"Multi-Account Containers\"."
+  },
+  "openInContainer": {
+    "message": "In Umgebung $containerName$ öffnen",
+    "placeholders": {
+      "containerName": {
+        "content": "$1"
+      }
+    }
+  },
+  "youAskedFirefox": {
+    "message": "Sie haben Firefox gebeten, für diese Website immer $containerName$ zu öffnen:",
+    "placeholders": {
+      "containerName": {
+        "content": "$1"
+      }
+    }
+  },
+  "chooseLocation": {
+    "message": "Standort auswählen",
+    "description": "Location refers to the geographical position used by the VPN"
+  },
+  "hide": {
+    "message": "Ausblenden"
+  },
+  "show": {
+    "message": "Anzeigen"
+  },
+  "protectYourContainers": {
+    "message": "Schützen Sie Ihre Umgebungen mit Mozilla VPN"
+  },
+  "protectThisContainer": {
+    "message": "Schützen Sie diese Umgebung mit Mozilla VPN"
+  },
+  "advancedProxySettings": {
+    "message": "Erweiterte Proxy-Einstellungen"
+  },
+  "proxyInputLabel": {
+    "message": "Benutzerdefinierten Proxy eingeben"
+  },
+  "useCustomLocation": {
+    "message": "Benutzerdefinierten Standort für diese Umgebung verwenden"
+  },
+  "clearproxylabel": {
+    "message": "Proxy löschen"
+  },
+  "moz-vpn-connected": {
+    "message": "Mozilla VPN ist aktiviert"
+  },
+  "moz-vpn-disconnected": {
+    "message": "Mozilla VPN ist deaktiviert"
+  },
+  "invalidProxyAlert": {
+    "message": "Bitte geben Sie eine gültige Proxy-URL ein"
+  },
+  "mozillaVpnMustBeOn": {
+    "message": "Mozilla VPN muss aktiviert sein, um diese Funktion nutzen zu können."
+  },
+  "learnMore": {
+    "message": "Weitere Informationen"
+  },
+  "proxyNowAvailable": {
+    "message": "Jetzt mit Mozilla VPN und erweiterten Proxy-Einstellungen"
+  },
+  "applyToContainer": {
+    "message": "Auf Umgebung anwenden"
+  },
+  "tooltipWarning": {
+    "message": "Diese Umgebung ist so eingerichtet, dass sie einen Mozilla VPN-Proxy verwendet, aber Mozilla VPN ist nicht aktiviert. Schalten Sie Mozilla VPN ein, um diese Umgebung zu verwenden."
+  },
+  "getMozillaVpn": {
+    "message": "Holen Sie sich Mozilla VPN"
+  },
+  "integratewithmozillavpn": {
+    "message": "Integrieren Sie Ihre Umgebungen bei Mozilla VPN"
+  },
+  "mozillaVpnAndProxyPermissionsTitle": {
+    "message": "Mozilla VPN und Proxy-Berechtigungen",
+    "description": "Section headline in settings"
+  },
+  "nativeMessagingPermissionTitle": {
+    "message": "Der Erweiterung erlauben, Nachrichten mit anderen Programmen als Firefox auszutauschen",
+    "description": "Permission title"
+  },
+  "nativeMessagingPermissionDescription": {
+    "message": "Diese Einstellung ermöglicht der Erweiterung den Austausch von Nachrichten mit dem Mozilla-VPN-Client und ist erforderlich, damit die Mozilla VPN-Integrationsfunktionen funktionieren.",
+    "description": "'This setting' refers to the permission indicated in nativeMessagingPermissionTitle"
+  },
+  "proxyPermissionTitle": {
+    "message": "Erweiterung erlauben, Proxy-Einstellungen zu steuern",
+    "description": "Permission title"
+  },
+  "proxyPermissionDescription": {
+    "message": "Auf diese Weise können Sie erweiterte Proxy-Einstellungen verwenden und Mozilla-VPN-Integrationsfunktionen aktivieren.",
+    "description": "'This' refers to the permission indicated in proxyPermissionTitle"
+  },
+  "additionalPermissionNeeded": {
+    "message": "Diese Funktion erfordert eine zusätzliche Berechtigung, damit sie eingesetzt werden kann. Berechtigungen können auf der Einstellungen-Seite jederzeit deaktiviert werden.",
+    "description": "'This feature' is the browser proxy permission. This string appears on the 'Advanced Proxy Settings' panel when the proxy permission is disabled."
+  },
+  "mozillaVpnRequiresAdditionalPermissions": {
+    "message": "Die Integration mit Mozilla VPN erfordert ein Abonnement und zusätzliche Berechtigungen, um zu funktionieren."
+  },
+  "enable": {
+    "message": "Aktivieren",
+    "description": "Button title "
+  },
+  "integrateContainers": {
+    "message": "Integrieren Sie Ihre Umgebungen bei Mozilla VPN"
+  },
+  "theme": {
+    "message": "Theme:",
+    "description": "Theme section title in the option page"
+  },
+  "chooseTheme": {
+    "message": "Ein Theme auswählen",
+    "description": "Description for the theme option"
+  },
+  "themeAuto": {
+    "message": "Automatisch erkennen (Standard)",
+    "description": "Default value for the theme option select tag"
+  },
+  "themeLight": {
+    "message": "Hell",
+    "description": "Value for the theme option select tag"
+  },
+  "themeDark": {
+    "message": "Dunkel",
+    "description": "Value for the theme option select tag"
+  }
+}

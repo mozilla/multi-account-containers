@@ -1,0 +1,375 @@
+{
+  "extensionDescription": {
+    "message": "Multi-Account Containers vous aide à garder toutes les facettes de votre vie numérique dans différents onglets. Les noms personnalisés et les onglets à code couleur permettent de séparer les différentes activités, telles que les achats en ligne, la planification de voyages ou la consultation des e-mails professionnels. Cet addon est livré avec la prise en charge des caractères génériques(*).",
+    "description": "Description of the extension. DO NOT TRANSLATE \"Multi-Account Containers\"."
+  },
+  "openInNewTabTitle": {
+    "message": "Ouvrir un nouvel onglet dans…",
+    "description": "Menu title"
+  },
+  "reopenThisSiteIn": {
+    "message": "Rouvrir ce site dans…",
+    "description": "Menu title"
+  },
+  "sortTabsByContainer": {
+    "message": "Trier les onglets par conteneur",
+    "description": "Menu title"
+  },
+  "alwaysOpenThisSiteIn": {
+    "message": "Toujours ouvrir ce site dans…",
+    "description": "Menu title"
+  },
+  "alwaysOpenIn": {
+    "message": "Toujours ouvrir dans…",
+    "description": "Menu title"
+  },
+  "alwaysOpenSiteInContainer": {
+    "message": "Toujours ouvrir le site dans ce conteneur"
+  },
+  "openANewTabIn": {
+    "message": "Ouvrir un nouvel onglet dans…"
+  },
+  "openNewTabInThisContainer": {
+    "message": "Ouvrir un nouvel onglet dans ce conteneur"
+  },
+  "openTabs": {
+    "message": "Onglets ouverts",
+    "description": "Section title for tabs that are currently open in that container"
+  },
+  "moveTabsToANewWindow": {
+    "message": "Déplacer les onglets vers une nouvelle fenêtre"
+  },
+  "onboarding-1-header": {
+    "message": "Une meilleure façon de gérer tout ce que vous faites en ligne"
+  },
+  "onboarding-1-description": {
+    "message": "Utilisez les conteneurs pour organiser vos tâches, gérer vos comptes et vous concentrer sur ce que vous voulez."
+  },
+  "onboarding-2-header": {
+    "message": "Faites travailler les conteneurs à votre place."
+  },
+  "onboarding-2-description": {
+    "message": "Des fonctionnalités telles que le repérage par couleur des onglets et la séparation des conteneurs vous aide à vous y retrouver facilement, à vous concentrer et à minimiser les distractions."
+  },
+  "onboarding-3-header": {
+    "message": "Une place pour chaque chose et chaque chose à sa place."
+  },
+  "onboarding-3-description": {
+    "message": "Commencez avec les conteneurs que nous avons préparés ou créez les vôtres."
+  },
+  "onboarding-4-header": {
+    "message": "Ouvrez toujours les sites dans les conteneurs de votre choix."
+  },
+  "onboarding-4-description": {
+    "message": "Effectuez un clic droit dans un onglet conteneur pour forcer le site actuel à toujours s’ouvrir dans ce conteneur."
+  },
+  "onboarding-5-header": {
+    "message": "Des onglets conteneurs lorsque vous en avez besoin."
+  },
+  "onboarding-5-description": {
+    "message": "Effectuez un appui long sur le bouton de nouvel onglet pour créer un nouvel onglet conteneur."
+  },
+  "onboarding-6-header": {
+    "message": "Synchroniser les conteneurs est désormais possible !"
+  },
+  "onboarding-6-description": {
+    "message": "Activez la synchronisation pour partager les affectations de sites et de conteneurs avec n’importe quel ordinateur connecté à votre compte Firefox."
+  },
+  "onboarding-7-header": {
+    "message": "Un compte Firefox est requis pour la synchronisation."
+  },
+  "onboarding-7-description": {
+    "message": "Cliquez sur « Se connecter » pour confirmer que vous disposez d’un compte Firefox actif."
+  },
+  "onboarding-8-description": {
+    "message": "Désormais, les conteneurs peuvent s’intégrer à Mozilla VPN ou à votre propre proxy pour créer une connexion sécurisée et privée qui protège vos activités."
+  },
+  "oneHundredTabsHeader": {
+    "message": "100 onglets !"
+  },
+  "youHaveOpened": {
+    "message": "Vous avez ouvert cent onglets conteneurs."
+  },
+  "spreadTheWord": {
+    "message": "Si vous appréciez les conteneurs, aidez-nous à les faire connaître partout !"
+  },
+  "rate": {
+    "message": "Noter"
+  },
+  "share": {
+    "message": "Partager"
+  },
+  "tweet": {
+    "message": "Tweeter"
+  },
+  "default": {
+    "message": "Par défaut"
+  },
+  "manageContainers": {
+    "message": "Gérer les conteneurs"
+  },
+  "newContainer": {
+    "message": "Nouveau conteneur"
+  },
+  "hideThisContainer": {
+    "message": "Masquer ce conteneur"
+  },
+  "showThisContainer": {
+    "message": "Afficher ce conteneur"
+  },
+  "removeThisContainer": {
+    "message": "Supprimer ce conteneur"
+  },
+  "removeThisContainerConfirmation": {
+    "message": "Confirmez-vous la suppression de ce conteneur ?"
+  },
+  "cancel": {
+    "message": "Annuler"
+  },
+  "ok": {
+    "message": "OK"
+  },
+  "sitesAssignedToThisContainer": {
+    "message": "Sites assignés à ce conteneur"
+  },
+  "options": {
+    "message": "Options"
+  },
+  "name": {
+    "message": "Nom"
+  },
+  "color": {
+    "message": "Couleur"
+  },
+  "icon": {
+    "message": "Icône"
+  },
+  "limitToDesignatedSites": {
+    "message": "Limiter aux sites désignés"
+  },
+  "deleteThisContainer": {
+    "message": "Supprimer ce conteneur"
+  },
+  "manageSiteList": {
+    "message": "Gérer la liste des sites…"
+  },
+  "manageThisContainer": {
+    "message": "Gérer ce conteneur"
+  },
+  "containers": {
+    "message": "Conteneurs"
+  },
+  "done": {
+    "message": "Terminé"
+  },
+  "getStarted": {
+    "message": "Démarrer"
+  },
+  "signIn": {
+    "message": "Se connecter"
+  },
+  "notNow": {
+    "message": "Plus tard"
+  },
+  "startSyncing": {
+    "message": "Commencez la synchronisation"
+  },
+  "info": {
+    "message": "Informations",
+    "description": "Alternative text for the i icon in the toolbar icon pop-up"
+  },
+  "next": {
+    "message": "Suivant"
+  },
+  "openThisSiteConfirmation": {
+    "message": "Ouvrir ce site dans le conteneur que vous avez choisi ?"
+  },
+  "wouldYouStillLikeToOpenConfirmation": {
+    "message": "Voulez-vous poursuivre l’ouverture dans le conteneur actuel ?"
+  },
+  "rememberMyDecision": {
+    "message": "Se souvenir de ma décision pour ce site"
+  },
+  "optionalPermissions": {
+    "message": "Autorisations facultatives :"
+  },
+  "keyboardShortCuts": {
+    "message": "Raccourcis clavier :"
+  },
+  "onboarding": {
+    "message": "Accueil"
+  },
+  "resetOnboardingPanels": {
+    "message": "Réinitialiser les panneaux d’accueil"
+  },
+  "onboardingToggle": {
+    "message": "Cliquez sur le bouton ci-dessus pour revoir les panneaux d’accueil."
+  },
+  "tabBehavior": {
+    "message": "Comportement de l’onglet :"
+  },
+  "enableBookMarkMenus": {
+    "message": "Activer les menus de marque-pages"
+  },
+  "firefoxAccountsSync": {
+    "message": "Synchronisation avec les comptes Firefox : "
+  },
+  "enableSync": {
+    "message": "Activer la synchronisation"
+  },
+  "enableBookMarkMenusDescription": {
+    "message": "Ce paramètre vous permet d’ouvrir un marque-page ou un dossier de marque-pages dans un conteneur."
+  },
+  "enableSyncDescription": {
+    "message": "Ce paramètre vous permet de synchroniser vos conteneurs et affectations de sites entre vos appareils."
+  },
+  "replaceTab": {
+    "message": "Remplacer l’onglet plutôt qu’en créer un nouveau"
+  },
+  "replaceTabDescription": {
+    "message": "Remplacer l’onglet actuel si une page assignée à un autre conteneur est ouverte (plutôt que de garder l’onglet actuel ouvert). L’ouverture des onglets par un clic du bouton du milieu de la souris n’est pas affectée."
+  },
+  "editWhichContainer": {
+    "message": "Modifier quel conteneur est ouvert en utilisant les raccourcis numérotés."
+  },
+  "keyboardShortCut": {
+    "message": "Conteneur à ouvrir par le raccourci clavier $keyId$",
+    "placeholders": {
+      "keyId": {
+        "content": "$1"
+      }
+    }
+  },
+  "confirmNavigationTitle": {
+    "message": "Multi-Account Containers – Confirmer la navigation",
+    "description": "This is the title of a confirmation page. Please do not translate \"Multi-Account Containers\"."
+  },
+  "openInContainer": {
+    "message": "Ouvrir dans le conteneur $containerName$",
+    "placeholders": {
+      "containerName": {
+        "content": "$1"
+      }
+    }
+  },
+  "youAskedFirefox": {
+    "message": "Vous avez demandé à Firefox de toujours ouvrir dans le conteneur $containerName$ ce site :",
+    "placeholders": {
+      "containerName": {
+        "content": "$1"
+      }
+    }
+  },
+  "chooseLocation": {
+    "message": "Choisir l’emplacement",
+    "description": "Location refers to the geographical position used by the VPN"
+  },
+  "hide": {
+    "message": "Masquer"
+  },
+  "show": {
+    "message": "Afficher"
+  },
+  "protectYourContainers": {
+    "message": "Protégez vos conteneurs avec Mozilla VPN"
+  },
+  "protectThisContainer": {
+    "message": "Protéger ce conteneur avec Mozilla VPN"
+  },
+  "advancedProxySettings": {
+    "message": "Paramètres proxy avancés"
+  },
+  "proxyInputLabel": {
+    "message": "Saisissez un proxy personnalisé"
+  },
+  "useCustomLocation": {
+    "message": "Utiliser un emplacement personnalisé pour ce conteneur"
+  },
+  "clearproxylabel": {
+    "message": "Effacer le proxy"
+  },
+  "moz-vpn-connected": {
+    "message": "Mozilla VPN est activé"
+  },
+  "moz-vpn-disconnected": {
+    "message": "Mozilla VPN est désactivé"
+  },
+  "invalidProxyAlert": {
+    "message": "Veuillez saisir une adresse (URL) de proxy valide"
+  },
+  "mozillaVpnMustBeOn": {
+    "message": "Mozilla VPN doit être activé pour utiliser cette fonctionnalité."
+  },
+  "learnMore": {
+    "message": "En savoir plus"
+  },
+  "proxyNowAvailable": {
+    "message": "Désormais avec Mozilla VPN et les paramètres avancés de proxy"
+  },
+  "applyToContainer": {
+    "message": "Appliquer au conteneur"
+  },
+  "tooltipWarning": {
+    "message": "Ce conteneur est configuré pour utiliser un proxy Mozilla VPN, mais Mozilla VPN n’est pas activé. Activez Mozilla VPN pour utiliser ce conteneur."
+  },
+  "getMozillaVpn": {
+    "message": "Obtenir Mozilla VPN"
+  },
+  "integratewithmozillavpn": {
+    "message": "Intégrez vos conteneurs avec Mozilla VPN"
+  },
+  "mozillaVpnAndProxyPermissionsTitle": {
+    "message": "Mozilla VPN et autorisations de proxy",
+    "description": "Section headline in settings"
+  },
+  "nativeMessagingPermissionTitle": {
+    "message": "Autoriser l’extension à communiquer avec d’autres programmes que Firefox",
+    "description": "Permission title"
+  },
+  "nativeMessagingPermissionDescription": {
+    "message": "Ce paramètre autorise l’extension à communiquer avec le client Mozilla VPN et est requis pour que les fonctionnalités d’intégration avec Mozilla VPN fonctionnent.",
+    "description": "'This setting' refers to the permission indicated in nativeMessagingPermissionTitle"
+  },
+  "proxyPermissionTitle": {
+    "message": "Autoriser l’extension à contrôler les paramètres de proxy",
+    "description": "Permission title"
+  },
+  "proxyPermissionDescription": {
+    "message": "Cette autorisation vous permet d’utiliser des paramètres proxy avancés et d’activer les fonctionnalités d’intégration de Mozilla VPN.",
+    "description": "'This' refers to the permission indicated in proxyPermissionTitle"
+  },
+  "additionalPermissionNeeded": {
+    "message": "Cette fonctionnalité nécessite une autorisation supplémentaire pour fonctionner. Les autorisations peuvent être désactivées à tout moment dans les paramètres.",
+    "description": "'This feature' is the browser proxy permission. This string appears on the 'Advanced Proxy Settings' panel when the proxy permission is disabled."
+  },
+  "mozillaVpnRequiresAdditionalPermissions": {
+    "message": "L’intégration avec Mozilla VPN nécessite un abonnement et des permissions supplémentaires pour fonctionner."
+  },
+  "enable": {
+    "message": "Activer",
+    "description": "Button title "
+  },
+  "integrateContainers": {
+    "message": "Intégrez vos conteneurs avec Mozilla VPN"
+  },
+  "theme": {
+    "message": "Thème :",
+    "description": "Theme section title in the option page"
+  },
+  "chooseTheme": {
+    "message": "Choisir un thème",
+    "description": "Description for the theme option"
+  },
+  "themeAuto": {
+    "message": "Détection automatique (par défaut)",
+    "description": "Default value for the theme option select tag"
+  },
+  "themeLight": {
+    "message": "Clair",
+    "description": "Value for the theme option select tag"
+  },
+  "themeDark": {
+    "message": "Sombre",
+    "description": "Value for the theme option select tag"
+  }
+}
