@@ -196,6 +196,9 @@
   "keyboardShortCuts": {
     "message": "Raccourcis clavier :"
   },
+  "pageActionDescription": {
+    "message": "Afficher le \"Toujours ouvrir dans…\" dans la barre d'URL"
+  },
   "onboarding": {
     "message": "Accueil"
   },
