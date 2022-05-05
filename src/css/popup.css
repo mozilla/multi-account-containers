@@ -141,7 +141,7 @@ body {
   --icon-button-size: calc(calc(var(--block-line-separation-size) * 2) + 1.66rem); /* 20px */
   --inactive-opacity: 0.3;
   --overflow-size: 1px;
-  --icon-fit: 8;
+  --icon-fit: 9;
 
   background: var(--bgColor);
   margin-block: 0;
@@ -252,6 +252,11 @@ table {
 [data-identity-color="purple"] {
   --identity-tab-color: #af51f5;
   --identity-icon-color: #af51f5;
+}
+
+[data-identity-color="black"] {
+  --identity-tab-color: #000000;
+  --identity-icon-color: #000000;
 }
 
 [data-identity-icon="fingerprint"] {
