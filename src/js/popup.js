@@ -65,6 +65,9 @@ const Logic = {
       method: "MozillaVPN_attemptPort"
     }),
 
+    // Set the theme
+    Utils.applyTheme();
+
     // Remove browserAction "upgraded" badge when opening panel
     this.clearBrowserActionBadge();
 
@@ -1572,7 +1575,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
             } else {
               MozillaVPN.handleMozillaCtaClick("mac-edit-container-panel-btn");
             }
-           
+
           });
 
           this.switch.addEventListener("click", async() => {
