@@ -1,14 +1,14 @@
 {
   "manifest_version": 2,
   "name": "Multi-Account Containers (Wildcard)",
-  "version": "8.0.7.1",
+  "version": "8.0.7.2",
   "incognito": "not_allowed",
   "description": "__MSG_extensionDescription__",
   "icons": {
     "48": "img/container-site-d-48.png",
     "96": "img/container-site-d-96.png"
   },
-  "homepage_url": "https://github.com/mckenfra/multi-account-containers/tree/8.0.7.1-WildcardSubdomains",
+  "homepage_url": "https://github.com/BPower0036/multi-account-containers/tree/wildcard",
   "permissions": [
     "<all_urls>",
     "activeTab",
