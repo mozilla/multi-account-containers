@@ -196,6 +196,9 @@
   "keyboardShortCuts": {
     "message": "Keyboard Shortcuts:"
   },
+  "pageActionDescription": {
+    "message": "Show the \"Always open this in a container\" button in the URL bar"
+  },
   "onboarding": {
     "message": "Onboarding"
   },
