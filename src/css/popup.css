@@ -1791,8 +1791,8 @@ manage things like container crud */
   flex: 0 0 16px;
   margin-inline-end: 4px;
 }
-
 /* stylelint-enable no-descending-specificity */
+
 .container-info-tab-row img[src=""] {
   margin-inline-end: 0;
 }
