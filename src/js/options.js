@@ -59,13 +59,22 @@ async function enableDisablePageAction() {
   await browser.runtime.sendMessage({ method: "resetPageAction" });
 }
 
+async function changeTheme(event) {
+  const theme = event.currentTarget;
+  await browser.storage.local.set({currentTheme: theme.value});
+  await browser.storage.local.set({currentThemeId: theme.selectedIndex});
+}
+
 async function setupOptions() {
   const { syncEnabled } = await browser.storage.local.get("syncEnabled");
   const { replaceTabEnabled } = await browser.storage.local.get("replaceTabEnabled");
   const { pageActionEnabled } = await browser.storage.local.get({ pageActionEnabled: true });
+  const { currentThemeId } = await browser.storage.local.get("currentThemeId");
+
   document.querySelector("#syncCheck").checked = !!syncEnabled;
   document.querySelector("#replaceTabCheck").checked = !!replaceTabEnabled;
   document.querySelector("#pageActionCheck").checked = !!pageActionEnabled;
+  document.querySelector("#changeTheme").selectedIndex = currentThemeId;
   setupContainerShortcutSelects();
 }
 
@@ -123,6 +132,8 @@ document.addEventListener("DOMContentLoaded", setupOptions);
 document.querySelector("#syncCheck").addEventListener( "change", enableDisableSync);
 document.querySelector("#replaceTabCheck").addEventListener( "change", enableDisableReplaceTab);
 document.querySelector("#pageActionCheck").addEventListener( "change", enableDisablePageAction);
+document.querySelector("#changeTheme").addEventListener( "change", changeTheme);
+
 maybeShowPermissionsWarningIcon();
 for (let i=0; i < NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
   document.querySelector("#open_container_"+i)
