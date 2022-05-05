@@ -5,7 +5,6 @@
         {
           "version": "8.0.7.3",
           "browser_specific_settings": { "gecko": { "strict_min_version": "91.1.0" } },
-          "update_link": "https://github.com/BPower0036/multi-account-containers/releases/download/8.0.7.3/multi_account_containers_wildcard-8.0.7.3-fx.xpi"
         }
       ]
     }
