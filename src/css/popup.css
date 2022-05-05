@@ -254,9 +254,9 @@ table {
   --identity-icon-color: #af51f5;
 }
 
-[data-identity-color="black"] {
-  --identity-tab-color: #000000;
-  --identity-icon-color: #000000;
+[data-identity-color="toolbar"] {
+  --identity-tab-color: var(--toolbar-field-color);
+  --identity-icon-color: var(--toolbar-field-color);
 }
 
 [data-identity-icon="fingerprint"] {
