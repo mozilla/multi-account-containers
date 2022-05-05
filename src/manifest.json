@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "author": "BPower0036",
   "name": "Multi-Account Containers (Wildcard)",
-  "version": "8.0.7.5",
+  "version": "8.0.7.6",
   "incognito": "not_allowed",
   "description": "__MSG_extensionDescription__",
   "icons": {
@@ -125,9 +125,6 @@
     "default_title": "Always open this in a Container",
     "default_popup": "pageActionPopup.html",
     "pinned": false,
-    "show_matches": [
-      "*://*/*"
-    ]
   },
   "background": {
     "page": "js/background/index.html"
