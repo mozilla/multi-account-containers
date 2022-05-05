@@ -196,6 +196,9 @@
   "keyboardShortCuts": {
     "message": "Sneltoetsen:"
   },
+  "pageActionDescription": {
+    "message": "Toon de \"Deze website altijd openen in…\" knop in the URL-balk"
+  },
   "onboarding": {
     "message": "Welkomstbericht"
   },
