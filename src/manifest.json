@@ -34,7 +34,7 @@
     "gecko": {
       "id": "@testpilot-containers-wildcard",
       "strict_min_version": "91.1.0",
-      "update_url": "update.json"
+      "update_url": "https://raw.githubusercontent.com/BPower0036/multi-account-containers/wildcard/src/update.json"
     }
   },
   "commands": {
