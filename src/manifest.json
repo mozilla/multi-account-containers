@@ -1,5 +1,6 @@
 {
   "manifest_version": 2,
+  "author": "BPower0036",
   "name": "Multi-Account Containers (Wildcard)",
   "version": "8.0.7.2",
   "incognito": "not_allowed",
@@ -32,7 +33,8 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "@testpilot-containers-wildcard",
-      "strict_min_version": "91.1.0"
+      "strict_min_version": "91.1.0",
+      "update_url": "update.json"
     }
   },
   "commands": {

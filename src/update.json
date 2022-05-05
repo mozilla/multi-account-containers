@@ -1,0 +1,13 @@
+{
+  "addons": {
+    "@testpilot-containers-wildcard": {
+      "updates": [
+        {
+          "version": "8.0.7.2",
+          "browser_specific_settings": { "gecko": { "strict_min_version": "91.1.0" } },
+          "update_link": "https://addons.mozilla.org/firefox/downloads/file/3944703/multi_account_containers_wildcard-8.0.7.2-fx.xpi"
+        }
+      ]
+    }
+  }
+}
