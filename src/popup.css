@@ -1,0 +1,2389 @@
+@font-face {
+  font-family: "Metropolis";
+  font-style: normal;
+  font-weight: 800;
+  src: url("/fonts/Metropolis-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Metropolis-Light";
+  font-style: normal;
+  font-weight: 300;
+  src: url("/fonts/Metropolis-Light.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  src: url("/fonts/Inter-Regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Inter-Medium";
+  font-style: normal;
+  font-weight: 500;
+  src: url("/fonts/Inter-Medium.woff2") format("woff2");
+}
+
+[data-theme="light"],
+:root {
+  --fontInter: "Inter", sans-serif;
+  --fontInterMedium: "Inter-Medium", sans-serif;
+  --fontMetropolis: "Metropolis", sans-serif;
+  --fontMetropolisLight: "Metropolis-Light", sans-serif;
+  --iconArrowLeft: url("/img/arrow-icon-left.svg");
+  --iconArrowRight: url("/img/arrow-icon-right.svg");
+  --iconCloseX: url("/img/close.svg");
+  --iconGear: url("/img/gear-icon.svg");
+  --iconProxyWarning: url("/img/proxy-warning.svg");
+  --logoMozillaVpn: url("/img/moz-vpn-logo.svg");
+  --menuItemHeight: 28px;
+  --marginInline: 16px;
+  --footerHeight: 48px;
+  --panelSize: 560px;
+  --rowHeight: 48px;
+
+  /* calculated from 12px */
+  --font-size-heading: 1.33rem; /* 16px */
+  --block-line-space-size: 0.5rem; /* 6px */
+  --inline-item-space-size: 0.5rem; /* 6px */
+  --block-line-separation-size: 0.33rem; /* 10px */
+  --inline-icon-space-size: 0.833rem; /* 10px */
+
+  /* Use for url and icon size */
+  --block-url-label-size: 2rem; /* 24px */
+  --inline-start-size: 1.66rem; /* 20px */
+  --inline-button-size: 5.833rem; /* 70px */
+  --icon-size: 1.166rem; /* 14px */
+  --small-text-size: 0.833rem; /* 10px */
+  --small-radius: 3px;
+  --icon-button-size: calc(calc(var(--block-line-separation-size) * 2) + 1.66rem); /* 20px */
+  --inactive-opacity: 0.3;
+  --overflow-size: 1px;
+  --icon-fit: 9;
+
+  background: var(--bgColor);
+  margin-block: 0;
+  margin-inline: 0;
+
+  /* Proton Colors */
+  --badge-destructive-bg-color: #e22850;
+  --badge-destructive-text-color: #fbfbfe;
+  --button-bg-color-primary: #0060df;
+  --button-bg-active-color-primary: #054096;
+  --button-bg-hover-color-primary: #0250bb;
+  --button-bg-focus-color-primary: #0060df;
+  --button-text-color-primary: #fbfbfe;
+  --button-bg-color-secondary: #f0f0f4;
+  --button-bg-active-color-secondary: #cfcfd8;
+  --button-bg-hover-color-secondary: #e0e0e6;
+  --button-destructive-bg-color: #e22850;
+  --button-destructive-bg-active-color: #810220;
+  --button-destructive-bg-hover-color: #c50042;
+  --button-destructive-bg-focus-color: #e22850;
+  --button-destructive-text-color: #fbfbfe;
+  --input-bg-color: #fff;
+  --input-bg-focus-color: #fff;
+  --input-bg-active-color: #054096;
+  --input-border-color: #8f8f9d;
+  --input-border-focus-color: #0060df;
+  --input-border-active-color: #054096;
+  --text-color-primary: #15141a;
+  --menu-bg-active-color: #cfcfd8;
+  --menu-bg-hover-color: #e0e0e6;
+  --panel-bg-color: #fff;
+  --panel-separator-color: rgba(240, 240, 244, 1);
+  --link-color: #0060df;
+  --link-hover-color: #0250bb;
+  --toggle-off-bg-color: #f0f0f4;
+  --toggle-off-bg-active-color: #cfcfd8;
+  --toggle-off-bg-hover-color: #e0e0e6;
+  --toggle-off-bg-focus-color: #f0f0f4;
+  --toggle-off-border-color: #8f8f9d;
+  --toggle-on-bg-color: #0060df;
+  --toggle-on-bg-active-color: #054096;
+  --toggle-on-bg-hover-color: #0250bb;
+  --toggle-on-bg-focus-color: #0060df;
+  --toggle-on-border-color: #0060df;
+  --toggle-on-handle-bg-color: #fff;
+  --usercontext-bg-active-color: #e0e0e6;
+  --usercontext-bg-focus-color: #cfcaf6;
+  --usercontext-bg-hover-color: #e0e0e6;
+  --moz-vpn-tout-shadow: 0 0 7px 0 #9498a25e;
+}
+[data-theme="dark"] {
+  --iconCloseX: url("/img/close-light.svg");
+  --iconGear: url("/img/gear-icon-light.svg");
+  --iconArrowRight: url("/img/arrow-icon-right-light.svg");
+  --iconArrowLeft: url("/img/arrow-icon-left-light.svg");
+  --iconProxyWarning: url("/img/proxy-warning-light.svg");
+  --logoMozillaVpn: url("/img/moz-vpn-logo-light.svg");
+  --bgColor: #42404c;
+  --text-normal-color: #f9f9fa;
+  --primaryCtaDefault: var(--blue40);
+  --primaryCtaHover: var(--blue50);
+  --primaryCtaActive: var(--blue60);
+  --controllerActive: rgb(90, 89, 102);
+  --bgDark: #2b2932;
+
+  /* Proton Colors */
+  --badge-destructive-bg-color: #ff8480;
+  --badge-destructive-text-color: #15141a;
+  --button-bg-color-primary: #0df;
+  --button-bg-active-color-primary: #aaf2ff;
+  --button-bg-hover-color-primary: #80ebff;
+  --button-bg-focus-color-primary: #0df;
+  --button-text-color-primary: #15141a;
+  --button-bg-color-secondary: #2b2a33;
+  --button-bg-active-color-secondary: #5b5b66;
+  --button-bg-hover-color-secondary: #52525e;
+  --button-destructive-bg-color: #ff8480;
+  --button-destructive-bg-active-color: #ffdfe7;
+  --button-destructive-bg-hover-color: #ffbdc5;
+  --button-destructive-bg-focus-color: #ff8480;
+  --button-destructive-text-color: #15141a;
+
+  /* for the input background, we use dark-grey-60 instead of dark-grey-30
+   * instead the panel background is lighter than the page background
+   */
+  --input-bg-color: #2b2a33;
+  --input-bg-active-color: #aaf2ff;
+  --input-bg-focus-color: #52525e;
+  --input-border-color: #8f8f9d;
+  --input-border-active-color: #aaf2ff;
+  --input-border-focus-color: #0df;
+  --link-color: #0df;
+  --link-hover-color: #80ebff;
+  --text-color-primary: #fbfbfe;
+  --menu-bg-active-color: #5b5b66;
+  --menu-bg-hover-color: #52525e;
+  --panel-bg-color: #42414d;
+  --panel-separator-color: rgba(82, 82, 94, 1);
+
+  /* Toggle is currently called `.slider` in the code below. This should be
+   * changed in a follow-up patch to make it more inline with the terms used in
+   * the Proton Design System
+   */
+  --toggle-off-bg-color: #2b2a33;
+  --toggle-off-bg-active-color: #5b5b66;
+  --toggle-off-bg-hover-color: #52525e;
+  --toggle-off-bg-focus-color: #2b2a33;
+  --toggle-off-border-color: #8f8f9d;
+  --toggle-on-bg-color: #0df;
+  --toggle-on-bg-active-color: #aaf2ff;
+  --toggle-on-bg-hover-color: #80ebff;
+  --toggle-on-bg-focus-color: #0df;
+  --toggle-on-border-color: #0df;
+  --toggle-on-handle-bg-color: #42414d;
+  --usercontext-bg-active-color: #5b5b66;
+  --usercontext-bg-focus-color: #2b2a33;
+  --usercontext-bg-hover-color: #52525e;
+  --moz-vpn-tout-shadow: 0 0 7px 0 #7478825e;
+}
+
+/* General Rules and Resets */
+
+* {
+  font-size: inherit;
+  margin-block-end: 0;
+  margin-block-start: 0;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 0;
+  padding-inline-start: 0;
+}
+
+html {
+  background-color: var(--panel-bg-color);
+  box-sizing: border-box;
+  font-size: 12px;
+  overscroll-behavior: none;
+}
+
+body {
+  background-color: var(--panel-bg-color);
+  color: var(--text-color-primary);
+  font-family: var(--fontInter);
+  font-size: 13px;
+  inline-size: 352px;
+  letter-spacing: -0.125px;
+  min-inline-size: 352px;
+}
+
+html,
+body {
+  block-size: 100%; /* Bugfix: issue 948 */
+  max-block-size: 650px;
+  min-block-size: 300px;
+
+  /* stylelint-disable */
+  scrollbar-width: none;
+  /* stylelint-enable */
+  transition: height 0.1s ease-in-out;
+}
+
+/* Hack for menu icons to use a light color without affecting container icons */
+[data-theme="light"] img.delete-assignment,
+[data-theme="dark"] .trash-button,
+[data-theme="dark"] img.menu-icon,
+[data-theme="dark"] .menu-icon > img,
+[data-theme="dark"] .menu-arrow > img,
+[data-theme="dark"] .info-icon > img {
+  filter: invert(1);
+}
+
+[data-theme="dark"] img.delete-assignment,
+[data-theme="dark"] #edit-sites-assigned .menu-icon,
+[data-theme="dark"] #container-info-table .menu-icon {
+  filter: invert(0);
+}
+
+[data-theme="dark"] [data-identity-color="grey"] {
+  --identity-icon-color: var(--text-color-primary);
+}
+
+[data-theme="dark"] [data-identity-color="grey"]:hover {
+  --identity-icon-color: var(--text-color-primary);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+table {
+  border: 0;
+  border-spacing: 0;
+  inline-size: 100%;
+}
+
+/* Helper Classes */
+.hide {
+  display: none !important;
+}
+
+.scrollable {
+  flex: 1;
+  inline-size: 100%;
+  block-size: 100%;
+  overscroll-behavior: none;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-block-end: 8px;
+}
+
+.offpage {
+  opacity: 0;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* effect borrowed from tabs in firefox, ensure that the element flexes to the full width */
+.truncate-text {
+  inline-size: calc(100vw - 80px);
+  overflow: hidden;
+  position: relative;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.truncate-text::after {
+  background: var(--bgColor);
+  content: " ";
+  block-size: 100%;
+  inline-size: 100px;
+  inset-inline-end: 0;
+  mask-image: linear-gradient(to right, transparent, var(--bgColor) 70%);
+  position: absolute;
+}
+
+.hover-highlight:hover .truncate-text::after {
+  background-color: var(--menu-bg-hover-color);
+  mask-image: linear-gradient(to right, transparent, var(--menu-bg-hover-color) 50%);
+}
+
+/* Color and icon helpers */
+[data-identity-color="blue"] {
+  --identity-tab-color: #37adff;
+  --identity-icon-color: #37adff;
+}
+
+[data-identity-color="turquoise"] {
+  --identity-tab-color: #00c79a;
+  --identity-icon-color: #00c79a;
+}
+
+[data-identity-color="green"] {
+  --identity-tab-color: #51cd00;
+  --identity-icon-color: #51cd00;
+}
+
+/* We disable no-descending-specificity so we can keep [data-theme="dark"]
+ * rules grouped together at the beginning of the file
+ */
+/* stylelint-disable no-descending-specificity */
+[data-identity-color="grey"] {
+  /* Only used for the edit panel */
+  --identity-icon-color: #616161;
+}
+/* stylelint-enable no-descending-specificity */
+
+[data-identity-color="yellow"] {
+  --identity-tab-color: #ffcb00;
+  --identity-icon-color: #ffcb00;
+}
+
+[data-identity-color="orange"] {
+  --identity-tab-color: #ff9f00;
+  --identity-icon-color: #ff9f00;
+}
+
+[data-identity-color="red"] {
+  --identity-tab-color: #ff613d;
+  --identity-icon-color: #ff613d;
+}
+
+[data-identity-color="pink"] {
+  --identity-tab-color: #ff4bda;
+  --identity-icon-color: #ff4bda;
+}
+
+[data-identity-color="purple"] {
+  --identity-tab-color: #af51f5;
+  --identity-icon-color: #af51f5;
+}
+
+[data-identity-color="toolbar"] {
+  --identity-tab-color: var(--toolbar-field-color);
+  --identity-icon-color: var(--toolbar-field-color);
+}
+
+[data-identity-icon="fingerprint"] {
+  --identity-icon: url("/img/usercontext.svg#fingerprint");
+}
+
+[data-identity-icon="briefcase"] {
+  --identity-icon: url("/img/usercontext.svg#briefcase");
+}
+
+[data-identity-icon="dollar"] {
+  --identity-icon: url("/img/usercontext.svg#dollar");
+}
+
+[data-identity-icon="cart"] {
+  --identity-icon: url("/img/usercontext.svg#cart");
+}
+
+[data-identity-icon="circle"] {
+  --identity-icon: url("/img/usercontext.svg#circle");
+}
+
+[data-identity-icon="food"] {
+  --identity-icon: url("/img/usercontext.svg#food");
+}
+
+[data-identity-icon="gift"] {
+  --identity-icon: url("/img/usercontext.svg#gift");
+}
+
+[data-identity-icon="vacation"] {
+  --identity-icon: url("/img/usercontext.svg#vacation");
+}
+
+[data-identity-icon="fruit"] {
+  --identity-icon: url("/img/usercontext.svg#fruit");
+}
+
+[data-identity-icon="pet"] {
+  --identity-icon: url("/img/usercontext.svg#pet");
+}
+
+[data-identity-icon="tree"] {
+  --identity-icon: url("/img/usercontext.svg#tree");
+}
+
+[data-identity-icon="chill"] {
+  --identity-icon: url("/img/usercontext.svg#chill");
+}
+
+[data-identity-icon="fence"] {
+  --identity-icon: url("/img/usercontext.svg#fence");
+}
+
+#current-tab [data-identity-icon="default-tab"] {
+  background: center center no-repeat url("/img/blank-tab.svg");
+  fill: currentColor;
+}
+
+/* Buttons */
+
+.button {
+  background-color: var(--button-bg-color-secondary);
+  color: var(--text-color-primary);
+}
+
+.button.primary {
+  background-color: var(--button-bg-color-primary);
+  color: var(--button-text-color-primary);
+}
+
+.button.primary:hover {
+  background-color: var(--button-bg-hover-color-primary);
+}
+
+.button.primary:focus {
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
+}
+
+.button.secondary:hover {
+  background-color: var(--button-bg-hover-color-secondary);
+}
+
+.button.secondary:focus {
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
+}
+
+.button.primary:active {
+  background-color: var(--button-bg-active-color-primary);
+  outline: none;
+}
+
+.button.secondary:active {
+  background-color: var(--button-bg-active-color-secondary);
+  outline: none;
+}
+
+/* Mozilla VPN status icon */
+
+.moz-vpn-status-icon {
+  color: var(--text-color-primary);
+  background-size: 17px;
+  background-position: left center;
+  font-size: 13px;
+  padding-inline-start: 22px;
+  padding-inline-end: 32px;
+}
+
+.moz-vpn-status-icon.connected {
+  background-image: url("/img/moz-vpn-status-icons/moz-vpn-connected.svg");
+}
+
+.moz-vpn-status-icon.disconnected {
+  background-image: url("/img/moz-vpn-status-icons/moz-vpn-disconnected.svg");
+}
+
+.moz-vpn-logotype.vpn-status-container-list {
+  color: var(--text-color-primary);
+  background-size: 16px;
+  background-position: left center;
+  font-size: 12px;
+  padding-inline-start: 19px;
+  padding-inline-end: 22px;
+  align-items: center;
+}
+
+.moz-vpn-connection-status-indicator.container-list-status-icon {
+  block-size: 16px;
+  inline-size: 16px;
+}
+
+/* Toggle Switch */
+
+.switch {
+  display: inline-block;
+  block-size: 24px;
+  position: relative;
+  inline-size: 45px;
+}
+
+.switch .switch-input {
+  block-size: 0;
+  opacity: 0;
+  inline-size: 0;
+}
+
+.slider {
+  background-color: var(--toggle-off-bg-color);
+  border-radius: 13px;
+  inset-block-end: 0;
+  box-shadow: 0 0 0 2px var(--toggle-off-border-color);
+  inset-inline-start: 0;
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-start: 0;
+  transition: 0.1s ease-in-out;
+}
+
+.slider::before {
+  background-color: var(--toggle-off-border-color);
+  border-radius: 50%;
+  inset-block-end: 3px;
+  content: "";
+  block-size: 18px;
+  inset-inline-start: 3px;
+  position: absolute;
+  transition: 0.1s ease-in-out;
+  inline-size: 18px;
+}
+
+input:hover + .slider {
+  background-color: var(--toggle-off-bg-hover-color);
+}
+
+input:focus + .slider {
+  box-shadow:
+    0 0 0 2px var(--toggle-off-border-color),
+    0 0 0 4px var(--toggle-off-bg-color),
+    0 0 0 6px var(--toggle-on-border-color);
+}
+
+input:active + .slider {
+  background-color: var(--toggle-off-bg-active-color);
+}
+
+input:checked + .slider {
+  background-color: var(--toggle-on-bg-color);
+  box-shadow: 0 0 0 2px var(--toggle-on-border-color);
+}
+
+input:checked + .slider::before {
+  background-color: var(--toggle-on-handle-bg-color);
+  transform: translateX(21px);
+}
+
+input:checked:hover + .slider {
+  background-color: var(--toggle-on-bg-hover-color);
+  box-shadow: 0 0 0 2px var(--toggle-on-bg-hover-color);
+}
+
+input:checked:focus + .slider {
+  box-shadow:
+    0 0 0 2px var(--toggle-on-border-color),
+    0 0 0 4px var(--toggle-off-bg-color),
+    0 0 0 6px var(--toggle-on-border-color);
+}
+
+input:checked:active + .slider {
+  background-color: var(--toggle-on-bg-active-color);
+}
+
+input:checked:hover:focus + .slider {
+  background-color: var(--toggle-on-bg-hover-color);
+  box-shadow:
+    0 0 0 2px var(--toggle-on-bg-hover-color),
+    0 0 0 4px var(--toggle-off-bg-color),
+    0 0 0 6px var(--toggle-on-border-color);
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+/* Primary CTA Buttons */
+
+.primary-cta {
+  block-size: 32px;
+  background-color: var(--button-bg-color-primary);
+  border: transparent;
+  border-radius: 4px;
+  color: var(--button-text-color-primary);
+  transition: background-color 0.2s ease-in-out;
+}
+
+.primary-cta:hover {
+  background-color: var(--button-bg-hover-color-primary);
+}
+
+.primary-cta:focus {
+  outline: none;
+  box-shadow:
+    0 0 0 2px var(--button-bg-color-secondary),
+    0 0 0 4px var(--button-bg-color-primary);
+}
+
+.primary-cta:active {
+  background-color: var(--button-bg-active-color-primary);
+}
+
+/* Mozilla VPN tout */
+
+#moz-vpn-tout {
+  opacity: 0;
+  background-color: var(--panel-bg-color);
+  visibility: visible;
+  max-block-size: 500px;
+  position: absolute;
+  inset-block-end: var(--footerHeight);
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  box-shadow: var(--moz-vpn-tout-shadow);
+  animation: appear 0.2s ease-out 0.5s forwards;
+  transition: opacity 0.1s ease-in-out, max-height 0.3s ease-in-out;
+}
+
+@keyframes appear {
+  0% {
+    opacity: 0;
+    transform: translateY(10%);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0%);
+  }
+}
+
+/* Mozilla VPN Controller UI in Container Management Panel */
+
+.moz-vpn-content,
+.moz-vpn-controller-content {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  padding-block: 16px;
+  transition: max-height 0.3s ease-in-out, padding-block-end 0.2s ease-in-out;
+  box-shadow: 0 0 0 1px var(--panel-separator-color);
+}
+
+.moz-vpn-connection-status-indicator {
+  position: absolute;
+  inset-inline-end: 0;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  size: 0;
+  color: rgba(0, 0, 0, 0);
+  block-size: 24px;
+  inline-size: 24px;
+}
+
+.current-country-flag {
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: contain;
+  block-size: 16px;
+  inline-size: 16px;
+}
+
+.moz-vpn-controller-content.show-server-button {
+  padding-block-end: 56px;
+  transition: 0.2s ease-in-out;
+}
+
+.dismiss-moz-vpn-tout {
+  margin-inline-start: auto;
+  block-size: 24px;
+  inline-size: 24px;
+  background: var(--bgColor);
+  background-image: var(--iconCloseX);
+  border: none;
+  border-radius: 4px;
+}
+
+.flag-img {
+  block-size: 13px;
+  margin-inline-end: 4px;
+  opacity: 0.9;
+}
+
+.page-action-flag {
+  margin-inline-end: var(--marginInline);
+}
+
+.display-none {
+  display: none;
+}
+
+.proxy-disabled {
+  opacity: 0.4;
+}
+
+fieldset.proxies {
+  position: absolute;
+  inset-block-start: 120px;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  block-size: 60px;
+  display: flex;
+  background: #5cabff;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  flex-direction: row;
+  pointer-events: none;
+}
+
+input.proxies {
+  font-size: 6px;
+  block-size: 20px;
+  max-block-size: 20px;
+  padding-block: 0 !important;
+  padding-inline: 0 !important;
+  display: inline-flex;
+  inline-size: 40% !important;
+  pointer-events: none;
+}
+
+.moz-vpn-cta {
+  block-size: 32px;
+  margin-block-start: 16px;
+  margin-block-end: 4px;
+  margin-inline: var(--marginInline);
+  text-align: center;
+}
+
+.apply-to-container {
+  block-size: 32px;
+  inline-size: 100%;
+  text-align: center;
+  margin-block: 16px;
+}
+
+#moz-vpn-current-server {
+  align-items: center;
+  border: none;
+  border-radius: 4px;
+  display: flex;
+  block-size: 32px;
+  margin-block-start: 8px;
+  background-color: var(--panel-bg-color);
+  background-image: var(--iconArrowRight);
+  background-position: calc(100% - 24px) center;
+  background-repeat: no-repeat;
+  background-size: 9px;
+  outline: none;
+  padding-inline-start: 20px;
+  margin-inline: 8px;
+  margin-block: 8px;
+  visibility: visible;
+  position: absolute;
+  inset-block-end: 0;
+  inline-size: calc(100% - 16px);
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+#moz-vpn-current-server:hover {
+  background-color: var(--button-bg-hover-color-secondary);
+}
+
+#moz-vpn-current-server:focus {
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
+}
+
+#moz-vpn-current-server:active {
+  background-color: var(--button-bg-active-color-secondary);
+  outline: none;
+}
+
+.moz-vpn-controller-content.show-server-button #moz-vpn-current-server {
+  opacity: 1;
+}
+
+.moz-vpn-controller-content.show-server-button #moz-vpn-current-server[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@keyframes serverButtonAppear {
+  0% {
+    opacity: 0;
+    visibility: hidden;
+    z-index: -1;
+  }
+
+  90% {
+    z-index: -1;
+    visibility: hidden;
+  }
+
+  100% {
+    visibility: visible;
+    z-index: 1;
+    opacity: 1;
+  }
+}
+
+#moz-vpn-current-server.hidden {
+  block-size: 0;
+  opacity: 0;
+  visibility: hidden;
+  z-index: -1;
+}
+
+.current-city-name {
+  padding-inline-start: 12px;
+}
+
+.collapsible-content {
+  max-block-size: 0;
+  opacity: 0;
+  visibility: hidden;
+  display: none;
+  background-color: var(--bgColor);
+  transition: max-height 0.2s ease-in-out, opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.moz-vpn-subtitle {
+  font-size: 12px;
+  flex: 0 1 80%;
+  color: var(--text-normal-color);
+}
+
+.collapsible-content > .flx-row.flx-space-between {
+  inline-size: calc(100% - 40px);
+  margin-inline: auto;
+  padding-block-start: 12px;
+}
+
+[disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+#current-proxy {
+  font-size: 12px;
+  color: var(--grey30);
+  line-height: 13px;
+}
+
+.expanded .collapsible-content {
+  display: flex;
+  max-block-size: 500px;
+  opacity: 1;
+  visibility: visible;
+}
+
+.hide-label,
+.show-label {
+  line-height: 100%;
+  position: absolute;
+  inset-inline-end: 0;
+  transition: visibility 0.2s ease-in-out, color 0.2s ease-in-out, opacity 0.2s ease-in-out;
+}
+
+.expanded .hide-label,
+.show-label {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* stylelint-disable */
+.hide-label,
+.expanded .show-label {
+  visibility: hidden;
+  opacity: 0;
+}
+
+/* stylelint-enable */
+
+.expand-collapse {
+  inline-size: 50%;
+  margin-inline-start: auto;
+  pointer-events: all;
+}
+
+.button-wrapper {
+  margin-inline: 20px;
+}
+
+/* Advanced Proxy Settings Button */
+
+#edit-advanced-proxy-input {
+  padding-inline-end: 40px;
+}
+
+#edit-advanced-proxy-input.valid:focus {
+  box-shadow: 0 0 0 3px #3fe1b030;
+  border-color: var(--green80);
+}
+
+.advanced-proxy-settings-btn {
+  background-color: var(--panel-bg-color);
+  background-image: var(--iconGear), var(--iconArrowRight);
+  background-position: 16px center, calc(100% - 24px) center;
+  background-repeat: no-repeat;
+  background-size: 24px 24px, 9px;
+  border: none;
+  border-radius: 4px;
+  color: var(--text-color-primary);
+  block-size: 32px;
+  line-height: 19px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  outline: none;
+  padding-inline-start: 44px;
+  z-index: 2;
+  transition: opacity 0.1s ease-in-out, background-color 0.1s ease-in-out;
+  margin-inline: 8px;
+  margin-block: 8px;
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.advanced-proxy-settings-btn:hover {
+  background-color: var(--button-bg-hover-color-secondary);
+}
+
+.advanced-proxy-settings-btn:focus {
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
+}
+
+.advanced-proxy-settings-btn:active {
+  background-color: var(--button-bg-active-color-secondary);
+  outline: none;
+}
+
+#clear-advanced-proxy-input {
+  position: absolute;
+  inset-inline-end: 8px;
+  inset-block-start: 7px;
+  border: none;
+  block-size: 22px;
+  inline-size: 22px;
+  border-radius: 50%;
+  background-image: var(--iconCloseX);
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 16px;
+  font-size: 1;
+  color: var(--bgColor);
+}
+
+.proxy-title-container-color {
+  block-size: 12px;
+  inline-size: 12px;
+  z-index: 10;
+  border-radius: 50%;
+}
+
+.advanced-proxy-panel-content {
+  padding-block: 16px;
+  padding-inline: 20px;
+  margin-block-start: 56px;
+  display: flex;
+  flex-direction: column;
+}
+
+.advanced-proxy-input-wrapper {
+  margin-block-start: 12px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.proxy-validity {
+  position: absolute;
+  inset-block-start: 42px;
+  inset-inline-start: 16px;
+  visibility: hidden;
+  opacity: 0;
+  background-color: var(--badge-destructive-bg-color);
+  color: var(--badge-destructive-text-color);
+  border-radius: 4px;
+  padding-block: 2px;
+  padding-inline: 4px;
+  transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+}
+
+.proxy-validity::after {
+  content: "";
+  block-size: 8px;
+  inline-size: 8px;
+  background-color: var(--badge-detructive-bg-color);
+  inset-block-start: -4px;
+  position: absolute;
+  transform: rotate(45deg);
+  inset-inline-start: 12px;
+}
+
+.invalid .proxy-validity {
+  opacity: 1;
+  z-index: 10;
+  visibility: visible;
+}
+
+.invalid .proxy-host.primary-input {
+  border-color: var(--red50);
+  box-shadow: 0 0 0 3px #ff848b70;
+}
+
+.invalid button {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Mozilla VPN Server list */
+
+.moz-vpn-logo,
+.moz-vpn-logotype {
+  color: var(--text-color-primary);
+  background-image: var(--logoMozillaVpn);
+  background-repeat: no-repeat;
+  background-size: 24px;
+  background-position: left center;
+  font-family: var(--fontMetropolis);
+  font-size: 15px;
+  line-height: 24px;
+  padding-inline-start: 28px;
+  position: relative;
+  padding-inline-end: 32px;
+}
+
+#moz-vpn-server-list-panel {
+  block-size: var(--panelSize);
+  max-block-size: var(--panelSize);
+  min-block-size: var(--panelSize);
+  overflow-x: hidden;
+  overflow-y: hidden;
+}
+
+.proxy-panel-title {
+  line-height: var(--rowHeight);
+  block-size: var(--rowHeight);
+  border-block-end: 1px solid var(--panel-separator-color);
+  position: fixed;
+  z-index: 1;
+  background-color: var(--bgColor);
+  transition: box-shadow 0.5s ease;
+}
+
+.moz-vpn-server-list {
+  padding-block-start: 4px;
+  font-size: 15px;
+  color: var(--grey50);
+  position: absolute;
+  inset-block-start: var(--rowHeight);
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  overflow: scroll;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  block-size: calc(var(--panelSize) - var(--rowHeight));
+  min-block-size: calc(var(--panelSize) - var(--rowHeight));
+}
+
+#moz-vpn-return {
+  z-index: 2;
+}
+
+.server-list-item {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: var(--panel-bg-color);
+}
+
+.server-country-flag {
+  inline-size: 16px;
+  margin-inline-start: 16px;
+  margin-block: auto;
+  pointer-events: none;
+}
+
+.server-country-name {
+  padding-block: 0;
+  padding-inline-end: 0;
+  padding-inline-start: 20px;
+  font-family: var(--fontMetropolis);
+  pointer-events: none;
+  color: var(--text-color-primary);
+}
+
+.server-city-list-item,
+.server-city-list-visibility-btn {
+  block-size: 40px;
+  border-radius: 4px;
+  margin-block-start: 4px;
+  margin-block-end: 4px;
+  margin-inline-start: 8px;
+  margin-inline-end: 8px;
+  inline-size: calc(100% - 16px);
+}
+
+/* We need to temporarily use !important for this button to make sure the right color applies */
+.server-city-list-visibility-btn {
+  display: flex;
+  background-color: var(--panel-bg-color) !important;
+  border-radius: 4px;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+
+.server-city-list-visibility-btn:hover {
+  background-color: var(--button-bg-hover-color-secondary) !important;
+}
+
+.server-city-list-visibility-btn:focus {
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
+}
+
+.server-city-list-visibility-btn:active {
+  background-color: var(--button-bg-active-color-secondary) !important;
+  outline: none;
+}
+
+.toggle {
+  background-image: url("/img/arrow-toggle.svg");
+  background-position: center center;
+  background-repeat: no-repeat;
+  block-size: 24px;
+  margin-inline-start: 8px;
+  pointer-events: none;
+  transform: rotate(-90deg);
+  transition: transform 0.275s ease-in-out;
+  inline-size: 24px;
+}
+
+.expanded .toggle {
+  transform: rotate(0deg);
+}
+
+.server-city-list {
+  block-size: 0;
+  opacity: 0;
+  transition: height 0.3s ease-in-out, opacity 0.3s ease, visibility 0.4s ease;
+  list-style-type: none;
+  visibility: hidden;
+}
+
+.expanded .server-city-list {
+  opacity: 1;
+  visibility: visible;
+}
+
+.server-city-list-item {
+  align-items: center;
+  display: flex;
+  position: relative;
+}
+
+.server-city-list-item:focus {
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
+}
+
+.server-city-list-item:hover {
+  background-color: var(--button-bg-hover-color-secondary);
+}
+
+.server-city-list-item:active {
+  background-color: var(--button-bg-active-color-secondary);
+  outline: none;
+}
+
+.server-city-name {
+  font-family: var(--fontMetropolisLight);
+  font-weight: 300;
+  color: var(--text-color-primary);
+  padding-inline-start: 18px;
+}
+
+/* ----- controller buttons ------- */
+
+.controller {
+  background-color: var(--button-bg-color-secondary);
+  color: var(--text-color-primary);
+  transition: background-color 0.1s ease-in-out;
+}
+
+.btn-return.controller {
+  background-color: transparent;
+}
+
+.controller:hover {
+  background-color: var(--button-bg-hover-color-secondary);
+}
+
+.controller:focus {
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
+}
+
+.controller:active {
+  background-color: var(--button-bg-active-color-secondary);
+  outline: none;
+}
+
+/* WARNING MODAL ---- */
+
+.modal-warning {
+  position: absolute;
+  inset-block-start: 0;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  background-color: #42404c89;
+  z-index: 4;
+  display: flex;
+  justify-content: center;
+}
+
+.modal-content {
+  background-color: var(--bgColor);
+  inline-size: 80%;
+  block-size: 80%;
+  margin-inline: auto;
+  margin-block: auto;
+  border-radius: 16px;
+  box-shadow: 1px 2px 10px 10px var(--bgDark);
+  padding-block: 20px;
+  padding-inline: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+/* ----- MozillaVPN Proxy Unavailable-Specific -------- */
+
+[data-moz-proxy-warning="proxy-unavailable"] {
+  position: relative;
+}
+
+.flag-img.proxy-unavailable {
+  opacity: 0.5;
+}
+
+/* ----- MozillaVPN Status Tooltips -------- */
+
+.tooltip {
+  opacity: 0;
+  position: absolute;
+  z-index: 10;
+  inset-block-start: 24px;
+  inset-inline-end: -3px;
+  font-size: 11px;
+  font-family: var(--fontInter) !important;
+  font-weight: 300;
+  color: var(--text-color-primary);
+  background-color: var(--panel-bg-color);
+  padding-inline: 8px;
+  padding-block: 4px;
+  border-radius: 4px;
+  box-shadow: 0 0 12px 3px #0000001c;
+  transform: translateY(-2px);
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+  min-inline-size: 170px;
+  line-height: 1.3;
+  text-align: center;
+  pointer-events: none;
+}
+
+.tooltip::before {
+  content: "";
+  block-size: 7px;
+  inline-size: 7px;
+  border-radius: 1px;
+  transform: rotate(45deg);
+  background: inherit;
+  position: absolute;
+  inset-block-start: -3px;
+  inset-inline-end: 9px;
+}
+
+[data-moz-proxy-warning="proxy-unavailable"]:hover .tooltip,
+[data-moz-proxy-warning="proxy-unavailable"]:active .tooltip {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease-in-out 0.5s, transform 0.2s ease-in-out  0.5s;
+}
+
+.moz-vpn-logotype.vpn-status-container-list:hover .tooltip {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease-in-out 1s, transform 0.2s ease-in-out 1s;
+}
+
+.tooltip.proxy-unavailable::after {
+  inset-inline-start: 4px;
+  inset-inline-end: auto;
+}
+
+.tooltip.proxy-unavailable::before {
+  inset-inline-start: 12px;
+}
+
+.tooltip.proxy-unavailable {
+  inset-inline-start: 32px;
+  inset-block-start: 32px;
+  padding-inline-start: 32px;
+  text-align: left;
+  background-image: var(--iconProxyWarning);
+  background-size: 24px 24px;
+  background-repeat: no-repeat;
+  background-position: 4px 4px;
+}
+
+/* ------------ SERVER LIST RADIO BUTTONS ------------ */
+
+.server-radio-btn {
+  block-size: 20px;
+  opacity: 0;
+  position: fixed;
+  inline-size: 20px;
+}
+
+.server-radio-control {
+  border-radius: 50%;
+  border: 2px solid var(--input-border-color);
+  block-size: 20px;
+  margin-inline-start: 46px;
+  pointer-events: none;
+  position: relative;
+  inline-size: 20px;
+}
+
+.server-radio-btn:checked + .server-radio-control {
+  border-color: var(--input-border-focus-color);
+  border: 2px solid var(--input-border-focus-color);
+}
+
+.server-radio-control::after {
+  border: 2px solid var(--input-border-color);
+  border-radius: 50%;
+  inset-block-end: 0;
+  content: "";
+  block-size: 12px;
+  inset-inline-start: 0;
+  margin-inline: auto;
+  margin-block: auto;
+  opacity: 0;
+  position: absolute;
+  inset-inline-end: 0;
+  inset-block-start: 0;
+  inline-size: 12px;
+}
+
+/* Checked radio button rules */
+
+.server-radio-btn:checked + .server-radio-control::after {
+  background-color: var(--input-border-focus-color);
+  border: 2px solid var(--input-border-focus-color);
+  opacity: 1;
+}
+
+/* Active state */
+.server-radio-btn:active + .server-radio-control {
+  border: 2px solid var(--input-border-active-color);
+}
+
+.server-radio-btn:active + .server-radio-control::after {
+  background-color: var(--input-bg-active-color);
+  border: 2px solid var(--input-border-active-color);
+  opacity: 1;
+}
+
+.server-radio-btn:checked:active + .server-radio-control {
+  border: 2px solid var(--input-border-active-color);
+}
+
+.server-radio-btn:checked:active + .server-radio-control::after {
+  background-color: var(--input-bg-active-color);
+  border: 2px solid var(--input-border-active-color);
+}
+
+/* Helpers */
+
+.add-bg-color {
+  background-color: var(--bgColor);
+  z-index: 2;
+}
+
+.flx-space-between {
+  justify-content: space-between;
+}
+
+.flx-row {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+
+/* stylelint-disable */
+
+v-padding-hack16 {
+  block-size: 16px;
+}
+
+v-padding-hack-4 {
+  block-size: 4px;
+  inline-size: 100%;
+}
+
+v-padding-hack-footer {
+  block-size: var(--footerHeight);
+  inline-size: 100%;
+}
+
+/* stylelint-enable */
+
+.flx-col {
+  display: flex;
+  flex-direction: column;
+}
+
+fieldset,
+.options-header {
+  padding-block-end: 16px;
+}
+
+.options-header {
+  display: none;
+}
+
+/* ------ Input ----- */
+
+input[type=text] {
+  block-size: 36px;
+  border-radius: 4px;
+  background-color: var(--input-bg-color);
+  color: var(--text-color-primary);
+  padding-block: 8px;
+  padding-inline: 8px;
+}
+
+/* Blue links */
+
+.blue-link {
+  box-sizing: content-box;
+  text-decoration: none;
+  align-items: center;
+  background-color: transparent;
+  border: none;
+  color: var(--link-color);
+  display: flex;
+  block-size: 24px;
+  line-height: 24px;
+  position: relative;
+  margin-inline: auto;
+  transition: color 0.1s ease-in-out;
+}
+
+.blue-link,
+.hide-show-label {
+  block-size: 24px;
+  line-height: 24px;
+}
+
+.blue-link:hover {
+  color: var(--link-hover-color);
+}
+
+.blue-link:focus,
+.blue-link:focus .hide-show-label {
+  text-decoration: underline;
+  outline: none;
+}
+
+/* ------------ ------------ ------------ ------------ */
+
+/* Panels keep everything together */
+.panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  max-block-size: 601px;
+  background-color: var(--bgColor);
+  transition: height 0.1s ease-in-out;
+}
+
+.container-panel {
+  min-block-size: 500px;
+}
+
+.delete-container-panel {
+  min-block-size: 300px;
+}
+
+.panel.onboarding,
+.achievement-panel {
+  align-items: center;
+  margin-block: var(--marginInline);
+  margin-inline: var(--marginInline);
+  min-block-size: 360px;
+}
+
+.panel.onboarding-panel-8.optional-permissions-disabled {
+  min-block-size: 420px;
+  margin-block-end: 0;
+  margin-inline: 0;
+}
+
+.optional-permissions-disabled #moz-vpn-fw-onboarding-done {
+  display: none !important;
+}
+
+.moz-vpn-permissions {
+  padding-block: var(--marginInline);
+  padding-inline: var(--marginInline);
+  border-block-start: 1px solid var(--panel-separator-color);
+  display: none;
+}
+
+.optional-permissions-disabled .moz-vpn-permissions {
+  display: block;
+  inline-size: 100%;
+}
+
+.moz-vpn-onboarding-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding-inline: var(--marginInline);
+  padding-block-end: var(--marginInline);
+}
+
+.moz-vpn-permissions-copy {
+  padding-inline: 20px;
+  font-size: 12px;
+  margin-block-end: 16px;
+}
+
+.panel-content {
+  flex: 1;
+  padding-block-start: 16px;
+}
+
+.panel-footer .button {
+  align-items: center;
+  block-size: 32px;
+  border-radius: 4px;
+  display: flex;
+  flex: 1;
+  justify-content: center;
+}
+
+.panel-footer .button + .button {
+  margin-inline: 8px;
+}
+
+/* Onboarding styles */
+.onboarding * {
+  text-align: center;
+}
+
+.onboarding-img {
+  block-size: 132px;
+  inline-size: 180px;
+}
+
+.onboarding-title {
+  color: var(--text-color-primary);
+  font-size: var(--font-size-heading);
+  margin-block: 12px;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
+  max-inline-size: 80%;
+  font-family: var(--fontMetropolis);
+}
+
+.onboarding p {
+  color: var(--text-normal-color);
+  font-size: 14px;
+  margin-block-end: 16px;
+  max-inline-size: 84%;
+}
+
+.onboarding-button {
+  align-items: center;
+  background-color: var(--button-bg-color-primary);
+  border-radius: 3px;
+  color: var(--button-text-color-primary);
+  display: flex;
+  flex: 0 0 44px;
+  font-size: 14px;
+  inline-size: 100%;
+  justify-content: center;
+  text-decoration: none;
+  transition: background-color 75ms;
+}
+
+.half-button-wrapper {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  block-size: 44px;
+  inline-size: 100%;
+  font-family: var(--fontMetropolis);
+}
+
+.half-onboarding-button {
+  align-items: center;
+  background-color: var(--button-bg-color-primary);
+  border-radius: 3px;
+  color: var(--button-text-color-primary);
+  display: flex;
+  flex: 1 0 auto;
+  font-size: 14px;
+  block-size: 44px;
+  inline-size: 50%;
+  justify-content: center;
+  margin-inline-end: 4px;
+  text-decoration: none;
+  transition: background-color 75ms;
+}
+
+.grey-button {
+  background-color: var(--button-bg-color-secondary);
+  color: var(--text-color-primary);
+}
+
+.grey-button:hover.half-onboarding-button:hover {
+  background-color: var(--button-bg-hover-color-secondary);
+}
+
+.grey-button:active.half-onboarding-button:active {
+  background-color: var(--button-bg-active-color-secondary);
+}
+
+.onboarding-button:hover,
+.half-onboarding-button:hover {
+  background-color: var(--button-bg-hover-color-primary);
+}
+
+.onboarding-button:focus,
+.half-onboarding-button:focus {
+  box-shadow:
+    0 0 0 2px var(--button-bg-color-secondary),
+    0 0 0 4px var(--button-bg-focus-color-primary);
+}
+
+.onboarding-button:active,
+.half-onboarding-button:active {
+  background-color: var(--button-bg-active-color-primary);
+}
+
+/* Pop buttons are the square shaped buttons used to
+manage things like container crud */
+.pop-button {
+  align-items: center;
+  block-size: var(--icon-button-size);
+  cursor: pointer;
+  display: flex;
+  flex: 0 0 var(--icon-button-size);
+  justify-content: center;
+}
+
+.panel-footer a {
+  text-decoration: none;
+}
+
+.userContext-wrapper {
+  align-items: center;
+  display: flex;
+  flex: 1 1;
+  transition: background-color 75ms;
+}
+
+.edit-containers-panel .userContext-wrapper {
+  max-inline-size: calc(var(--overflow-size) + 203px);
+}
+
+.disable-edit-containers {
+  opacity: var(--inactive-opacity);
+  pointer-events: none;
+}
+
+.userContext-icon-wrapper {
+  block-size: var(--icon-button-size);
+  flex: 0 0 var(--icon-button-size);
+  margin-inline-start: var(--inline-icon-space-size);
+}
+
+/* .userContext-icon is used natively, Bug 1333811 was raised to fix */
+.usercontext-icon {
+  background-image: var(--identity-icon);
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  block-size: 100%;
+  fill: var(--identity-icon-color);
+  filter: url('/img/filters.svg#fill');
+}
+
+.usercontext-icon::before {
+  transform: scale(1);
+  transform-origin: center;
+  transition: fill 0.1s ease-in-out, transform 0.1s ease-in-out;
+}
+
+.radio-container:active .usercontext-icon::before {
+  transform: scale(0.95);
+}
+
+.mac-icon {
+  background-image: url('/img/multiaccountcontainer-16.svg');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  block-size: 100%;
+}
+
+.container-panel-row:hover .clickable .usercontext-icon,
+.container-panel-row:focus .clickable .usercontext-icon,
+.container-panel-row .clickable:focus .usercontext-icon {
+  background-image: url('/img/container-newtab.svg');
+  fill: #979797;
+  filter: url('/img/filters.svg#fill');
+}
+
+.container-panel-row .clickable:hover .usercontext-icon,
+.container-panel-row .clickable:focus .usercontext-icon {
+  fill: #0094fb;
+}
+
+/* Panel footer */
+.panel-footer {
+  align-items: center;
+  color: #000;
+  display: flex;
+  font-size: 13px;
+  inline-size: 100%;
+  justify-content: space-between;
+  padding-block: 8px;
+  padding-inline: 8px;
+}
+
+#container-info-panel {
+  block-size: 100vh;
+}
+
+.container-info-has-tabs,
+.container-info-tab-row {
+  align-items: center;
+  display: flex;
+  flex: 0 0 28px;
+  font-size: 14px;
+  justify-content: flex-start;
+  margin-block-end: 0;
+  margin-block-start: 0;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
+  padding-inline-end: 16px;
+  padding-inline-start: 16px;
+}
+
+/* We disable no-descending-specificity so we can keep [data-theme="dark"]
+ * rules grouped together at the beginning of the file
+ */
+/* stylelint-disable no-descending-specificity */
+.container-info-has-tabs img,
+.container-info-tab-row img {
+  block-size: 16px;
+  flex: 0 0 16px;
+  margin-inline-end: 4px;
+}
+/* stylelint-enable no-descending-specificity */
+
+.container-info-tab-row img[src=""] {
+  margin-inline-end: 0;
+}
+
+.delete-container-confirm {
+  padding-inline-end: 20px;
+  padding-inline-start: 20px;
+}
+
+.delete-container-confirm-title {
+  color: var(--text-color-primary);
+  font-size: var(--font-size-heading);
+}
+
+#edit-sites-assigned h3 {
+  font-size: 14px;
+  font-weight: normal;
+  padding-block-end: 6px;
+  padding-block-start: 6px;
+  padding-inline-end: 16px;
+  padding-inline-start: 16px;
+}
+
+#edit-sites-assigned .hostname .subdomain:hover {
+  text-decoration: underline;
+}
+
+#edit-sites-assigned .hostname .subdomain.wildcardSubdomain {
+  opacity: 0.2;
+}
+
+.assigned-sites-list > div {
+  display: flex;
+  padding-block-end: 6px;
+  padding-block-start: 6px;
+}
+
+.assigned-sites-list > div > .icon {
+  margin-inline-end: 10px;
+}
+
+.assigned-sites-list > div > .hostname {
+  flex: 1;
+}
+
+.radio-choice > .radio-container {
+  align-items: center;
+  block-size: 32px;
+  display: flex;
+  justify-content: center;
+  flex: 0 0 calc(100% / var(--icon-fit));
+}
+
+.radio-choice > .radio-container > label {
+  background: none;
+  block-size: 23px;
+  border: 0;
+  border-radius: 50%;
+  filter: none;
+  inline-size: 23px;
+  margin-block-end: 0;
+  margin-block-start: 0;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 0;
+  padding-inline-start: 0;
+}
+
+.radio-choice > .radio-container > label:hover {
+  background-color: var(--usercontext-bg-hover-color);
+}
+
+.radio-choice > .radio-container > label:active {
+  background-color: var(--usercontext-bg-active-color);
+}
+
+.radio-choice > .radio-container > label::before {
+  background-color: unset;
+  background-image: var(--identity-icon);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  block-size: 23px;
+  border: none;
+  content: "";
+  display: block;
+  fill: var(--identity-icon-color);
+  filter: url('/img/filters.svg#fill');
+  inline-size: 23px;
+  position: relative;
+}
+
+.radio-choice > .radio-container > [type="radio"] {
+  -moz-appearance: none;
+  display: inline;
+  opacity: 0;
+  position: absolute;
+  margin-block: auto;
+  margin-inline: auto;
+}
+
+.radio-choice > .radio-container > [type="radio"]:checked + label {
+  background-color: var(--usercontext-bg-focus-color);
+  border-radius: 100%;
+}
+
+/* When focusing the element add a thin blue highlight to match input fields. This gives a distinction to other selected radio items */
+.radio-choice > .radio-container > [type="radio"]:focus + label {
+  outline: solid 1px var(--input-border-focus-color);
+  -moz-outline-radius: 100%;
+}
+
+.edit-container-panel fieldset {
+  background: none;
+  border: none;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+#edit-container-choose-color {
+  justify-content: space-between;
+}
+
+.edit-container-panel input[type="text"] {
+  inline-size: 100%;
+  margin-inline: 4px;
+}
+
+input[type="text"]:focus {
+  /* Both a border and box-shadow of 1px are needed because using a 2px border
+   * would redraw the input 1px farther to the left.
+   */
+  border: solid 1px var(--input-border-focus-color);
+  box-shadow: 0 0 0 1px var(--input-border-focus-color);
+  outline: none;
+}
+
+.edit-container-panel legend,
+.options-header {
+  margin-inline: 4px;
+  flex: 1 0;
+}
+
+/* Achievement panel elements */
+.share-ctas {
+  padding-block-end: 0.5em;
+  padding-block-start: 0.5em;
+  padding-inline-end: 0.5em;
+  padding-inline-start: 0.5em;
+  text-align: center;
+}
+
+.cta-link {
+  text-decoration: none;
+}
+
+.cta {
+  color: #fff;
+  font-size: 0.7em;
+  font-weight: bold;
+  margin-block-end: 0.4em;
+  margin-block-start: 0.4em;
+  margin-inline-end: 0.4em;
+  margin-inline-start: 0.4em;
+  padding-block-end: 0.5em;
+  padding-block-start: 0.5em;
+  padding-inline-end: 0.5em;
+  padding-inline-start: 0.5em;
+  text-transform: uppercase;
+}
+
+.cta-icon {
+  block-size: 18px;
+  padding-inline-end: 0.5em;
+  vertical-align: middle;
+}
+
+.fb-share-cta {
+  background: #375496;
+}
+
+.fb-share-cta .cta-icon {
+  margin-block-start: -5px;
+}
+
+.tweet-cta {
+  background: #37bae7;
+}
+
+.amo-rate-cta {
+  background: #0f1126;
+}
+
+h3.title {
+  block-size: 48px;
+  color: var(--text-color-primary);
+  font-family: var(--fontMetropolis);
+  font-size: 14px;
+  font-weight: bold;
+  inline-size: 100%;
+  letter-spacing: -0.1px;
+  line-height: 48px;
+  text-align: center;
+}
+
+.menu {
+  border-style: none;
+  inline-size: 100%;
+  padding-block: 8px;
+  padding-inline: 8px;
+}
+
+.menu-item {
+  align-items: center;
+  block-size: 32px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  inline-size: 100%;
+  line-height: var(--menuItemHeight);
+}
+
+.menu-text {
+  color: var(--text-color-primary);
+  display: flex;
+  flex: 1;
+}
+
+.menu-item td {
+  align-items: center;
+  display: flex;
+  inline-size: 100%;
+  padding-inline: 8px;
+}
+
+.menu-item.drag-over td {
+  border-block-start: 2px solid var(--panel-separator-color);
+}
+
+.disabled-menu-item {
+  cursor: default;
+  font-style: italic;
+  opacity: 0.4;
+}
+
+.hover-highlight {
+  transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
+}
+
+.hover-highlight:hover {
+  background-color: var(--menu-bg-hover-color);
+}
+
+.hover-highlight:focus {
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
+}
+
+.hover-highlight:active {
+  background-color: var(--menu-bg-active-color);
+  outline: none;
+}
+
+.menu-item-name {
+  display: flex;
+  inline-size: calc(100% - 40px);
+  max-inline-size: 260px;
+  cursor: default;
+}
+
+/* We disable no-descending-specificity so we can keep [data-theme="dark"]
+ * rules grouped together at the beginning of the file
+ */
+/* stylelint-disable no-descending-specificity */
+.menu-icon {
+  display: block;
+  block-size: 16px;
+  inline-size: 23px;
+  margin-block-end: auto;
+  margin-block-start: auto;
+  margin-inline-end: 8px;
+  text-align: center;
+}
+
+/* Maintain 1:1 square ratio for favicons of websites added to a specific container */
+#edit-sites-assigned .menu-icon,
+#container-info-table .menu-icon {
+  inline-size: 16px;
+}
+/* stylelint-enable no-descending-specificity */
+
+.menu-right-float {
+  text-align: right;
+  margin-inline-start: auto;
+  margin-inline-end: 0;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-inline-start: 16px;
+}
+
+.container-count {
+  opacity: 0.7;
+  text-align: center;
+  min-inline-size: 24px;
+  margin-inline-end: 4px;
+}
+
+.menu-arrow {
+  align-items: center;
+  display: flex;
+  justify-content: flex-end;
+  block-size: 24px;
+  text-align: center;
+}
+
+/* We disable no-descending-specificity so we can keep [data-theme="dark"]
+ * rules grouped together at the beginning of the file
+ */
+/* stylelint-disable no-descending-specificity */
+.menu-arrow img {
+  block-size: 24px;
+  inline-size: 12px;
+  padding-block-end: 2px;
+  padding-block-start: 2px;
+  padding-inline-end: 2px;
+  padding-inline-start: 2px;
+  opacity: 0.9;
+}
+/* stylelint-enable no-descending-specificity */
+
+hr {
+  border: 0;
+  border-block-start: 1px solid var(--panel-separator-color);
+  display: block;
+}
+
+.sub-header-wrapper {
+  margin-block-start: 12px;
+  padding-inline: 16px;
+}
+
+.sub-header {
+  color: var(--text-color-primary);
+  block-size: 24px;
+  line-height: 24px;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  font-family: var(--fontInterMedium);
+}
+
+.edit-form {
+  color: var(--text-color-primary);
+  flex: 1;
+  padding-block-end: 16px;
+  padding-block-start: 16px;
+  padding-inline-end: 16px;
+  padding-inline-start: 16px;
+}
+
+.bottom-btn {
+  block-size: 32px;
+  border-radius: 4px;
+  color: var(--text-color-primary);
+  cursor: pointer;
+  font-family: var(--fontMetropolis);
+  font-size: 14px;
+  inline-size: calc(100% - 16px);
+  inset-block-end: 0;
+  line-height: 32px;
+  margin-block: 8px;
+  margin-inline: 8px;
+  padding-inline: 8px;
+  pointer-events: all;
+  position: absolute;
+  text-align: center;
+}
+
+.delete-btn {
+  background-color: var(--button-destructive-bg-color);
+  block-size: 32px;
+  border: none;
+  border-radius: 4px;
+  color: var(--button-destructive-text-color);
+  cursor: default;
+  display: flex;
+  justify-content: center;
+  line-height: 32px;
+  margin-block: 8px;
+  margin-inline: 8px;
+  pointer-events: all;
+}
+
+.alert-text {
+  font-family: var(--fontMetropolis);
+  cursor: pointer;
+  text-align: center;
+}
+
+.alert-text:hover {
+  background-color: var(--button-destructive-bg-hover-color);
+}
+
+.alert-text:focus {
+  outline: 2px solid var(--button-destructive-bg-focus-color);
+  outline-offset: 2px;
+}
+
+.alert-text:active {
+  background-color: var(--button-destructive-bg-active-color);
+  outline: none;
+}
+
+.btn-return.arrow-left {
+  background-image: var(--iconArrowLeft);
+  border: 0;
+  cursor: pointer;
+  inset-block-start: 8px;
+  inset-inline-start: 8px;
+  position: absolute;
+  z-index: 2;
+  block-size: 32px;
+  inline-size: 32px;
+  background-repeat: no-repeat;
+  border-radius: 4px;
+  background-position: center center;
+}
+
+input {
+  border: solid 1px var(--input-border-color);
+  border-radius: 4px;
+}
+
+.form-header {
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 0;
+  padding-inline-start: 0;
+}
+
+.edit-container-panel-name-input {
+  color: var(--text-color-primary);
+  block-size: 32px;
+}
+
+.container-options {
+  block-size: 24px;
+  margin-inline: 4px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.site-isolation {
+  inset-block-end: auto;
+}
+
+.options-label {
+  cursor: pointer;
+  pointer-events: none;
+}
+
+.info-icon {
+  cursor: pointer;
+  block-size: 32px;
+  inline-size: 32px;
+  inset-block-start: 8px;
+  position: absolute;
+  inset-inline-end: 8px;
+  text-align: center;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.info-icon:hover {
+  background-color: var(--button-bg-hover-color-secondary);
+}
+
+.info-icon:focus {
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
+}
+
+.info-icon:active {
+  background-color: var(--button-bg-active-color-secondary);
+  outline: none;
+}
+
+.info-icon-alert::after {
+  block-size: 12px;
+  inline-size: 12px;
+  background-color: var(--badge-destructive-bg-color);
+  content: "1";
+  border-radius: 50%;
+  position: absolute;
+  inset-block-start: 2px;
+  inset-inline-end: 2px;
+  box-shadow: 0 0 1px #00000075;
+  font-size: 8px;
+  color: var(--badge-destructive-text-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bolder;
+}
+
+.delete-warning {
+  padding-block-end: 8px;
+  padding-block-start: 8px;
+  padding-inline-end: 0;
+  padding-inline-start: 0;
+}
+
+/* We disable no-descending-specificity so we can keep [data-theme="dark"]
+ * rules grouped together at the beginning of the file
+ */
+/* stylelint-disable no-descending-specificity */
+.trash-button {
+  display: inline-block;
+  block-size: 20px;
+  inline-size: 20px;
+  margin-block-end: 4px;
+  margin-block-start: 4px;
+  text-align: center;
+}
+
+tr > td > .trash-button {
+  display: none;
+}
+
+tr:hover > td > .trash-button {
+  display: block;
+}
+
+.move-button {
+  cursor: move;
+  display: inline-block;
+}
+
+.move-button > img {
+  block-size: 16px;
+}
+/* stylelint-enable no-descending-specificity */
+
+/* ----- Permissions Overlay ---------- */
+
+#advanced-proxy-settings-panel,
+.advanced-proxy-panel-content {
+  position: absolute;
+  inset-block: 0;
+  inset-inline: 0;
+}
+
+.permissions-overlay {
+  position: absolute;
+  inset-inline: 0 0;
+  inset-block-start: 40px;
+  inset-block-end: 0;
+  justify-content: center;
+  align-content: center;
+  flex-direction: column;
+  background-color: var(--panel-bg-color);
+  padding-block: 2.25rem;
+  padding-inline: 2.25rem;
+  display: none;
+}
+
+#enable-proxy-permissions {
+  text-align: center;
+  font-family: var(--fontMetropolis);
+  font-size: 14px;
+  margin-block-start: 1rem;
+}
+
+/* OVERFLOW MENU */
+
+.overflow body,
+.overflow html {
+  inline-size: 100%;
+}
+
+.overflow .container-panel {
+  min-block-size: 100%;
+}
+
+.overflow .panel.onboarding {
+  margin-block: auto;
+}
