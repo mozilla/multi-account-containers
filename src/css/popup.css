@@ -107,8 +107,9 @@
   --toggle-on-bg-focus-color: #0060df;
   --toggle-on-border-color: #0060df;
   --toggle-on-handle-bg-color: #fff;
-  --usercontext-bg-hover-color: #e0e0e6;
   --usercontext-bg-active-color: #e0e0e6;
+  --usercontext-bg-focus-color: #cfcaf6;
+  --usercontext-bg-hover-color: #e0e0e6;
   --moz-vpn-tout-shadow: 0 0 7px 0 #9498a25e;
 }
 [data-theme="dark"] {
