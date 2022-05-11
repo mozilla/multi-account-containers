@@ -32,6 +32,9 @@ async function init() {
   list.appendChild(fragment);
 
   MozillaVPN.handleContainerList(identities);
+
+  // Set the theme
+  Utils.applyTheme();
 }
 
 init();

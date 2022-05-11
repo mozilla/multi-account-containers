@@ -26,63 +26,12 @@
   src: url("/fonts/Inter-Medium.woff2") format("woff2");
 }
 
-/* General Rules and Resets */
-
-* {
-  font-size: inherit;
-  margin-block-end: 0;
-  margin-block-start: 0;
-  margin-inline-end: 0;
-  margin-inline-start: 0;
-  padding-block-end: 0;
-  padding-block-start: 0;
-  padding-inline-end: 0;
-  padding-inline-start: 0;
-}
-
-html {
-  background-color: #fefefe;
-  box-sizing: border-box;
-  font-size: 12px;
-  overscroll-behavior: none;
-}
-
-body {
-  font-family: var(--fontInter);
-  font-size: 13px;
-  inline-size: 352px;
-  letter-spacing: -0.125px;
-  min-inline-size: 352px;
-  background-color: var(--bgColor);
-
-  --highlight-blue: #1296f8;
-  --hr-grey: #cececf91;
-  --text-grey: #262726eb;
-
-  color: var(--text-grey);
-}
-
-html,
-body {
-  block-size: 100%; /* Bugfix: issue 948 */
-  max-block-size: 650px;
-  min-block-size: 300px;
-
-  /* stylelint-disable */
-  scrollbar-width: none;
-  /* stylelint-enable */
-  transition: height 0.1s ease-in-out;
-}
-
+[data-theme="light"],
 :root {
   --fontInter: "Inter", sans-serif;
   --fontInterMedium: "Inter-Medium", sans-serif;
   --fontMetropolis: "Metropolis", sans-serif;
   --fontMetropolisLight: "Metropolis-Light", sans-serif;
-  --primary-action-color: #248aeb;
-  --title-text-color: #000;
-  --text-normal-color: #262726;
-  --text-heading-color: #3d3d3d;
   --iconArrowLeft: url("/img/arrow-icon-left.svg");
   --iconArrowRight: url("/img/arrow-icon-right.svg");
   --iconCloseX: url("/img/close.svg");
@@ -92,35 +41,6 @@ body {
   --menuItemHeight: 28px;
   --marginInline: 16px;
   --footerHeight: 48px;
-  --bgColor: #fefffe;
-  --blue20: #0df;
-  --blue30: #00b3f4;
-  --blue40: #0090ed;
-  --blue50: #0060df;
-  --blue60: #0250bb;
-  --blue70: #054096;
-  --red30: #ff848b;
-  --red40: #ff6a75;
-  --red50: #ff4f5e;
-  --red60: #e22850;
-  --red70: #c50042;
-  --alertColor: var(--red50);
-  --primaryCtaDefault: var(--blue50);
-  --primaryCtaHover: var(--blue60);
-  --primaryCtaActive: var(--blue70);
-  --primaryCtafocus: rgba(0, 97, 223, 0.4);
-  --controllerDefault: var(--bgColor);
-  --controllerHover: var(--grey10);
-  --controllerActive: var(--grey20);
-  --green50: #3fe1b0;
-  --green60: #3ad4b3;
-  --green70: #1cc4a0;
-  --green80: #00a49a;
-  --grey10: #e7e7e7;
-  --grey20: #cececf;
-  --grey30: #9e9e9e;
-  --grey40: #6d6e6e;
-  --grey50: #3d3d3d;
   --panelSize: 560px;
   --rowHeight: 48px;
 
@@ -146,6 +66,187 @@ body {
   background: var(--bgColor);
   margin-block: 0;
   margin-inline: 0;
+
+  /* Proton Colors */
+  --badge-destructive-bg-color: #e22850;
+  --badge-destructive-text-color: #fbfbfe;
+  --button-bg-color-primary: #0060df;
+  --button-bg-active-color-primary: #054096;
+  --button-bg-hover-color-primary: #0250bb;
+  --button-bg-focus-color-primary: #0060df;
+  --button-text-color-primary: #fbfbfe;
+  --button-bg-color-secondary: #f0f0f4;
+  --button-bg-active-color-secondary: #cfcfd8;
+  --button-bg-hover-color-secondary: #e0e0e6;
+  --button-destructive-bg-color: #e22850;
+  --button-destructive-bg-active-color: #810220;
+  --button-destructive-bg-hover-color: #c50042;
+  --button-destructive-bg-focus-color: #e22850;
+  --button-destructive-text-color: #fbfbfe;
+  --input-bg-color: #fff;
+  --input-bg-focus-color: #fff;
+  --input-bg-active-color: #054096;
+  --input-border-color: #8f8f9d;
+  --input-border-focus-color: #0060df;
+  --input-border-active-color: #054096;
+  --text-color-primary: #15141a;
+  --menu-bg-active-color: #cfcfd8;
+  --menu-bg-hover-color: #e0e0e6;
+  --panel-bg-color: #fff;
+  --panel-separator-color: rgba(240, 240, 244, 1);
+  --link-color: #0060df;
+  --link-hover-color: #0250bb;
+  --toggle-off-bg-color: #f0f0f4;
+  --toggle-off-bg-active-color: #cfcfd8;
+  --toggle-off-bg-hover-color: #e0e0e6;
+  --toggle-off-bg-focus-color: #f0f0f4;
+  --toggle-off-border-color: #8f8f9d;
+  --toggle-on-bg-color: #0060df;
+  --toggle-on-bg-active-color: #054096;
+  --toggle-on-bg-hover-color: #0250bb;
+  --toggle-on-bg-focus-color: #0060df;
+  --toggle-on-border-color: #0060df;
+  --toggle-on-handle-bg-color: #fff;
+  --usercontext-bg-hover-color: #e0e0e6;
+  --usercontext-bg-active-color: #e0e0e6;
+  --moz-vpn-tout-shadow: 0 0 7px 0 #9498a25e;
+}
+
+[data-theme="dark"] {
+  --iconCloseX: url("/img/close-light.svg");
+  --iconGear: url("/img/gear-icon-light.svg");
+  --iconArrowRight: url("/img/arrow-icon-right-light.svg");
+  --iconArrowLeft: url("/img/arrow-icon-left-light.svg");
+  --iconProxyWarning: url("/img/proxy-warning-light.svg");
+  --logoMozillaVpn: url("/img/moz-vpn-logo-light.svg");
+  --bgColor: #42404c;
+  --text-normal-color: #f9f9fa;
+  --primaryCtaDefault: var(--blue40);
+  --primaryCtaHover: var(--blue50);
+  --primaryCtaActive: var(--blue60);
+  --controllerActive: rgb(90, 89, 102);
+  --bgDark: #2b2932;
+
+  /* Proton Colors */
+  --badge-destructive-bg-color: #ff8480;
+  --badge-destructive-text-color: #15141a;
+  --button-bg-color-primary: #0df;
+  --button-bg-active-color-primary: #aaf2ff;
+  --button-bg-hover-color-primary: #80ebff;
+  --button-bg-focus-color-primary: #0df;
+  --button-text-color-primary: #15141a;
+  --button-bg-color-secondary: #2b2a33;
+  --button-bg-active-color-secondary: #5b5b66;
+  --button-bg-hover-color-secondary: #52525e;
+  --button-destructive-bg-color: #ff8480;
+  --button-destructive-bg-active-color: #ffdfe7;
+  --button-destructive-bg-hover-color: #ffbdc5;
+  --button-destructive-bg-focus-color: #ff8480;
+  --button-destructive-text-color: #15141a;
+
+  /* for the input background, we use dark-grey-60 instead of dark-grey-30
+   * instead the panel background is lighter than the page background
+   */
+  --input-bg-color: #2b2a33;
+  --input-bg-active-color: #aaf2ff;
+  --input-bg-focus-color: #52525e;
+  --input-border-color: #8f8f9d;
+  --input-border-active-color: #aaf2ff;
+  --input-border-focus-color: #0df;
+  --link-color: #0df;
+  --link-hover-color: #80ebff;
+  --text-color-primary: #fbfbfe;
+  --menu-bg-active-color: #5b5b66;
+  --menu-bg-hover-color: #52525e;
+  --panel-bg-color: #42414d;
+  --panel-separator-color: rgba(82, 82, 94, 1);
+
+  /* Toggle is currently called `.slider` in the code below. This should be
+   * changed in a follow-up patch to make it more inline with the terms used in
+   * the Proton Design System
+   */
+  --toggle-off-bg-color: #2b2a33;
+  --toggle-off-bg-active-color: #5b5b66;
+  --toggle-off-bg-hover-color: #52525e;
+  --toggle-off-bg-focus-color: #2b2a33;
+  --toggle-off-border-color: #8f8f9d;
+  --toggle-on-bg-color: #0df;
+  --toggle-on-bg-active-color: #aaf2ff;
+  --toggle-on-bg-hover-color: #80ebff;
+  --toggle-on-bg-focus-color: #0df;
+  --toggle-on-border-color: #0df;
+  --toggle-on-handle-bg-color: #42414d;
+  --usercontext-bg-active-color: #5b5b66;
+  --usercontext-bg-focus-color: #2b2a33;
+  --usercontext-bg-hover-color: #52525e;
+  --moz-vpn-tout-shadow: 0 0 7px 0 #7478825e;
+}
+
+/* General Rules and Resets */
+
+* {
+  font-size: inherit;
+  margin-block-end: 0;
+  margin-block-start: 0;
+  margin-inline-end: 0;
+  margin-inline-start: 0;
+  padding-block-end: 0;
+  padding-block-start: 0;
+  padding-inline-end: 0;
+  padding-inline-start: 0;
+}
+
+html {
+  background-color: var(--panel-bg-color);
+  box-sizing: border-box;
+  font-size: 12px;
+  overscroll-behavior: none;
+}
+
+body {
+  background-color: var(--panel-bg-color);
+  color: var(--text-color-primary);
+  font-family: var(--fontInter);
+  font-size: 13px;
+  inline-size: 352px;
+  letter-spacing: -0.125px;
+  min-inline-size: 352px;
+}
+
+html,
+body {
+  block-size: 100%; /* Bugfix: issue 948 */
+  max-block-size: 650px;
+  min-block-size: 300px;
+
+  /* stylelint-disable */
+  scrollbar-width: none;
+  /* stylelint-enable */
+  transition: height 0.1s ease-in-out;
+}
+
+/* Hack for menu icons to use a light color without affecting container icons */
+[data-theme="light"] img.delete-assignment,
+[data-theme="dark"] .trash-button,
+[data-theme="dark"] img.menu-icon,
+[data-theme="dark"] .menu-icon > img,
+[data-theme="dark"] .menu-arrow > img,
+[data-theme="dark"] .info-icon > img {
+  filter: invert(1);
+}
+
+[data-theme="dark"] img.delete-assignment,
+[data-theme="dark"] #edit-sites-assigned .menu-icon,
+[data-theme="dark"] #container-info-table .menu-icon {
+  filter: invert(0);
+}
+
+[data-theme="dark"] [data-identity-color="grey"] {
+  --identity-icon-color: var(--text-color-primary);
+}
+
+[data-theme="dark"] [data-identity-color="grey"]:hover {
+  --identity-icon-color: var(--text-color-primary);
 }
 
 *,
@@ -202,10 +303,9 @@ table {
   position: absolute;
 }
 
-.hover-highlight:hover .truncate-text::after,
-.hover-highlight:focus .truncate-text::after {
-  background-color: var(--highlight-blue);
-  mask-image: linear-gradient(to right, transparent, var(--highlight-blue) 50%);
+.hover-highlight:hover .truncate-text::after {
+  background-color: var(--menu-bg-hover-color);
+  mask-image: linear-gradient(to right, transparent, var(--menu-bg-hover-color) 50%);
 }
 
 /* Color and icon helpers */
@@ -224,10 +324,15 @@ table {
   --identity-icon-color: #51cd00;
 }
 
+/* We disable no-descending-specificity so we can keep [data-theme="dark"]
+ * rules grouped together at the beginning of the file
+ */
+/* stylelint-disable no-descending-specificity */
 [data-identity-color="grey"] {
   /* Only used for the edit panel */
   --identity-icon-color: #616161;
 }
+/* stylelint-enable no-descending-specificity */
 
 [data-identity-color="yellow"] {
   --identity-tab-color: #ffcb00;
@@ -314,28 +419,47 @@ table {
 /* Buttons */
 
 .button {
-  color: var(--text-heading-color);
+  background-color: var(--button-bg-color-secondary);
+  color: var(--text-color-primary);
 }
 
 .button.primary {
-  background-color: #0996f8;
-  color: white;
+  background-color: var(--button-bg-color-primary);
+  color: var(--button-text-color-primary);
 }
 
-.button.primary:hover,
+.button.primary:hover {
+  background-color: var(--button-bg-hover-color-primary);
+}
+
 .button.primary:focus {
-  background-color: #0675d3;
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
 }
 
-.button.secondary:hover,
+.button.secondary:hover {
+  background-color: var(--button-bg-hover-color-secondary);
+}
+
 .button.secondary:focus {
-  background-color: rgba(0, 0, 0, 0.05);
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
+}
+
+.button.primary:active {
+  background-color: var(--button-bg-active-color-primary);
+  outline: none;
+}
+
+.button.secondary:active {
+  background-color: var(--button-bg-active-color-secondary);
+  outline: none;
 }
 
 /* Mozilla VPN status icon */
 
 .moz-vpn-status-icon {
-  color: var(--text-heading-color);
+  color: var(--text-color-primary);
   background-size: 17px;
   background-position: left center;
   font-size: 13px;
@@ -352,13 +476,12 @@ table {
 }
 
 .moz-vpn-logotype.vpn-status-container-list {
-  color: var(--text-heading-color);
+  color: var(--text-color-primary);
   background-size: 16px;
   background-position: left center;
   font-size: 12px;
   padding-inline-start: 19px;
   padding-inline-end: 22px;
-  margin-inline-end: 20px;
   align-items: center;
 }
 
@@ -383,10 +506,10 @@ table {
 }
 
 .slider {
-  background-color: var(--grey20);
-  border-radius: 24px;
+  background-color: var(--toggle-off-bg-color);
+  border-radius: 13px;
   inset-block-end: 0;
-  box-shadow: 0 0 0 2px var(--bgColor), 0 0 0 4px var(--bgColor);
+  box-shadow: 0 0 0 2px var(--toggle-off-border-color);
   inset-inline-start: 0;
   position: absolute;
   inset-inline-end: 0;
@@ -395,7 +518,7 @@ table {
 }
 
 .slider::before {
-  background-color: #fff;
+  background-color: var(--toggle-off-border-color);
   border-radius: 50%;
   inset-block-end: 3px;
   content: "";
@@ -407,35 +530,52 @@ table {
 }
 
 input:hover + .slider {
-  background-color: var(--grey30);
+  background-color: var(--toggle-off-bg-hover-color);
 }
 
 input:focus + .slider {
-  box-shadow: 0 0 0 2px var(--bgColor), 0 0 0 4px var(--grey30);
+  box-shadow:
+    0 0 0 2px var(--toggle-off-border-color),
+    0 0 0 4px var(--toggle-off-bg-color),
+    0 0 0 6px var(--toggle-on-border-color);
 }
 
 input:active + .slider {
-  background-color: var(--grey40);
+  background-color: var(--toggle-off-bg-active-color);
 }
 
 input:checked + .slider {
-  background-color: var(--green50);
-}
-
-input:checked:hover + .slider {
-  background-color: var(--green60);
-}
-
-input:checked:focus + .slider {
-  box-shadow: 0 0 0 2px var(--bgColor), 0 0 0 4px var(--green70);
-}
-
-input:checked:active + .slider {
-  background-color: var(--green70);
+  background-color: var(--toggle-on-bg-color);
+  box-shadow: 0 0 0 2px var(--toggle-on-border-color);
 }
 
 input:checked + .slider::before {
+  background-color: var(--toggle-on-handle-bg-color);
   transform: translateX(21px);
+}
+
+input:checked:hover + .slider {
+  background-color: var(--toggle-on-bg-hover-color);
+  box-shadow: 0 0 0 2px var(--toggle-on-bg-hover-color);
+}
+
+input:checked:focus + .slider {
+  box-shadow:
+    0 0 0 2px var(--toggle-on-border-color),
+    0 0 0 4px var(--toggle-off-bg-color),
+    0 0 0 6px var(--toggle-on-border-color);
+}
+
+input:checked:active + .slider {
+  background-color: var(--toggle-on-bg-active-color);
+}
+
+input:checked:hover:focus + .slider {
+  background-color: var(--toggle-on-bg-hover-color);
+  box-shadow:
+    0 0 0 2px var(--toggle-on-bg-hover-color),
+    0 0 0 4px var(--toggle-off-bg-color),
+    0 0 0 6px var(--toggle-on-border-color);
 }
 
 .hidden {
@@ -446,38 +586,40 @@ input:checked + .slider::before {
 
 .primary-cta {
   block-size: 32px;
-  background-color: var(--primaryCtaDefault);
+  background-color: var(--button-bg-color-primary);
   border: transparent;
   border-radius: 4px;
-  color: #fff;
+  color: var(--button-text-color-primary);
   transition: background-color 0.2s ease-in-out;
 }
 
 .primary-cta:hover {
-  background-color: var(--primaryCtaHover);
+  background-color: var(--button-bg-hover-color-primary);
 }
 
 .primary-cta:focus {
   outline: none;
-  box-shadow: 0 0 0 1px var(--blue60), 0 0 0 4px var(--primaryCtafocus);
+  box-shadow:
+    0 0 0 2px var(--button-bg-color-secondary),
+    0 0 0 4px var(--button-bg-color-primary);
 }
 
 .primary-cta:active {
-  background-color: var(--primaryCtaActive);
+  background-color: var(--button-bg-active-color-primary);
 }
 
 /* Mozilla VPN tout */
 
 #moz-vpn-tout {
   opacity: 0;
-  background-color: var(--bgColor);
+  background-color: var(--panel-bg-color);
   visibility: visible;
   max-block-size: 500px;
   position: absolute;
   inset-block-end: var(--footerHeight);
   inset-inline-start: 0;
   inset-inline-end: 0;
-  box-shadow: 0 0 7px 0 #9498a25e;
+  box-shadow: var(--moz-vpn-tout-shadow);
   animation: appear 0.2s ease-out 0.5s forwards;
   transition: opacity 0.1s ease-in-out, max-height 0.3s ease-in-out;
 }
@@ -503,7 +645,7 @@ input:checked + .slider::before {
   flex-direction: column;
   padding-block: 16px;
   transition: max-height 0.3s ease-in-out, padding-block-end 0.2s ease-in-out;
-  box-shadow: 0 0 0 1px var(--hr-grey);
+  box-shadow: 0 0 0 1px var(--panel-separator-color);
 }
 
 .moz-vpn-connection-status-indicator {
@@ -604,21 +746,39 @@ input.proxies {
 #moz-vpn-current-server {
   align-items: center;
   border: none;
+  border-radius: 4px;
   display: flex;
-  block-size: 48px;
+  block-size: 32px;
   margin-block-start: 8px;
+  background-color: var(--panel-bg-color);
   background-image: var(--iconArrowRight);
   background-position: calc(100% - 24px) center;
   background-repeat: no-repeat;
   background-size: 9px;
   outline: none;
   padding-inline-start: 20px;
+  margin-inline: 8px;
+  margin-block: 8px;
   visibility: visible;
   position: absolute;
   inset-block-end: 0;
-  inline-size: 100%;
+  inline-size: calc(100% - 16px);
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
+}
+
+#moz-vpn-current-server:hover {
+  background-color: var(--button-bg-hover-color-secondary);
+}
+
+#moz-vpn-current-server:focus {
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
+}
+
+#moz-vpn-current-server:active {
+  background-color: var(--button-bg-active-color-secondary);
+  outline: none;
 }
 
 .moz-vpn-controller-content.show-server-button #moz-vpn-current-server {
@@ -744,16 +904,15 @@ input.proxies {
 }
 
 .advanced-proxy-settings-btn {
-  background-color: var(--bgColor);
-  box-shadow: 0 0 0 1px var(--hr-grey);
+  background-color: var(--panel-bg-color);
   background-image: var(--iconGear), var(--iconArrowRight);
   background-position: 16px center, calc(100% - 24px) center;
   background-repeat: no-repeat;
   background-size: 24px 24px, 9px;
   border: none;
-  color: var(--text-grey);
-  block-size: 56px;
-  min-block-size: 56px;
+  border-radius: 4px;
+  color: var(--text-color-primary);
+  block-size: 32px;
   line-height: 19px;
   display: flex;
   flex-direction: column;
@@ -762,6 +921,8 @@ input.proxies {
   padding-inline-start: 44px;
   z-index: 2;
   transition: opacity 0.1s ease-in-out, background-color 0.1s ease-in-out;
+  margin-inline: 8px;
+  margin-block: 8px;
 }
 
 .disabled {
@@ -770,9 +931,17 @@ input.proxies {
   pointer-events: none;
 }
 
-.advanced-proxy-settings-btn:hover,
+.advanced-proxy-settings-btn:hover {
+  background-color: var(--button-bg-hover-color-secondary);
+}
+
 .advanced-proxy-settings-btn:focus {
-  background-color: var(--grey10);
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
+}
+
+.advanced-proxy-settings-btn:active {
+  background-color: var(--button-bg-active-color-secondary);
   outline: none;
 }
 
@@ -820,8 +989,8 @@ input.proxies {
   inset-inline-start: 16px;
   visibility: hidden;
   opacity: 0;
-  background-color: var(--alertColor);
-  color: white;
+  background-color: var(--badge-destructive-bg-color);
+  color: var(--badge-destructive-text-color);
   border-radius: 4px;
   padding-block: 2px;
   padding-inline: 4px;
@@ -832,7 +1001,7 @@ input.proxies {
   content: "";
   block-size: 8px;
   inline-size: 8px;
-  background-color: var(--alertColor);
+  background-color: var(--badge-detructive-bg-color);
   inset-block-start: -4px;
   position: absolute;
   transform: rotate(45deg);
@@ -859,7 +1028,7 @@ input.proxies {
 
 .moz-vpn-logo,
 .moz-vpn-logotype {
-  color: var(--text-heading-color);
+  color: var(--text-color-primary);
   background-image: var(--logoMozillaVpn);
   background-repeat: no-repeat;
   background-size: 24px;
@@ -883,16 +1052,11 @@ input.proxies {
 .proxy-panel-title {
   line-height: var(--rowHeight);
   block-size: var(--rowHeight);
-  border-block-end: 1px solid var(--hr-grey);
+  border-block-end: 1px solid var(--panel-separator-color);
   position: fixed;
   z-index: 1;
   background-color: var(--bgColor);
-  box-shadow: 0 0 13px -2px #b5b5b500;
   transition: box-shadow 0.5s ease;
-}
-
-.drop-shadow {
-  box-shadow: 0 0 13px -2px #b5b5b54d;
 }
 
 .moz-vpn-server-list {
@@ -918,7 +1082,7 @@ input.proxies {
   display: flex;
   flex-direction: column;
   position: relative;
-  background-color: var(--bgColor);
+  background-color: var(--panel-bg-color);
 }
 
 .server-country-flag {
@@ -934,12 +1098,13 @@ input.proxies {
   padding-inline-start: 20px;
   font-family: var(--fontMetropolis);
   pointer-events: none;
-  color: var(--text-heading-color);
+  color: var(--text-color-primary);
 }
 
 .server-city-list-item,
 .server-city-list-visibility-btn {
   block-size: 40px;
+  border-radius: 4px;
   margin-block-start: 4px;
   margin-block-end: 4px;
   margin-inline-start: 8px;
@@ -947,20 +1112,27 @@ input.proxies {
   inline-size: calc(100% - 16px);
 }
 
+/* We need to temporarily use !important for this button to make sure the right color applies */
 .server-city-list-visibility-btn {
   display: flex;
-  background-color: var(--bgColor);
+  background-color: var(--panel-bg-color) !important;
   border-radius: 4px;
   border: none;
   transition: background-color 0.3s ease;
 }
 
 .server-city-list-visibility-btn:hover {
-  background-color: var(--grey10);
+  background-color: var(--button-bg-hover-color-secondary) !important;
+}
+
+.server-city-list-visibility-btn:focus {
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
 }
 
 .server-city-list-visibility-btn:active {
-  background-color: var(--grey20);
+  background-color: var(--button-bg-active-color-secondary) !important;
+  outline: none;
 }
 
 .toggle {
@@ -998,28 +1170,51 @@ input.proxies {
   position: relative;
 }
 
+.server-city-list-item:focus {
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
+}
+
+.server-city-list-item:hover {
+  background-color: var(--button-bg-hover-color-secondary);
+}
+
+.server-city-list-item:active {
+  background-color: var(--button-bg-active-color-secondary);
+  outline: none;
+}
+
 .server-city-name {
   font-family: var(--fontMetropolisLight);
   font-weight: 300;
-  color: var(--text-grey);
+  color: var(--text-color-primary);
   padding-inline-start: 18px;
 }
 
 /* ----- controller buttons ------- */
 
 .controller {
-  background-color: var(--bgColor);
-  color: var(--text-grey);
+  background-color: var(--button-bg-color-secondary);
+  color: var(--text-color-primary);
   transition: background-color 0.1s ease-in-out;
 }
 
-.controller:hover,
+.btn-return.controller {
+  background-color: transparent;
+}
+
+.controller:hover {
+  background-color: var(--button-bg-hover-color-secondary);
+}
+
 .controller:focus {
-  background-color: var(--controllerHover);
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
 }
 
 .controller:active {
-  background-color: var(--controllerActive);
+  background-color: var(--button-bg-active-color-secondary);
+  outline: none;
 }
 
 /* WARNING MODAL ---- */
@@ -1072,8 +1267,8 @@ input.proxies {
   font-size: 11px;
   font-family: var(--fontInter) !important;
   font-weight: 300;
-  color: var(--text-normal-color);
-  background-color: var(--bgColor);
+  color: var(--text-color-primary);
+  background-color: var(--panel-bg-color);
   padding-inline: 8px;
   padding-block: 4px;
   border-radius: 4px;
@@ -1142,22 +1337,21 @@ input.proxies {
 
 .server-radio-control {
   border-radius: 50%;
-  border: 2px solid var(--grey40);
+  border: 2px solid var(--input-border-color);
   block-size: 20px;
   margin-inline-start: 46px;
   pointer-events: none;
   position: relative;
   inline-size: 20px;
-  transition: border 0.1s ease-in-out;
 }
 
 .server-radio-btn:checked + .server-radio-control {
-  border-color: var(--primaryCtaDefault);
-  transition: border-color 0.2s ease;
+  border-color: var(--input-border-focus-color);
+  border: 2px solid var(--input-border-focus-color);
 }
 
 .server-radio-control::after {
-  background-color: var(--grey40);
+  border: 2px solid var(--input-border-color);
   border-radius: 50%;
   inset-block-end: 0;
   content: "";
@@ -1169,33 +1363,35 @@ input.proxies {
   position: absolute;
   inset-inline-end: 0;
   inset-block-start: 0;
-  transition: opacity 0.1s ease-in-out;
   inline-size: 12px;
-}
-
-/* Unchecked radio button styles */
-
-.server-city-list-item:hover .server-radio-control {
-  border: 2px solid var(--grey50);
-}
-
-.server-city-list-item:hover .server-radio-control::after {
-  opacity: 0.3;
-}
-
-.server-city-list-item:active .server-radio-control::after {
-  opacity: 0.5;
 }
 
 /* Checked radio button rules */
 
-.server-city-list-item:hover .server-radio-btn:checked + .server-radio-control {
-  border: 2px solid var(--primaryCtaDefault);
+.server-radio-btn:checked + .server-radio-control::after {
+  background-color: var(--input-border-focus-color);
+  border: 2px solid var(--input-border-focus-color);
+  opacity: 1;
 }
 
-.server-radio-btn:checked + .server-radio-control::after {
-  background-color: var(--primaryCtaDefault);
+/* Active state */
+.server-radio-btn:active + .server-radio-control {
+  border: 2px solid var(--input-border-active-color);
+}
+
+.server-radio-btn:active + .server-radio-control::after {
+  background-color: var(--input-bg-active-color);
+  border: 2px solid var(--input-border-active-color);
   opacity: 1;
+}
+
+.server-radio-btn:checked:active + .server-radio-control {
+  border: 2px solid var(--input-border-active-color);
+}
+
+.server-radio-btn:checked:active + .server-radio-control::after {
+  background-color: var(--input-bg-active-color);
+  border: 2px solid var(--input-border-active-color);
 }
 
 /* Helpers */
@@ -1252,8 +1448,8 @@ fieldset,
 input[type=text] {
   block-size: 36px;
   border-radius: 4px;
-  background-color: var(--bgColor);
-  color: var(--text-grey);
+  background-color: var(--input-bg-color);
+  color: var(--text-color-primary);
   padding-block: 8px;
   padding-inline: 8px;
 }
@@ -1266,7 +1462,7 @@ input[type=text] {
   align-items: center;
   background-color: transparent;
   border: none;
-  color: var(--primaryCtaDefault);
+  color: var(--link-color);
   display: flex;
   block-size: 24px;
   line-height: 24px;
@@ -1282,7 +1478,7 @@ input[type=text] {
 }
 
 .blue-link:hover {
-  color: var(--primaryCtaHover);
+  color: var(--link-hover-color);
 }
 
 .blue-link:focus,
@@ -1333,8 +1529,7 @@ input[type=text] {
 .moz-vpn-permissions {
   padding-block: var(--marginInline);
   padding-inline: var(--marginInline);
-  background-color: #cececf1c;
-  border-block-start: 1px solid var(--hr-grey);
+  border-block-start: 1px solid var(--panel-separator-color);
   display: none;
 }
 
@@ -1365,10 +1560,15 @@ input[type=text] {
 
 .panel-footer .button {
   align-items: center;
-  block-size: 100%;
+  block-size: 32px;
+  border-radius: 4px;
   display: flex;
   flex: 1;
   justify-content: center;
+}
+
+.panel-footer .button + .button {
+  margin-inline: 8px;
 }
 
 /* Onboarding styles */
@@ -1382,7 +1582,7 @@ input[type=text] {
 }
 
 .onboarding-title {
-  color: #43484e;
+  color: var(--text-color-primary);
   font-size: var(--font-size-heading);
   margin-block: 12px;
   margin-inline-end: 0;
@@ -1400,9 +1600,9 @@ input[type=text] {
 
 .onboarding-button {
   align-items: center;
-  background-color: #0996f8;
+  background-color: var(--button-bg-color-primary);
   border-radius: 3px;
-  color: white;
+  color: var(--button-text-color-primary);
   display: flex;
   flex: 0 0 44px;
   font-size: 14px;
@@ -1423,9 +1623,9 @@ input[type=text] {
 
 .half-onboarding-button {
   align-items: center;
-  background-color: #0996f8;
+  background-color: var(--button-bg-color-primary);
   border-radius: 3px;
-  color: white;
+  color: var(--button-text-color-primary);
   display: flex;
   flex: 1 0 auto;
   font-size: 14px;
@@ -1438,18 +1638,33 @@ input[type=text] {
 }
 
 .grey-button {
-  background-color: #e3e3e3;
-  color: var(--grey50);
+  background-color: var(--button-bg-color-secondary);
+  color: var(--text-color-primary);
+}
+
+.grey-button:hover.half-onboarding-button:hover {
+  background-color: var(--button-bg-hover-color-secondary);
+}
+
+.grey-button:active.half-onboarding-button:active {
+  background-color: var(--button-bg-active-color-secondary);
 }
 
 .onboarding-button:hover,
-.onboarding-button:active {
-  background-color: #0675d3;
+.half-onboarding-button:hover {
+  background-color: var(--button-bg-hover-color-primary);
 }
 
 .onboarding-button:focus,
 .half-onboarding-button:focus {
-  box-shadow: 0 0 0 1px #0a84ff inset, 0 0 0 1px #0a84ff, 0 0 0 4px rgba(10, 132, 255, 0.3);
+  box-shadow:
+    0 0 0 2px var(--button-bg-color-secondary),
+    0 0 0 4px var(--button-bg-focus-color-primary);
+}
+
+.onboarding-button:active,
+.half-onboarding-button:active {
+  background-color: var(--button-bg-active-color-primary);
 }
 
 /* Pop buttons are the square shaped buttons used to
@@ -1510,10 +1725,6 @@ manage things like container crud */
   transform: scale(0.95);
 }
 
-#edit-container-panel-choose-icon .radio-container:hover .usercontext-icon::before {
-  fill: var(--grey50) !important;
-}
-
 .mac-icon {
   background-image: url('/img/multiaccountcontainer-16.svg');
   background-position: center center;
@@ -1538,13 +1749,13 @@ manage things like container crud */
 /* Panel footer */
 .panel-footer {
   align-items: center;
-  block-size: var(--footerHeight);
   color: #000;
   display: flex;
   font-size: 13px;
   inline-size: 100%;
   justify-content: space-between;
-  box-shadow: 0 0 0 1px var(--hr-grey);
+  padding-block: 8px;
+  padding-inline: 8px;
 }
 
 #container-info-panel {
@@ -1566,12 +1777,17 @@ manage things like container crud */
   padding-inline-start: 16px;
 }
 
+/* We disable no-descending-specificity so we can keep [data-theme="dark"]
+ * rules grouped together at the beginning of the file
+ */
+/* stylelint-disable no-descending-specificity */
 .container-info-has-tabs img,
 .container-info-tab-row img {
   block-size: 16px;
   flex: 0 0 16px;
   margin-inline-end: 4px;
 }
+/* stylelint-enable no-descending-specificity */
 
 .container-info-tab-row img[src=""] {
   margin-inline-end: 0;
@@ -1583,7 +1799,7 @@ manage things like container crud */
 }
 
 .delete-container-confirm-title {
-  color: #000;
+  color: var(--text-color-primary);
   font-size: var(--font-size-heading);
 }
 
@@ -1622,6 +1838,7 @@ manage things like container crud */
   background: none;
   block-size: 23px;
   border: 0;
+  border-radius: 50%;
   filter: none;
   inline-size: 23px;
   margin-block-end: 0;
@@ -1632,6 +1849,14 @@ manage things like container crud */
   padding-block-start: 0;
   padding-inline-end: 0;
   padding-inline-start: 0;
+}
+
+.radio-choice > .radio-container > label:hover {
+  background-color: var(--usercontext-bg-hover-color);
+}
+
+.radio-choice > .radio-container > label:active {
+  background-color: var(--usercontext-bg-active-color);
 }
 
 .radio-choice > .radio-container > label::before {
@@ -1660,13 +1885,13 @@ manage things like container crud */
 }
 
 .radio-choice > .radio-container > [type="radio"]:checked + label {
-  background: #d3d3d3;
+  background-color: var(--usercontext-bg-focus-color);
   border-radius: 100%;
 }
 
 /* When focusing the element add a thin blue highlight to match input fields. This gives a distinction to other selected radio items */
 .radio-choice > .radio-container > [type="radio"]:focus + label {
-  outline: 1px solid #1f9ffc;
+  outline: solid 1px var(--input-border-focus-color);
   -moz-outline-radius: 100%;
 }
 
@@ -1688,9 +1913,12 @@ manage things like container crud */
 }
 
 input[type="text"]:focus {
-  box-shadow: 0 0 0 3px var(--primaryCtafocus);
+  /* Both a border and box-shadow of 1px are needed because using a 2px border
+   * would redraw the input 1px farther to the left.
+   */
+  border: solid 1px var(--input-border-focus-color);
+  box-shadow: 0 0 0 1px var(--input-border-focus-color);
   outline: none;
-  border-color: var(--blue70);
 }
 
 .edit-container-panel legend,
@@ -1751,7 +1979,7 @@ input[type="text"]:focus {
 
 h3.title {
   block-size: 48px;
-  color: #000;
+  color: var(--text-color-primary);
   font-family: var(--fontMetropolis);
   font-size: 14px;
   font-weight: bold;
@@ -1765,18 +1993,21 @@ h3.title {
   border-style: none;
   inline-size: 100%;
   padding-block: 8px;
+  padding-inline: 8px;
 }
 
 .menu-item {
+  align-items: center;
+  block-size: 32px;
+  border-radius: 4px;
   cursor: pointer;
-  block-size: var(--menuItemHeight);
+  display: flex;
   inline-size: 100%;
   line-height: var(--menuItemHeight);
-  display: flex;
-  align-items: center;
 }
 
 .menu-text {
+  color: var(--text-color-primary);
   display: flex;
   flex: 1;
 }
@@ -1785,26 +2016,35 @@ h3.title {
   align-items: center;
   display: flex;
   inline-size: 100%;
+  padding-inline: 8px;
 }
 
 .menu-item.drag-over td {
-  border-block-start: 2px solid var(--text-normal-color);
+  border-block-start: 2px solid var(--panel-separator-color);
 }
 
 .disabled-menu-item {
-  color: grey;
   cursor: default;
   font-style: italic;
+  opacity: 0.4;
 }
 
 .hover-highlight {
   transition: background-color 0.1s ease-in-out, color 0.1s ease-in-out;
 }
 
-.hover-highlight:hover,
+.hover-highlight:hover {
+  background-color: var(--menu-bg-hover-color);
+}
+
 .hover-highlight:focus {
-  background-color: var(--highlight-blue);
-  color: #fff;
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
+}
+
+.hover-highlight:active {
+  background-color: var(--menu-bg-active-color);
+  outline: none;
 }
 
 .menu-item-name {
@@ -1814,6 +2054,10 @@ h3.title {
   cursor: default;
 }
 
+/* We disable no-descending-specificity so we can keep [data-theme="dark"]
+ * rules grouped together at the beginning of the file
+ */
+/* stylelint-disable no-descending-specificity */
 .menu-icon {
   display: block;
   block-size: 16px;
@@ -1821,7 +2065,6 @@ h3.title {
   margin-block-end: auto;
   margin-block-start: auto;
   margin-inline-end: 8px;
-  margin-inline-start: var(--marginInline);
   text-align: center;
 }
 
@@ -1830,6 +2073,7 @@ h3.title {
 #container-info-table .menu-icon {
   inline-size: 16px;
 }
+/* stylelint-enable no-descending-specificity */
 
 .menu-right-float {
   text-align: right;
@@ -1853,10 +2097,13 @@ h3.title {
   display: flex;
   justify-content: flex-end;
   block-size: 24px;
-  margin-inline-end: 20px;
   text-align: center;
 }
 
+/* We disable no-descending-specificity so we can keep [data-theme="dark"]
+ * rules grouped together at the beginning of the file
+ */
+/* stylelint-disable no-descending-specificity */
 .menu-arrow img {
   block-size: 24px;
   inline-size: 12px;
@@ -1866,29 +2113,30 @@ h3.title {
   padding-inline-start: 2px;
   opacity: 0.9;
 }
+/* stylelint-enable no-descending-specificity */
 
 hr {
   border: 0;
-  border-block-start: 1px solid var(--hr-grey);
+  border-block-start: 1px solid var(--panel-separator-color);
   display: block;
 }
 
 .sub-header-wrapper {
   margin-block-start: 12px;
+  padding-inline: 16px;
 }
 
 .sub-header {
-  color: var(--text-heading-color);
+  color: var(--text-color-primary);
   block-size: 24px;
   line-height: 24px;
   padding-block-end: 0;
   padding-block-start: 0;
-  padding-inline-start: 20px;
   font-family: var(--fontInterMedium);
 }
 
 .edit-form {
-  color: var(--text-grey);
+  color: var(--text-color-primary);
   flex: 1;
   padding-block-end: 16px;
   padding-block-start: 16px;
@@ -1897,60 +2145,55 @@ hr {
 }
 
 .bottom-btn {
-  inset-block-end: 0;
-  box-shadow: 0 0 0 1px var(--hr-grey);
+  block-size: 32px;
+  border-radius: 4px;
+  color: var(--text-color-primary);
   cursor: pointer;
-  block-size: var(--footerHeight);
-  inline-size: 100%;
-  line-height: var(--footerHeight);
-  padding-inline-end: 16px;
-  padding-inline-start: 16px;
+  font-family: var(--fontMetropolis);
+  font-size: 14px;
+  inline-size: calc(100% - 16px);
+  inset-block-end: 0;
+  line-height: 32px;
+  margin-block: 8px;
+  margin-inline: 8px;
+  padding-inline: 8px;
+  pointer-events: all;
   position: absolute;
   text-align: center;
-  font-size: 14px;
-  font-family: var(--fontMetropolis);
-  color: var(--text-heading-color);
-  pointer-events: all;
 }
 
 .delete-btn {
-  background-color: var(--bgColor);
+  background-color: var(--button-destructive-bg-color);
+  block-size: 32px;
   border: none;
-  border-left: none;
-  border-right: none;
-  border-block-end: none;
-  box-shadow: 0 0 0 1px var(--hr-grey);
-  color: var(--alertColor);
+  border-radius: 4px;
+  color: var(--button-destructive-text-color);
   cursor: default;
   display: flex;
-  block-size: var(--rowHeight);
   justify-content: center;
-  line-height: var(--rowHeight);
+  line-height: 32px;
+  margin-block: 8px;
+  margin-inline: 8px;
   pointer-events: all;
-  transition: background-color 0.1s ease-in-out, border-color 0.1s ease-in-out, box-shadow 0.1s ease-in-out;
 }
 
 .alert-text {
   font-family: var(--fontMetropolis);
-  background-color: var(--bgColor);
-  color: var(--alertColor);
   cursor: pointer;
   text-align: center;
 }
 
-.alert-text:hover,
+.alert-text:hover {
+  background-color: var(--button-destructive-bg-hover-color);
+}
+
 .alert-text:focus {
-  background-color: rgba(255, 79, 94, 0.05);
-  box-shadow: 0 0 0 1px rgba(255, 79, 94, 0.05);
+  outline: 2px solid var(--button-destructive-bg-focus-color);
+  outline-offset: 2px;
 }
 
-.delete-btn:active {
-  background-color: rgba(255, 79, 94, 0.1);
-  box-shadow: 0 0 0 1px var(--alertColor);
-}
-
-.delete-btn:focus {
-  box-shadow: 0 0 0 1px var(--alertColor);
+.alert-text:active {
+  background-color: var(--button-destructive-bg-active-color);
   outline: none;
 }
 
@@ -1970,8 +2213,8 @@ hr {
 }
 
 input {
-  border: solid 1px #bebebe;
-  border-radius: 2px;
+  border: solid 1px var(--input-border-color);
+  border-radius: 4px;
 }
 
 .form-header {
@@ -1982,7 +2225,7 @@ input {
 }
 
 .edit-container-panel-name-input {
-  color: var(--text-grey);
+  color: var(--text-color-primary);
   block-size: 32px;
 }
 
@@ -2004,27 +2247,45 @@ input {
 
 .info-icon {
   cursor: pointer;
-  block-size: 16px;
-  inline-size: 16px;
-  inset-block-start: 16px;
+  block-size: 32px;
+  inline-size: 32px;
+  inset-block-start: 8px;
   position: absolute;
-  inset-inline-end: 20px;
+  inset-inline-end: 8px;
   text-align: center;
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+.info-icon:hover {
+  background-color: var(--button-bg-hover-color-secondary);
+}
+
+.info-icon:focus {
+  outline: 2px solid var(--button-bg-focus-color-primary);
+  outline-offset: 2px;
+}
+
+.info-icon:active {
+  background-color: var(--button-bg-active-color-secondary);
+  outline: none;
 }
 
 .info-icon-alert::after {
   block-size: 12px;
   inline-size: 12px;
-  background-color: var(--alertColor);
+  background-color: var(--badge-destructive-bg-color);
   content: "1";
   border-radius: 50%;
   position: absolute;
-  inset-block: -5px;
-  inset-inline-end: -6px;
+  inset-block-start: 2px;
+  inset-inline-end: 2px;
   box-shadow: 0 0 1px #00000075;
   font-size: 8px;
-  color: white;
+  color: var(--badge-destructive-text-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2038,14 +2299,16 @@ input {
   padding-inline-start: 0;
 }
 
+/* We disable no-descending-specificity so we can keep [data-theme="dark"]
+ * rules grouped together at the beginning of the file
+ */
+/* stylelint-disable no-descending-specificity */
 .trash-button {
   display: inline-block;
   block-size: 20px;
   inline-size: 20px;
   margin-block-end: 4px;
   margin-block-start: 4px;
-  margin-inline-end: 10px;
-  margin-inline-start: 0;
   text-align: center;
 }
 
@@ -2064,9 +2327,8 @@ tr:hover > td > .trash-button {
 
 .move-button > img {
   block-size: 16px;
-  margin-inline-end: 20px;
-  margin-inline-start: 8px;
 }
+/* stylelint-enable no-descending-specificity */
 
 /* ----- Permissions Overlay ---------- */
 
@@ -2085,7 +2347,7 @@ tr:hover > td > .trash-button {
   justify-content: center;
   align-content: center;
   flex-direction: column;
-  background-color: white;
+  background-color: var(--panel-bg-color);
   padding-block: 2.25rem;
   padding-inline: 2.25rem;
   display: none;
@@ -2096,171 +2358,6 @@ tr:hover > td > .trash-button {
   font-family: var(--fontMetropolis);
   font-size: 14px;
   margin-block-start: 1rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --iconCloseX: url("/img/close-light.svg");
-    --iconGear: url("/img/gear-icon-light.svg");
-    --iconArrowRight: url("/img/arrow-icon-right-light.svg");
-    --iconArrowLeft: url("/img/arrow-icon-left-light.svg");
-    --iconProxyWarning: url("/img/proxy-warning-light.svg");
-    --logoMozillaVpn: url("/img/moz-vpn-logo-light.svg");
-    --bgColor: #42404c;
-    --title-text-color: #fff;
-    --text-normal-color: #f9f9fa;
-    --text-heading-color: #fff;
-    --primaryCtaDefault: var(--blue40);
-    --primaryCtaHover: var(--blue50);
-    --primaryCtaActive: var(--blue60);
-    --highlight-blue: #52515d;
-    --bottomButtons: var(--highlight-blue);
-    --controllerHover: var(--highlight-blue);
-    --controllerActive: rgb(90, 89, 102);
-    --bgDark: #2b2932;
-  }
-
-  body {
-    color: #ffffffd1;
-
-    --highlight-blue: #52515d;
-    --hr-grey: #38383d;
-    --text-grey: #fefffe;
-  }
-
-  .permissions-overlay {
-    background-color: #494755;
-  }
-
-  .tooltip {
-    background-color: var(--controllerActive);
-  }
-
-  #moz-vpn-tout {
-    box-shadow: 0 0 21px 3px #323139;
-  }
-
-  .moz-vpn-permissions {
-    background-color: #322f3e;
-  }
-
-  .blue-link {
-    color: #36abfc;
-  }
-
-  .blue-link:hover {
-    color: var(--blue20);
-  }
-
-  .drop-shadow {
-    box-shadow: 0 0 13px -2px #323139;
-  }
-
-  .server-radio-control {
-    border-color: var(--grey40);
-  }
-
-  .server-radio-control::after {
-    background-color: var(--grey30);
-  }
-
-  .server-city-list-item:hover .server-radio-control {
-    border-color: var(--grey30);
-  }
-
-  .server-city-list-item:active .server-radio-control {
-    border-color: var(--grey20);
-  }
-
-  .primary-cta:focus {
-    box-shadow: 0 0 0 1px #00ddffd6, 0 0 0 3px var(--primaryCtaHover);
-  }
-
-  .slider {
-    background-color: var(--grey30);
-  }
-
-  input:hover + .slider {
-    background-color: var(--grey40);
-  }
-
-  input:focus + .slider {
-    box-shadow: 0 0 0 2px var(--bgColor), 0 0 0 4px var(--grey20);
-  }
-
-  h3.title {
-    color: #fff;
-  }
-
-  .delete-btn,
-  .bottom-btn {
-    background-color: var(--bottomButtons);
-    box-shadow: 0 0 0 1px #73737300;
-  }
-
-  .onboarding-title,
-  .delete-container-confirm-title {
-    color: #ededf0;
-  }
-
-  input {
-    border: solid 1px #737373;
-  }
-
-  input[type=text] {
-    background-color: rgba(43, 41, 50, 0.79) !important;
-  }
-
-  .delete-container {
-    background-color: #4a4a4a;
-  }
-
-  .delete-btn,
-  .cancel-button,
-  .grey-button {
-    background-color: var(--bottomButtons);
-    color: #f9f9fa;
-  }
-
-  .button.secondary:hover,
-  .button.secondary:focus {
-    background-color: #676767;
-  }
-
-  input[type="text"]:focus {
-    box-shadow: 0 0 0 3px var(--blue50);
-    border-color: var(--blue30);
-  }
-
-  .trash-button,
-  img.menu-icon,
-  .menu-icon > img,
-  .menu-arrow > img,
-  .info-icon > img {
-    filter: invert(1);
-  }
-
-  #edit-sites-assigned .menu-icon,
-  #container-info-table .menu-icon {
-    filter: invert(0);
-  }
-
-  .truncate-text::after {
-    background: var(--bgColor);
-    mask-image: linear-gradient(to right, transparent, var(--bgColor) 70%);
-  }
-
-  [data-identity-color="grey"] {
-    --identity-icon-color: #ededf0;
-  }
-
-  .radio-choice > .radio-container > [type="radio"]:checked + label {
-    background: var(--bgDark);
-  }
-
-  #edit-container-panel-choose-icon .radio-container:hover .usercontext-icon::before {
-    fill: #fff !important;
-  }
 }
 
 /* OVERFLOW MENU */

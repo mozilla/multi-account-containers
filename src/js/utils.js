@@ -169,6 +169,26 @@ const Utils = {
       false
     );
   },
+  /* Theme helper
+   *
+   * First, we look if there's a theme already set in the local storage. If
+   * there isn't one, we set the theme based on `prefers-color-scheme`.
+   * */
+  getTheme(currentTheme, window) {
+    if (typeof currentTheme !== "undefined" && currentTheme !== "auto") {
+      return currentTheme;
+    }
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      return "dark";
+    }
+    return "light";
+  },
+  async applyTheme() {
+    const { currentTheme } = await browser.storage.local.get("currentTheme");
+    const popup = document.getElementsByTagName("html")[0];
+    const theme = Utils.getTheme(currentTheme, window);
+    popup.setAttribute("data-theme", theme);
+  }
 };
 
 window.Utils = Utils;
