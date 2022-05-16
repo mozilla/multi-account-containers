@@ -1377,6 +1377,7 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
 
     // Populating the panel: name and icon
     document.getElementById("edit-assignments-title").textContent = identity.name;
+    document.getElementById("edit-sites-assigned").setAttribute("data-identity-color", identity.color);
 
     const userContextId = Logic.currentUserContextId();
     const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
@@ -1427,7 +1428,7 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
         });
         // Wildcard click-to-toggle subdomains
         trElement.querySelectorAll(".subdomain").forEach((subdomainLink) => {
-          subdomainLink.addEventListener("click", async (e) => {
+          subdomainLink.addEventListener("click", (e) => {
             const wildcardHostname = e.target.getAttribute("data-wildcardHostname");
             Utils.setWildcardHostnameForAssignment(assumedUrl, wildcardHostname);
             if (wildcardHostname) {
@@ -1454,14 +1455,14 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
     if (wildcardHostname && wildcardHostname !== hostname) {
       if (hostname.endsWith(wildcardHostname)) {
         return {
-          wildcard: hostname.substring(0, hostname.length - wildcardHostname.length),
+          wildcard: "★",
           remaining: wildcardHostname
         };
       } else {
         // In case something got corrupted, allow user to fix error
-        // by clicking "____" link to clear corrupted wildcard hostname
+        // by clicking '★' link to clear corrupted wildcard hostname
         return {
-          wildcard: "___",
+          wildcard: "★",
           remaining: hostname
         };
       }
@@ -1480,6 +1481,7 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
     // Add wildcard subdomain(s)
     if (subdomains.wildcard) {
       result.appendChild(this.assignmentSubdomainLink(null, subdomains.wildcard));
+      result.appendChild(document.createTextNode("."));
     }
 
     // Add non-wildcard subdomains
@@ -1503,6 +1505,7 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
     result.className = "subdomain";
     if (wildcardHostnameOnClick) {
       result.setAttribute("data-wildcardHostname", wildcardHostnameOnClick);
+      result.title = `*.${wildcardHostnameOnClick}`;
     } else {
       result.classList.add("wildcardSubdomain");
     }

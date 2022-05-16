@@ -1817,7 +1817,11 @@ manage things like container crud */
 }
 
 #edit-sites-assigned .hostname .subdomain.wildcardSubdomain {
-  opacity: 0.2;
+  background-color: var(--identity-icon-color);
+  border-radius: 8px;
+  margin-right: 4px;
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
 .assigned-sites-list > div {
