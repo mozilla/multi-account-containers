@@ -186,6 +186,7 @@ window.assignManager = {
     async deleteContainer(userContextId) {
       const sitesByContainer = await this.getAssignedSites(userContextId);
       this.area.remove(Object.keys(sitesByContainer));
+      identityState.storageArea.remove(backgroundLogic.cookieStoreId(userContextId));
       // Delete wildcard lookups
       const wildcardStoreKeys = Object.values(sitesByContainer)
         .map((site) => {
