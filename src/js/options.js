@@ -53,6 +53,56 @@ async function enableDisableReplaceTab() {
   await browser.storage.local.set({replaceTabEnabled: !!checkbox.checked});
 }
 
+async function backupContainers() {
+  const backupLink = document.getElementById("containers-save-link");
+  const backupResult = document.getElementById("containers-save-result");
+  try {
+    const content = JSON.stringify(
+      await browser.runtime.sendMessage({
+        method: "backupIdentitiesState"
+      })
+    );
+    backupLink.href = `data:application/json;base64,${btoa(content)}`;
+    backupLink.download = `containers-backup-${(new Date()).toISOString()}.json`;
+    backupLink.click();
+    backupResult.textContent = "";
+  } catch (err) {
+    backupResult.textContent = browser.i18n.getMessage("backupFailure", [String(err.message || err)]);
+    backupResult.style.color = "red";
+  }
+}
+
+async function restoreContainers(event) {
+  const restoreInput = event.currentTarget;
+  const restoreResult = document.getElementById("containers-restore-result");
+  event.preventDefault();
+  if (restoreInput.files.length) {
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      try {
+        const identitiesState = JSON.parse(reader.result);
+        const { created: restoredCount, incomplete } = await browser.runtime.sendMessage({
+          method: "restoreIdentitiesState",
+          identities: identitiesState
+        });
+        if (incomplete.length === 0) {
+          restoreResult.textContent = browser.i18n.getMessage("containersRestored", [String(restoredCount)]);
+          restoreResult.style.color = "green";
+        } else {
+          restoreResult.textContent = browser.i18n.getMessage("containersPartiallyRestored", [String(restoredCount), String(incomplete.join(", "))]);
+          restoreResult.style.color = "orange";
+        }
+      } catch (err) {
+        console.error("Cannot restore containers list: %s", err.message || err);
+        restoreResult.textContent = browser.i18n.getMessage("containersRestorationFailed");
+        restoreResult.style.color = "red";
+      }
+    };
+    reader.readAsText(restoreInput.files.item(0));
+  }
+  restoreInput.value = "";
+}
+
 async function enableDisablePageAction() {
   const checkbox = document.querySelector("#pageActionCheck");
   await browser.storage.local.set({pageActionEnabled: !!checkbox.checked});
@@ -131,6 +181,7 @@ browser.permissions.onRemoved.addListener(resetPermissionsUi);
 document.addEventListener("DOMContentLoaded", setupOptions);
 document.querySelector("#syncCheck").addEventListener( "change", enableDisableSync);
 document.querySelector("#replaceTabCheck").addEventListener( "change", enableDisableReplaceTab);
+document.querySelector("#containersRestoreInput").addEventListener( "change", restoreContainers);
 document.querySelector("#pageActionCheck").addEventListener( "change", enableDisablePageAction);
 document.querySelector("#changeTheme").addEventListener( "change", changeTheme);
 
@@ -141,8 +192,12 @@ for (let i=0; i < NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
 }
 
 document.querySelectorAll("[data-btn-id]").forEach(btn => {
-  btn.addEventListener("click", () => {
+  btn.addEventListener("click", e => {
     switch (btn.dataset.btnId) {
+    case "containers-save-button":
+      e.preventDefault();
+      backupContainers();
+      break;
     case "reset-onboarding":
       resetOnboarding();
       break;
