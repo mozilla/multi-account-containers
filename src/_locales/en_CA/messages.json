@@ -421,7 +421,7 @@
     "description": "(Options menu) Restore containers from a file group header"
   },
   "warningConfigOverride": {
-    "message": "WARNING ! This operation will erase current configuration with the imported one. All cookies associated with existing containers will be discarded.",
+    "message": "WARNING! This operation will erase current configuration with the imported one. All cookies associated with existing containers will be discarded.",
     "description": "(Options menu) Warns the user that old containers will be deleted along with their associated cookies"
   },
   "saveLegend": {
@@ -432,7 +432,7 @@
     "description": "(Options menu) Validate saving containers to a file"
   },
   "noteWontBackupCookies": {
-    "message": "Backs up only containers names, icons, colors and site assosiations, but NOT containers’ cookies.",
+    "message": "Backs up only containers names, icons, colors and site associations, but NOT containers’ cookies.",
     "description": "(Options menu) Inform the user that cookies won’t be saved and they cannot be restored using the file backup"
   }
 }
