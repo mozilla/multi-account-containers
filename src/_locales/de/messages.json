@@ -374,5 +374,65 @@
   "themeDark": {
     "message": "Dunkel",
     "description": "Value for the theme option select tag"
+  },
+  "backupFailure": {
+    "message": "Etwas ist schief gelaufen, Backup fehlgeschlagen: $errorMessage$",
+    "description": "(Options menu) When exporting containers as a file failed",
+    "placeholders": {
+      "errorMessage": {
+        "content": "$1"
+      }
+    }
+  },
+  "containersRestored": {
+    "message": "$restoredCount$ wiederhergestellt.",
+    "description": "(Options menu) When importing containers from a file succeeded",
+    "placeholders": {
+      "restoredCount": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "containersPartiallyRestored": {
+    "message": "$restoredCount$ wiederhergestellt, aber einige verloren ihre Site-Zuordnung: $incompleteList$.",
+    "description": "(Options menu) When importing containers from a file succeeded, but some containers associations couldn’t be restored",
+    "placeholders": {
+      "restoredCount": {
+        "content": "$1",
+        "example": "12"
+      },
+      "incompleteList": {
+        "content": "$1",
+        "example": "MyFacebookContainer, MyTwitterContainer"
+      }
+    }
+  },
+  "containersRestorationFailed": {
+    "message": "Die Datei ist beschädigt oder es ist keine Container-Sicherungsdatei.",
+    "description": "(Options menu) When importing containers from a file failed (most likely due to a malformed file)"
+  },
+  "backup": {
+    "message": "Backup",
+    "description": "(Options menu) Backup to/from a file header"
+  },
+  "restoreLegend": {
+    "message": "Wiederherstellen",
+    "description": "(Options menu) Restore containers from a file group header"
+  },
+  "warningConfigOverride": {
+    "message": "WARNUNG! Dieser Vorgang löscht die aktuelle Konfiguration mit der importierten. Alle mit vorhandenen Containern verknüpften Cookies werden verworfen.",
+    "description": "(Options menu) Warns the user that old containers will be deleted along with their associated cookies"
+  },
+  "saveLegend": {
+    "message": "Speichern",
+    "description": "(Options menu) Save containers to a file group header"},
+  "saveButton": {
+    "message": "Speichern",
+    "description": "(Options menu) Validate saving containers to a file"
+  },
+  "noteWontBackupCookies": {
+    "message": "Sichert nur Containernamen, Symbole, Farben und Site-Zuordnungen, aber KEINE Container-Cookies.",
+    "description": "(Options menu) Inform the user that cookies won’t be saved and they cannot be restored using the file backup"
   }
 }
