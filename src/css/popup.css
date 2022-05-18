@@ -360,8 +360,8 @@ table {
 }
 
 [data-identity-color="toolbar"] {
-  --identity-tab-color: var(--toolbar-field-color);
-  --identity-icon-color: var(--toolbar-field-color);
+  --identity-tab-color: #000000;
+  --identity-icon-color: #000000;
 }
 
 [data-identity-icon="fingerprint"] {
@@ -1827,6 +1827,10 @@ manage things like container crud */
   margin-right: 4px;
   padding-left: 10px;
   padding-right: 10px;
+}
+
+[data-theme="light"] #edit-sites-assigned[data-identity-color="toolbar"] .hostname .subdomain.wildcardSubdomain {
+  color: #ffffff;
 }
 
 .assigned-sites-list > div {
