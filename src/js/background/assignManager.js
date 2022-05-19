@@ -24,6 +24,18 @@ window.assignManager = {
       return `wildcardMap@@_${wildcardHostname}`;
     },
 
+    getWildcardStoreKeys(siteStoreKey) {
+      // E.g. "siteContainerMap@@_www.mozilla.org" =>
+      // ["wildcardMap@@_www.mozilla.org", "wildcardMap@@_mozilla.org", "wildcardMap@@_org"]
+      let previous;
+      return siteStoreKey.replace(/^siteContainerMap@@_/, "")
+        .split(".")
+        .reverse()
+        .map((subdomain) => previous = previous ? `${subdomain}.${previous}` : subdomain)
+        .map((hostname) => this.getWildcardStoreKey(hostname))
+        .reverse();
+    },
+
     setExempted(pageUrlorUrlKey, tabId) {
       const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       if (!(siteStoreKey in this.exemptedTabs)) {
@@ -51,15 +63,39 @@ window.assignManager = {
     },
 
     async getOrWildcardMatch(pageUrlorUrlKey) {
+      // 1st store request: siteStoreKey + wildcardStoreKeys
       const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
-      const siteSettings = await this.getByUrlKey(siteStoreKey);
+      const wildcardStoreKeys = this.getWildcardStoreKeys(siteStoreKey);
+      const combinedStoreKeys = [siteStoreKey].concat(wildcardStoreKeys);
+      let storageResponse = await this.area.get(combinedStoreKeys);
+      if (!storageResponse) { return null; }
+
+      // Try exact match
+      const siteSettings = storageResponse[siteStoreKey];
       if (siteSettings) {
         return {
           siteStoreKey,
           siteSettings
         };
       }
-      return this.getByWildcardMatch(siteStoreKey);
+
+      // 2nd store request (maybe): siteStoreKeys that were mapped from wildcardStoreKeys
+      const siteStoreKeys = wildcardStoreKeys.map((k) => storageResponse[k]).filter((k) => !!k);
+      if (siteStoreKeys.length > 0) {
+        storageResponse = await this.area.get(siteStoreKeys);
+        if (!storageResponse) { return null; }
+
+        // Try wildcard matches
+        for (const siteStoreKey of siteStoreKeys) {
+          const siteSettings = storageResponse[siteStoreKey];
+          if (siteSettings) {
+            return {
+              siteStoreKey,
+              siteSettings
+            };
+          }
+        }
+      }
     },
 
     async getSyncEnabled() {
@@ -83,26 +119,6 @@ window.assignManager = {
           reject(e);
         });
       });
-    },
-
-    async getByWildcardMatch(siteStoreKey) {
-      // Keep stripping subdomains off site hostname until match a wildcard hostname
-      let remainingHostname = siteStoreKey.replace(/^siteContainerMap@@_/, "");
-      while (remainingHostname) {
-        const wildcardStoreKey = this.getWildcardStoreKey(remainingHostname);
-        siteStoreKey = await this.getByUrlKey(wildcardStoreKey);
-        if (siteStoreKey) {
-          const siteSettings = await this.getByUrlKey(siteStoreKey);
-          if (siteSettings) {
-            return {
-              siteStoreKey,
-              siteSettings
-            };
-          }
-        }
-        const indexOfDot = remainingHostname.indexOf(".");
-        remainingHostname = indexOfDot < 0 ? null : remainingHostname.substring(indexOfDot + 1);
-      }
     },
 
     async set(pageUrlorUrlKey, data, exemptedTabIds, backup = true) {
