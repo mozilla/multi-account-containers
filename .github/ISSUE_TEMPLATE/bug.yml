@@ -1,0 +1,53 @@
+name: Bug Report
+description: Report a problem in Multi-Account Containers
+labels: [bug]
+body:
+  - type: checkboxes
+    id: before-bug-report
+    attributes:
+      label: Before submitting a bug report
+      options:
+        - label: "I updated to the latest version of Multi-Account Container and tested if I can reproduce the issue"
+          required: true
+        - label: "I searched for existing reports to see if it hasn\'t already been reported"
+          required: true
+  - type: textarea
+    id: about_support
+    attributes:
+      label: "Provide a copy of Troubleshooting Information page"
+      description: "To get a copy of the Troubleshooting Information page, type *about:support* in the address bar and click on the *Copy text to clipboard* button."
+    validations:
+      required: true
+  - type: textarea
+    id: step_to_reproduce
+    attributes:
+      label: "Step to reproduce"
+      description: "Provide a list of steps you did to trigger this bug"
+      placeholder: |
+        1. I opened ...
+        2. I clicked on ...
+        3. ...
+    validations:
+      required: true 
+  - type: textarea
+    id: actual_behavior
+    attributes:
+      label: "Actual behavior"
+      description: "Provide a description of what is currently happening"
+    validations:
+      required: true    
+  - type: textarea
+    id: expected_behavior
+    attributes:
+      label: "Expected behavior"
+      description: "Provide a description of what should happen"
+    validations:
+      required: true
+  - type: textarea
+    id: additional_informations
+    attributes:
+      label: "Additional informations"
+      description: "Provide any other information revelant to this issue"
+    validations:
+      required: false
+
