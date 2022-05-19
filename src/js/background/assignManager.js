@@ -753,7 +753,8 @@ window.assignManager = {
     // Ensure we have a cookieStore to assign to
     if (cookieStore
         && this.isTabPermittedAssign(tab)) {
-      return this.storageArea.get(tab.url);
+      const siteMatchResult = await this.storageArea.getOrWildcardMatch(tab.url);
+      return siteMatchResult && siteMatchResult.siteSettings;
     }
     return false;
   },
