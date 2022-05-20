@@ -1,10 +1,10 @@
 blank_issues_enabled: false
 contact_links:
   - name: "Explore our help articles"
-    url: "https://support.mozilla.org/en-US/kb/containers"
+    url: "https://support.mozilla.org/kb/containers"
     about: "Dig into the knowledge base, tips and tricks, troubleshooting, and so much more."
-  - name: "Ask a question"
-    url: "https://support.mozilla.org/en-US/questions/new/desktop/form"
+  - name: "Ask a support question"
+    url: "https://support.mozilla.org/questions/new/desktop/form"
     about: "Get support from our contributors or staff members."
   - name: "Submit new ideas"
     url: "https://connect.mozilla.org/t5/discussions/how-to-submit-a-great-idea-in-five-easy-steps/td-p/24"
@@ -13,5 +13,5 @@ contact_links:
     url: "https://connect.mozilla.org/t5/discussions/bd-p/discussions"
     about: "Give feedback and participate in meaningful conversations with the community and Mozilla employees"
   - name: "Discover more awesome tools"
-    url: "https://www.mozilla.org/en-US/firefox/products/"
+    url: "https://www.mozilla.org/firefox/products/"
     about: "Learn more about other products from Mozilla"
