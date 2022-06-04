@@ -3,9 +3,9 @@
     "@testpilot-containers-wildcard": {
       "updates": [
         {
-          "version": "8.0.8.0",
+          "version": "8.0.8.1a2",
           "browser_specific_settings": { "gecko": { "strict_min_version": "91.1.0" } },
-          "update_link": "https://github.com/BPower0036/multi-account-containers/releases/download/8.0.8.0/multi_account_containers_wildcard-8.0.8.0-fx.xpi"
+          "update_link": "https://github.com/BPower0036/multi-account-containers/releases/download/8.0.8.1a2/multi_account_containers_wildcard-8.0.8.1a2-fx.xpi"
         }
       ]
     }

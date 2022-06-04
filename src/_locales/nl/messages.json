@@ -374,5 +374,65 @@
   "themeDark": {
     "message": "Donker",
     "description": "Value for the theme option select tag"
+  },
+  "backupFailure": {
+    "message": "Er ging iets mis, back-up mislukte: $errorMessage$",
+    "description": "(Options menu) When exporting containers as a file failed",
+    "placeholders": {
+      "errorMessage": {
+        "content": "$1"
+      }
+    }
+  },
+  "containersRestored": {
+    "message": "$restoredCount$ hersteld.",
+    "description": "(Options menu) When importing containers from a file succeeded",
+    "placeholders": {
+      "restoredCount": {
+        "content": "$1",
+        "example": "12"
+      }
+    }
+  },
+  "containersPartiallyRestored": {
+    "message": "$restoredCount$ hersteld, maar sommige verloren hun site-associatie: $incompleteList$.",
+    "description": "(Options menu) When importing containers from a file succeeded, but some containers associations couldn’t be restored",
+    "placeholders": {
+      "restoredCount": {
+        "content": "$1",
+        "example": "12"
+      },
+      "incompleteList": {
+        "content": "$1",
+        "example": "MyFacebookContainer, MyTwitterContainer"
+      }
+    }
+  },
+  "containersRestorationFailed": {
+    "message": "Het bestand is beschadigd of is geen containerback-upbestand.",
+    "description": "(Options menu) When importing containers from a file failed (most likely due to a malformed file)"
+  },
+  "backup": {
+    "message": "Backup",
+    "description": "(Options menu) Backup to/from a file header"
+  },
+  "restoreLegend": {
+    "message": "Restore",
+    "description": "(Options menu) Restore containers from a file group header"
+  },
+  "warningConfigOverride": {
+    "message": "WAARSCHUWING! Met deze bewerking wordt de huidige configuratie met de geïmporteerde gewist. Alle cookies die aan bestaande containers zijn gekoppeld, worden verwijderd.",
+    "description": "(Options menu) Warns the user that old containers will be deleted along with their associated cookies"
+  },
+  "saveLegend": {
+    "message": "Opslaan",
+    "description": "(Options menu) Save containers to a file group header"},
+  "saveButton": {
+    "message": "Opslaan",
+    "description": "(Options menu) Validate saving containers to a file"
+  },
+  "noteWontBackupCookies": {
+    "message": "Maakt alleen een back-up van namen, pictogrammen, kleuren en site-associaties van containers, maar NIET van containercookies.",
+    "description": "(Options menu) Inform the user that cookies won’t be saved and they cannot be restored using the file backup"
   }
 }
