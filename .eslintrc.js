@@ -19,6 +19,7 @@ module.exports = {
     "OS": true,
     "ADDON_UNINSTALL": true,
     "ADDON_DISABLE": true,
+    "CONTAINER_ORDER_STORAGE_KEY": true,
     "proxifiedContainers": true,
     "MozillaVPN": true,
     "MozillaVPN_Background": true

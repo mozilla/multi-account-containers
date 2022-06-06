@@ -1,4 +1,4 @@
-<html>
+<html data-theme="auto">
 <head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8">
   <title>Multi-Account Containers</title>
@@ -251,7 +251,7 @@
       </table>
     </div>
     <v-padding-hack-footer></v-padding-hack-footer>
-    <div class="bottom-btn keyboard-nav hover-highlight" id="manage-container-link" tabindex="0" data-i18n-message-id="manageThisContainer"></div>
+    <div class="bottom-btn keyboard-nav hover-highlight controller" id="manage-container-link" tabindex="0" data-i18n-message-id="manageThisContainer"></div>
   </div>
 
 
@@ -299,7 +299,7 @@
           <legend class="form-header" data-i18n-message-id="icon"></legend>
         </fieldset>
         <fieldset class="proxies"> <!---- PROXIES -->
-          <input type="text" class="proxies" name="container-proxy" id="edit-container-panel-proxy" maxlength="50" placeholder="type://host:port" hidden/>
+          <input type="text" class="proxies" name="container-proxy" id="edit-container-panel-proxy" placeholder="type://host:port" hidden/>
           <input type="text" class="proxies" name="moz-proxy-enabled" id="moz-proxy-enabled" maxlength="5" hidden/>
           <input type="text" class="proxies" name="country-code" id="country-code-input" maxlength="5" hidden/>
           <input type="text" class="proxies" name="city-name" id="city-name-input" maxlength="5" hidden/>
@@ -342,10 +342,11 @@
         </button>
       </div>
     </moz-vpn-container-ui>
-    <button id="advanced-proxy-settings-btn" class="proxy-section advanced-proxy-settings-btn controller">
+    <button id="advanced-proxy-settings-btn" class="proxy-section advanced-proxy-settings-btn">
       <span class="advanced-proxy-settings-btn-label" data-i18n-message-id="advancedProxySettings"></span>
       <span id="advanced-proxy-address"></span>
     </button>
+    <hr>
     <button class="delete-container delete-btn alert-text" id="delete-container-button" data-i18n-message-id="deleteThisContainer"></button>
 
     <!-- TODO get UX / CONTENT on how to message about unavailable proxies -->
@@ -394,7 +395,6 @@
     <hr>
     <div class="panel-content delete-container-confirm">
       <h4 class="delete-container-confirm-title" data-i18n-message-id="removeThisContainer"></h4>
-      <p class="delete-warning" id="delete-container-tab-warning"></p>
       <p class="delete-warning" data-i18n-message-id="removeThisContainerConfirmation"></p>
     </div>
     <div class="panel-footer">
@@ -441,7 +441,7 @@
     <form class="advanced-proxy-panel-content">
       <label class="advanced-proxy-input-label" for="container-proxy" data-i18n-message-id="advancedProxySettings"></label>
       <div class="advanced-proxy-input-wrapper">
-        <input id="edit-advanced-proxy-input" class="proxy-host primary-input" name="container-proxy" type="text" maxlength="50" placeholder="type://host:port" />
+        <input id="edit-advanced-proxy-input" class="proxy-host primary-input" name="container-proxy" type="text" placeholder="type://host:port" />
         <button id="clear-advanced-proxy-input" class="controller" data-i18n-attribute="value" data-i18n-attribute-message-id="clearproxylabel"></button>
         <span class="proxy-validity" data-i18n-message-id="invalidProxyAlert"></span>
       </div>
@@ -450,7 +450,7 @@
     </form>
     <div id="permissions-overlay" class="permissions-overlay" data-tab-group="proxy-disabled">
       <p data-tab-group="proxy-disabled" data-i18n-message-id="additionalPermissionNeeded"></p>
-      <button id="enable-proxy-permissions" class="primary-cta" data-tab-group="proxy-disabled">Enable</button>
+      <button id="enable-proxy-permissions" class="primary-cta" data-tab-group="proxy-disabled" data-i18n-message-id="enable"></button>
     </div>
   </div>
   <script src="js/utils.js"></script>

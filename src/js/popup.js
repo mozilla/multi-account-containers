@@ -10,7 +10,6 @@ const DEFAULT_ICON = "circle";
 const NEW_CONTAINER_ID = "new";
 
 const ONBOARDING_STORAGE_KEY = "onboarding-stage";
-const CONTAINER_ORDER_STORAGE_KEY = "container-order";
 const CONTAINER_DRAG_DATA_TYPE = "firefox-container";
 
 // List of panels
@@ -52,6 +51,7 @@ async function getExtensionInfo() {
   return extensionInfo;
 }
 
+
 // This object controls all the panels, identities and many other things.
 const Logic = {
   _identities: [],
@@ -65,6 +65,9 @@ const Logic = {
     browser.runtime.sendMessage({
       method: "MozillaVPN_attemptPort"
     }),
+
+    // Set the theme
+    Utils.applyTheme();
 
     // Remove browserAction "upgraded" badge when opening panel
     this.clearBrowserActionBadge();
@@ -1244,6 +1247,7 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
     if (currentTab.cookieStoreId !== "firefox-default") {
       const tr = document.createElement("tr");
       tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
+      tr.setAttribute("tabindex", "0");
       const td = document.createElement("td");
 
       td.innerHTML = Utils.escaped`
@@ -1492,7 +1496,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
             } else {
               MozillaVPN.handleMozillaCtaClick("mac-edit-container-panel-btn");
             }
-           
+
           });
 
           this.switch.addEventListener("click", async() => {
@@ -1547,6 +1551,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
               this.updateProxyDependentUi(proxy);
             } else {
               this.switch.checked = false;
+              this.updateProxyDependentUi({});
               return;
             }
           });
@@ -1677,7 +1682,6 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
           this.currentCityName.textContent = proxyInfo.cityName;
           this.countryCode = proxyInfo.countryCode;
         }
-        return;
       }
 
       expandUi() {
@@ -1892,6 +1896,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     if (proxyPermissionEnabled) {
       const proxyData = await proxifiedContainers.retrieve(identity.cookieStoreId);
       if (proxyData && proxyData.proxy.mozProxyEnabled && !mozillaVpnConnected) {
+        mozillaVpnUi.updateProxyDependentUi({});
         return;
       }
       const proxy = proxyData ? proxyData.proxy : {};
@@ -2243,15 +2248,6 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
 
     // Populating the panel: name, icon, and warning message
     document.getElementById("container-delete-title").textContent = identity.name;
-
-    const totalNumberOfTabs = identity.numberOfHiddenTabs + identity.numberOfOpenTabs;
-    let warningMessage = "";
-    if (totalNumberOfTabs > 0) {
-      const grammaticalNumTabs = totalNumberOfTabs > 1 ? "tabs" : "tab";
-      warningMessage = `If you remove this container now, ${totalNumberOfTabs} container ${grammaticalNumTabs} will be closed.`;
-    }
-    document.getElementById("delete-container-tab-warning").textContent = warningMessage;
-
     return Promise.resolve(null);
   },
 });

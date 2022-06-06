@@ -9,16 +9,16 @@ on:
       - main
       - production
   schedule:
-    - cron: '0 2 * * *' # Daily at 2AM UTC      
+    - cron: '0 2 * * *' # Daily at 2AM UTC
 
 jobs:
   builds:
     name: Builds
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Create the package
         shell: bash
@@ -26,7 +26,7 @@ jobs:
           ./bin/build-addon.sh nightly.xpi
 
       - name: Uploading
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
             name: ${{matrix.config.name}} Build
             path: src/web-ext-artifacts
