@@ -12,13 +12,6 @@ body:
         - label: "I searched for existing reports to see if it hasn\'t already been reported"
           required: true
   - type: textarea
-    id: about_support
-    attributes:
-      label: "Provide a copy of Troubleshooting Information page"
-      description: "To get a copy of the Troubleshooting Information page, type *about:support* in the address bar and click on the *Copy text to clipboard* button."
-    validations:
-      required: true
-  - type: textarea
     id: step_to_reproduce
     attributes:
       label: "Step to reproduce"
@@ -50,4 +43,11 @@ body:
       description: "Provide any other information revelant to this issue"
     validations:
       required: false
-
+  - type: textarea
+    id: about_support
+    attributes:
+      label: "Provide a copy of Troubleshooting Information page"
+      description: "To get a copy of the Troubleshooting Information page, type *about:support* in the address bar and click on the *Copy text to clipboard* button."
+      render: "plain text"
+    validations:
+      required: true 
