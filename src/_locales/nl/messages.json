@@ -417,7 +417,7 @@
     "description": "(Options menu) Backup to/from a file header"
   },
   "restoreLegend": {
-    "message": "Restore",
+    "message": "Herstellen",
     "description": "(Options menu) Restore containers from a file group header"
   },
   "warningConfigOverride": {
