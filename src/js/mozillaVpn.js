@@ -34,11 +34,8 @@ const MozillaVPN = {
         }
         if (!mozillaVpnConnected && proxy.mozProxyEnabled) {
           flag.classList.add("proxy-unavailable");
-          const tooltip = el.querySelector(".tooltip.proxy-unavailable");
-          if (tooltip) {
-            tooltip.textContent = tooltipProxyWarning;
-          }
           const menuItemName = el.querySelector(".menu-item-name");
+          menuItemName.setAttribute("title", tooltipProxyWarning);
           if (menuItemName) {
             el.querySelector(".menu-item-name").dataset.mozProxyWarning = "proxy-unavailable";
           }
@@ -68,14 +65,11 @@ const MozillaVPN = {
     const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
     const connectionStatusStringId = mozillaVpnConnected ? "moz-vpn-connected" : "moz-vpn-disconnected";
     const connectionStatusLocalizedString = browser.i18n.getMessage(connectionStatusStringId);
+    const connectionStatusTooltip = document.querySelector(".vpn-status-container-list");
+    connectionStatusTooltip.setAttribute("title", connectionStatusLocalizedString);
 
     statusIconEls.forEach(el => {
       el.style.backgroundImage = mozillaVpnConnected ? connectedIndicatorSrc : disconnectedIndicatorSrc;
-      if (el.querySelector(".tooltip")) {
-        el.querySelector(".tooltip").textContent = connectionStatusLocalizedString;
-      } else {
-        el.textContent = connectionStatusLocalizedString;
-      }
     });
   },
 
