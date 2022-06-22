@@ -788,7 +788,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             </div>
           </div>
           <span class="menu-text">${identity.name}</span>
-          <span class="tooltip proxy-unavailable"></span>
         </div>
         <span class="menu-right-float">
           <img alt="" class="always-open-in-flag flag-img" src="/img/flags/.png"/>
