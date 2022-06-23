@@ -359,6 +359,11 @@ table {
   --identity-icon-color: #af51f5;
 }
 
+[data-identity-color="toolbar"] {
+  --identity-tab-color: var(--text-color-primary);
+  --identity-icon-color: var(--text-color-primary);
+}
+
 [data-identity-icon="fingerprint"] {
   --identity-icon: url("/img/usercontext.svg#fingerprint");
 }
