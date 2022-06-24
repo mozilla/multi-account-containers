@@ -1,35 +1,44 @@
 # Contributing
 
-Everyone is welcome to contribute to containers. Reach out to team members if you have questions:
+## Requirements
 
-- Matrix chat: [#containers:mozilla.org](https://matrix.to/#/#containers:mozilla.org)
-- Email: containers@mozilla.com
+* Firefox 91.1.0+
+* Git 2.13+
+* Node 7+
 
-## Filing bugs
+## Getting Started
 
-If you find a bug with containers, please file a issue.
+1. Follow the instructions on [How to fork a repository][fork]
+2. Fetch the locales:
 
-Check first if the bug might already exist: https://github.com/mozilla/multi-account-containers/issues
+    ```
+    cd multi-account-containers
+    git submobule update --init
+    ```
+3. Install the project dependencies
+    ```
+    npm install -legacy-peer-deps
+    ```	
+3. Install [web-ext][web-ext] command-line tool:
 
-[Open an issue](https://github.com/mozilla/multi-account-containers/issues/new)
+    ```
+    npm install -g web-ext
+    ```
 
-1. Visit about:support
-2. Click "Copy raw data to clipboard" and paste into the bug. Alternatively copy the following sections into the issue:
-  - Application Basics
-  - Nightly Features (if you are in nightly)
-  - Extensions
-  - Experimental Features
-3. Include clear steps to reproduce the issue you have experienced.
-4. Include screenshots if possible.
+4. Run `web-ext run -s src/`.
 
-## Sending Pull Requests
+## Translations
 
-Patches should be submitted as pull requests. When submitting patches as PRs:
+The translations are located in `src/_locales`. This directory is a git
+repository like any other. Before editing files in this folder, you need to:
 
-- You agree to license your code under the project's open source license (MPL 2.0).
-- Base your branch off the current master (see below for an example workflow).
-- Add both your code and new tests if relevant.
-- Run npm test to make sure all tests still pass.
-- Please do not include merge commits in pull requests; include only commits with the new relevant code.
+1. `cd src/_locales/`
+2. `git checkout -b message-updates-yyyymmdd`
+3. `git push -u origin message-updates-yyyymmdd`
 
-See the main [README](./README.md) for information on prerequisites, installing, running and testing.
+You can then [open a pull request][pr] on [the l10n repository][l10n].
+
+[fork]: https://docs.github.com/en/get-started/quickstart/fork-a-repo
+[l10n]: https://github.com/mozilla-l10n/multi-account-containers-l10n/
+[pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests
+[web-ext]: https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Getting_started_with_web-ext
