@@ -9,10 +9,14 @@ Learn more about Multi-Account Containers in
 
 ## Contributing
 
-Everyone is welcome to contribute to Multi-Account Containers. Come chat
-with us on [our Matrix room][matrix] or [our forum][forum].
+Everyone is welcome to contribute to Multi-Account Containers. To learn how
+to contribute a patch to Multi-Account Container, please
+[read our contributing guide][contributing].
 
-Please [read our Code of Conduct][coc].
+You can also chat with us on [our Matrix room][matrix] or [our forum][forum].
+
+This repository is governed by Mozilla's code of conduct and etiquette
+guidelines. For more details, [please read the Mozilla Community Participation Guidelines][cpg].
 
 ### License
 
@@ -21,7 +25,8 @@ License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 <!-- Please keep the list in alphabetical order -->
-[coc]: CODE_OF_CONDUCT.md
+[contributing]: CONTRIBUTING.md
+[cpg]: https://www.mozilla.org/about/governance/policies/participation/
 [enduser]: https://support.mozilla.org/en-US/kb/containers
 [forum]: https://discourse.mozilla.org/c/containers/223
 [matrix]: https://matrix.to/#/#containers:mozilla.org
