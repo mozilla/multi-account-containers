@@ -17,7 +17,7 @@
     ```
 3. Install the project dependencies
     ```
-    npm install -legacy-peer-deps
+    npm install --legacy-peer-deps
     ```	
 3. Install [web-ext][web-ext] command-line tool:
 
