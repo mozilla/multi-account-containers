@@ -18,14 +18,8 @@
 3. Install the project dependencies
     ```
     npm install --legacy-peer-deps
-    ```	
-3. Install [web-ext][web-ext] command-line tool:
-
     ```
-    npm install -g web-ext
-    ```
-
-4. Run `web-ext run -s src/`.
+4. Run `npm run dev`.
 
 ## Translations
 
