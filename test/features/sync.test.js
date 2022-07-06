@@ -187,6 +187,50 @@ describe("Sync", function() {
       this.syncHelper.lookupIdentityBy(identities, {name: "Mozilla"});
     (mozillaContainer.icon === "pet").should.be.true;
   });
+
+  it("excludeEmptyTest", async function() {
+    await this.syncHelper.stopSyncListeners();
+    await this.syncHelper.setState({}, LOCAL_DATA, TEST_CONTAINERS, []);
+    await this.syncHelper.unsetExcludeRegexp();
+
+    await this.webExt.background.window.sync.runSync();
+
+    // We excluded nothing, so all identities should be part of the sync storage.
+    const identities = await this.syncHelper.getIdentitiesFromSyncStorage();
+    TEST_CONTAINERS.length.should.equal(identities.length);
+  });
+
+  it("excludeOutgoingTest", async function() {
+    await this.syncHelper.stopSyncListeners();
+    await this.syncHelper.setState({}, LOCAL_DATA, TEST_CONTAINERS, []);
+
+    // Our outgoing container is the last test container.
+    const outgoingContainerName = TEST_CONTAINERS.at(-1).name;
+    await this.syncHelper.setExcludeRegexp(`^${outgoingContainerName}$`);
+
+    await this.webExt.background.window.sync.runSync();
+
+    // We excluded an outgoing container, so its identity should not be part of the sync storage.
+    const identities = await this.syncHelper.getIdentitiesFromSyncStorage();
+    this.syncHelper.lookupIdentityBy(identities, {name: outgoingContainerName}).should.be.false;
+  });
+
+  it("excludeIncomingTest", async function() {
+    await this.syncHelper.stopSyncListeners();
+    await this.syncHelper.setState(SYNC_DATA, LOCAL_DATA, TEST_CONTAINERS, []);
+    
+    // Our incoming container is the first that's in the sync storage but not in the local storage
+    const incomingContainerName = Object.values(SYNC_DATA).find((sync_container) =>
+      !TEST_CONTAINERS.find((local_container) => sync_container.name === local_container.name)
+    ).name;
+    await this.syncHelper.setExcludeRegexp(`^${incomingContainerName}$`);
+
+    await this.webExt.background.window.sync.runSync();
+
+    // We excluded an incoming container, so its identity should not be part of the local storage.
+    const identities = await this.webExt.browser.contextualIdentities.query({});
+    this.syncHelper.lookupIdentityBy(identities, {name: incomingContainerName}).should.be.false;
+  });
 });
 
 class SyncTestHelper {
@@ -224,12 +268,28 @@ class SyncTestHelper {
     }
     return;
   }
+
+  async setExcludeRegexp(syncExcludeRegExp) {
+    await this.webExt.browser.storage.local.set({syncExcludeRegExp});
+  }
   
+  async unsetExcludeRegexp() {
+    await this.webExt.browser.storage.local.remove("syncExcludeRegExp");
+  }
+
   async removeAllContainers() {
     const identities = await this.webExt.browser.contextualIdentities.query({});
     for (const identity of identities) {
       await this.webExt.browser.contextualIdentities.remove(identity.cookieStoreId);
     }
+  }
+
+  async getIdentitiesFromSyncStorage() {
+    const storage = await this.webExt.browser.storage.sync.get();
+    const identities = Object.fromEntries(
+      Object.entries(storage).filter(([key]) => key.startsWith("identity@@"))
+    );
+    return Object.values(identities);
   }
 
   lookupIdentityBy(identities, options) {
