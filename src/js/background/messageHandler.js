@@ -45,6 +45,9 @@ const messageHandler = {
         // m.url is the assignment to be removed/added
         response = assignManager._setOrRemoveAssignment(m.tabId, m.url, m.userContextId, m.value);
         break;
+      case "setWildcardHostnameForAssignment":
+        response = assignManager._setWildcardHostnameForAssignment(m.url, m.wildcardHostname);
+        break;
       case "sortTabs":
         backgroundLogic.sortTabs();
         break;

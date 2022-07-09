@@ -138,6 +138,14 @@ const Utils = {
     });
   },
 
+  setWildcardHostnameForAssignment(url, wildcardHostname) {
+    return browser.runtime.sendMessage({
+      method: "setWildcardHostnameForAssignment",
+      url,
+      wildcardHostname
+    });
+  },
+
   async reloadInContainer(url, currentUserContextId, newUserContextId, tabIndex, active) {
     return await browser.runtime.sendMessage({
       method: "reloadInContainer",

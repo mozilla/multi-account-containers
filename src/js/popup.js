@@ -1376,6 +1376,7 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
 
     // Populating the panel: name and icon
     document.getElementById("edit-assignments-title").textContent = identity.name;
+    document.getElementById("edit-sites-assigned").setAttribute("data-identity-color", identity.color);
 
     const userContextId = Logic.currentUserContextId();
     const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
@@ -1410,10 +1411,11 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
         trElement.innerHTML = Utils.escaped`
         <td>
           <div class="favicon"></div>
-          <span title="${site.hostname}" class="menu-text">${site.hostname}</span>
+          <span title="${site.hostname}" class="menu-text hostname"></span>
           <img class="trash-button delete-assignment" src="/img/container-delete.svg" />
         </td>`;
         trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
+        trElement.querySelector(".hostname").appendChild(this.assignmentHostnameElement(site));
         const deleteButton = trElement.querySelector(".trash-button");
         Utils.addEnterHandler(deleteButton, async () => {
           const userContextId = Logic.currentUserContextId();
@@ -1423,10 +1425,91 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
           delete assignments[siteKey];
           this.showAssignedContainers(assignments);
         });
+        // Wildcard click-to-toggle subdomains
+        trElement.querySelectorAll(".subdomain").forEach((subdomainLink) => {
+          subdomainLink.addEventListener("click", (e) => {
+            const wildcardHostname = e.target.getAttribute("data-wildcardHostname");
+            Utils.setWildcardHostnameForAssignment(assumedUrl, wildcardHostname);
+            if (wildcardHostname) {
+              // Remove wildcard from other site that has same wildcard
+              Object.values(assignments).forEach((site) => {
+                if (site.wildcardHostname === wildcardHostname) { delete site.wildcardHostname; }
+              });
+              site.wildcardHostname = wildcardHostname;
+            } else {
+              delete site.wildcardHostname;
+            }
+            this.showAssignedContainers(assignments);
+          });
+        });
         trElement.classList.add("menu-item", "hover-highlight", "keyboard-nav");
         tableElement.appendChild(trElement);
       });
     }
+  },
+
+  getSubdomains(site) {
+    const hostname = site.hostname;
+    const wildcardHostname = site.wildcardHostname;
+    if (wildcardHostname && wildcardHostname !== hostname) {
+      if (hostname.endsWith(wildcardHostname)) {
+        return {
+          wildcard: "★",
+          remaining: wildcardHostname
+        };
+      } else {
+        // In case something got corrupted, allow user to fix error
+        // by clicking '★' link to clear corrupted wildcard hostname
+        return {
+          wildcard: "★",
+          remaining: hostname
+        };
+      }
+    } else {
+      return {
+        wildcard: null,
+        remaining: hostname
+      };
+    }
+  },
+
+  assignmentHostnameElement(site) {
+    const result = document.createElement("span");
+    const subdomains = this.getSubdomains(site);
+
+    // Add wildcard subdomain(s)
+    if (subdomains.wildcard) {
+      result.appendChild(this.assignmentSubdomainLink(null, subdomains.wildcard));
+      result.appendChild(document.createTextNode("."));
+    }
+
+    // Add non-wildcard subdomains
+    let remainingHostname = subdomains.remaining;
+    let indexOfDot;
+    while ((indexOfDot = remainingHostname.indexOf(".")) >= 0) {
+      const subdomain = remainingHostname.substring(0, indexOfDot);
+      remainingHostname = remainingHostname.substring(indexOfDot + 1);
+      result.appendChild(this.assignmentSubdomainLink(remainingHostname, subdomain));
+      result.appendChild(document.createTextNode("."));
+    }
+
+    // Root domain
+    if (remainingHostname) { result.appendChild(document.createTextNode(remainingHostname)); }
+
+    return result;
+  },
+
+  assignmentSubdomainLink(wildcardHostnameOnClick, text) {
+    const result = document.createElement("a");
+    result.className = "subdomain";
+    if (wildcardHostnameOnClick) {
+      result.setAttribute("data-wildcardHostname", wildcardHostnameOnClick);
+      result.title = `*.${wildcardHostnameOnClick}`;
+    } else {
+      result.classList.add("wildcardSubdomain");
+    }
+    result.appendChild(document.createTextNode(text));
+    return result;
   },
 });
 
