@@ -13,7 +13,7 @@
 
     ```
     cd multi-account-containers
-    git submobule update --init
+    git submodule update --init
     ```
 3. Install the project dependencies
     ```
