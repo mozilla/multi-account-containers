@@ -12,20 +12,37 @@ async function load() {
     denySubmit(redirectUrl);
   });
 
+  document.getElementById("deny-no-container").addEventListener("click", (e) => {
+    e.preventDefault();
+    denySubmit(redirectUrl);
+  });
+
   const container = await browser.contextualIdentities.get(cookieStoreId);
   const currentContainer = currentCookieStoreId ? await browser.contextualIdentities.get(currentCookieStoreId) : null;
-  const currentContainerName = currentContainer ? currentContainer.name : "";
+  const currentContainerName = currentContainer ? setDenyButton(currentContainer.name) : setDenyButton("");
 
   document.querySelectorAll("[data-message-id]").forEach(el => {
     const elementData = el.dataset;
     const containerName = elementData.messageArg === "container-name" ? container.name : currentContainerName;
     el.textContent = browser.i18n.getMessage(elementData.messageId, containerName);
   });
-  
+
   document.getElementById("confirm").addEventListener("click", (e) => {
     e.preventDefault();
     confirmSubmit(redirectUrl, cookieStoreId);
   });
+}
+
+function setDenyButton(currentContainerName) {
+  const buttonDeny = document.getElementById("deny");
+  const buttonDenyNoContainer = document.getElementById("deny-no-container");
+
+  if (currentContainerName) {
+    buttonDenyNoContainer.style.display = "none";
+    return currentContainerName;
+  }
+  buttonDeny.style.display = "none";
+  return;
 }
 
 function appendFavicon(pageUrl, redirectUrlElement) {
