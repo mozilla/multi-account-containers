@@ -7,15 +7,14 @@
   "bugs": {
     "url": "https://github.com/mozilla/multi-account-containers/issues"
   },
-  "dependencies": {},
   "devDependencies": {
-    "addons-linter": "^3.23.0",
+    "addons-linter": "^5.12.0",
     "ajv": "^6.6.3",
     "chai": "^4.2.0",
     "eslint": "^7.32.0",
     "eslint-plugin-no-unsanitized": "^4.0.0",
     "eslint-plugin-promise": "^5.2.0",
-    "htmllint-cli": "0.0.7",
+    "htmllint-cli": "^0.0.6",
     "json": ">=10.0.0",
     "mocha": "^6.2.2",
     "npm-run-all": "^4.0.0",
@@ -25,7 +24,7 @@
     "stylelint": "^13.5.0",
     "stylelint-config-standard": "^20.0.0",
     "stylelint-order": "^4.0.0",
-    "web-ext": "^5.4.1",
+    "web-ext": "^7.1.1",
     "webextensions-jsdom": "^1.2.1"
   },
   "homepage": "https://github.com/mozilla/multi-account-containers#readme",
