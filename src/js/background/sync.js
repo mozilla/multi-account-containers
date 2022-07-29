@@ -128,9 +128,16 @@ const sync = {
       await sync.checkForListenersMaybeAdd();
 
       async function updateSyncIdentities() {
+        const { syncExcludeRegExp } = await browser.storage.local.get("syncExcludeRegExp");
+        const excludeRegExp = new RegExp(syncExcludeRegExp, "i");
         const identities = await browser.contextualIdentities.query({});
 
         for (const identity of identities) {
+          // skip excluded identities
+          if (identity.name.match(excludeRegExp)) {
+            continue;
+          }
+
           delete identity.colorCode;
           delete identity.iconUrl;
           identity.macAddonUUID = await identityState.lookupMACaddonUUID(identity.cookieStoreId);
