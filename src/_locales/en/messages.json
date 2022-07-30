@@ -73,7 +73,7 @@
     "message": "Syncing Containers is now Available!"
   },
   "onboarding-6-description": {
-    "message": "Turn on sync to share Container and site assignments with any computer connected to your Firefox account."
+    "message": "Turn on Sync to share Container and site assignments with any computer connected to your Firefox account."
   },
   "onboarding-7-header": {
     "message": "Firefox account is required to sync."
@@ -225,6 +225,15 @@
   },
   "enableSyncDescription": {
     "message": "This setting allows you to sync your Containers and site assignments across devices."
+  },
+  "syncExclude": {
+    "message": "Container exclusion"
+  },
+  "syncExcludePlaceholder": {
+    "message": "Insert a regular expression"
+  },
+  "syncExcludeDescription": {
+    "message": "Exclude containers from sync when their name matches the specified case insensitive regular expression."
   },
   "replaceTab": {
     "message": "Replace tab instead of creating a new one"

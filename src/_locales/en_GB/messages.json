@@ -1,7 +1,7 @@
 {
   "extensionDescription": {
-    "message": "Multi-Account Containers helps you keep all the parts of your online life contained in different tabs. Custom labels and colour-coded tabs help keep different activities — like online shopping, travel planning, or checking work email — separate. This addon comes with wildcard(*) support.",
-    "description": "Description of the extension. DO NOT TRANSLATE \"Multi-Account Containers\"."
+      "message": "Multi-Account Containers helps you keep all the parts of your online life contained in different tabs. Custom labels and color-coded tabs help keep different activities — like online shopping, travel planning, or checking work email — separate. This addon comes with wildcard(*) support.",
+      "description": "Description of the extension. DO NOT TRANSLATE \"Multi-Account Containers\"."
   },
   "openInNewTabTitle": {
     "message": "Open New Tab in…",
@@ -27,10 +27,10 @@
     "message": "Always Open Site in Container"
   },
   "openANewTabIn": {
-    "message": "Open a New Tab in…"
+    "message" : "Open a New Tab in…"
   },
   "openNewTabInThisContainer": {
-    "message": "Open New Tab in this Container"
+    "message" : "Open New Tab in this Container"
   },
   "openTabs": {
     "message": "Open Tabs",
@@ -43,13 +43,13 @@
     "message": "A better way to manage all the things you do online"
   },
   "onboarding-1-description": {
-    "message": "Use Containers to organise tasks, manage accounts, and keep your focus where you want it."
+    "message": "Use Containers to organize tasks, manage accounts, and keep your focus where you want it."
   },
   "onboarding-2-header": {
     "message": "Put Containers to work for you."
   },
   "onboarding-2-description": {
-    "message": "Features like colour-coding and separate Container tabs help you find things easily, focus your attention, and minimise distractions."
+    "message": "Features like color-coding and separate Container tabs help you find things easily, focus your attention, and minimize distractions."
   },
   "onboarding-3-header": {
     "message": "A place for everything, and everything in its place."
@@ -70,13 +70,13 @@
     "message": "Long-press the New Tab button to create a new Container tab."
   },
   "onboarding-6-header": {
-    "message": "Synchronising Containers is now Available!"
+    "message": "Syncing Containers is now Available!"
   },
   "onboarding-6-description": {
-    "message": "Turn on synchronisation to share Container and site assignments with any computer connected to your Firefox account."
+    "message": "Turn on Sync to share Container and site assignments with any computer connected to your Firefox account."
   },
   "onboarding-7-header": {
-    "message": "Firefox account is required to synchronise."
+    "message": "Firefox account is required to sync."
   },
   "onboarding-7-description": {
     "message": "Click Sign In to confirm that your Firefox account is active."
@@ -139,7 +139,7 @@
     "message": "Name"
   },
   "color": {
-    "message": "Colour"
+    "message": "Color"
   },
   "icon": {
     "message": "Icon"
@@ -172,7 +172,7 @@
     "message": "Not Now"
   },
   "startSyncing": {
-    "message": "Start Synchronising"
+    "message": "Start Syncing"
   },
   "info": {
     "message": "info",
@@ -209,22 +209,31 @@
     "message": "Toggle this to see the onboarding panels again."
   },
   "tabBehavior": {
-    "message": "Tab behaviour:"
+    "message": "Tab behavior:"
   },
   "enableBookMarkMenus": {
     "message": "Enable Bookmark Menus"
   },
   "firefoxAccountsSync": {
-    "message": "Firefox accounts synchronisation:"
+    "message": "Firefox accounts sync:"
   },
   "enableSync": {
-    "message": "Enable synchronisation"
+    "message": "Enable sync"
   },
   "enableBookMarkMenusDescription": {
     "message": "This setting allows you to open a bookmark or folder of bookmarks in a Container."
   },
   "enableSyncDescription": {
-    "message": "This setting allows you to synchronise your Containers and site assignments across devices."
+    "message": "This setting allows you to sync your Containers and site assignments across devices."
+  },
+  "syncExclude": {
+    "message": "Container exclusion"
+  },
+  "syncExcludePlaceholder": {
+    "message": "Insert a regular expression"
+  },
+  "syncExcludeDescription": {
+    "message": "Exclude containers from sync when their name matches the specified case insensitive regular expression."
   },
   "replaceTab": {
     "message": "Replace tab instead of creating a new one"
@@ -239,7 +248,7 @@
     "message": "Container to open with Keyboard Shortcut $keyId$",
     "placeholders": {
       "keyId": {
-        "content": "$1"
+          "content": "$1"
       }
     }
   },

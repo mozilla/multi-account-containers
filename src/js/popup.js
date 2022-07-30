@@ -464,6 +464,23 @@ const Logic = {
     default:
       break;
     }
+  },
+
+  filterContainerList() {
+    const pattern = /^\s+|\s+$/g;
+    const list = Array.from(document.querySelectorAll("#identities-list tr"));
+    const search = document.querySelector("#search-terms").value.replace(pattern, "").toLowerCase();
+
+    for (const i in list) {
+      const text = list[i].querySelector("td div span");
+
+      if (text.innerText.replace(pattern, "").toLowerCase().includes(search) ||
+          !search) {
+        list[i].style.display = "block";
+      } else {
+        list[i].style.display = "none";
+      }
+    }
   }
 };
 
@@ -846,6 +863,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
     document.addEventListener("keydown", Logic.keyboardNavListener);
     document.addEventListener("keydown", Logic.shortcutListener);
+    document.addEventListener("input", Logic.filterContainerList);
 
     MozillaVPN.handleContainerList(identities);
 

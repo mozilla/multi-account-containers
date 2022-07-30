@@ -226,6 +226,15 @@
   "enableSyncDescription": {
     "message": "Mit dieser Einstellung können Sie Ihre Umgebungen und Website-Zuweisungen geräteübergreifend synchronisieren."
   },
+  "syncExclude": {
+    "message": "Umgebung ausschließen"
+  },
+  "syncExcludePlaceholder": {
+    "message": "Einen regulären Ausdruck einfügen"
+  },
+  "syncExcludeDescription": {
+    "message": "Schließen Sie Umgebungen von der Synchronisierung aus, wenn ihr Name mit dem angegebenen regulären Ausdruck ohne Berücksichtigung der Groß-/Kleinschreibung übereinstimmt."
+  },
   "replaceTab": {
     "message": "Tab ersetzen, anstatt einen neuen zu erstellen"
   },

@@ -226,6 +226,15 @@
   "enableSyncDescription": {
     "message": "Ce paramètre vous permet de synchroniser vos conteneurs et affectations de sites entre vos appareils."
   },
+  "syncExclude": {
+    "message": "Exclusion de conteneurs"
+  },
+  "syncExcludePlaceholder": {
+    "message": "Insérer une expression régulière"
+  },
+  "syncExcludeDescription": {
+    "message": "Exclure des conteneurs de la synchronisation lorsque leur nom correspond à l’expression régulière insensible à la casse spécifiée."
+  },
   "replaceTab": {
     "message": "Remplacer l’onglet plutôt qu’en créer un nouveau"
   },

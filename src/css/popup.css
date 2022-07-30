@@ -2395,3 +2395,13 @@ tr:hover > td > .trash-button {
 .overflow .panel.onboarding {
   margin-block: auto;
 }
+
+/* Searchbar */
+.searchbar {
+  margin-block: 4px -4px;
+  padding-inline: 16px;
+}
+
+.searchbar input {
+  inline-size: 100%;
+}
