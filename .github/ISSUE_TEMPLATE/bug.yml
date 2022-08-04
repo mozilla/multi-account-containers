@@ -21,14 +21,14 @@ body:
         2. I clicked on ...
         3. ...
     validations:
-      required: true 
+      required: true
   - type: textarea
     id: actual_behavior
     attributes:
       label: "Actual behavior"
       description: "Provide a description of what is currently happening"
     validations:
-      required: true    
+      required: true
   - type: textarea
     id: expected_behavior
     attributes:
@@ -46,8 +46,8 @@ body:
   - type: textarea
     id: about_support
     attributes:
-      label: "Provide a copy of Troubleshooting Information page"
+      label: "Provide a copy of Troubleshooting Information page (optional)"
       description: "To get a copy of the Troubleshooting Information page, type *about:support* in the address bar and click on the *Copy text to clipboard* button."
       render: "plain text"
     validations:
-      required: true 
+      required: false
