@@ -388,6 +388,13 @@
     "message": "Dark",
     "description": "Value for the theme option select tag"
   },
+  "filterInputLabel": {
+    "message": "Filter container list by name:",
+    "description": "Label for the filter input in the main panel. Only visible for screen reader."
+  },
+  "filterInputPlaceholder": {
+    "message": "Search container name"
+  },
   "backupFailure": {
     "message": "Something went wrong, backup failed: $errorMessage$",
     "description": "(Options menu) When exporting containers as a file failed",
