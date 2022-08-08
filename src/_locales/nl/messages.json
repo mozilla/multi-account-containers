@@ -264,6 +264,10 @@
       }
     }
   },
+  "openInNoContainer": {
+    "message": "Openen in huidig tabblad",
+    "description": "This is the button text in confirmation page when we are not inside a container"
+  },
   "youAskedFirefox": {
     "message": "U hebt Firefox gevraagd om voor deze website altijd $containerName$ te openen:",
     "placeholders": {
@@ -383,6 +387,13 @@
   "themeDark": {
     "message": "Donker",
     "description": "Value for the theme option select tag"
+  },
+  "filterInputLabel": {
+    "message": "Containerlijst filteren op naam:",
+    "description": "Label for the filter input in the main panel. Only visible for screen reader."
+  },
+  "filterInputPlaceholder": {
+    "message": "Containernaam zoeken"
   },
   "backupFailure": {
     "message": "Er ging iets mis, back-up mislukte: $errorMessage$",
