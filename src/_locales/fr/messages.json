@@ -387,5 +387,12 @@
   "themeDark": {
     "message": "Sombre",
     "description": "Value for the theme option select tag"
+  },
+  "filterInputLabel": {
+    "message": "Filtrer la liste des conteneurs par nom :",
+    "description": "Label for the filter input in the main panel. Only visible for screen reader."
+  },
+  "filterInputPlaceholder": {
+    "message": "Rechercher un nom de conteneur"
   }
 }
