@@ -264,6 +264,10 @@
       }
     }
   },
+  "openInNoContainer": {
+    "message": "Ouvrir dans l’onglet actuel",
+    "description": "This is the button text in confirmation page when we are not inside a container"
+  },
   "youAskedFirefox": {
     "message": "Vous avez demandé à Firefox de toujours ouvrir dans le conteneur $containerName$ ce site :",
     "placeholders": {
