@@ -257,12 +257,16 @@
     "description": "This is the title of a confirmation page. Please do not translate \"Multi-Account Containers\"."
   },
   "openInContainer": {
-    "message": "Open in $containerName$ Container",
+    "message": "Open in $containerName$ container",
     "placeholders": {
       "containerName": {
         "content": "$1"
       }
     }
+  },
+  "openInNoContainer": {
+    "message": "Open in current tab",
+    "description": "This is the button text in confirmation page when we are not inside a container"
   },
   "youAskedFirefox": {
     "message": "You asked Firefox to always open $containerName$ for this site:",
