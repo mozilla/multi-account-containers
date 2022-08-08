@@ -264,6 +264,10 @@
       }
     }
   },
+  "openInNoContainer": {
+    "message": "Im aktuellen Tab öffnen",
+    "description": "This is the button text in confirmation page when we are not inside a container"
+  },
   "youAskedFirefox": {
     "message": "Sie haben Firefox gebeten, für diese Website immer $containerName$ zu öffnen:",
     "placeholders": {
