@@ -446,7 +446,8 @@
   },
   "saveLegend": {
     "message": "Save",
-    "description": "(Options menu) Save containers to a file group header"},
+    "description": "(Options menu) Save containers to a file group header"
+  },
   "saveButton": {
     "message": "Save",
     "description": "(Options menu) Validate saving containers to a file"
