@@ -1428,7 +1428,7 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
         trElement.innerHTML = Utils.escaped`
         <td>
           <div class="favicon"></div>
-          <span title="${site.hostname}" class="menu-text hostname"></span>
+          <span title="${site.hostname}" class="menu-text hostname truncate-text"></span>
           <img class="trash-button delete-assignment" src="/img/container-delete.svg" />
         </td>`;
         trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
