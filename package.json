@@ -36,13 +36,15 @@
     "url": "git+https://github.com/mozilla/multi-account-containers.git"
   },
   "scripts": {
-    "dev": "web-ext run -s src/",
+    "dev": "npm run remove-locales-github && web-ext run -s src/",
     "lint": "npm-run-all lint:*",
     "lint:addon": "./bin/addons-linter.sh",
     "lint:css": "stylelint src/css/*.css",
     "lint:html": "htmllint *.html",
     "lint:js": "eslint .",
     "package": "rm -rf src/web-ext-artifacts && npm run build && mv src/web-ext-artifacts/firefox_multi-account_containers-*.zip addon.xpi",
+    "restore-locales-github": "cd src/_locales && git restore .github/",
+    "remove-locales-github": "rm -rf src/_locales/.github",
     "test": "npm run lint && npm run coverage",
     "test:once": "mocha test/**/*.test.js",
     "test:watch": "npm run test:once -- --watch",
