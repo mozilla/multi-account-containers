@@ -39,7 +39,6 @@ const backgroundLogic = {
 
     browser.permissions.onAdded.addListener(permissions => this.resetPermissions(permissions));
     browser.permissions.onRemoved.addListener(permissions => this.resetPermissions(permissions));
-    backgroundLogic.setSyncExclusion();
   },
 
   resetPermissions(permissions) {
@@ -412,17 +411,6 @@ const backgroundLogic = {
   cookieStoreId(userContextId) {
     if(userContextId === 0) return "firefox-default";
     return `firefox-container-${userContextId}`;
-  },
-
-  async setSyncExclusion() {    
-    // Default container sync exclude regexp to "^tmp\d+$" to prevent
-    // https://github.com/mozilla/multi-account-containers/issues/1675
-    // https://github.com/stoically/temporary-containers/issues/371
-    // for future users of the MAC + TC combination.
-    const { syncExcludeRegExp } = await browser.storage.local.get("syncExcludeRegExp");
-    if (syncExcludeRegExp === undefined) {
-      browser.storage.local.set({syncExcludeRegExp: "^tmp\\d+$"});
-    }
   }
 };
 

@@ -128,15 +128,9 @@ const sync = {
       await sync.checkForListenersMaybeAdd();
 
       async function updateSyncIdentities() {
-        const excludeRegExp = await getExcludeRegExp();
         const identities = await browser.contextualIdentities.query({});
 
         for (const identity of identities) {
-          // skip excluded identities
-          if (excludeRegExpMatchesIdentity(excludeRegExp, identity)) {
-            continue;
-          }
-
           delete identity.colorCode;
           delete identity.iconUrl;
           identity.macAddonUUID = await identityState.lookupMACaddonUUID(identity.cookieStoreId);
@@ -333,7 +327,6 @@ async function restore() {
  */
 async function reconcileIdentities(){
   if (SYNC_DEBUG) console.log("reconcileIdentities");
-  const excludeRegExp = await getExcludeRegExp();
 
   // first delete any from the deleted list
   const deletedIdentityList =
@@ -343,14 +336,6 @@ async function reconcileIdentities(){
     const deletedCookieStoreId = 
       await identityState.lookupCookieStoreId(deletedUUID);
     if (deletedCookieStoreId){
-      if (excludeRegExp) {
-        const deletedIdentity = await identityState.get(deletedCookieStoreId);
-        // skip excluded identities
-        if (excludeRegExpMatchesIdentity(excludeRegExp, deletedIdentity)) {
-          continue;
-        }      
-      }
-
       try{
         await browser.contextualIdentities.remove(deletedCookieStoreId);
       } catch (error) {
@@ -365,11 +350,6 @@ async function reconcileIdentities(){
     await sync.storageArea.getIdentities();
   // find any local dupes created on sync storage and delete from sync storage
   for (const localIdentity of localIdentities) {
-    // skip excluded identities
-    if (excludeRegExpMatchesIdentity(excludeRegExp, localIdentity)) {
-      continue;
-    }
-
     const syncIdentitiesOfName = syncIdentitiesRemoveDupes
       .filter(identity => identity.name === localIdentity.name);
     if (syncIdentitiesOfName.length > 1) {
@@ -383,11 +363,6 @@ async function reconcileIdentities(){
     await sync.storageArea.getIdentities();
   // now compare all containers for matching names.
   for (const syncIdentity of syncIdentities) {
-    // skip excluded identities
-    if (excludeRegExpMatchesIdentity(excludeRegExp, syncIdentity)) {
-      continue;
-    }
-
     if (syncIdentity.macAddonUUID){
       const localMatch = localIdentities.find(
         localIdentity => localIdentity.name === syncIdentity.name
@@ -602,25 +577,4 @@ async function setAssignmentWithUUID(assignedSite, urlKey) {
     return;
   }
   throw new Error (`No cookieStoreId found for: ${uuid}, ${urlKey}`);
-}
-
-// Retrieve the sync exclude regexp from local storage.
-async function getExcludeRegExp() {
-  const { syncExcludeRegExp } = await browser.storage.local.get("syncExcludeRegExp");
-  if (syncExcludeRegExp) {
-    return new RegExp(syncExcludeRegExp, "i");
-  } else {
-    return false;
-  }
-}
-
-// Matching the provided exclude regexp against the provided identity and return
-// true if they match.
-function excludeRegExpMatchesIdentity(excludeRegExp, identity) {
-  if (excludeRegExp && identity.name.match(excludeRegExp)) {
-    if (SYNC_DEBUG) console.log(`Exclude regexp matches identity '${identity.name}'`);
-    return true;
-  } else {
-    return false;
-  }
 }
