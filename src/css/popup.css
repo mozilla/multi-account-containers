@@ -107,8 +107,9 @@
   --toggle-on-bg-focus-color: #0060df;
   --toggle-on-border-color: #0060df;
   --toggle-on-handle-bg-color: #fff;
-  --usercontext-bg-hover-color: #e0e0e6;
-  --usercontext-bg-active-color: #e0e0e6;
+  --usercontext-bg-hover-color: #f0f0fa;
+  --usercontext-bg-focus-color: #e0e0e6;
+  --usercontext-bg-active-color: #cfcfd8;
   --moz-vpn-tout-shadow: 0 0 7px 0 #9498a25e;
 }
 
@@ -1884,15 +1885,25 @@ manage things like container crud */
   margin-inline: auto;
 }
 
+/* When focusing the element add a thin blue highlight to match input fields. This gives a distinction to other selected radio items */
+.radio-choice > .radio-container > [type="radio"]:focus + label {
+  outline: solid 1px var(--input-border-focus-color);
+  -moz-outline-radius: 100%;
+}
+
 .radio-choice > .radio-container > [type="radio"]:checked + label {
   background-color: var(--usercontext-bg-focus-color);
   border-radius: 100%;
 }
 
-/* When focusing the element add a thin blue highlight to match input fields. This gives a distinction to other selected radio items */
-.radio-choice > .radio-container > [type="radio"]:focus + label {
-  outline: solid 1px var(--input-border-focus-color);
-  -moz-outline-radius: 100%;
+.radio-choice > .radio-container > [type="radio"]:checked + label:hover {
+  background-color: var(--usercontext-bg-hover-color);
+  border-radius: 100%;
+}
+
+.radio-choice > .radio-container > [type="radio"]:checked + label:active {
+  background-color: var(--usercontext-bg-active-color);
+  border-radius: 100%;
 }
 
 .edit-container-panel fieldset {
