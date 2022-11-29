@@ -15,13 +15,25 @@ const backgroundLogic = {
   unhideQueue: [],
   init() {
     browser.commands.onCommand.addListener(function (command) {
-      for (let i=0; i < backgroundLogic.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
-        const key = "open_container_" + i;
-        const cookieStoreId = identityState.keyboardShortcut[key];
-        if (command === key) {
-          if (cookieStoreId === "none") return;
-          browser.tabs.create({cookieStoreId});
-        }
+      switch (command) {
+      case "sort_tabs_by_container":
+        backgroundLogic.sortTabs();
+        break;
+      case "open_container_0":
+      case "open_container_1":
+      case "open_container_2":
+      case "open_container_3":
+      case "open_container_4":
+      case "open_container_5":
+      case "open_container_6":
+      case "open_container_7":
+      case "open_container_8":
+      case "open_container_9": {
+        const cookieStoreId = identityState.keyboardShortcut[command];
+        if (cookieStoreId === "none") return;
+        browser.tabs.create({cookieStoreId});
+        break;
+      }
       }
     });
 
