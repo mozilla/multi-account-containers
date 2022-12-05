@@ -120,13 +120,11 @@ async function setupOptions() {
   const { replaceTabEnabled } = await browser.storage.local.get("replaceTabEnabled");
   const { pageActionEnabled } = await browser.storage.local.get({ pageActionEnabled: true });
   const { currentThemeId } = await browser.storage.local.get("currentThemeId");
-  const { syncExcludeRegExp } = await browser.storage.local.get("syncExcludeRegExp");
 
   document.querySelector("#syncCheck").checked = !!syncEnabled;
   document.querySelector("#replaceTabCheck").checked = !!replaceTabEnabled;
   document.querySelector("#pageActionCheck").checked = !!pageActionEnabled;
   document.querySelector("#changeTheme").selectedIndex = currentThemeId;
-  document.querySelector("#syncExcludeRegExp").value = syncExcludeRegExp || "";
   setupContainerShortcutSelects();
 }
 
@@ -180,16 +178,11 @@ async function resetPermissionsUi() {
 browser.permissions.onAdded.addListener(resetPermissionsUi);
 browser.permissions.onRemoved.addListener(resetPermissionsUi);
 
-function updateSyncExcludeRegExp(event) {
-  browser.storage.local.set({syncExcludeRegExp: event.target.value});
-}
-
 document.addEventListener("DOMContentLoaded", setupOptions);
 document.querySelector("#syncCheck").addEventListener( "change", enableDisableSync);
 document.querySelector("#replaceTabCheck").addEventListener( "change", enableDisableReplaceTab);
 document.querySelector("#pageActionCheck").addEventListener( "change", enableDisablePageAction);
 document.querySelector("#changeTheme").addEventListener( "change", changeTheme);
-document.querySelector("#syncExcludeRegExp").addEventListener( "change", updateSyncExcludeRegExp);
 document.querySelector("#containersRestoreInput").addEventListener( "change", restoreContainers);
 
 maybeShowPermissionsWarningIcon();
