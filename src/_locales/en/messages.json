@@ -226,15 +226,6 @@
   "enableSyncDescription": {
     "message": "This setting allows you to sync your Containers and site assignments across devices."
   },
-  "syncExclude": {
-    "message": "Container exclusion"
-  },
-  "syncExcludePlaceholder": {
-    "message": "Insert a regular expression"
-  },
-  "syncExcludeDescription": {
-    "message": "Exclude containers from sync when their name matches the specified case insensitive regular expression."
-  },
   "replaceTab": {
     "message": "Replace tab instead of creating a new one"
   },
