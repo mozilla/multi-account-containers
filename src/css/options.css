@@ -37,16 +37,6 @@ form {
   margin-block: 4px 8px;
 }
 
-.settings-group-column {
-  display: flex;
-  flex-direction: column;
-}
-
-.settings-group-column label,
-.settings-group-column p {
-  margin-block: 4px 8px;
-}
-
 input[type="checkbox"] {
   margin-inline: 0 8px;
   margin-block: 1px auto;
