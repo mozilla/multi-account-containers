@@ -226,15 +226,6 @@
   "enableSyncDescription": {
     "message": "Met deze instelling kunt u uw containers en websitetoewijzingen met andere apparaten synchroniseren."
   },
-  "syncExclude": {
-    "message": "Uitsluiting van containers"
-  },
-  "syncExcludePlaceholder": {
-    "message": "Een reguliere expressie invoegen"
-  },
-  "syncExcludeDescription": {
-    "message": "Containers uitsluiten van synchronisatie wanneer hun naam overeenkomt met de opgegeven hoofdletterongevoelige reguliere expressie."
-  },
   "replaceTab": {
     "message": "Tabblad vervangen in plaats van een nieuw maken"
   },
