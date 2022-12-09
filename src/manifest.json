@@ -45,7 +45,8 @@
     },
     "sort_tabs_by_container": {
       "suggested_key": {
-        "default": "Ctrl+Comma"
+        "default": "Ctrl+Comma",
+        "mac": "MacCtrl+Comma"
       },
       "description": "Sort tabs by container"
     },
