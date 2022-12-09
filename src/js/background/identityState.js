@@ -1,6 +1,7 @@
 window.identityState = {
   keyboardShortcut: {},
   storageArea: {
+    NUMBER_OF_KEYBOARD_SHORTCUTS: 10,
     area: browser.storage.local,
 
     getContainerStoreKey(cookieStoreId) {
@@ -50,7 +51,7 @@ window.identityState = {
 
     async loadKeyboardShortcuts () {
       const identities = await browser.contextualIdentities.query({});
-      for (let i=0; i < backgroundLogic.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
+      for (let i=0; i < this.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
         const key = "open_container_" + i;
         const storageObject = await this.area.get(key);
         if (storageObject[key]){

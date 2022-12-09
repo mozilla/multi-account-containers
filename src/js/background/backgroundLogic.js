@@ -11,7 +11,6 @@ const backgroundLogic = {
     "about:home",
     "about:blank"
   ]),
-  NUMBER_OF_KEYBOARD_SHORTCUTS: 10,
   unhideQueue: [],
   init() {
     browser.commands.onCommand.addListener(function (command) {
