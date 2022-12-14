@@ -9,7 +9,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "addons-linter": "^3.23.0",
+    "addons-linter": "^5.24.0",
     "ajv": "^6.6.3",
     "chai": "^4.2.0",
     "eslint": "^7.32.0",
