@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "author": "BPower0036",
   "name": "Multi-Account Containers (Wildcard)",
-  "version": "8.1.0",
+  "version": "8.1.1",
   "incognito": "not_allowed",
   "description": "__MSG_extensionDescription__",
   "icons": {
