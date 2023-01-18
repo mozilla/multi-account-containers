@@ -103,11 +103,6 @@ window.assignManager = {
       return !!syncEnabled;
     },
 
-    async getPageActionEnabled() {
-      const { pageActionEnabled } = await browser.storage.local.get({ pageActionEnabled: true });
-      return !!pageActionEnabled;
-    },
-
     async getReplaceTabEnabled() {
       const { replaceTabEnabled } = await browser.storage.local.get("replaceTabEnabled");
       return !!replaceTabEnabled;
@@ -561,19 +556,6 @@ window.assignManager = {
       browser.contextualIdentities.onRemoved
         .removeListener(this.contextualIdentityRemoved);
     }
-  },
-
-  async resetPageAction() {
-    const pageActionEnabled = await this.storageArea.getPageActionEnabled();
-    const tabs = await browser.tabs.query({});
-    const res = tabs.map((tab) => {
-      if (pageActionEnabled) {
-        return browser.pageAction.show(tab.id);
-      } else {
-        return browser.pageAction.hide(tab.id);
-      }
-    });
-    await Promise.all(res);
   },
 
   contextualIdentityCreated(changeInfo) {
