@@ -196,9 +196,6 @@
   "keyboardShortCuts": {
     "message": "Sneltoetsen:"
   },
-  "pageActionDescription": {
-    "message": "Toon de \"Open dit altijd in een container\" knop in the URL-balk"
-  },
   "onboarding": {
     "message": "Welkomstbericht"
   },
