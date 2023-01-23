@@ -43,6 +43,13 @@
       },
       "description": "Open containers panel"
     },
+    "sort_tabs": {
+      "suggested_key": {
+        "default": "Ctrl+Comma",
+        "mac": "MacCtrl+Comma"
+      },
+      "description": "Sort tabs by container"
+    },
     "open_container_0": {
       "suggested_key": {
         "default": "Ctrl+Shift+1"
