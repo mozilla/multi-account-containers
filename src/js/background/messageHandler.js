@@ -23,6 +23,9 @@ const messageHandler = {
       case "deleteContainer":
         response = backgroundLogic.deleteContainer(m.message.userContextId);
         break;
+      case "deleteContainerDataOnly":
+        response = backgroundLogic.deleteContainerDataOnly(m.message.userContextId);
+        break;
       case "createOrUpdateContainer":
         response = backgroundLogic.createOrUpdateContainer(m.message);
         break;
@@ -90,10 +93,10 @@ const messageHandler = {
         break;
       case "assignAndReloadInContainer":
         tab = await assignManager.reloadPageInContainer(
-          m.url, 
+          m.url,
           m.currentUserContextId,
-          m.newUserContextId, 
-          m.tabIndex, 
+          m.newUserContextId,
+          m.tabIndex,
           m.active,
           true
         );

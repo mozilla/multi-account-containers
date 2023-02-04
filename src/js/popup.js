@@ -940,6 +940,19 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       Utils.alwaysOpenInContainer(identity);
       window.close();
     });
+
+    const deleteData = document.querySelector("#delete-data-info-panel");
+    Utils.addEnterHandler(deleteData, async () => {
+      const userContextId = Utils.userContextId(identity.cookieStoreId)
+
+      await browser.runtime.sendMessage({
+        method: "deleteContainerDataOnly",
+        message: { userContextId }
+      });
+
+      window.close();
+    });
+
     // Show or not the has-tabs section.
     for (let trHasTabs of document.getElementsByClassName("container-info-has-tabs")) { // eslint-disable-line prefer-const
       trHasTabs.style.display = !identity.hasHiddenTabs && !identity.hasOpenTabs ? "none" : "";
