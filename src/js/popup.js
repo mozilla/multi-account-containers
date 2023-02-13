@@ -1041,17 +1041,37 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     const fragment = document.createDocumentFragment();
     for (let tab of tabs) { // eslint-disable-line prefer-const
       const tr = document.createElement("tr");
-      fragment.appendChild(tr);
       tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
       tr.setAttribute("tabindex", "0");
-      tr.innerHTML = Utils.escaped`
-        <td>
-          <div class="favicon"></div>
-          <span title="${tab.url}" class="menu-text truncate-text">${tab.title}</span>
-          <img id="${tab.id}" class="trash-button" src="/img/close.svg" />
-        </td>`;
-      tr.querySelector(".favicon").appendChild(Utils.createFavIconElement(tab.favIconUrl));
-      tr.setAttribute("tabindex", "0");
+
+      // Create <td>
+      const tdMenuItem = document.createElement("td");
+        
+      // Create <div class="favicon"></div> and set context via createFavIconElement()
+      const divFavIcon = document.createElement("div");
+      divFavIcon.classList.add("favicon");
+      divFavIcon.appendChild(Utils.createFavIconElement(tab.favIconUrl));
+        
+      // Create <span title="${tab.url}" class="menu-text truncate-text">${tab.title}</span>
+      const spanMenuTruncateText = document.createElement("span");
+      spanMenuTruncateText.classList.add("truncate-text");
+      spanMenuTruncateText.classList.add("menu-text");
+      spanMenuTruncateText.textContent = tab.title;
+      spanMenuTruncateText.title = tab.url;
+        
+      // Create <img id="${tab.id}" class="trash-button" src="/img/close.svg" />
+      const imgTrashButton = document.createElement("img");
+      imgTrashButton.classList.add("trash-button");
+      imgTrashButton.src = "/img/close.svg";
+      imgTrashButton.id = tab.id;
+
+      // Append Children
+      // table > fragment > tr > td > divFavIcon | spanMenuTruncateText | imgTrashButton
+      tdMenuItem.appendChild(divFavIcon);  
+      tdMenuItem.appendChild(spanMenuTruncateText);  
+      tdMenuItem.appendChild(imgTrashButton); 
+      tr.appendChild(tdMenuItem);
+      fragment.appendChild(tr);
       table.appendChild(fragment);
 
       // On click, we activate this tab. But only if this tab is active.
