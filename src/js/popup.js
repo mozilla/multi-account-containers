@@ -1578,19 +1578,45 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
       }
       assignmentKeys.forEach((siteKey) => {
         const site = assignments[siteKey];
-        const trElement = document.createElement("tr");
+
         /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
            This is pending a better solution for favicons from web extensions */
         const assumedUrl = `https://${site.hostname}/favicon.ico`;
-        trElement.innerHTML = Utils.escaped`
-        <td>
-          <div class="favicon"></div>
-          <span title="${site.hostname}" class="menu-text truncate-text">${site.hostname}</span>
-          <img class="trash-button delete-assignment" src="/img/container-delete.svg" />
-        </td>`;
-        trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
-        const deleteButton = trElement.querySelector(".trash-button");
-        Utils.addEnterHandler(deleteButton, async () => {
+
+        // Create <td class="keyboard-nav hover-highlight menu-item"> 
+        const trElement = document.createElement("tr");
+        trElement.classList.add("menu-item", "hover-highlight", "keyboard-nav");
+
+        // Create <td>
+        const tdElement = document.createElement("td");
+          
+        // Create <div class="favicon"></div> and set context via createFavIconElement()
+        const divFavIcon = document.createElement("div");
+        divFavIcon.classList.add("favicon");
+        divFavIcon.appendChild(Utils.createFavIconElement(assumedUrl));
+
+        // Create <span title="${site.hostname}" class="menu-text truncate-text">${site.hostname}</span>
+        const spanHostname = document.createElement("span");
+        spanHostname.classList.add("menu-text");
+        spanHostname.classList.add("truncate-text");
+        spanHostname.title = site.hostname;
+        spanHostname.textContent = site.hostname;
+
+        // Create <img id="${tab.id}" class="trash-button" src="/img/close.svg" />
+        const imgTrashButton = document.createElement("img");
+        imgTrashButton.classList.add("trash-button");
+        imgTrashButton.classList.add("delete-assignment");
+        imgTrashButton.src = "/img/container-delete.svg";
+
+        // Append Children
+        //  tableElement > trElement > tdElement > divFavIcon | spanHostname | imgTrashButton
+        tdElement.appendChild(divFavIcon);
+        tdElement.appendChild(spanHostname);
+        tdElement.appendChild(imgTrashButton);
+        trElement.appendChild(tdElement);
+        tableElement.appendChild(trElement);
+
+        Utils.addEnterHandler(imgTrashButton, async () => {
           const userContextId = Logic.currentUserContextId();
           // Lets show the message to the current tab
           // const currentTab = await Utils.currentTab();
@@ -1598,8 +1624,6 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
           delete assignments[siteKey];
           this.showAssignedContainers(assignments);
         });
-        trElement.classList.add("menu-item", "hover-highlight", "keyboard-nav");
-        tableElement.appendChild(trElement);
       });
     }
   },
