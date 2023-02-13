@@ -46,7 +46,7 @@ async function init() {
   }
 
   const list = document.querySelector("#picker-identities-list");
-  list.innerHTML = "";
+  list.textContent = "";
   list.appendChild(fragment);
 
   MozillaVPN.handleContainerList(identities);

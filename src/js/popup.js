@@ -893,7 +893,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
     const list = document.querySelector("#identities-list");
 
-    list.innerHTML = "";
+    list.textContent = "";
     list.appendChild(fragment);
 
     document.addEventListener("keydown", Logic.keyboardNavListener);
@@ -1099,7 +1099,7 @@ Logic.registerPanel(OPEN_NEW_CONTAINER_PICKER, {
       }
     };
 
-    document.getElementById("new-container-div").innerHTML = "";
+    document.getElementById("new-container-div").textContent = "";
 
     Logic.identities().forEach(identity => {
       const tr = document.createElement("tr");
@@ -1128,7 +1128,7 @@ Logic.registerPanel(OPEN_NEW_CONTAINER_PICKER, {
 
     const list = document.querySelector("#picker-identities-list");
 
-    list.innerHTML = "";
+    list.textContent = "";
     list.appendChild(fragment);
 
     return Promise.resolve(null);
@@ -1256,7 +1256,7 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
 
     const list = document.querySelector("#picker-identities-list");
 
-    list.innerHTML = "";
+    list.textContent = "";
     list.appendChild(fragment);
 
     MozillaVPN.handleContainerList(identities);
@@ -1293,7 +1293,7 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
       window.close();
     };
 
-    document.getElementById("new-container-div").innerHTML = "";
+    document.getElementById("new-container-div").textContent = "";
 
     if (currentTab.cookieStoreId !== "firefox-default") {
       const tr = document.createElement("tr");
@@ -1352,7 +1352,7 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
 
     const list = document.querySelector("#picker-identities-list");
 
-    list.innerHTML = "";
+    list.textContent = "";
     list.appendChild(fragment);
 
     return Promise.resolve(null);
@@ -1376,7 +1376,7 @@ Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
     document.getElementById("picker-title").textContent = browser.i18n.getMessage("alwaysOpenIn");
     const fragment = document.createDocumentFragment();
 
-    document.getElementById("new-container-div").innerHTML = "";
+    document.getElementById("new-container-div").textContent = "";
 
     for (const identity of identities) {
       const tr = document.createElement("tr");
@@ -1406,7 +1406,7 @@ Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
 
     const list = document.querySelector("#picker-identities-list");
 
-    list.innerHTML = "";
+    list.textContent = "";
     list.appendChild(fragment);
 
     return Promise.resolve(null);
