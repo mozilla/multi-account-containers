@@ -1549,6 +1549,10 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
   async prepare() {
     const identity = Logic.currentIdentity();
 
+    const editContainerAssignments = document.getElementById("edit-container-assignments");
+    const editSitesAssignedSubheader = editContainerAssignments.querySelector(".sub-header");
+    editSitesAssignedSubheader.textContent = browser.i18n.getMessage("sitesAssignedToThisContainer");
+  
     // Populating the panel: name and icon
     document.getElementById("edit-assignments-title").textContent = identity.name;
 
