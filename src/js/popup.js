@@ -2009,30 +2009,73 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
   initializeRadioButtons() {
     const colorRadioTemplate = (containerColor) => {
-      return Utils.escaped`<input type="radio" value="${containerColor}" name="container-color" id="edit-container-panel-choose-color-${containerColor}" />
-     <label for="edit-container-panel-choose-color-${containerColor}" class="usercontext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="${containerColor}">`;
+      
+      // Create <div class="radio-container">
+      const divRadioContainer = document.createElement("div");
+      divRadioContainer.classList.add("radio-container");
+
+      // Create <input type="radio" value="${containerColor}" name="container-color" id="edit-container-panel-choose-color-${containerColor}" />
+      const inputContainerColor = document.createElement("input");
+      inputContainerColor.type = "radio";
+      inputContainerColor.value = containerColor;
+      inputContainerColor.name = "container-color";
+      inputContainerColor.id = `edit-container-panel-choose-color-${containerColor}`;
+      
+      // Create <label for="edit-container-panel-choose-color-${containerColor}" class="usercontext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="${containerColor}">
+      const labelContainerColor = document.createElement("label");
+      labelContainerColor.classList.add("usercontext-icon");
+      labelContainerColor.classList.add("choose-color-icon");
+      labelContainerColor.for = `edit-container-panel-choose-color-${containerColor}`;
+      labelContainerColor.setAttribute("data-identity-icon", "circle");
+      labelContainerColor.setAttribute("data-identity-color", containerColor);
+      
+      // Append Children
+      // divRadioContainer >  inputContainerColor | labelContainerColor
+      divRadioContainer.appendChild(inputContainerColor);
+      divRadioContainer.appendChild(labelContainerColor);
+
+      return divRadioContainer;
     };
+
     const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"];
     const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
     colors.forEach((containerColor) => {
-      const templateInstance = document.createElement("div");
-      templateInstance.classList.add("radio-container");
-      // eslint-disable-next-line no-unsanitized/property
-      templateInstance.innerHTML = colorRadioTemplate(containerColor);
+      const templateInstance = colorRadioTemplate(containerColor);
       colorRadioFieldset.appendChild(templateInstance);
     });
 
     const iconRadioTemplate = (containerIcon) => {
-      return Utils.escaped`<input type="radio" value="${containerIcon}" name="container-icon" id="edit-container-panel-choose-icon-${containerIcon}" />
-     <label for="edit-container-panel-choose-icon-${containerIcon}" class="usercontext-icon choose-color-icon" data-identity-color="grey" data-identity-icon="${containerIcon}">`;
+      // Create <div class="radio-container">
+      const divRadioContainer = document.createElement("div");
+      divRadioContainer.classList.add("radio-container");
+
+      // Create <input type="radio" value="${containerIcon}" name="container-icon" id="edit-container-panel-choose-icon-${containerIcon}" />
+      const inputContainerIcon = document.createElement("input");
+      inputContainerIcon.type = "radio";
+      inputContainerIcon.value = containerIcon;
+      inputContainerIcon.name = "container-icon";
+      inputContainerIcon.id = `edit-container-panel-choose-icon-${containerIcon}`;
+      
+      // Create <label for="edit-container-panel-choose-icon-${containerIcon}" class="usercontext-icon choose-color-icon" data-identity-color="grey" data-identity-icon="${containerIcon}">
+      const labelContainerIcon = document.createElement("label");
+      labelContainerIcon.classList.add("usercontext-icon");
+      labelContainerIcon.classList.add("choose-color-icon");
+      labelContainerIcon.for = `edit-container-panel-choose-icon-${containerIcon}`;
+      labelContainerIcon.setAttribute("data-identity-color", "grey");
+      labelContainerIcon.setAttribute("data-identity-icon", containerIcon);
+      
+      // Append Children
+      // divRadioContainer >  inputContainerIcon | labelContainerIcon
+      divRadioContainer.appendChild(inputContainerIcon);
+      divRadioContainer.appendChild(labelContainerIcon);
+
+      return divRadioContainer;
+
     };
     const icons = ["fingerprint", "briefcase", "dollar", "cart", "vacation", "gift", "food", "fruit", "pet", "tree", "chill", "circle", "fence"];
     const iconRadioFieldset = document.getElementById("edit-container-panel-choose-icon");
     icons.forEach((containerIcon) => {
-      const templateInstance = document.createElement("div");
-      templateInstance.classList.add("radio-container");
-      // eslint-disable-next-line no-unsanitized/property
-      templateInstance.innerHTML = iconRadioTemplate(containerIcon);
+      const templateInstance = iconRadioTemplate(containerIcon);
       iconRadioFieldset.appendChild(templateInstance);
     });
   },
