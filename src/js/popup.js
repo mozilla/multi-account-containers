@@ -1384,18 +1384,31 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
       const tr = document.createElement("tr");
       tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
       tr.setAttribute("tabindex", "0");
+
+      // Create <td>
       const td = document.createElement("td");
+      
+      // Create <div class="menu-icon hover-highlight">
+      const divMenuIcon = document.createElement("div");
+      divMenuIcon.classList.add("menu-icon");
+      divMenuIcon.classList.add("hover-highlight");
 
-      td.innerHTML = Utils.escaped`
-        <div class="menu-icon hover-highlight">
-          <div class="mac-icon">
-          </div>
-        </div>
-        <span class="menu-text">Default Container</span>`;
+      // Create <div class="mac-icon">
+      const divMacIcon = document.createElement("div");
+      divMacIcon.classList.add("mac-icon");
 
-      fragment.appendChild(tr);
+      // Create <span class="menu-text">Default Container</span>`;
+      const spanMenuText = document.createElement("span");
+      spanMenuText.classList.add("menu-text");
+      spanMenuText.textContent = browser.i18n.getMessage("defaultContainerLabel");
 
+      // Append Children
+      // fragment > td > (divMenuIcon > divMacIcon) | spanMenuText
+      divMenuIcon.appendChild(divMacIcon);
+      td.appendChild(divMenuIcon);
+      td.appendChild(spanMenuText);
       tr.appendChild(td);
+      fragment.appendChild(tr);
 
       Utils.addEnterHandler(tr, () => {
         Utils.reloadInContainer(
@@ -1414,20 +1427,33 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
         const tr = document.createElement("tr");
         tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
         tr.setAttribute("tabindex", "0");
+
+        // Create <td>
         const td = document.createElement("td");
 
-        td.innerHTML = Utils.escaped`
-        <div class="menu-icon hover-highlight">
-          <div class="usercontext-icon"
-            data-identity-icon="${identity.icon}"
-            data-identity-color="${identity.color}">
-          </div>
-        </div>
-        <span class="menu-text">${identity.name}</span>`;
+        // Create <div class="menu-icon hover-highlight">
+        const divMenuIcon = document.createElement("div");
+        divMenuIcon.classList.add("menu-icon");
+        divMenuIcon.classList.add("hover-highlight");
 
-        fragment.appendChild(tr);
+        // Create <div class="usercontext-icon" data-identity-icon="${identity.icon}" data-identity-color="${identity.color}"></div>
+        const divUsercontextIcon = document.createElement("div");
+        divUsercontextIcon.classList.add("usercontext-icon");
+        divUsercontextIcon.setAttribute("data-identity-icon", identity.icon);
+        divUsercontextIcon.setAttribute("data-identity-color", identity.color);
 
+        // Create <span class="menu-text">${identity.name}</span>`;
+        const spanMenuText = document.createElement("span");
+        spanMenuText.classList.add("menu-text");
+        spanMenuText.textContent = identity.name;
+
+        // Append Children
+        // td > (divMenuIcon > divUsercontextIcon) | spanMenuText
+        divMenuIcon.appendChild(divUsercontextIcon);
+        td.appendChild(divMenuIcon);
+        td.appendChild(spanMenuText);
         tr.appendChild(td);
+        fragment.appendChild(tr);
 
         Utils.addEnterHandler(tr, () => {
           pickedFunction(identity);
@@ -1467,21 +1493,33 @@ Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
       const tr = document.createElement("tr");
       tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
       tr.setAttribute("tabindex", "0");
+
+      // Create <td>
       const td = document.createElement("td");
+      
+      // Create <div class="menu-icon hover-highlight">
+      const divMenuIcon = document.createElement("div");
+      divMenuIcon.classList.add("menu-icon");
+      divMenuIcon.classList.add("hover-highlight");
 
-      td.innerHTML = Utils.escaped`
-        <div class="menu-icon hover-highlight">
-          <div class="usercontext-icon"
-            data-identity-icon="${identity.icon}"
-            data-identity-color="${identity.color}">
-          </div>
-        </div>
-        <span class="menu-text">${identity.name}</span>
-        `;
+      // Create <div class="usercontext-icon" data-identity-icon="${identity.icon}" data-identity-color="${identity.color}"></div>
+      const divUsercontextIcon = document.createElement("div");
+      divUsercontextIcon.classList.add("usercontext-icon");
+      divUsercontextIcon.setAttribute("data-identity-icon", identity.icon);
+      divUsercontextIcon.setAttribute("data-identity-color", identity.color);
 
-      fragment.appendChild(tr);
-
+      // Create <span class="menu-text">${identity.name}</span>`;
+      const spanMenuText = document.createElement("span");
+      spanMenuText.classList.add("menu-text");
+      spanMenuText.textContent = identity.name;
+      
+      // Append Children
+      // fragment > tr > td > (divMenuIcon > divMenuIcon) | spanMenuText
+      divMenuIcon.appendChild(divUsercontextIcon);
+      td.appendChild(divMenuIcon);
+      td.appendChild(spanMenuText);
       tr.appendChild(td);
+      fragment.appendChild(tr);
 
       Utils.addEnterHandler(tr, () => {
         Utils.alwaysOpenInContainer(identity);
