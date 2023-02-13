@@ -1125,20 +1125,32 @@ Logic.registerPanel(OPEN_NEW_CONTAINER_PICKER, {
       const tr = document.createElement("tr");
       tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
       tr.setAttribute("tabindex", "0");
+      
+      // Create <td>
       const td = document.createElement("td");
+      
+      // Create <div class="menu-icon"> 
+      const divMenuIcon = document.createElement("div");
+      divMenuIcon.classList.add("menu-icon");
 
-      td.innerHTML = Utils.escaped`
-        <div class="menu-icon">
-          <div class="usercontext-icon"
-            data-identity-icon="${identity.icon}"
-            data-identity-color="${identity.color}">
-          </div>
-        </div>
-        <span class="menu-text">${identity.name}</span>`;
+      // Create <div class="usercontext-icon" data-identity-icon="${identity.icon}" data-identity-color="${identity.color}"></div>
+      const divUsercontextIcon = document.createElement("div");
+      divUsercontextIcon.classList.add("usercontext-icon");
+      divUsercontextIcon.setAttribute("data-identity-icon", identity.icon);
+      divUsercontextIcon.setAttribute("data-identity-color", identity.color);
 
-      fragment.appendChild(tr);
-
+      // Create <span class="menu-text">${identity.name}</span>`;
+      const spanMenuText = document.createElement("span");
+      spanMenuText.classList.add("menu-text");
+      spanMenuText.textContent = identity.name;
+      
+      // Append Children
+      // fragment > tr > td > (divMenuIcon > divMenuIcon) | spanMenuText
+      divMenuIcon.appendChild(divUsercontextIcon);
+      td.appendChild(divMenuIcon);
+      td.appendChild(spanMenuText);
       tr.appendChild(td);
+      fragment.appendChild(tr);
 
       Utils.addEnterHandler(tr, () => {
         pickedFunction(identity);
