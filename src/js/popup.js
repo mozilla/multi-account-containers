@@ -1193,18 +1193,48 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
       Logic.showPanel(P_CONTAINER_EDIT, identity);
     };
 
-    document.getElementById("new-container-div").innerHTML = Utils.escaped`
-      <table class="menu">
-        <tr class="menu-item hover-highlight keyboard-nav" id="new-container" tabindex="0">
-          <td>
-            <div class="menu-icon"><img src="/img/new-16.svg" />
-            </div>
-            <span class="menu-text">${ browser.i18n.getMessage("newContainer") }</span>
-          </td>
-        </tr>
-      </table>
-      <hr>
-    `;
+    const divNewContainer = document.getElementById("new-container-div");
+    
+    // Create <table class="menu">
+    const tableMenu = document.createElement("table");
+    tableMenu.classList.add("menu");
+
+    // Create <tr class="menu-item hover-highlight keyboard-nav" id="new-container" tabindex="0">
+    const tableRowMenuItem = document.createElement("tr");
+    tableRowMenuItem.classList.add("menu-item");
+    tableRowMenuItem.classList.add("keyboard-nav");
+    tableRowMenuItem.classList.add("hover-highlight");
+    tableRowMenuItem.id = "new-container";
+    tableRowMenuItem.setAttribute("tabindex", "0");
+
+    // Create <td>
+    const tableData = document.createElement("td");
+    
+    // Create <div class="menu-icon">
+    const divMenuIcon = document.createElement("div");
+    divMenuIcon.classList.add("menu-icon");
+
+    // Create <img src="/img/new-16.svg" />
+    const imgNew = document.createElement("img");
+    imgNew.src = "/img/new-16.svg";
+
+    // Create <span class="menu-text">${ browser.i18n.getMessage("newContainer") }</span>
+    const spanMenuText = document.createElement("span");
+    spanMenuText.classList.add("menu-text");
+    spanMenuText.textContent = browser.i18n.getMessage("newContainer");
+
+    // Create <hr /> 
+    const horizontalRule = document.createElement("hr");
+
+    // Append Children
+    // divNewContainer > ( tableMenu | horizontalRule ) > tableRowMenuItem > tableData > ( divMenuIcon > imgNew ) | spanMenuText
+    divMenuIcon.appendChild(imgNew);
+    tableData.appendChild(divMenuIcon);
+    tableData.appendChild(spanMenuText);
+    tableRowMenuItem.appendChild(tableData);
+    tableMenu.appendChild(tableRowMenuItem);
+    divNewContainer.appendChild(tableMenu);
+    divNewContainer.appendChild(horizontalRule);
 
     Utils.addEnterHandler(document.querySelector("#new-container"), () => {
       Logic.showPanel(P_CONTAINER_EDIT, { name: Logic.generateIdentityName() });
@@ -1218,27 +1248,50 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
       tr.setAttribute("tabindex", "0");
       tr.setAttribute("data-cookie-store-id", identity.cookieStoreId);
 
+      // Create <td>
       const td = document.createElement("td");
+      
+      // Create <div class="menu-icon hover-highlight">
+      const divMenuIcon = document.createElement("div");
+      divMenuIcon.classList.add("menu-icon");
+      divMenuIcon.classList.add("hover-highlight");
 
-      td.innerHTML = Utils.escaped`
-        <div class="menu-icon hover-highlight">
-          <div class="usercontext-icon"
-            data-identity-icon="${identity.icon}"
-            data-identity-color="${identity.color}">
-          </div>
-        </div>
-        <span class="menu-text">${identity.name}</span>
-        <img alt="" class="flag-img manage-containers-list-flag" src="/img/flags/.png"/>
-        <span class="move-button">
-          <img
-            class="pop-button-image"
-            src="/img/container-move.svg"
-          />
-        </span>`;
+      // Create <div class="usercontext-icon" data-identity-icon="${identity.icon}" data-identity-color="${identity.color}"></div>
+      const divUsercontextIcon = document.createElement("div");
+      divUsercontextIcon.classList.add("usercontext-icon");
+      divUsercontextIcon.setAttribute("data-identity-icon", identity.icon);
+      divUsercontextIcon.setAttribute("data-identity-color", identity.color);
 
-      fragment.appendChild(tr);
+      // Create <span class="menu-text">${identity.name}</span>
+      const spanMenuText = document.createElement("span");
+      spanMenuText.classList.add("menu-text");
+      spanMenuText.textContent = identity.name;
 
+      // Create <img alt="" class="flag-img manage-containers-list-flag" src="/img/flags/.png"/>
+      const imgFlag = document.createElement("img");
+      // Note - The image src is dynamically set when a specific country/server is set.
+      imgFlag.classList.add("manage-containers-list-flag");
+      imgFlag.classList.add("flag-img");
+      
+      // Create <span class="move-button">
+      const spanMoveButton = document.createElement("span");
+      spanMoveButton.classList.add("move-button");
+
+      // Create <img class="pop-button-image" src="/img/container-move.svg" />
+      const imgPopButton = document.createElement("img");
+      imgPopButton.classList.add("pop-button-image");
+      imgPopButton.src = "/img/container-move.svg";
+
+      // Append Children
+      // fragment > tr > td > (divMenuIcon > divUsercontextIcon) | spanMenuText | imgFlag | (spanMoveButton > imgPopButton)
+      divMenuIcon.appendChild(divUsercontextIcon);
+      td.appendChild(divMenuIcon);
+      td.appendChild(spanMenuText);
+      td.appendChild(imgFlag);
+      spanMoveButton.appendChild(imgPopButton);
+      td.appendChild(spanMoveButton);
       tr.appendChild(td);
+      fragment.appendChild(tr);
 
       tr.draggable = true;
       tr.dataset.containerId = identity.cookieStoreId;
