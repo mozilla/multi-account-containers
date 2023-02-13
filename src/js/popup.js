@@ -792,34 +792,69 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       const td = document.createElement("td");
       const openTabs = identity.numberOfOpenTabs || "" ;
 
-      // TODO get UX and content decision on how to message and block clicks to containers with Mozilla VPN proxy configs
+      // TODO: Get UX and content decision on how to message and block clicks to containers with Mozilla VPN proxy configs
       // when Mozilla VPN app is disconnected.
 
-      td.innerHTML = Utils.escaped`
-        <div data-moz-proxy-warning="" class="menu-item-name">
-          <div class="menu-icon">
+      // Create <div data-moz-proxy-warning="" class="menu-item-name">
+      const divMenuItemName = document.createElement("div");
+      divMenuItemName.classList.add("menu-item-name");
+      divMenuItemName.setAttribute("data-moz-proxy-warning", "");
 
-            <div class="usercontext-icon"
-              data-identity-icon="${identity.icon}"
-              data-identity-color="${identity.color}">
-            </div>
-          </div>
-          <span class="menu-text">${identity.name}</span>
-        </div>
-        <span class="menu-right-float">
-          <img alt="" class="always-open-in-flag flag-img" src="/img/flags/.png"/>
-          <span class="container-count">${openTabs}</span>
-          <span class="menu-arrow">
-            <img alt="Container Info" src="/img/arrow-icon-right.svg" />
-          </span>
+      // Create  <div class="menu-icon">
+      const divMenuIcon = document.createElement("div");
+      divMenuIcon.classList.add("menu-icon");
 
-        </span>`;
+      // Create <div class="usercontext-icon" data-identity-icon="${identity.icon}" data-identity-color="${identity.color}"></div>
+      const divUsercontextIcon = document.createElement("div");
+      divUsercontextIcon.classList.add("usercontext-icon");
+      divUsercontextIcon.setAttribute("data-identity-icon", identity.icon);
+      divUsercontextIcon.setAttribute("data-identity-color", identity.color);
+      
+      // Create <span class="menu-text">${identity.name}</span>`;
+      const spanMenuText = document.createElement("span");
+      spanMenuText.classList.add("menu-text");
+      spanMenuText.textContent = identity.name;
 
+      // Append Children
+      // td > divMenuItemName > divMenuIcon > divUsercontextIcon
+      divMenuIcon.appendChild(divUsercontextIcon);
+      divMenuItemName.appendChild(divMenuIcon);
+      divMenuItemName.appendChild(spanMenuText);
+      td.appendChild(divMenuItemName);      
 
+      // Create <span class="menu-right-float">
+      const spanMenuRightFloat = document.createElement("span");
+      spanMenuRightFloat.classList.add("menu-right-float");
 
-      fragment.appendChild(tr);
+      // Create <img alt="" class="always-open-in-flag flag-img" src="/img/flags/.png"/>
+      const imgFlag = document.createElement("img");
+      // Note - The image src is dynamically set when a specific country/server is set.
+      imgFlag.classList.add("always-open-in-flag");
+      imgFlag.classList.add("flag-img");
 
+      // Create <span class="container-count">${openTabs}</span>
+      const spanContainerCount = document.createElement("span");
+      spanContainerCount.classList.add("container-count");
+      spanContainerCount.textContent = openTabs;
+
+      // Create  <span class="menu-arrow">
+      const spanMenuArrow = document.createElement("span");
+      spanMenuArrow.classList.add("menu-arrow");
+      
+      // Create <img alt="Container Info" src="/img/arrow-icon-right.svg" />
+      const imgArrowRight = document.createElement("img");
+      imgArrowRight.alt = browser.i18n.getMessage("imageAltContainerInfo");
+      imgArrowRight.src = "/img/arrow-icon-right.svg";
+
+      // Append Children
+      // td > spanMenuRightFloat > imgFlag |  spanContainerCount | (spanMenuArrow > imgArrowRight)
+      spanMenuArrow.appendChild(imgArrowRight);
+      spanMenuRightFloat.appendChild(imgFlag);  
+      spanMenuRightFloat.appendChild(spanContainerCount);  
+      spanMenuRightFloat.appendChild(spanMenuArrow);  
+      td.appendChild(spanMenuRightFloat);  
       tr.appendChild(td);
+      fragment.appendChild(tr);
 
       const openInThisContainer = tr.querySelector(".menu-item-name");
       Utils.addEnterHandler(openInThisContainer, (e) => {
