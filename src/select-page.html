@@ -1,0 +1,32 @@
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <title data-i18n-message-id="confirmNavigationTitle"></title>
+  <link xmlns="http://www.w3.org/1999/xhtml" rel="stylesheet" href="chrome://browser/skin/aboutNetError.css" type="text/css" media="all" />
+  <link xmlns="http://www.w3.org/1999/xhtml" rel="stylesheet" href="chrome://global/skin/aboutNetError.css" type="text/css" media="all" />
+  <script type="text/javascript" src="./js/i18n.js"></script>
+  <link rel="stylesheet" href="/css/select-page.css" />
+</head>
+<body>
+  <main>
+    <div class="title">
+      <h1 class="title-text" data-i18n-message-id="whichContainerDoYouWantToUse"></h1>
+    </div>
+    <form id="redirect-form">
+      <p data-message-id="noAssociatedContainer"></p>
+      <div id="redirect-url"></div>
+      <p data-i18n-message-id="whichContainerDoYouWantToOpen"></p>
+      <br />
+      <br />
+      <label for="never-ask" class="check-label">
+        <input id="never-ask" type="checkbox" />
+        <span data-i18n-message-id="rememberMyDecision"></span>
+      </label>
+      <br />
+      <div id="redirect-identities"></div>
+    </form>
+  </main>
+  <script src="js/utils.js"></script>
+  <script src="js/select-page.js"></script>
+</body>
+</html>
