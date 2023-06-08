@@ -15,6 +15,11 @@ const backgroundLogic = {
   unhideQueue: [],
   init() {
     browser.commands.onCommand.addListener(function (command) {
+      if (command === "sort_tabs") {
+        backgroundLogic.sortTabs();
+        return;
+      }
+
       for (let i=0; i < backgroundLogic.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
         const key = "open_container_" + i;
         const cookieStoreId = identityState.keyboardShortcut[key];
