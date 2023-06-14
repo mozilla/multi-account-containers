@@ -678,7 +678,7 @@ window.assignManager = {
     }
     browser.contextMenus.create({
       id: menuId,
-      title: "Always Open in This Container",
+      title: browser.i18n.getMessage("alwaysOpenSiteInContainer"),
       checked,
       type: "checkbox",
       contexts: ["all"],
@@ -692,13 +692,13 @@ window.assignManager = {
 
     browser.contextMenus.create({
       id: this.MENU_HIDE_ID,
-      title: "Hide This Container",
+      title: browser.i18n.getMessage("hideThisContainer"),
       contexts: ["all"],
     });
 
     browser.contextMenus.create({
       id: this.MENU_MOVE_ID,
-      title: "Move Tabs to a New Window",
+      title: browser.i18n.getMessage("moveTabsToANewWindow"),
       contexts: ["all"],
     });
   },
