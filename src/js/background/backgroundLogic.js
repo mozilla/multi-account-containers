@@ -14,6 +14,7 @@ const backgroundLogic = {
   NUMBER_OF_KEYBOARD_SHORTCUTS: 10,
   unhideQueue: [],
   init() {
+
     browser.commands.onCommand.addListener(function (command) {
       if (command === "sort_tabs") {
         backgroundLogic.sortTabs();
@@ -32,6 +33,20 @@ const backgroundLogic = {
 
     browser.permissions.onAdded.addListener(permissions => this.resetPermissions(permissions));
     browser.permissions.onRemoved.addListener(permissions => this.resetPermissions(permissions));
+
+    // Update Translation in Manifest
+    browser.runtime.onInstalled.addListener(this.updateTranslationInManifest);
+    browser.runtime.onStartup.addListener(this.updateTranslationInManifest);
+  },
+
+  updateTranslationInManifest() {
+    for (let index = 0; index < 10; index++) {
+      const ajustedIndex = index + 1; // We want to start from 1 instead of 0 in the UI.
+      browser.commands.update({
+        name: `open_container_${index}`,
+        description: browser.i18n.getMessage("containerShortcut", `${ajustedIndex}`)
+      });
+    }
   },
 
   resetPermissions(permissions) {
