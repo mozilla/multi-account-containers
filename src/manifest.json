@@ -5,8 +5,8 @@
   "incognito": "not_allowed",
   "description": "__MSG_extensionDescription__",
   "icons": {
-    "48": "img/container-site-d-48.png",
-    "96": "img/container-site-d-96.png"
+    "48": "img/ui/icon-mac.svg",
+    "96": "img/ui/icon-mac.svg"
   },
   "homepage_url": "https://github.com/mozilla/multi-account-containers#readme",
   "permissions": [
@@ -113,20 +113,20 @@
   },
   "browser_action": {
     "browser_style": true,
-    "default_icon": "img/multiaccountcontainer-16.svg",
+    "default_icon": "img/ui/icon-mac.svg",
     "default_title": "Multi-Account Containers",
     "default_popup": "popup.html",
     "theme_icons": [
       {
-        "light": "img/multiaccountcontainer-16-dark.svg",
-        "dark": "img/multiaccountcontainer-16.svg",
+        "light": "img/ui/icon-mac.svg",
+        "dark": "img/ui/icon-mac.svg",
         "size": 32
       }
     ]
   },
   "page_action": {
     "browser_style": true,
-    "default_icon": "img/container-openin-16.svg",
+    "default_icon": "img/ui/icon-openin.svg",
     "default_title": "Always open this in a Container",
     "default_popup": "pageActionPopup.html",
     "pinned": false,
