@@ -396,7 +396,11 @@ const Logic = {
   },
 
   shortcutListener(e){
-    function openNewContainerTab(identity) {
+    function openTopContainers() {
+      const identities = Logic.identities();
+      const key = e.code.substring(5);
+      const identity = e.code === "Digit0" ? identities[9] : identities[key - 1];
+
       try {
         browser.tabs.create({
           cookieStoreId: identity.cookieStoreId
@@ -406,12 +410,43 @@ const Logic = {
         window.close();
       }
     }
-    const identities = Logic.identities();
-    if ((e.keyCode >= 49 && e.keyCode <= 57) &&
-            Logic._currentPanel === "containersList") {
-      const identity = identities[e.keyCode - 49];
-      if (identity) {
-        openNewContainerTab(identity);
+
+    // We monitor if the search input is focused so we can disable opening
+    // containers by typing a digit between 0-9 while the popup is open.
+    const searchInput = document.getElementById("search-terms");
+    let isSearchInputFocused = false;
+
+    if (document.activeElement === searchInput) {
+      isSearchInputFocused = true;
+    }
+
+    // We also monitor if a modifier key is pressed simultaneously with a digit
+    // between 0-9 to avoid conflicts with Firefox or other addons.
+    let isModifierPressed = false;
+
+    if (e.altKey || e.shiftKey || e.ctrlKey || e.metaKey) {
+      isModifierPressed = true;
+      e.preventDefault();
+    }
+
+    if (Logic._currentPanel === "containersList" && !isModifierPressed && !isSearchInputFocused) {
+      switch(e.code) {
+      case "Digit0":
+      case "Digit1":
+      case "Digit2":
+      case "Digit3":
+      case "Digit4":
+      case "Digit5":
+      case "Digit6":
+      case "Digit7":
+      case "Digit8":
+      case "Digit9":
+        openTopContainers();
+        break;
+      case "Slash":
+        document.getElementById("search-terms").focus();
+        e.preventDefault();
+        break;
       }
     }
   },
