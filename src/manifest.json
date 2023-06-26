@@ -43,80 +43,80 @@
         "default": "Ctrl+Period",
         "mac": "MacCtrl+Period"
       },
-      "description": "Open containers panel"
+      "description": "__MSG_openContainerPanel__"
     },
     "sort_tabs": {
       "suggested_key": {
         "default": "Ctrl+Comma",
         "mac": "MacCtrl+Comma"
       },
-      "description": "Sort tabs by container"
+      "description": "__MSG_sortTabsByContainer__"
     },
     "open_container_0": {
       "suggested_key": {
         "default": "Ctrl+Shift+1"
       },
-      "description": "Container Shortcut 1"
+      "description": "__MSG_containerShortcut__"
     },
     "open_container_1": {
       "suggested_key": {
         "default": "Ctrl+Shift+2"
       },
-      "description": "Container Shortcut 2"
+      "description": "__MSG_containerShortcut__"
     },
     "open_container_2": {
       "suggested_key": {
         "default": "Ctrl+Shift+3"
       },
-      "description": "Container Shortcut 3"
+      "description": "__MSG_containerShortcut__"
     },
     "open_container_3": {
       "suggested_key": {
         "default": "Ctrl+Shift+4"
       },
-      "description": "Container Shortcut 4"
+      "description": "__MSG_containerShortcut__"
     },
     "open_container_4": {
       "suggested_key": {
         "default": "Ctrl+Shift+5"
       },
-      "description": "Container Shortcut 5"
+      "description": "__MSG_containerShortcut__"
     },
     "open_container_5": {
       "suggested_key": {
         "default": "Ctrl+Shift+6"
       },
-      "description": "Container Shortcut 6"
+      "description": "__MSG_containerShortcut__"
     },
     "open_container_6": {
       "suggested_key": {
         "default": "Ctrl+Shift+7"
       },
-      "description": "Container Shortcut 7"
+      "description": "__MSG_containerShortcut__"
     },
     "open_container_7": {
       "suggested_key": {
         "default": "Ctrl+Shift+8"
       },
-      "description": "Container Shortcut 8"
+      "description": "__MSG_containerShortcut__"
     },
     "open_container_8": {
       "suggested_key": {
         "default": "Ctrl+Shift+9"
       },
-      "description": "Container Shortcut 9"
+      "description": "__MSG_containerShortcut__"
     },
     "open_container_9": {
       "suggested_key": {
         "default": "Ctrl+Shift+0"
       },
-      "description": "Container Shortcut 10"
+      "description": "__MSG_containerShortcut__"
     }
   },
   "browser_action": {
     "browser_style": true,
     "default_icon": "img/ui/icon-mac.svg",
-    "default_title": "Multi-Account Containers",
+    "default_title": "Firefox Multi-Account Containers",
     "default_popup": "popup.html",
     "theme_icons": [
       {
