@@ -383,6 +383,27 @@
   "filterInputPlaceholder": {
     "message": "Containernaam zoeken"
   },
+  "imageAltContainerInfo": {
+    "message": "Container info",
+    "description": "Alt text for right-arrow button to view container info"
+  },
+  "defaultContainerLabel": {
+    "message": "Standaard Container",
+    "description": "The title of the default container"
+  },
+  "openContainerPanel": {
+    "message": "Open container panel",
+    "description": "Label for option in the keyboard shortcut manager (associating a shortcut to open the container panel)"
+  },
+  "containerShortcut": {
+    "message": "Container sneltoets $keyId$",
+    "description": "Label for option in the keyboard shortcut manager. $keyId$ is a number from 1 to 10.",
+    "placeholders": {
+      "keyId": {
+          "content": "$1"
+      }
+    }
+  },
   "backupFailure": {
     "message": "Er ging iets mis, back-up mislukte: $errorMessage$",
     "description": "(Options menu) When exporting containers as a file failed",
