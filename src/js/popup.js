@@ -426,7 +426,6 @@ const Logic = {
 
     if (e.altKey || e.shiftKey || e.ctrlKey || e.metaKey) {
       isModifierPressed = true;
-      e.preventDefault();
     }
 
     if (Logic._currentPanel === "containersList" && !isModifierPressed && !isSearchInputFocused) {
