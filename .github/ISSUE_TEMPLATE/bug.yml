@@ -9,7 +9,7 @@ body:
       options:
         - label: "I updated to the latest version of Multi-Account Container and tested if I can reproduce the issue"
           required: true
-        - label: "I searched for existing reports to see if it hasn\'t already been reported"
+        - label: "I searched for existing reports to see if it hasn't already been reported"
           required: true
   - type: textarea
     id: step_to_reproduce
