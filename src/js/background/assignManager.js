@@ -61,8 +61,9 @@ window.assignManager = {
         this.area.get([siteStoreKey]).then((storageResponse) => {
           if (storageResponse && siteStoreKey in storageResponse) {
             resolve(storageResponse[siteStoreKey]);
+          } else {
+            resolve(null);
           }
-          resolve(null);
         }).catch((e) => {
           reject(e);
         });
