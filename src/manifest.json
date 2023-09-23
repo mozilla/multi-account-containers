@@ -116,6 +116,7 @@
     "default_icon": "img/multiaccountcontainer-16.svg",
     "default_title": "Firefox Multi-Account Containers",
     "default_popup": "popup.html",
+    "default_area": "navbar",
     "theme_icons": [
       {
         "light": "img/multiaccountcontainer-16-dark.svg",
