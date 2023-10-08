@@ -4,6 +4,7 @@
    - file, You can obtain one at http://mozilla.org/MPL/2.0/. -->
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="32" height="32" viewBox="0 0 32 32" style="enable-background:new 0 0 32 32;">
   <style>
+    :root { color-scheme: light dark; }
     path, circle, g {
       fill: menutext;
     }
