@@ -5,8 +5,8 @@
   "incognito": "not_allowed",
   "description": "__MSG_extensionDescription__",
   "icons": {
-    "48": "img/container-site-d-48.png",
-    "96": "img/container-site-d-96.png"
+    "48": "img/multiaccountcontainer-16.svg",
+    "96": "img/multiaccountcontainer-16.svg"
   },
   "homepage_url": "https://github.com/mozilla/multi-account-containers#readme",
   "permissions": [
@@ -118,7 +118,7 @@
     "default_popup": "popup.html",
     "theme_icons": [
       {
-        "light": "img/multiaccountcontainer-16-dark.svg",
+        "light": "img/multiaccountcontainer-16.svg",
         "dark": "img/multiaccountcontainer-16.svg",
         "size": 32
       }
@@ -151,7 +151,7 @@
   ],
   "default_locale": "en",
   "web_accessible_resources": [
-    "/img/container-site-d-24.png"
+    "/img/multiaccountcontainer-16.svg"
   ],
   "options_ui": {
     "page": "options.html",

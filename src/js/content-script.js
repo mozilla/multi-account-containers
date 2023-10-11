@@ -24,11 +24,12 @@ async function addMessage(message) {
   divElement.innerText = message.text;
 
   const imageElement = document.createElement("img");
-  const imagePath = browser.runtime.getURL("/img/container-site-d-24.png");
+  const imagePath = browser.runtime.getURL("/img/multiaccountcontainer-16.svg");
   const response = await fetch(imagePath);
   const blob = await response.blob();
   const objectUrl = URL.createObjectURL(blob);
   imageElement.src = objectUrl;
+  imageElement.width = imageElement.height = 24;
   divElement.prepend(imageElement);
 
   document.body.appendChild(divElement);
