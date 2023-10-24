@@ -640,7 +640,7 @@ Logic.registerPanel(P_ONBOARDING_7, {
     // Let's move to the containers list panel.
     Utils.addEnterHandler(document.querySelector("#sign-in"), async () => {
       browser.tabs.create({
-        url: "https://accounts.firefox.com/?service=sync&action=email&context=fx_desktop_v3&entrypoint=multi-account-containers&utm_source=addon&utm_medium=panel&utm_campaign=container-sync",
+        url: "https://accounts.firefox.com/?service=sync&action=email&context=fx_desktop_v3&entrypoint=multi-account-containers&utm_source=addon&utm_medium=panel&utm_campaign=container-sync&brand=mozilla",
       });
       await Logic.setOnboardingStage(7);
       Logic.showPanel(P_ONBOARDING_8);
