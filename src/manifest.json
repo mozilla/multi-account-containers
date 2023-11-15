@@ -131,7 +131,9 @@
     "default_title": "__MSG_alwaysOpenSiteInContainer__",
     "default_popup": "pageActionPopup.html",
     "pinned": false,
-    "show_matches": ["*://*/*"]
+    "show_matches": [
+      "*://*/*"
+    ]
   },
   "background": {
     "page": "js/background/index.html"
