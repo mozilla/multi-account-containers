@@ -74,11 +74,18 @@ const Logic = {
     // Retrieve the list of identities.
     const identitiesPromise = this.refreshIdentities();
 
+    const errorBlock = document.getElementById("on-error");
+    const successBlock = document.getElementById("on-success");
     try {
       await identitiesPromise;
     } catch (e) {
-      throw new Error("Failed to retrieve the identities or variation. We cannot continue. ", e.message);
+      errorBlock.style.display = "block";
+      successBlock.style.display = "none";
+      return;
     }
+
+    errorBlock.style.display = "none";
+    successBlock.style.display = "block";
 
     // Routing to the correct panel.
     // If localStorage is disabled, we don't show the onboarding.
