@@ -420,16 +420,7 @@ const Logic = {
       isSearchInputFocused = true;
     }
 
-    // We also monitor if a modifier key is pressed simultaneously with a digit
-    // between 0-9 to avoid conflicts with Firefox or other addons.
-    let isModifierPressed = false;
-
-    if (e.altKey || e.shiftKey || e.ctrlKey || e.metaKey) {
-      isModifierPressed = true;
-      e.preventDefault();
-    }
-
-    if (Logic._currentPanel === "containersList" && !isModifierPressed && !isSearchInputFocused) {
+    if (Logic._currentPanel === "containersList" && !isSearchInputFocused) {
       switch(e.code) {
       case "Digit0":
       case "Digit1":
