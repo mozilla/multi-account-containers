@@ -74,6 +74,23 @@ function getCurrentTab() {
 
 async function denySubmit(redirectUrl) {
   const tab = await getCurrentTab();
+  const neverAsk = document.getElementById("never-ask").checked;
+  
+  if (neverAsk) {
+    const searchParams = new URL(window.location).searchParams;
+    const currentCookieStoreId = searchParams.get("currentCookieStoreId");
+    
+    await browser.runtime.sendMessage({
+      method: "setOrRemoveAssignment",
+      tabId: tab[0].id,
+      url: redirectUrl,
+      userContextId: currentCookieStoreId ? Utils.userContextId(
+        currentCookieStoreId
+      ) : false,
+      value: !currentCookieStoreId,
+    });
+  }
+
   await browser.runtime.sendMessage({
     method: "exemptContainerAssignment",
     tabId: tab[0].id,
