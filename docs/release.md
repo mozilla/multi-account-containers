@@ -2,7 +2,7 @@
 
 ## Make the new version
 
-1. Bump the version number in `package.json` and `manifest.json`
+1. Bump the version number in `package.json` and `src/manifest.json`
 2. Commit the version number bump
 3. Create a git tag for the version: `git tag <version>`
 4. Push the tag up to GitHub: `git push --tags`
