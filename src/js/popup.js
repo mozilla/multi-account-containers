@@ -211,6 +211,11 @@ const Logic = {
   async saveContainerOrder(rows) {
     const containerOrder = {};
     rows.forEach((node, index) => {
+      if (typeof browser.contextualIdentities.move === "function") {
+        browser.contextualIdentities.move(
+          node.dataset.containerId, index);
+      }
+
       return containerOrder[node.dataset.containerId] = index;
     });
     await browser.storage.local.set({
