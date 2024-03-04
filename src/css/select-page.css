@@ -1,0 +1,107 @@
+/* General Rules and Resets */
+.title {
+  background-image: none;
+}
+
+main {
+  background: url(/img/onboarding-4.png) no-repeat;
+  background-position: 200px 0;
+  background-size: 120px;
+  margin-inline-start: -350px;
+  padding-inline-start: 350px;
+}
+
+@media only screen and (max-width: 900px) {
+  main {
+    background: none;
+  }
+
+  /* for a mid sized window we have enough for this but not our image */
+  .title {
+    background-image: url('chrome://global/skin/icons/info.svg');
+  }
+}
+
+html {
+  box-sizing: border-box;
+  font: message-box;
+}
+
+#redirect-url,
+#redirect-origin {
+  font-weight: bold;
+
+  /* max-inline-size is needed to force this text smaller than the layout at a mid-sized window */
+  max-inline-size: 40rem;
+  word-break: break-all;
+}
+
+#redirect-url {
+  background: #efedf0; /* Grey 20 */
+  border-radius: 2px;
+  line-height: 1.5;
+  padding-block-end: 0.5rem;
+  padding-block-start: 0.5rem;
+  padding-inline-end: 0.5rem;
+  padding-inline-start: 0.5rem;
+}
+
+/* stylelint-disable media-feature-name-no-unknown */
+@media (prefers-color-scheme: dark) {
+  #redirect-url {
+    background: #38383d; /* Grey 70 */
+    color: #eee; /* White 20 */
+  }
+}
+/* stylelint-enable */
+
+#redirect-url img {
+  block-size: 16px;
+  inline-size: 16px;
+  margin-inline-end: 6px;
+  offset-block-start: 3px;
+  position: relative;
+}
+
+dfn {
+  font-style: normal;
+}
+
+.check-label {
+  align-items: center;
+  display: flex;
+}
+
+#redirect-identities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7.5px;
+}
+
+#redirect-identities button {
+  flex-grow: 1;
+  flex-basis: 180px;
+  margin: 0;
+  padding: 7.5px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 7.5px;
+}
+
+#redirect-identities button .primary {
+  flex-grow: 2;
+  flex-basis: 360px;
+}
+
+#redirect-identities button img {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  filter: url('/img/filters.svg#fill');
+}
+
+#redirect-identities button label {
+  position: relative;
+  flex-grow: 1;
+}
