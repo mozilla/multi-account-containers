@@ -2395,3 +2395,18 @@ tr:hover > td > .trash-button {
 .searchbar input {
   inline-size: 100%;
 }
+
+/* ----- Error ---------- */
+
+#on-error {
+  margin-block: auto;
+}
+
+#on-error h2 {
+  font-weight: bold;
+}
+
+#on-error h2,
+#on-error p {
+  text-align: center;
+}
