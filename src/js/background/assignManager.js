@@ -56,6 +56,11 @@ window.assignManager = {
       return !!replaceTabEnabled;
     },
 
+    async getContainerPromptEnabled() {
+      const { containerPromptEnabled } = await browser.storage.local.get("containerPromptEnabled");
+      return !!containerPromptEnabled;
+    },
+
     getByUrlKey(siteStoreKey) {
       return new Promise((resolve, reject) => {
         this.area.get([siteStoreKey]).then((storageResponse) => {
@@ -258,13 +263,18 @@ window.assignManager = {
     const siteIsolatedReloadInDefault =
       await this._maybeSiteIsolatedReloadInDefault(siteSettings, tab);
 
-    if (!siteIsolatedReloadInDefault) {
-      if (!siteSettings
-          || userContextId === siteSettings.userContextId
-          || this.storageArea.isExempted(options.url, tab.id)) {
+    // The site is not associated with a container and a container is not already
+    // being used to access it. In this case, we want to prompt the user to select
+    // a container before continuing.
+    const containerPromptEnabled = await this.storageArea.getContainerPromptEnabled();
+    const promptReloadInContainer = containerPromptEnabled && !siteSettings && !userContextId;
+
+    if (!siteIsolatedReloadInDefault && !promptReloadInContainer) {
+      if (!siteSettings || userContextId === siteSettings.userContextId || this.storageArea.isExempted(options.url, tab.id)) {
         return {};
       }
     }
+
     const replaceTabEnabled = await this.storageArea.getReplaceTabEnabled();
     const removeTab = backgroundLogic.NEW_TAB_PAGES.has(tab.url)
       || (messageHandler.lastCreatedTab
@@ -314,7 +324,15 @@ window.assignManager = {
       }
     }
 
-    if (siteIsolatedReloadInDefault) {
+    if (promptReloadInContainer)
+    {
+      this.promptReloadPageInContainer(
+        options.url,
+        tab.index + 1,
+        tab.active,
+        openTabId
+      );
+    } else if (siteIsolatedReloadInDefault) {
       this.reloadPageInDefaultContainer(
         options.url,
         tab.index + 1,
@@ -332,6 +350,7 @@ window.assignManager = {
         openTabId
       );
     }
+
     this.calculateContextMenu(tab);
 
     /* Removal of existing tabs:
@@ -730,6 +749,22 @@ window.assignManager = {
     // we MUST specify the openerTabId when creating the new tab.
     const cookieStoreId = "firefox-default";
     browser.tabs.create({url, cookieStoreId, index, active, openerTabId});
+  },
+
+  promptReloadPageInContainer(url, index, active, openerTabId = null) {
+    const loadPage = browser.runtime.getURL("select-page.html");
+    let confirmUrl = `${loadPage}?url=${this.encodeURLProperty(url)}`;
+    return browser.tabs.create({
+      url: confirmUrl,
+      openerTabId,
+      index,
+      active
+    }).then(async () => {
+      // We don't want to sync this URL ever nor clutter the users history
+      browser.history.deleteUrl({url: confirmUrl});
+    }).catch((e) => {
+      throw e;
+    });
   },
 
   reloadPageInContainer(url, currentUserContextId, userContextId, index, active, neverAsk = false, openerTabId = null) {
