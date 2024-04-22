@@ -81,11 +81,31 @@ const Logic = {
     }
 
     // Routing to the correct panel.
-    // If localStorage is disabled, we don't show the onboarding.
+    //
+    // We do not show the onboarding panel when:
+    // 1. localStorage is disabled
+    // 2. `disableOnboarding` is set to `true` in the enterprise policies
     const onboardingData = await browser.storage.local.get([ONBOARDING_STORAGE_KEY]);
     let onboarded = onboardingData[ONBOARDING_STORAGE_KEY];
     if (!onboarded) {
       onboarded = 9;
+      this.setOnboardingStage(onboarded);
+    }
+
+    // If a polices file or a key in it do not exists, an error is raised.
+    // As a workaround, we catch and ignore the error if there is one. See
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=1868153
+    let disableOnboarding = false;
+    try {
+      const managedStorage =
+        await browser.storage.managed.get("disableOnboarding");
+      disableOnboarding = managedStorage.disableOnboarding;
+    } catch(e) {
+      // ignore error
+    }
+
+    if (disableOnboarding) {
+      onboarded = 8;
       this.setOnboardingStage(onboarded);
     }
 
