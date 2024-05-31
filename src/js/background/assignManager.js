@@ -622,7 +622,7 @@ window.assignManager = {
   },
 
   async _maybeRemoveSiteIsolation(userContextId) {
-    const assignments = await this.storageArea.getByContainer(userContextId);
+    const assignments = await this._getByContainer(userContextId);
     const hasAssignments = assignments && Object.keys(assignments).length > 0;
     if (hasAssignments) {
       return;
