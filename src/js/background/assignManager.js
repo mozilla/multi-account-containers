@@ -764,7 +764,7 @@ window.assignManager = {
   async initBookmarksMenu() {
     browser.contextMenus.create({
       id: this.OPEN_IN_CONTAINER,
-      title: "Open Bookmark in Container Tab",
+      title: browser.i18n.getMessage("openBookmarkInContainerTab"),
       contexts: ["bookmark"],
     });
 
