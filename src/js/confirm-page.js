@@ -9,12 +9,12 @@ async function load() {
 
   document.getElementById("deny").addEventListener("click", (e) => {
     e.preventDefault();
-    denySubmit(redirectUrl);
+    denySubmit(redirectUrl, currentCookieStoreId);
   });
 
   document.getElementById("deny-no-container").addEventListener("click", (e) => {
     e.preventDefault();
-    denySubmit(redirectUrl);
+    denySubmit(redirectUrl, currentCookieStoreId);
   });
 
   const container = await browser.contextualIdentities.get(cookieStoreId);
@@ -72,8 +72,20 @@ function getCurrentTab() {
   });
 }
 
-async function denySubmit(redirectUrl) {
+async function denySubmit(redirectUrl, currentCookieStoreId) {
   const tab = await getCurrentTab();
+  const currentContainer = currentCookieStoreId ? await browser.contextualIdentities.get(currentCookieStoreId) : null;
+  const neverAsk = document.getElementById("never-ask").checked;
+
+  if (neverAsk && !currentContainer) {
+    await browser.runtime.sendMessage({
+      method: "neverAsk",
+      neverAsk: true,
+      defaultContainer: true,
+      pageUrl: redirectUrl
+    });
+  }
+
   await browser.runtime.sendMessage({
     method: "exemptContainerAssignment",
     tabId: tab[0].id,
