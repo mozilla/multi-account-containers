@@ -138,6 +138,14 @@ const Utils = {
     });
   },
 
+  resetCookiesForSite(pageUrl, cookieStoreId) {
+    return browser.runtime.sendMessage({ 
+      method: "resetCookiesForSite", 
+      pageUrl,
+      cookieStoreId,
+    });
+  },
+
   async reloadInContainer(url, currentUserContextId, newUserContextId, tabIndex, active) {
     return await browser.runtime.sendMessage({
       method: "reloadInContainer",

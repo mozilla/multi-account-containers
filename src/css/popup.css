@@ -228,6 +228,7 @@ body {
 
 /* Hack for menu icons to use a light color without affecting container icons */
 [data-theme="light"] img.delete-assignment,
+[data-theme="dark"] img.reset-assignment,
 [data-theme="dark"] .trash-button,
 [data-theme="dark"] img.menu-icon,
 [data-theme="dark"] .menu-icon > img,
@@ -287,7 +288,7 @@ table {
 
 /* effect borrowed from tabs in firefox, ensure that the element flexes to the full width */
 .truncate-text {
-  inline-size: calc(100vw - 80px);
+  inline-size: calc(100vw - 100px);
   overflow: hidden;
   position: relative;
   white-space: nowrap;
@@ -2314,7 +2315,8 @@ input {
  * rules grouped together at the beginning of the file
  */
 /* stylelint-disable no-descending-specificity */
-.trash-button {
+.trash-button,
+.reset-button {
   display: inline-block;
   block-size: 20px;
   inline-size: 20px;
@@ -2323,11 +2325,21 @@ input {
   text-align: center;
 }
 
-tr > td > .trash-button {
+.reset-button {
+  margin-right: 8px;
+}
+
+.tooltip-wrapper:hover .site-settings-tooltip {
+  display: block;
+}
+
+tr > td > .trash-button,
+tr > td > .reset-button {
   display: none;
 }
 
-tr:hover > td > .trash-button {
+tr:hover > td > .trash-button,
+tr:hover > td > .reset-button {
   display: block;
 }
 

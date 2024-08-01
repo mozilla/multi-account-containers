@@ -571,6 +571,18 @@ window.assignManager = {
     return true;
   },
 
+  async _resetCookiesForSite(pageUrl, cookieStoreId) {
+    const url = new URL(pageUrl);
+    // Remove 'www.' from the domain value
+    const domain = url.hostname.replace(/^www\./, ""); 
+    const cookies = await browser.cookies.getAll({domain: domain, storeId: cookieStoreId});
+    for (const cookie of cookies) {
+      const domain = cookie.domain.startsWith(".") ? cookie.domain.slice(1) : cookie.domain;
+      const cookieUrl = `${cookie.secure ? "https" : "http"}://${domain}${cookie.path}`;
+      await browser.cookies.remove({ url: cookieUrl, name: cookie.name, storeId: cookie.storeId });   
+    }
+  },
+
   async _setOrRemoveAssignment(tabId, pageUrl, userContextId, remove) {
     let actionName;
     // https://github.com/mozilla/testpilot-containers/issues/626

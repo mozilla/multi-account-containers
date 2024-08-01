@@ -45,6 +45,9 @@ const messageHandler = {
         // m.url is the assignment to be removed/added
         response = assignManager._setOrRemoveAssignment(m.tabId, m.url, m.userContextId, m.value);
         break;
+      case "resetCookiesForSite":
+        response = assignManager._resetCookiesForSite(m.pageUrl, m.cookieStoreId);
+        break;
       case "sortTabs":
         backgroundLogic.sortTabs();
         break;
