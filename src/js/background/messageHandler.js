@@ -23,6 +23,9 @@ const messageHandler = {
       case "deleteContainer":
         response = backgroundLogic.deleteContainer(m.message.userContextId);
         break;
+      case "deleteContainerDataOnly":
+        response = backgroundLogic.deleteContainerDataOnly(m.message.userContextId);
+        break;
       case "createOrUpdateContainer":
         response = backgroundLogic.createOrUpdateContainer(m.message);
         break;

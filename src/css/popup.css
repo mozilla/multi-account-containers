@@ -237,6 +237,7 @@ body {
   filter: invert(1);
 }
 
+[data-theme="dark"] img.clear-storage-icon,
 [data-theme="dark"] img.delete-assignment,
 [data-theme="dark"] #edit-sites-assigned .menu-icon,
 [data-theme="dark"] #container-info-table .menu-icon {
@@ -284,6 +285,28 @@ table {
 
 [hidden] {
   display: none !important;
+}
+
+.popup-notification-card {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 2s;
+  border-radius: 4px;
+  font-size: 12px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 8px;
+  margin: 8px;
+  inline-size: calc(100vw - 25px);
+  background-color: var(--button-bg-active-color-secondary);
+  z-index: 3;
+}
+
+.is-shown {
+  pointer-events: auto;
+  opacity: 1;
+  transition: opacity 0s;
 }
 
 /* effect borrowed from tabs in firefox, ensure that the element flexes to the full width */

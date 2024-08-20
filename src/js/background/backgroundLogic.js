@@ -75,6 +75,21 @@ const backgroundLogic = {
     return extensionInfo;
   },
 
+  // Remove container data (cookies, localStorage and cache)
+  async deleteContainerDataOnly(userContextId) {
+    await this._closeTabs(userContextId);
+
+    await browser.browsingData.removeCookies({
+      cookieStoreId: this.cookieStoreId(userContextId)
+    });
+
+    await browser.browsingData.removeLocalStorage({
+      cookieStoreId: this.cookieStoreId(userContextId)
+    });
+
+    return {done: true, userContextId};
+  },
+
   getUserContextIdFromCookieStoreId(cookieStoreId) {
     if (!cookieStoreId) {
       return false;

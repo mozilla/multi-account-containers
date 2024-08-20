@@ -122,6 +122,19 @@ const Logic = {
 
   },
 
+  notify(i18nOpts) {
+    const notificationCards = document.querySelectorAll(".popup-notification-card");
+    const text = browser.i18n.getMessage(i18nOpts.messageId, i18nOpts.placeholders);
+    notificationCards.forEach(notificationCard => {
+      notificationCard.textContent = text;
+      notificationCard.classList.add("is-shown");
+    
+      setTimeout(() => {
+        notificationCard.classList.remove("is-shown");
+      }, 1000);
+    });
+  },
+
   async showAchievementOrContainersListPanel() {
     // Do we need to show an achievement panel?
     let showAchievements = false;
@@ -966,6 +979,20 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       Utils.alwaysOpenInContainer(identity);
       window.close();
     });
+
+    const deleteData = document.querySelector("#delete-data-info-panel");
+    Utils.addEnterHandler(deleteData, async () => {
+      const userContextId = Utils.userContextId(identity.cookieStoreId)
+
+      await browser.runtime.sendMessage({
+        method: "deleteContainerDataOnly",
+        message: { userContextId }
+      });
+      
+      Logic.notify({messageId: "storageWasClearedConfirmation", placeholders: [identity.name]});
+      this.prepare();
+    });
+
     // Show or not the has-tabs section.
     for (let trHasTabs of document.getElementsByClassName("container-info-has-tabs")) { // eslint-disable-line prefer-const
       trHasTabs.style.display = !identity.hasHiddenTabs && !identity.hasOpenTabs ? "none" : "";
@@ -1473,7 +1500,12 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
         Utils.addEnterHandler(resetButton, async () => {
           const pageUrl = `https://${site.hostname}`;
           const cookieStoreId = Logic.currentCookieStoreId();
-          Utils.resetCookiesForSite(pageUrl, cookieStoreId);
+          const result = await Utils.resetCookiesForSite(pageUrl, cookieStoreId);
+          if (result === true) {
+            Logic.notify({messageId: "cookieResetSuccess", placeholders: []});
+          } else {
+            Logic.notify({messageId: "cookiesCouldNotBeReset", placeholders: []});
+          }
         });
         trElement.classList.add("menu-item", "hover-highlight", "keyboard-nav");
         tableElement.appendChild(trElement);

@@ -581,6 +581,8 @@ window.assignManager = {
       const cookieUrl = `${cookie.secure ? "https" : "http"}://${domain}${cookie.path}`;
       await browser.cookies.remove({ url: cookieUrl, name: cookie.name, storeId: cookie.storeId });   
     }
+
+    return true; // Success
   },
 
   async _setOrRemoveAssignment(tabId, pageUrl, userContextId, remove) {
