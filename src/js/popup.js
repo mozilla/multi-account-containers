@@ -131,7 +131,7 @@ const Logic = {
     
       setTimeout(() => {
         notificationCard.classList.remove("is-shown");
-      }, 1000);
+      }, 2000);
     });
   },
 
@@ -984,12 +984,15 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     Utils.addEnterHandler(deleteData, async () => {
       const userContextId = Utils.userContextId(identity.cookieStoreId)
 
-      await browser.runtime.sendMessage({
+      const result = await browser.runtime.sendMessage({
         method: "deleteContainerDataOnly",
         message: { userContextId }
       });
-      
-      Logic.notify({messageId: "storageWasClearedConfirmation", placeholders: [identity.name]});
+
+      if (result.done === true) {
+        Logic.notify({messageId: "storageWasClearedConfirmation", placeholders: [identity.name]});
+      }
+
       this.prepare();
     });
 
@@ -1477,7 +1480,7 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
         /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
            This is pending a better solution for favicons from web extensions */
         const assumedUrl = `https://${site.hostname}/favicon.ico`;
-        const resetSiteCookiesInfo = browser.i18n.getMessage("resetSiteCookiesTooltipInfo");
+        const resetSiteCookiesInfo = browser.i18n.getMessage("clearSiteCookiesTooltipInfo");
         const deleteSiteInfo = browser.i18n.getMessage("deleteSiteTooltipInfo");
         trElement.innerHTML = Utils.escaped`
         <td>
@@ -1498,13 +1501,12 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
         });
         const resetButton = trElement.querySelector(".reset-button");
         Utils.addEnterHandler(resetButton, async () => {
-          const pageUrl = `https://${site.hostname}`;
           const cookieStoreId = Logic.currentCookieStoreId();
-          const result = await Utils.resetCookiesForSite(pageUrl, cookieStoreId);
+          const result = await Utils.resetCookiesForSite(site.hostname, cookieStoreId);
           if (result === true) {
-            Logic.notify({messageId: "cookieResetSuccess", placeholders: []});
+            Logic.notify({messageId: "cookiesClearedSuccess", placeholders: [site.hostname]});
           } else {
-            Logic.notify({messageId: "cookiesCouldNotBeReset", placeholders: []});
+            Logic.notify({messageId: "cookiesCouldNotBeCleared", placeholders: [site.hostname]});
           }
         });
         trElement.classList.add("menu-item", "hover-highlight", "keyboard-nav");

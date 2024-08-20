@@ -571,18 +571,14 @@ window.assignManager = {
     return true;
   },
 
-  async _resetCookiesForSite(pageUrl, cookieStoreId) {
-    const url = new URL(pageUrl);
-    // Remove 'www.' from the domain value
-    const domain = url.hostname.replace(/^www\./, ""); 
-    const cookies = await browser.cookies.getAll({domain: domain, storeId: cookieStoreId});
-    for (const cookie of cookies) {
-      const domain = cookie.domain.startsWith(".") ? cookie.domain.slice(1) : cookie.domain;
-      const cookieUrl = `${cookie.secure ? "https" : "http"}://${domain}${cookie.path}`;
-      await browser.cookies.remove({ url: cookieUrl, name: cookie.name, storeId: cookie.storeId });   
-    }
+  async _resetCookiesForSite(hostname, cookieStoreId) {
+    const hostNameTruncated = hostname.replace(/^www\./, ''); // Remove "www." from the hostname
+    await browser.browsingData.removeCookies({
+      cookieStoreId: cookieStoreId,
+      hostnames: [hostname, hostNameTruncated] // This does not remove cookies from associated domains. To remove all cookies, we have a container storage removal option.
+    });
 
-    return true; // Success
+    return true;
   },
 
   async _setOrRemoveAssignment(tabId, pageUrl, userContextId, remove) {
