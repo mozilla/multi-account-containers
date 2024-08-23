@@ -175,6 +175,7 @@ window.assignManager = {
       this.storageArea.get(pageUrl).then((siteSettings) => {
         if (siteSettings) {
           siteSettings.neverAsk = true;
+          siteSettings.userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(m.cookieStoreId);
           this.storageArea.set(pageUrl, siteSettings);
         }
       }).catch((e) => {
