@@ -165,11 +165,17 @@ window.assignManager = {
   _neverAsk(m) {
     const pageUrl = m.pageUrl;
     if (m.neverAsk === true) {
+      if (m.defaultContainer === true) {
+        this.storageArea.remove(pageUrl);
+        return;
+      }
+
       // If we have existing data and for some reason it hasn't been
       // deleted etc lets update it
       this.storageArea.get(pageUrl).then((siteSettings) => {
         if (siteSettings) {
           siteSettings.neverAsk = true;
+          siteSettings.userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(m.cookieStoreId);
           this.storageArea.set(pageUrl, siteSettings);
         }
       }).catch((e) => {

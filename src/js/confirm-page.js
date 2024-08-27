@@ -7,14 +7,16 @@ async function load() {
   redirectUrlElement.textContent = redirectUrl;
   appendFavicon(redirectUrl, redirectUrlElement);
 
+  // Option for staying on the previous container
   document.getElementById("deny").addEventListener("click", (e) => {
     e.preventDefault();
-    denySubmit(redirectUrl);
+    denySubmit(redirectUrl, currentCookieStoreId);
   });
 
+  // Option for going to the default container (no container)
   document.getElementById("deny-no-container").addEventListener("click", (e) => {
     e.preventDefault();
-    denySubmit(redirectUrl);
+    denySubmit(redirectUrl, currentCookieStoreId);
   });
 
   const container = await browser.contextualIdentities.get(cookieStoreId);
@@ -27,6 +29,7 @@ async function load() {
     el.textContent = browser.i18n.getMessage(elementData.messageId, containerName);
   });
 
+  // Option for going to newly selected container
   document.getElementById("confirm").addEventListener("click", (e) => {
     e.preventDefault();
     confirmSubmit(redirectUrl, cookieStoreId);
@@ -59,6 +62,7 @@ function confirmSubmit(redirectUrl, cookieStoreId) {
     browser.runtime.sendMessage({
       method: "neverAsk",
       neverAsk: true,
+      cookieStoreId: cookieStoreId,
       pageUrl: redirectUrl
     });
   }
@@ -72,8 +76,21 @@ function getCurrentTab() {
   });
 }
 
-async function denySubmit(redirectUrl) {
+async function denySubmit(redirectUrl, currentCookieStoreId) {
   const tab = await getCurrentTab();
+  const currentContainer = currentCookieStoreId ? await browser.contextualIdentities.get(currentCookieStoreId) : null;
+  const neverAsk = document.getElementById("never-ask").checked;
+
+  if (neverAsk) {
+    await browser.runtime.sendMessage({
+      method: "neverAsk",
+      neverAsk: true,
+      cookieStoreId: currentCookieStoreId,
+      pageUrl: redirectUrl,
+      defaultContainer: !currentContainer
+    });
+  }
+
   await browser.runtime.sendMessage({
     method: "exemptContainerAssignment",
     tabId: tab[0].id,
