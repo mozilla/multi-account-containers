@@ -77,8 +77,6 @@ const backgroundLogic = {
 
   // Remove container data (cookies, localStorage and cache)
   async deleteContainerDataOnly(userContextId) {
-    await this._closeTabs(userContextId);
-
     await browser.browsingData.removeCookies({
       cookieStoreId: this.cookieStoreId(userContextId)
     });

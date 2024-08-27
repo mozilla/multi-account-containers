@@ -294,10 +294,12 @@ table {
   border-radius: 4px;
   font-size: 12px;
   position: absolute;
-  top: 0;
-  left: 0;
-  padding: 8px;
-  margin: 8px;
+  inset-block-start: 0; 
+  inset-inline-start: 0;  
+  padding-block: 8px; 
+  padding-inline: 8px;
+  margin-block: 8px;  
+  margin-inline: 8px;
   inline-size: calc(100vw - 25px);
   background-color: var(--button-bg-active-color-secondary);
   z-index: 3;
@@ -1529,8 +1531,8 @@ input[type=text] {
   min-block-size: 500px;
 }
 
-.delete-container-panel {
-  min-block-size: 300px;
+.delete-container-panel, .clear-container-storage-panel {
+  min-block-size: 500px;
 }
 
 .panel.onboarding,
@@ -1818,12 +1820,12 @@ manage things like container crud */
   margin-inline-end: 0;
 }
 
-.delete-container-confirm {
+.delete-container-confirm, .clear-container-storage-confirm {
   padding-inline-end: 20px;
   padding-inline-start: 20px;
 }
 
-.delete-container-confirm-title {
+.delete-container-confirm-title, .clear-container-storage-confirm-title {
   color: var(--text-color-primary);
   font-size: var(--font-size-heading);
 }
@@ -2197,6 +2199,11 @@ hr {
   text-align: center;
 }
 
+.confirmation-destructive-ok-btn {
+  background-color: var(--button-destructive-bg-color);
+  color: var(--button-destructive-text-color);
+}
+
 .delete-btn {
   background-color: var(--button-destructive-bg-color);
   block-size: 32px;
@@ -2327,7 +2334,7 @@ input {
   font-weight: bolder;
 }
 
-.delete-warning {
+.delete-warning, .clear-container-storage-warning {
   padding-block-end: 8px;
   padding-block-start: 8px;
   padding-inline-end: 0;
@@ -2349,7 +2356,7 @@ input {
 }
 
 .reset-button {
-  margin-right: 8px;
+  margin-inline-end: 12px;
 }
 
 .tooltip-wrapper:hover .site-settings-tooltip {

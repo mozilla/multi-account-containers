@@ -32,6 +32,7 @@ const P_CONTAINER_EDIT = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
 const P_CONTAINERS_ACHIEVEMENT = "containersAchievement";
 const P_CONTAINER_ASSIGNMENTS = "containerAssignments";
+const P_CLEAR_CONTAINER_STORAGE = "clearContainerStorage";
 
 const P_MOZILLA_VPN_SERVER_LIST = "moz-vpn-server-list";
 const P_ADVANCED_PROXY_SETTINGS = "advanced-proxy-settings-panel";
@@ -979,23 +980,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       Utils.alwaysOpenInContainer(identity);
       window.close();
     });
-
-    const deleteData = document.querySelector("#delete-data-info-panel");
-    Utils.addEnterHandler(deleteData, async () => {
-      const userContextId = Utils.userContextId(identity.cookieStoreId)
-
-      const result = await browser.runtime.sendMessage({
-        method: "deleteContainerDataOnly",
-        message: { userContextId }
-      });
-
-      if (result.done === true) {
-        Logic.notify({messageId: "storageWasClearedConfirmation", placeholders: [identity.name]});
-      }
-
-      this.prepare();
-    });
-
+    
     // Show or not the has-tabs section.
     for (let trHasTabs of document.getElementsByClassName("container-info-has-tabs")) { // eslint-disable-line prefer-const
       trHasTabs.style.display = !identity.hasHiddenTabs && !identity.hasOpenTabs ? "none" : "";
@@ -1018,6 +1003,10 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     const manageContainer = document.querySelector("#manage-container-link");
     Utils.addEnterHandler(manageContainer, async () => {
       Logic.showPanel(P_CONTAINER_EDIT, identity);
+    });
+    const clearContainerStorageButton = document.getElementById("clear-container-storage-info");
+    Utils.addEnterHandler(clearContainerStorageButton, () => {
+      Logic.showPanel(P_CLEAR_CONTAINER_STORAGE, identity);
     });
     return this.buildOpenTabTable(tabs);
   },
@@ -2282,6 +2271,47 @@ Logic.registerPanel(P_MOZILLA_VPN_SERVER_LIST, {
       this.checkActiveServer(proxyData.proxy);
     }
   }
+});
+
+// P_CLEAR_CONTAINER_STORAGE: Page for confirming container storage removal.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_CLEAR_CONTAINER_STORAGE, {
+  panelSelector: "#clear-container-storage-panel",
+
+  // This method is called when the object is registered.
+  initialize() {
+
+    Utils.addEnterHandler(document.querySelector("#clear-container-storage-cancel-link"), () => {
+      const identity = Logic.currentIdentity();
+      Logic.showPanel(P_CONTAINER_INFO, identity, false, false);
+    });
+    Utils.addEnterHandler(document.querySelector("#close-clear-container-storage-panel"), () => {
+      const identity = Logic.currentIdentity();
+      Logic.showPanel(P_CONTAINER_INFO, identity, false, false);
+    });
+    Utils.addEnterHandler(document.querySelector("#clear-container-storage-ok-link"), async () => {
+      const identity = Logic.currentIdentity();
+      const userContextId = Utils.userContextId(identity.cookieStoreId)
+      const result = await browser.runtime.sendMessage({
+        method: "deleteContainerDataOnly",
+        message: { userContextId }
+      });
+      if (result.done === true) {
+        Logic.notify({messageId: "storageWasClearedConfirmation", placeholders: [identity.name]});
+      }
+      Logic.showPanel(P_CONTAINER_INFO, identity, false, false)
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    const identity = Logic.currentIdentity();
+    
+    // Populating the panel: name, icon, and warning message
+    document.getElementById("container-clear-storage-title").textContent = identity.name;
+    return Promise.resolve(null);
+  },
 });
 
 // P_CONTAINER_DELETE: Delete a container.

@@ -247,12 +247,10 @@
             </span>
         </td>
       </tr>
-      <tr class="menu-item hover-highlight keyboard-nav" id="delete-data" tabindex="0">
+      <tr class="menu-item hover-highlight keyboard-nav" id="clear-container-storage" tabindex="0">
         <td>
           <img class="menu-icon clear-storage-icon" alt="" src="img/container-delete.svg" />
-          <span class="menu-text" id="delete-data-info-panel" data-i18n-message-id="clearContainerStorage">
-            Delete data
-          </span>
+          <span class="menu-text" id="clear-container-storage-info" data-i18n-message-id="clearContainerStorage"></span>
             <span class="menu-arrow">
             </span>
         </td>
@@ -425,7 +423,23 @@
     </div>
     <div class="panel-footer">
       <a href="#" class="button expanded secondary footer-button cancel-button" data-i18n-message-id="cancel" id="delete-container-cancel-link"></a>
-      <a href="#" class="button expanded primary footer-button" data-i18n-message-id="ok" id="delete-container-ok-link"></a>
+      <a href="#" class="button expanded confirmation-destructive-ok-btn footer-button alert-text" data-i18n-message-id="ok" id="delete-container-ok-link"></a>
+    </div>
+  </div>
+
+  <div class="hide panel clear-container-storage-panel" id="clear-container-storage-panel">
+    <h3 class="title" id="container-clear-storage-title" data-i18n-message-id="default">
+    </h3>
+
+    <button class="btn-return arrow-left controller" id="close-clear-container-storage-panel"></button>
+    <hr>
+    <div class="panel-content clear-container-storage-confirm">
+      <h4 class="clear-container-storage-confirm-title" data-i18n-message-id="clearContainerStoragePanelTitle"></h4>
+      <p class="clear-container-storage-warning" data-i18n-message-id="clearContainerStorageConfirmation"></p>
+    </div>
+    <div class="panel-footer">
+      <a href="#" class="button expanded secondary footer-button cancel-button" data-i18n-message-id="cancel" id="clear-container-storage-cancel-link"></a>
+      <a href="#" class="button expanded confirmation-destructive-ok-btn footer-button alert-text" data-i18n-message-id="ok" id="clear-container-storage-ok-link"></a>
     </div>
   </div>
 
