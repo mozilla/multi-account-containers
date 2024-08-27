@@ -294,11 +294,11 @@ table {
   border-radius: 4px;
   font-size: 12px;
   position: absolute;
-  inset-block-start: 0; 
-  inset-inline-start: 0;  
-  padding-block: 8px; 
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  padding-block: 8px;
   padding-inline: 8px;
-  margin-block: 8px;  
+  margin-block: 8px;
   margin-inline: 8px;
   inline-size: calc(100vw - 25px);
   background-color: var(--button-bg-active-color-secondary);
@@ -1531,7 +1531,8 @@ input[type=text] {
   min-block-size: 500px;
 }
 
-.delete-container-panel, .clear-container-storage-panel {
+.delete-container-panel,
+.clear-container-storage-panel {
   min-block-size: 500px;
 }
 
@@ -1820,12 +1821,14 @@ manage things like container crud */
   margin-inline-end: 0;
 }
 
-.delete-container-confirm, .clear-container-storage-confirm {
+.delete-container-confirm,
+.clear-container-storage-confirm {
   padding-inline-end: 20px;
   padding-inline-start: 20px;
 }
 
-.delete-container-confirm-title, .clear-container-storage-confirm-title {
+.delete-container-confirm-title,
+.clear-container-storage-confirm-title {
   color: var(--text-color-primary);
   font-size: var(--font-size-heading);
 }
@@ -2334,7 +2337,8 @@ input {
   font-weight: bolder;
 }
 
-.delete-warning, .clear-container-storage-warning {
+.delete-warning,
+.clear-container-storage-warning {
   padding-block-end: 8px;
   padding-block-start: 8px;
   padding-inline-end: 0;

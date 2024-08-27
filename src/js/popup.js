@@ -980,7 +980,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       Utils.alwaysOpenInContainer(identity);
       window.close();
     });
-    
+
     // Show or not the has-tabs section.
     for (let trHasTabs of document.getElementsByClassName("container-info-has-tabs")) { // eslint-disable-line prefer-const
       trHasTabs.style.display = !identity.hasHiddenTabs && !identity.hasOpenTabs ? "none" : "";
@@ -1005,8 +1005,11 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       Logic.showPanel(P_CONTAINER_EDIT, identity);
     });
     const clearContainerStorageButton = document.getElementById("clear-container-storage-info");
-    Utils.addEnterHandler(clearContainerStorageButton, () => {
-      Logic.showPanel(P_CLEAR_CONTAINER_STORAGE, identity);
+    Utils.addEnterHandler(clearContainerStorageButton, async () => {
+      const granted = await browser.permissions.request({ permissions: ["browsingData"] });
+      if (granted) {
+        Logic.showPanel(P_CLEAR_CONTAINER_STORAGE, identity);
+      }
     });
     return this.buildOpenTabTable(tabs);
   },
@@ -1491,6 +1494,10 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
         const resetButton = trElement.querySelector(".reset-button");
         Utils.addEnterHandler(resetButton, async () => {
           const cookieStoreId = Logic.currentCookieStoreId();
+          const granted = await browser.permissions.request({ permissions: ["browsingData"] });
+          if (!granted) {
+            return;
+          }
           const result = await Utils.resetCookiesForSite(site.hostname, cookieStoreId);
           if (result === true) {
             Logic.notify({messageId: "cookiesClearedSuccess", placeholders: [site.hostname]});
@@ -2292,7 +2299,7 @@ Logic.registerPanel(P_CLEAR_CONTAINER_STORAGE, {
     });
     Utils.addEnterHandler(document.querySelector("#clear-container-storage-ok-link"), async () => {
       const identity = Logic.currentIdentity();
-      const userContextId = Utils.userContextId(identity.cookieStoreId)
+      const userContextId = Utils.userContextId(identity.cookieStoreId);
       const result = await browser.runtime.sendMessage({
         method: "deleteContainerDataOnly",
         message: { userContextId }
@@ -2300,7 +2307,7 @@ Logic.registerPanel(P_CLEAR_CONTAINER_STORAGE, {
       if (result.done === true) {
         Logic.notify({messageId: "storageWasClearedConfirmation", placeholders: [identity.name]});
       }
-      Logic.showPanel(P_CONTAINER_INFO, identity, false, false)
+      Logic.showPanel(P_CONTAINER_INFO, identity, false, false);
     });
   },
 
