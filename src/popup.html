@@ -107,6 +107,7 @@
   </div>
 
   <div class="panel menu-panel container-panel hide" id="container-panel">
+    <span class="popup-notification-card"></span>
     <h3 class="title">Firefox Multi-Account Containers</h3>
     <a href="#" class="info-icon" id="info-icon" tabindex="10">
       <img data-i18n-attribute-message-id="info" data-i18n-attribute="alt" alt="" src="/img/info.svg" / >
@@ -209,6 +210,7 @@
 
 
   <div class="hide panel menu-panel container-info-panel" id="container-info-panel" tabindex="-1">
+    <span class="popup-notification-card"></span>
     <h3 class="title" id="container-info-title" data-i18n-attribute-message-id="personal"></h3>
     <button class="btn-return arrow-left controller keyboard-nav-back" id="close-container-info-panel" tabindex="0"></button>
     <hr>
@@ -245,6 +247,14 @@
             </span>
         </td>
       </tr>
+      <tr class="menu-item hover-highlight keyboard-nav" id="clear-container-storage" tabindex="0">
+        <td>
+          <img class="menu-icon clear-storage-icon" alt="" src="img/container-delete.svg" />
+          <span class="menu-text" id="clear-container-storage-info" data-i18n-message-id="clearContainerStorage"></span>
+            <span class="menu-arrow">
+            </span>
+        </td>
+      </tr>
     </table>
     <hr>
     <div class="sub-header-wrapper">
@@ -267,6 +277,7 @@
 
 
   <div class="panel menu-panel container-picker-panel hide" id="container-picker-panel">
+    <span class="popup-notification-card"></span>
     <h3 class="title" id="picker-title">
       Firefox Multi-Account Containers
     </h3>
@@ -291,6 +302,7 @@
   </div>
 
   <div class="panel menu-panel edit-container-panel hide" id="edit-container-panel">
+    <span class="popup-notification-card"></span>
     <h3 class="title" id="container-edit-title" data-i18n-message-id="default"></h3>
     <button class="btn-return arrow-left controller" id="close-container-edit-panel"></button>
     <hr>
@@ -381,6 +393,7 @@
   </div>
 
   <div class="panel menu-panel edit-container-assignments hide" id="edit-container-assignments">
+    <span class="popup-notification-card"></span>
     <h3 class="title" id="edit-assignments-title" data-i18n-message-id="default"></h3>
     <button class="btn-return arrow-left controller" id="close-container-assignment-panel"></button>
     <hr>
@@ -410,7 +423,23 @@
     </div>
     <div class="panel-footer">
       <a href="#" class="button expanded secondary footer-button cancel-button" data-i18n-message-id="cancel" id="delete-container-cancel-link"></a>
-      <a href="#" class="button expanded primary footer-button" data-i18n-message-id="ok" id="delete-container-ok-link"></a>
+      <a href="#" class="button expanded confirmation-destructive-ok-btn footer-button alert-text" data-i18n-message-id="ok" id="delete-container-ok-link"></a>
+    </div>
+  </div>
+
+  <div class="hide panel clear-container-storage-panel" id="clear-container-storage-panel">
+    <h3 class="title" id="container-clear-storage-title" data-i18n-message-id="default">
+    </h3>
+
+    <button class="btn-return arrow-left controller" id="close-clear-container-storage-panel"></button>
+    <hr>
+    <div class="panel-content clear-container-storage-confirm">
+      <h4 class="clear-container-storage-confirm-title" data-i18n-message-id="clearContainerStoragePanelTitle"></h4>
+      <p class="clear-container-storage-warning" data-i18n-message-id="clearContainerStorageConfirmation"></p>
+    </div>
+    <div class="panel-footer">
+      <a href="#" class="button expanded secondary footer-button cancel-button" data-i18n-message-id="cancel" id="clear-container-storage-cancel-link"></a>
+      <a href="#" class="button expanded confirmation-destructive-ok-btn footer-button alert-text" data-i18n-message-id="ok" id="clear-container-storage-ok-link"></a>
     </div>
   </div>
 

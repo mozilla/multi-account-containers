@@ -577,6 +577,16 @@ window.assignManager = {
     return true;
   },
 
+  async _resetCookiesForSite(hostname, cookieStoreId) {
+    const hostNameTruncated = hostname.replace(/^www\./, ""); // Remove "www." from the hostname
+    await browser.browsingData.removeCookies({
+      cookieStoreId: cookieStoreId,
+      hostnames: [hostNameTruncated] // This does not remove cookies from associated domains. To remove all cookies, we have a container storage removal option.
+    });
+
+    return true;
+  },
+
   async _setOrRemoveAssignment(tabId, pageUrl, userContextId, remove) {
     let actionName;
     // https://github.com/mozilla/testpilot-containers/issues/626

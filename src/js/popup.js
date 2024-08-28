@@ -32,6 +32,7 @@ const P_CONTAINER_EDIT = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
 const P_CONTAINERS_ACHIEVEMENT = "containersAchievement";
 const P_CONTAINER_ASSIGNMENTS = "containerAssignments";
+const P_CLEAR_CONTAINER_STORAGE = "clearContainerStorage";
 
 const P_MOZILLA_VPN_SERVER_LIST = "moz-vpn-server-list";
 const P_ADVANCED_PROXY_SETTINGS = "advanced-proxy-settings-panel";
@@ -120,6 +121,19 @@ const Logic = {
       break;
     }
 
+  },
+
+  notify(i18nOpts) {
+    const notificationCards = document.querySelectorAll(".popup-notification-card");
+    const text = browser.i18n.getMessage(i18nOpts.messageId, i18nOpts.placeholders);
+    notificationCards.forEach(notificationCard => {
+      notificationCard.textContent = text;
+      notificationCard.classList.add("is-shown");
+    
+      setTimeout(() => {
+        notificationCard.classList.remove("is-shown");
+      }, 2000);
+    });
   },
 
   async showAchievementOrContainersListPanel() {
@@ -971,6 +985,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       Utils.alwaysOpenInContainer(identity);
       window.close();
     });
+
     // Show or not the has-tabs section.
     for (let trHasTabs of document.getElementsByClassName("container-info-has-tabs")) { // eslint-disable-line prefer-const
       trHasTabs.style.display = !identity.hasHiddenTabs && !identity.hasOpenTabs ? "none" : "";
@@ -993,6 +1008,13 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     const manageContainer = document.querySelector("#manage-container-link");
     Utils.addEnterHandler(manageContainer, async () => {
       Logic.showPanel(P_CONTAINER_EDIT, identity);
+    });
+    const clearContainerStorageButton = document.getElementById("clear-container-storage-info");
+    Utils.addEnterHandler(clearContainerStorageButton, async () => {
+      const granted = await browser.permissions.request({ permissions: ["browsingData"] });
+      if (granted) {
+        Logic.showPanel(P_CLEAR_CONTAINER_STORAGE, identity);
+      }
     });
     return this.buildOpenTabTable(tabs);
   },
@@ -1455,11 +1477,14 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
         /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
            This is pending a better solution for favicons from web extensions */
         const assumedUrl = `https://${site.hostname}/favicon.ico`;
+        const resetSiteCookiesInfo = browser.i18n.getMessage("clearSiteCookiesTooltipInfo");
+        const deleteSiteInfo = browser.i18n.getMessage("deleteSiteTooltipInfo");
         trElement.innerHTML = Utils.escaped`
         <td>
           <div class="favicon"></div>
           <span title="${site.hostname}" class="menu-text truncate-text">${site.hostname}</span>
-          <img class="trash-button delete-assignment" src="/img/container-delete.svg" />
+          <img title="${resetSiteCookiesInfo}" class="reset-button reset-assignment" src="/img/refresh-16.svg" />
+          <img title="${deleteSiteInfo}" class="trash-button delete-assignment"  src="/img/container-delete.svg" />
         </td>`;
         trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
         const deleteButton = trElement.querySelector(".trash-button");
@@ -1470,6 +1495,20 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
           Utils.setOrRemoveAssignment(false, assumedUrl, userContextId, true);
           delete assignments[siteKey];
           this.showAssignedContainers(assignments);
+        });
+        const resetButton = trElement.querySelector(".reset-button");
+        Utils.addEnterHandler(resetButton, async () => {
+          const cookieStoreId = Logic.currentCookieStoreId();
+          const granted = await browser.permissions.request({ permissions: ["browsingData"] });
+          if (!granted) {
+            return;
+          }
+          const result = await Utils.resetCookiesForSite(site.hostname, cookieStoreId);
+          if (result === true) {
+            Logic.notify({messageId: "cookiesClearedSuccess", placeholders: [site.hostname]});
+          } else {
+            Logic.notify({messageId: "cookiesCouldNotBeCleared", placeholders: [site.hostname]});
+          }
         });
         trElement.classList.add("menu-item", "hover-highlight", "keyboard-nav");
         tableElement.appendChild(trElement);
@@ -2244,6 +2283,47 @@ Logic.registerPanel(P_MOZILLA_VPN_SERVER_LIST, {
       this.checkActiveServer(proxyData.proxy);
     }
   }
+});
+
+// P_CLEAR_CONTAINER_STORAGE: Page for confirming container storage removal.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_CLEAR_CONTAINER_STORAGE, {
+  panelSelector: "#clear-container-storage-panel",
+
+  // This method is called when the object is registered.
+  initialize() {
+
+    Utils.addEnterHandler(document.querySelector("#clear-container-storage-cancel-link"), () => {
+      const identity = Logic.currentIdentity();
+      Logic.showPanel(P_CONTAINER_INFO, identity, false, false);
+    });
+    Utils.addEnterHandler(document.querySelector("#close-clear-container-storage-panel"), () => {
+      const identity = Logic.currentIdentity();
+      Logic.showPanel(P_CONTAINER_INFO, identity, false, false);
+    });
+    Utils.addEnterHandler(document.querySelector("#clear-container-storage-ok-link"), async () => {
+      const identity = Logic.currentIdentity();
+      const userContextId = Utils.userContextId(identity.cookieStoreId);
+      const result = await browser.runtime.sendMessage({
+        method: "deleteContainerDataOnly",
+        message: { userContextId }
+      });
+      if (result.done === true) {
+        Logic.notify({messageId: "storageWasClearedConfirmation", placeholders: [identity.name]});
+      }
+      Logic.showPanel(P_CONTAINER_INFO, identity, false, false);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    const identity = Logic.currentIdentity();
+    
+    // Populating the panel: name, icon, and warning message
+    document.getElementById("container-clear-storage-title").textContent = identity.name;
+    return Promise.resolve(null);
+  },
 });
 
 // P_CONTAINER_DELETE: Delete a container.

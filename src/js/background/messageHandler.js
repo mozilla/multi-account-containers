@@ -23,6 +23,9 @@ const messageHandler = {
       case "deleteContainer":
         response = backgroundLogic.deleteContainer(m.message.userContextId);
         break;
+      case "deleteContainerDataOnly":
+        response = backgroundLogic.deleteContainerDataOnly(m.message.userContextId);
+        break;
       case "createOrUpdateContainer":
         response = backgroundLogic.createOrUpdateContainer(m.message);
         break;
@@ -44,6 +47,9 @@ const messageHandler = {
         // m.tabId is used for where to place the in content message
         // m.url is the assignment to be removed/added
         response = assignManager._setOrRemoveAssignment(m.tabId, m.url, m.userContextId, m.value);
+        break;
+      case "resetCookiesForSite":
+        response = assignManager._resetCookiesForSite(m.pageUrl, m.cookieStoreId);
         break;
       case "sortTabs":
         backgroundLogic.sortTabs();

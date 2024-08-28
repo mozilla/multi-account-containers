@@ -26,6 +26,7 @@
   ],
   "optional_permissions": [
     "bookmarks",
+    "browsingData",
     "nativeMessaging",
     "proxy"
   ],
