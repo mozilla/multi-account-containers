@@ -96,10 +96,10 @@ const messageHandler = {
         break;
       case "assignAndReloadInContainer":
         tab = await assignManager.reloadPageInContainer(
-          m.url, 
+          m.url,
           m.currentUserContextId,
-          m.newUserContextId, 
-          m.tabIndex, 
+          m.newUserContextId,
+          m.tabIndex,
           m.active,
           true
         );
@@ -226,7 +226,9 @@ const messageHandler = {
           // if it's a container tab wait for it to complete and
           // unhide other tabs from this container
           if (tab.cookieStoreId.startsWith("firefox-container")) {
-            browser.tabs.onUpdated.addListener(this.tabUpdateHandler);
+            browser.tabs.onUpdated.addListener(this.tabUpdateHandler, {
+              properties: ["status"]
+            });
           }
         }
       }
