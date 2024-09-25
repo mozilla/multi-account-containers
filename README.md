@@ -13,7 +13,7 @@ Everyone is welcome to contribute to Multi-Account Containers. To learn how
 to contribute a patch to Multi-Account Container, please
 [read our contributing guide][contributing].
 
-You can also chat with us on [our Matrix room][matrix] or [our forum][forum].
+You can also chat with us on [our Matrix room][matrix] or ask in [our discussions board][discussions].
 
 This repository is governed by Mozilla's code of conduct and etiquette
 guidelines. For more details, [please read the Mozilla Community Participation Guidelines][cpg].
@@ -29,4 +29,5 @@ file, You can obtain one at https://mozilla.org/MPL/2.0/.
 [cpg]: https://www.mozilla.org/about/governance/policies/participation/
 [enduser]: https://support.mozilla.org/en-US/kb/containers
 [forum]: https://discourse.mozilla.org/c/containers/223
+[discussions]: https://github.com/mozilla/multi-account-containers/discussions
 [matrix]: https://matrix.to/#/#containers:mozilla.org
