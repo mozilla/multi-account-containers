@@ -34,19 +34,21 @@ You can then [open a pull request][pr] on [the l10n repository][l10n].
 
 ## Tips for contributing
 
-1. Choose an issue from https://github.com/mozilla/multi-account-containers/issues that you would like to work on.
+1. Choose [an issue][issues] that you would like to work on.
 2. Fork the repository and follow the instructions for setting it up locally.
 3. Run the add-on locally and try reproducing the issue.
 4. Debug add-ons by clicking the “Settings” icon in about:addons, and then clicking “Debug Add-ons”
-5. Click “Inspect” on the MAC add-on to open developer tools for the popup extension (see https://extensionworkshop.com/documentation/develop/debugging/ for more information)
+5. Click “Inspect” on the MAC add-on to open developer tools for the popup extension (see [this documentation][extension-doc] for more information)
 6. Once you have a fix ready, commit your changes with the following commit message template: “Fix #<insert issue id #>: <short description>”
 7. Push your changes and open a pull request for review.
 
 If you run into an issue, you can always ask the other community members in the [discussions board][discussions]. 
 
+<!-- Please keep the list in alphabetical order -->
+[discussions]: https://github.com/mozilla/multi-account-containers/discussions
+[extension-doc]: https://extensionworkshop.com/documentation/develop/debugging/
 [fork]: https://docs.github.com/en/get-started/quickstart/fork-a-repo
+[issues]: https://github.com/mozilla/multi-account-containers/issues
 [l10n]: https://github.com/mozilla-l10n/multi-account-containers-l10n/
 [pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests
 [web-ext]: https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Getting_started_with_web-ext
-[discussions]: https://github.com/mozilla/multi-account-containers/discussions
-
