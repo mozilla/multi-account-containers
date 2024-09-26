@@ -61,8 +61,9 @@ window.assignManager = {
         this.area.get([siteStoreKey]).then((storageResponse) => {
           if (storageResponse && siteStoreKey in storageResponse) {
             resolve(storageResponse[siteStoreKey]);
+          } else {
+            resolve(null);
           }
-          resolve(null);
         }).catch((e) => {
           reject(e);
         });
@@ -638,7 +639,7 @@ window.assignManager = {
   },
 
   async _maybeRemoveSiteIsolation(userContextId) {
-    const assignments = await this.storageArea.getByContainer(userContextId);
+    const assignments = await this.storageArea.getAssignedSites(userContextId);
     const hasAssignments = assignments && Object.keys(assignments).length > 0;
     if (hasAssignments) {
       return;
