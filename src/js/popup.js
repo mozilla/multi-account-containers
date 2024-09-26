@@ -1853,6 +1853,12 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     Utils.addEnterHandler(document.querySelector("#create-container-ok-link"), () => {
       this._submitForm();
     });
+
+    // Add new site to current container
+    const siteLink = document.querySelector("#edit-container-site-link");
+    Utils.addEnterHandler(siteLink, () => {
+      this._addSite();
+    });
   },
 
   async _submitForm() {
@@ -1893,6 +1899,113 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     editedIdentity.icon = formValues.get("container-icon") || DEFAULT_ICON;
     editedIdentity.name = document.getElementById("edit-container-panel-name-input").value || Logic.generateIdentityName();
     return editedIdentity;
+  },
+
+  async _addSite() {
+    // Get URL and container ID from form
+    const formValues = new FormData(this._editForm);
+    const url = formValues.get("site-name");
+    const userContextId = formValues.get("container-id");
+    const currentTab = await Logic.currentTab();
+    const tabId = currentTab.id;
+    const baseURL = this.normalizeUrl(url);
+
+    if (baseURL !== null) {
+      // Assign URL to container
+      await Utils.setOrRemoveAssignment(tabId, baseURL, userContextId, false);
+
+      // Clear form
+      document.querySelector("#edit-container-panel-site-input").value = "";
+
+      // Show new assignments
+      const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
+      this.showAssignedContainers(assignments);
+    }
+  },
+
+  normalizeUrl(url){
+    /*
+     *  Important: the rules that automatically open a site in a container only
+     *  look at the URL up to but excluding the / after the domainname.
+     *
+     *  Furthermore, containers are only useful for http & https URLs because
+     *  those are the only protocols that transmit cookies to maintain
+     *  sessions.
+     */
+
+    // Preface with "https://" if no protocol present
+    const startsWithProtocol = /^\w+:\/\/|^mailto:/; // all protocols are followed by :// (except mailto) 
+    if (!url.match(startsWithProtocol)) {
+      url = "https://" + url;
+    }
+
+    /*
+     * Dual-purpose match: (1) check that url start with http or https proto,
+     * and (2) exclude everything from the / after the domain (any path, any
+     * query string, and any anchor)
+     */
+    const basePart = /^(https?:\/\/)([^/?#]*)/;
+    const r = url.match(basePart);
+    if (!r) return null;
+    const urlProto = r[1];      // includes :// if any
+    const urlConnection = r[2]; // [user[:passwd]@]domain[:port]
+
+    // Extract domain from [user[:passwd]@]domain[:port]
+    const domainPart = /^(?:.*@)?([^:]+)/;
+    const d = urlConnection.match(domainPart);
+    if (!d) return null;
+    const urlDomain = d[1];
+
+    // Check that the domain is valid (RFC-1034)
+    const validDomain = /^(?:\w(?:[\w-]*\w)?)(?:\.\w(?:[\w-]*\w)?)+$/;
+    if (!urlDomain.match(validDomain)) return null;
+
+    return urlProto+urlDomain;
+  },
+
+  showAssignedContainers(assignments) {
+    const assignmentPanel = document.getElementById("edit-sites-assigned");
+    const assignmentKeys = Object.keys(assignments);
+    assignmentPanel.hidden = !(assignmentKeys.length > 0);
+    if (assignments) {
+      const tableElement = assignmentPanel.querySelector(".assigned-sites-list");
+      /* Remove previous assignment list,
+         after removing one we rerender the list */
+      while (tableElement.firstChild) {
+        tableElement.firstChild.remove();
+      }
+
+      assignmentKeys.forEach((siteKey) => {
+        const site = assignments[siteKey];
+        const trElement = document.createElement("div");
+        /* As we don't have the full or correct path the best we can assume is the path is HTTPS and then replace with a broken icon later if it doesn't load.
+           This is pending a better solution for favicons from web extensions */
+        const assumedUrl = `https://${site.hostname}/favicon.ico`;
+        trElement.innerHTML = Utils.escaped`
+        <div class="favicon"></div>
+        <div title="${site.hostname}" class="truncate-text hostname">
+          ${site.hostname}
+        </div>
+        <img
+          class="pop-button-image delete-assignment"
+          src="/img/container-delete.svg"
+        />`;
+        trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
+        const deleteButton = trElement.querySelector(".delete-assignment");
+        const that = this;
+        Utils.addEnterHandler(deleteButton, async () => {
+          const userContextId = Logic.currentUserContextId();
+          // Lets show the message to the current tab
+          // TODO remove then when firefox supports arrow fn async
+          const currentTab = await Logic.currentTab();
+          Utils.setOrRemoveAssignment(currentTab.id, assumedUrl, userContextId, true);
+          delete assignments[siteKey];
+          that.showAssignedContainers(assignments);
+        });
+        trElement.classList.add("container-info-tab-row", "clickable");
+        tableElement.appendChild(trElement);
+      });
+    }
   },
 
   initializeRadioButtons() {
@@ -1945,7 +2058,10 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     Utils.addEnterHandler(document.querySelector("#manage-assigned-sites-list"), () => {
       Logic.showPanel(P_CONTAINER_ASSIGNMENTS, this.getEditInProgressIdentity(), false, false);
     });
-
+    // Only show ability to add site if it's an existing container
+    document.querySelector("#edit-container-panel-add-site").hidden = !userContextId;
+    // Make site input empty
+    document.querySelector("#edit-container-panel-site-input").value = "";
     document.querySelector("#edit-container-panel-name-input").value = identity.name || "";
     document.querySelector("#edit-container-panel-usercontext-input").value = userContextId || NEW_CONTAINER_ID;
     const containerName = document.querySelector("#edit-container-panel-name-input");
