@@ -45,3 +45,10 @@ async function addMessage(message) {
 browser.runtime.onMessage.addListener((message) => {
   addMessage(message);
 });
+
+browser.runtime.onMessage.addListener(message => {
+  if (message.action === 'confirmSortDialogue') {
+    const result = confirm("confirm sorting tabs");
+    return Promise.resolve({result});
+  }
+});

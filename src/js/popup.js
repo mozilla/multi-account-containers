@@ -756,16 +756,22 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     Utils.addEnterHandler(document.querySelector("#always-open-in"), () => {
       Logic.showPanel(ALWAYS_OPEN_IN_PICKER);
     });
+    
     Utils.addEnterHandler(document.querySelector("#sort-containers-link"), async () => {
-      try {
-        await browser.runtime.sendMessage({
-          method: "sortTabs"
-        });
-        window.close();
-      } catch (e) {
-        window.close();
+
+      const [tab] = await browser.tabs.query({currentWindow: true, active: true});
+    
+      // sort without dialouge if active page dosent have content script
+      if(!/^(https?|wss?|file):/.test(tab.url)) {
+        browser.runtime.sendMessage({method: "sortTabs"});
+        return;
       }
+    
+      const {result} = await browser.tabs.sendMessage(tab.id, {action: 'confirmSortDialogue'});
+      if(result)browser.runtime.sendMessage({method: "sortTabs"});
+      window.close();
     });
+    
 
     const mozillaVpnToutName = "moz-tout-main-panel";
     const mozillaVpnPermissionsWarningDotName = "moz-permissions-warning-dot";
