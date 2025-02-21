@@ -1820,12 +1820,14 @@ manage things like container crud */
 .container-info-tab-row img[src=""] {
   margin-inline-end: 0;
 }
+
 .sort-tabs-confirm,
 .delete-container-confirm,
 .clear-container-storage-confirm {
   padding-inline-end: 20px;
   padding-inline-start: 20px;
 }
+
 .sort-tabs-confirm-title,
 .delete-container-confirm-title,
 .clear-container-storage-confirm-title {
@@ -2336,6 +2338,7 @@ input {
   justify-content: center;
   font-weight: bolder;
 }
+
 .sort-warning,
 .delete-warning,
 .clear-container-storage-warning {
