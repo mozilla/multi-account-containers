@@ -13,9 +13,9 @@ const backgroundLogic = {
   ]),
   NUMBER_OF_KEYBOARD_SHORTCUTS: 10,
   unhideQueue: [],
-  init() {
 
-    browser.commands.onCommand.addListener(function (command) {
+  async init() {
+    browser.commands.onCommand.addListener(async function (command) {
       if (command === "sort_tabs") {
         backgroundLogic.sortTabs();
         return;
@@ -23,10 +23,33 @@ const backgroundLogic = {
 
       for (let i=0; i < backgroundLogic.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
         const key = "open_container_" + i;
+        const reopenKey = "reopen_in_container_" + i;
         const cookieStoreId = identityState.keyboardShortcut[key];
+
+        if (cookieStoreId === "none") {
+          continue;
+        }
+
         if (command === key) {
-          if (cookieStoreId === "none") return;
           browser.tabs.create({cookieStoreId});
+          return;
+        }
+
+        if (command === reopenKey) {
+          const currentTab = await browser.tabs.query({active: true, currentWindow: true});
+          if (currentTab.length > 0) {
+            const tab = currentTab[0];
+
+            await browser.tabs.create({
+              url: tab.url,
+              cookieStoreId: cookieStoreId,
+              index: tab.index + 1,
+              active: tab.active
+            });
+
+            await browser.tabs.remove(tab.id);
+          }
+          return;
         }
       }
     });
@@ -85,10 +108,14 @@ const backgroundLogic = {
 
   updateTranslationInManifest() {
     for (let index = 0; index < 10; index++) {
-      const ajustedIndex = index + 1; // We want to start from 1 instead of 0 in the UI.
+      const adjustedIndex = index + 1;
       browser.commands.update({
         name: `open_container_${index}`,
-        description: browser.i18n.getMessage("containerShortcut", `${ajustedIndex}`)
+        description: browser.i18n.getMessage("containerShortcut", `${adjustedIndex}`)
+      });
+      browser.commands.update({
+        name: `reopen_in_container_${index}`,
+        description: browser.i18n.getMessage("reopenInContainerShortcut", `${adjustedIndex}`)
       });
     }
   },

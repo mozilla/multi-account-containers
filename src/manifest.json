@@ -109,6 +109,66 @@
         "default": "Ctrl+Shift+0"
       },
       "description": "__MSG_containerShortcut__"
+    },
+    "reopen_in_container_0": {
+      "suggested_key": {
+        "default": "Alt+Shift+1"
+      },
+      "description": "__MSG_reopenInContainerShortcut__"
+    },
+    "reopen_in_container_1": {
+      "suggested_key": {
+        "default": "Alt+Shift+2"
+      },
+      "description": "__MSG_reopenInContainerShortcut__"
+    },
+    "reopen_in_container_2": {
+      "suggested_key": {
+        "default": "Alt+Shift+3"
+      },
+      "description": "__MSG_reopenInContainerShortcut__"
+    },
+    "reopen_in_container_3": {
+      "suggested_key": {
+        "default": "Alt+Shift+4"
+      },
+      "description": "__MSG_reopenInContainerShortcut__"
+    },
+    "reopen_in_container_4": {
+      "suggested_key": {
+        "default": "Alt+Shift+5"
+      },
+      "description": "__MSG_reopenInContainerShortcut__"
+    },
+    "reopen_in_container_5": {
+      "suggested_key": {
+        "default": "Alt+Shift+6"
+      },
+      "description": "__MSG_reopenInContainerShortcut__"
+    },
+    "reopen_in_container_6": {
+      "suggested_key": {
+        "default": "Alt+Shift+7"
+      },
+      "description": "__MSG_reopenInContainerShortcut__"
+    },
+    "reopen_in_container_7": {
+      "suggested_key": {
+        "default": "Alt+Shift+8"
+      },
+      "description": "__MSG_reopenInContainerShortcut__"
+    },
+    "reopen_in_container_8": {
+      "suggested_key": {
+        "default": "Alt+Shift+9"
+      },
+      "description": "__MSG_reopenInContainerShortcut__"
+    },
+    "reopen_in_container_9": {
+      "suggested_key": {
+        "default": "Alt+Shift+0"
+      },
+      "description": "__MSG_reopenInContainerShortcut__"
     }
   },
   "browser_action": {
