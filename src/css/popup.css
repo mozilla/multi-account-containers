@@ -1530,6 +1530,7 @@ input[type=text] {
 .container-panel {
   min-block-size: 500px;
 }
+
 .sort-container-panel,
 .delete-container-panel,
 .clear-container-storage-panel {
