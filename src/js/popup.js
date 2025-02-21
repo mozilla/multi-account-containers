@@ -2416,7 +2416,7 @@ Logic.registerPanel(P_CONTAINER_SORT, {
   // This method is called when the object is registered.
   initialize() {
     Utils.addEnterHandler(document.querySelector("#sort-container-cancel-link"), () => {
-     Logic.showPreviousPanel();
+      Logic.showPreviousPanel();
     });
     Utils.addEnterHandler(document.querySelector("#close-container-sort-panel"), () => {
       Logic.showPreviousPanel();
