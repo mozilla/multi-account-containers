@@ -767,38 +767,12 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       }
     });
 
-    const mozillaVpnToutName = "moz-tout-main-panel";
     const mozillaVpnPermissionsWarningDotName = "moz-permissions-warning-dot";
 
     let { mozillaVpnHiddenToutsList } = await browser.storage.local.get("mozillaVpnHiddenToutsList");
     if (typeof(mozillaVpnHiddenToutsList) === "undefined") {
       await browser.storage.local.set({ "mozillaVpnHiddenToutsList": [] });
       mozillaVpnHiddenToutsList = [];
-    }
-
-    // Decide whether to show Mozilla VPN tout
-    const mozVpnTout = document.getElementById("moz-vpn-tout");
-    const mozillaVpnInstalled = await browser.runtime.sendMessage({ method: "MozillaVPN_getInstallationStatus" });
-    const mozillaVpnToutShouldBeHidden = mozillaVpnHiddenToutsList.find(tout => tout.name === mozillaVpnToutName);
-    if (mozillaVpnInstalled || mozillaVpnToutShouldBeHidden) {
-      mozVpnTout.remove();
-    }
-
-    // Add handlers if tout is visible
-    const mozVpnDismissTout = document.querySelector(".dismiss-moz-vpn-tout");
-    if (mozVpnDismissTout) {
-      Utils.addEnterHandler((mozVpnDismissTout), async() => {
-        mozVpnTout.remove();
-        mozillaVpnHiddenToutsList.push({
-          name: mozillaVpnToutName
-        });
-        await browser.storage.local.set({ mozillaVpnHiddenToutsList });
-      });
-
-      Utils.addEnterHandler(document.querySelector("#moz-vpn-learn-more"), () => {
-        MozillaVPN.handleMozillaCtaClick("mac-main-panel-btn");
-        window.close();
-      });
     }
 
     // Badge Options icon if both nativeMessaging and/or proxy permissions are disabled
