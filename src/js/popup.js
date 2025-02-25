@@ -30,6 +30,7 @@ const ALWAYS_OPEN_IN_PICKER = "always-open-in";
 const P_CONTAINER_INFO = "containerInfo";
 const P_CONTAINER_EDIT = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
+const P_CONTAINER_SORT ="containerSort";
 const P_CONTAINERS_ACHIEVEMENT = "containersAchievement";
 const P_CONTAINER_ASSIGNMENTS = "containerAssignments";
 const P_CLEAR_CONTAINER_STORAGE = "clearContainerStorage";
@@ -756,15 +757,8 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     Utils.addEnterHandler(document.querySelector("#always-open-in"), () => {
       Logic.showPanel(ALWAYS_OPEN_IN_PICKER);
     });
-    Utils.addEnterHandler(document.querySelector("#sort-containers-link"), async () => {
-      try {
-        await browser.runtime.sendMessage({
-          method: "sortTabs"
-        });
-        window.close();
-      } catch (e) {
-        window.close();
-      }
+    Utils.addEnterHandler(document.querySelector("#sort-containers-link"), () => {
+      Logic.showPanel(P_CONTAINER_SORT);
     });
 
     const mozillaVpnToutName = "moz-tout-main-panel";
@@ -2411,4 +2405,32 @@ window.addEventListener("resize", function () {
     const root = document.documentElement;
     root.classList.add("overflow");
   }
+});
+
+// P_CONTAINER_SORT: sort tabs.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_CONTAINER_SORT, {
+  panelSelector: "#sort-container-panel",
+
+  // This method is called when the object is registered.
+  initialize() {
+    Utils.addEnterHandler(document.querySelector("#sort-container-cancel-link"), () => {
+     Logic.showPreviousPanel();
+    });
+    Utils.addEnterHandler(document.querySelector("#close-container-sort-panel"), () => {
+      Logic.showPreviousPanel();
+    });
+    Utils.addEnterHandler(document.querySelector("#sort-container-ok-link"), async () => {
+      await browser.runtime.sendMessage({
+        method: "sortTabs"
+      });
+      window.close();
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    return Promise.resolve(null);
+  },
 });
