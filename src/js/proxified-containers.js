@@ -50,6 +50,10 @@ proxifiedContainers = {
       return false;
     }
 
+    if (!matches.groups.port) {
+      matches.groups.port = 1080;
+    }
+
     if (mozillaVpnData && mozillaVpnData.mozProxyEnabled === undefined) {
       matches.groups.type = null;
     }
