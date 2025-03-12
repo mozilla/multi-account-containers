@@ -766,6 +766,17 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         window.close();
       }
     });
+    Utils.addEnterHandler(document.querySelector("#unsort-containers-link"), async () => {
+      try {
+        await browser.runtime.sendMessage({
+          method: "unsortTabs"
+        });
+        window.close();
+      } catch (e) {
+        window.close();
+      }
+
+    });
 
     const mozillaVpnToutName = "moz-tout-main-panel";
     const mozillaVpnPermissionsWarningDotName = "moz-permissions-warning-dot";
@@ -911,6 +922,16 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     document.addEventListener("input", Logic.filterContainerList);
 
     MozillaVPN.handleContainerList(identities);
+    // document.querySelector("#unsort-containers-link").setAttribute("disabled", "true");
+    if (localStorage.getItem("originalTabs") == null){
+      document.querySelector("#unsort-containers-link").setAttribute("disabled", "true");
+    }
+
+    else {
+      document.querySelector("#unsort-containers-link").removeAttribute("disabled");
+    }
+
+    // console.log(localStorage.getItem("originalTabs"));
 
     // reset path
     this._previousPanelPath = [];

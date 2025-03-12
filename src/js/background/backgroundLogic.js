@@ -4,6 +4,8 @@
 
 const DEFAULT_TAB = "about:newtab";
 
+// let originalTabs = [];
+
 const backgroundLogic = {
   NEW_TAB_PAGES: new Set([
     "about:startpage",
@@ -328,13 +330,41 @@ const backgroundLogic = {
     await Promise.all(identitiesPromise);
     return identitiesOutput;
   },
+  async unsortTabs() {
+    // const windows = await browser.windows.getAll();
+    const windowObj = await browser.windows.getCurrent();
+    await this._unsortTabsInternal(windowObj);   
+    localStorage.removeItem("originalTabs");
+  },
 
   async sortTabs() {
-    const windows = await browser.windows.getAll();
-    for (let windowObj of windows) { // eslint-disable-line prefer-const
-      // First the pinned tabs, then the normal ones.
-      await this._sortTabsInternal(windowObj, true);
-      await this._sortTabsInternal(windowObj, false);
+    const windowObj = await browser.windows.getCurrent();
+    const tabs = await browser.tabs.query({windowId: windowObj.id});
+    for (const tab of tabs){
+      if(!(windowObj.id in ORIGINAL_TABS)){
+        ORIGINAL_TABS[windowObj.id] = [];
+      }
+      ORIGINAL_TABS[windowObj.id].push(tab.id);     
+    }
+    let jsonarray = JSON.stringify(ORIGINAL_TABS);
+    localStorage.setItem("originalTabs", jsonarray);
+
+    // First the pinned tabs, then the normal ones.
+    await this._sortTabsInternal(windowObj, true);
+    await this._sortTabsInternal(windowObj, false);
+
+  },
+
+  async _unsortTabsInternal(windowObj){
+    let pos = 0;
+    let parsedOriginalTabs = JSON.parse(localStorage.getItem("originalTabs"));
+    let windowSpecificOriginalTabs = parsedOriginalTabs[windowObj.id];
+    for (const tab of windowSpecificOriginalTabs) {
+      ++pos;
+      browser.tabs.move(tab, {
+        windowId: windowObj.id,
+        index: pos
+      });
     }
   },
 
