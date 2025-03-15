@@ -330,11 +330,6 @@ const backgroundLogic = {
     await Promise.all(identitiesPromise);
     return identitiesOutput;
   },
-  async unsortTabs() {
-    const windowObj = await browser.windows.getCurrent();
-    await this._unsortTabsInternal(windowObj);   
-    localStorage.removeItem("originalTabs");
-  },
 
   async sortTabs() {
     const windowObj = await browser.windows.getCurrent();
