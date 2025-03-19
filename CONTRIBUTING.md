@@ -35,7 +35,7 @@ You can then [open a pull request][pr] on [the l10n repository][l10n].
 ## Tips for contributing
 
 1. Choose [an issue][issues] that you would like to work on.
-2. Fork the repository and follow the instructions for setting it up locally.
+2. Fork the repository and follow the [instructions for setting it up locally](https://extensionworkshop.com/documentation/develop/temporary-installation-in-firefox/).
 3. Run the add-on locally and try reproducing the issue.
 4. Debug add-ons by clicking the “Settings” icon in about:addons, and then clicking “Debug Add-ons”
 5. Click “Inspect” on the MAC add-on to open developer tools for the popup extension (see [this documentation][extension-doc] for more information)
