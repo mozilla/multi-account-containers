@@ -60,6 +60,7 @@ const Logic = {
   _previousPanelPath: [],
   _panels: {},
   _onboardingVariation: null,
+  _initPromise: null,
 
   async init() {
     browser.runtime.sendMessage({
@@ -756,6 +757,25 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     });
     Utils.addEnterHandler(document.querySelector("#always-open-in"), () => {
       Logic.showPanel(ALWAYS_OPEN_IN_PICKER);
+    });
+    const redirectEl = document.querySelector("#disable-redirect-all");
+    let redirectSwitchStateTo = false;
+    Logic.initPromise.then(() => {
+      const identities = Logic.identities();
+      redirectSwitchStateTo = identities.some(id => id.redirectDisable);
+      redirectEl.querySelector('.menu-text').textContent = browser.i18n.getMessage(redirectSwitchStateTo ? "enableRedirectAllContainer" : "disableRedirectAllContainer");
+    });
+    Utils.addEnterHandler(redirectEl, async () => {
+      try {
+        await browser.runtime.sendMessage({
+          method: "setRedirectState",
+          state: redirectSwitchStateTo,
+          global: true
+        });
+        window.close();
+      } catch (e) {
+        window.close();
+      }
     });
     Utils.addEnterHandler(document.querySelector("#sort-containers-link"), async () => {
       try {
@@ -2399,7 +2419,7 @@ Logic.registerPanel(P_CONTAINERS_ACHIEVEMENT, {
   },
 });
 
-Logic.init();
+Logic.initPromise = Logic.init();
 
 window.addEventListener("resize", function () {
   //for overflow menu

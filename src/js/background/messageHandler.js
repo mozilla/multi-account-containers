@@ -64,7 +64,9 @@ const messageHandler = {
         });
         break;
       case "setRedirectState":
-        response = backgroundLogic.setRedirectState(m.cookieStoreId, m.state);
+        response = backgroundLogic.setRedirectState(
+          m.cookieStoreId, m.state, m.global
+        );
         break;
       case "checkIncompatibleAddons":
         // TODO

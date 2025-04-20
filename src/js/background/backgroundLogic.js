@@ -244,7 +244,14 @@ const backgroundLogic = {
     }
   },
 
-  async setRedirectState(cookieStoreId, enable) {
+  async setRedirectState(cookieStoreId, enable, global) {
+    if (global) {
+      const containers = await identityState.getCookieStoreIDuuidMap();
+      for (const id in containers) {
+        await this.setRedirectState(id, enable, false);;
+      }
+      return;
+    }
     const containerState = await identityState.storageArea.get(cookieStoreId);
     try {
       containerState.redirectDisable = !enable;
