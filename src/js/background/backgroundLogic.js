@@ -247,7 +247,7 @@ const backgroundLogic = {
   async setRedirectState(cookieStoreId, enable) {
     const containerState = await identityState.storageArea.get(cookieStoreId);
     try {
-      containerState.redirectDisable = !enable
+      containerState.redirectDisable = !enable;
       return await identityState.storageArea.set(cookieStoreId, containerState);
     } catch (error) {
       // console.error(`No container: ${cookieStoreId}`);
