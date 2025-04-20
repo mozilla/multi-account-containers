@@ -225,14 +225,16 @@ window.assignManager = {
       return {};
     }
     this.removeContextMenu();
-    let [tab, siteSettings] = await Promise.all([
+    const a = await Promise.all([
       browser.tabs.get(options.tabId),
       this.storageArea.get(options.url)
     ]);
+    const tab = a[0];
+    let siteSettings = a[1];
     let container = false;
     let cookieStoreId = false;
     if (siteSettings) {
-      cookieStoreId = backgroundLogic.cookieStoreId(siteSettings.userContextId)
+      cookieStoreId = backgroundLogic.cookieStoreId(siteSettings.userContextId);
     }
     try {
       container = cookieStoreId && await browser.contextualIdentities
