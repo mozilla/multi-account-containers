@@ -258,6 +258,7 @@ const Logic = {
         identity.numberOfHiddenTabs = stateObject.numberOfHiddenTabs;
         identity.numberOfOpenTabs = stateObject.numberOfOpenTabs;
         identity.isIsolated = stateObject.isIsolated;
+        identity.redirectDisable = stateObject.redirectDisable;
       }
       if (containerOrder) {
         identity.order = containerOrder[identity.cookieStoreId];
@@ -972,6 +973,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     }
 
     this.intializeShowHide(identity);
+    this.initializeRedirectSwitch(identity);
 
     // Let's retrieve the list of tabs.
     const tabs = await browser.runtime.sendMessage({
@@ -993,6 +995,27 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     return this.buildOpenTabTable(tabs);
   },
 
+  initializeRedirectSwitch(identity) {
+    const redirectEl = document.querySelector("#disable-redirect");
+    Utils.addEnterHandler(redirectEl, async () => {
+      try {
+        browser.runtime.sendMessage({
+          method: "setRedirectState",
+          state: identity.redirectDisable,
+          cookieStoreId: Logic.currentCookieStoreId()
+        });
+        window.close();
+      } catch (e) {
+        window.close();
+      }
+    });
+
+    // const hideShowIcon = document.getElementById("container-info-hideorshow-icon");
+    // hideShowIcon.src = identity.hasHiddenTabs ? CONTAINER_UNHIDE_SRC : CONTAINER_HIDE_SRC;
+
+    const redirectLabel = document.getElementById("disable-redirect-this-container");
+    redirectLabel.textContent = browser.i18n.getMessage(identity.redirectDisable ?   "enableRedirectThisContainer" : "disableRedirectThisContainer");
+  },
   intializeShowHide(identity) {
     const hideContEl = document.querySelector("#hideorshow-container");
     if (identity.numberOfOpenTabs === 0 && !identity.hasHiddenTabs) {

@@ -244,6 +244,16 @@ const backgroundLogic = {
     }
   },
 
+  async setRedirectState(cookieStoreId, enable) {
+    const containerState = await identityState.storageArea.get(cookieStoreId);
+    try {
+      containerState.redirectDisable = !enable
+      return await identityState.storageArea.set(cookieStoreId, containerState);
+    } catch (error) {
+      // console.error(`No container: ${cookieStoreId}`);
+    }
+  },
+
   async moveTabsToWindow(options) {
     const requiredArguments = ["cookieStoreId", "windowId"];
     this.checkArgs(requiredArguments, options, "moveTabsToWindow");
@@ -350,7 +360,8 @@ const backgroundLogic = {
         hasOpenTabs: !!openTabs.length,
         numberOfHiddenTabs: containerState.hiddenTabs.length,
         numberOfOpenTabs: openTabs.length,
-        isIsolated: !!containerState.isIsolated
+        isIsolated: !!containerState.isIsolated,
+        redirectDisable: containerState.redirectDisable
       };
       return;
     });

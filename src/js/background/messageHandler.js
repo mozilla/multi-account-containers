@@ -63,6 +63,9 @@ const messageHandler = {
           windowId: m.windowId
         });
         break;
+      case "setRedirectState":
+        response = backgroundLogic.setRedirectState(m.cookieStoreId, m.state);
+        break;
       case "checkIncompatibleAddons":
         // TODO
         break;
