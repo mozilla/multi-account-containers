@@ -3,6 +3,13 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const DEFAULT_TAB = "about:newtab";
+/**
+ * Firefox does not yet have the `tabGroups` API, which exposes this constant
+ * to indicate that a tab is not in a tab group. But the Firefox `tabs` API
+ * currently returns this constant value for `Tab.groupId`.
+ * @see https://searchfox.org/mozilla-central/rev/3b95c8dbe724b10390c96c1b9dd0f12c873e2f2e/browser/components/extensions/schemas/tabs.json#235
+ */
+const TAB_GROUP_ID_NONE = -1;
 
 const backgroundLogic = {
   NEW_TAB_PAGES: new Set([
@@ -343,7 +350,13 @@ const backgroundLogic = {
     let pos = 0;
 
     // Let's collect UCIs/tabs for this window.
+    /** @type {Map<string, {order: string, tabs: Tab[]}>} */
     const map = new Map;
+    /** @type {boolean} */
+    let lastTabIsInTabGroup = tabs.length > 0
+      && tabs[tabs.length - 1].groupId
+      && tabs[tabs.length - 1].groupId !== TAB_GROUP_ID_NONE;
+
     for (const tab of tabs) {
       if (pinnedTabs && !tab.pinned) {
         // We don't have, or we already handled all the pinned tabs.
@@ -353,6 +366,11 @@ const backgroundLogic = {
       if (!pinnedTabs && tab.pinned) {
         // pinned tabs must be consider as taken positions.
         ++pos;
+        continue;
+      }
+
+      if (tab.groupId && tab.groupId !== TAB_GROUP_ID_NONE) {
+        // Skip over tabs in tab groups until it's possible to handle them better.
         continue;
       }
 
@@ -377,15 +395,24 @@ const backgroundLogic = {
     const sortMap = new Map([...map.entries()].sort((a, b) => a[1].order > b[1].order));
 
     // Let's move tabs.
-    sortMap.forEach(obj => {
-      for (const tab of obj.tabs) {
+    for (const { tabs } of sortMap.values()) {
+      for (const tab of tabs) {
         ++pos;
         browser.tabs.move(tab.id, {
           windowId: windowObj.id,
-          index: pos
+          index: pinnedTabs ? pos : -1
         });
+        if (lastTabIsInTabGroup && browser.tabs.ungroup) {
+          // If the last item in the tab strip is a grouped tab, moving a tab
+          // to its position will also add it to the tab group. Since this code
+          // is only sorting ungrouped tabs, this forcibly ungroups the first
+          // tab to be moved. All subsequent iterations will only be moving
+          // ungrouped tabs to the position of other ungrouped tabs.
+          lastTabIsInTabGroup = false;
+          browser.tabs.ungroup(tab.id);
+        }
       }
-    });
+    }
   },
 
   async hideTabs(options) {
