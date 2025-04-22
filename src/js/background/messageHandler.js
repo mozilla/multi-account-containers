@@ -91,7 +91,9 @@ const messageHandler = {
           m.newUserContextId,
           m.tabIndex,
           m.active,
-          true
+          true,
+          null,
+          m.groupId
         );
         break;
       case "assignAndReloadInContainer":
@@ -101,7 +103,9 @@ const messageHandler = {
           m.newUserContextId,
           m.tabIndex,
           m.active,
-          true
+          true,
+          null,
+          m.groupId
         );
         // m.tabId is used for where to place the in content message
         // m.url is the assignment to be removed/added

@@ -1,3 +1,11 @@
+/**
+ * Firefox does not yet have the `tabGroups` API, which exposes this constant
+ * to indicate that a tab is not in a tab group. But the Firefox `tabs` API
+ * currently returns this constant value for `Tab.groupId`.
+ * @see https://searchfox.org/mozilla-central/rev/3b95c8dbe724b10390c96c1b9dd0f12c873e2f2e/browser/components/extensions/schemas/tabs.json#235
+ */
+const TAB_GROUP_ID_NONE = -1;
+
 async function load() {
   const searchParams = new URL(window.location).searchParams;
   const redirectUrl = searchParams.get("url");
@@ -69,11 +77,15 @@ function confirmSubmit(redirectUrl, cookieStoreId) {
   openInContainer(redirectUrl, cookieStoreId);
 }
 
-function getCurrentTab() {
-  return browser.tabs.query({
+/**
+ * @returns {Promise<Tab>}
+ */
+async function getCurrentTab() {
+  const tabs = await browser.tabs.query({
     active: true,
     windowId: browser.windows.WINDOW_ID_CURRENT
   });
+  return tabs[0];
 }
 
 async function denySubmit(redirectUrl, currentCookieStoreId) {
@@ -93,7 +105,7 @@ async function denySubmit(redirectUrl, currentCookieStoreId) {
 
   await browser.runtime.sendMessage({
     method: "exemptContainerAssignment",
-    tabId: tab[0].id,
+    tabId: tab.id,
     pageUrl: redirectUrl
   });
   document.location.replace(redirectUrl);
@@ -103,12 +115,15 @@ load();
 
 async function openInContainer(redirectUrl, cookieStoreId) {
   const tab = await getCurrentTab();
-  await browser.tabs.create({
-    index: tab[0].index + 1,
+  const reopenedTab = await browser.tabs.create({
+    index: tab.index + 1,
     cookieStoreId,
     url: redirectUrl
   });
-  if (tab.length > 0) {
-    browser.tabs.remove(tab[0].id);
+  if (tab.groupId && tab.groupId !== TAB_GROUP_ID_NONE && browser.tabs.group) {
+    // If the original tab was in a tab group, make sure that the reopened tab
+    // stays in the same tab group.
+    browser.tabs.group({ groupId: tab.groupId, tabIds: reopenedTab.id });
   }
+  browser.tabs.remove(tab.id);
 }
