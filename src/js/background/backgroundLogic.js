@@ -3,13 +3,6 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 const DEFAULT_TAB = "about:newtab";
-/**
- * Firefox does not yet have the `tabGroups` API, which exposes this constant
- * to indicate that a tab is not in a tab group. But the Firefox `tabs` API
- * currently returns this constant value for `Tab.groupId`.
- * @see https://searchfox.org/mozilla-central/rev/3b95c8dbe724b10390c96c1b9dd0f12c873e2f2e/browser/components/extensions/schemas/tabs.json#235
- */
-const TAB_GROUP_ID_NONE = -1;
 
 const backgroundLogic = {
   NEW_TAB_PAGES: new Set([
@@ -352,10 +345,10 @@ const backgroundLogic = {
     // Let's collect UCIs/tabs for this window.
     /** @type {Map<string, {order: string, tabs: Tab[]}>} */
     const map = new Map;
+
+    const lastTab = tabs.at(-1);
     /** @type {boolean} */
-    let lastTabIsInTabGroup = tabs.length > 0
-      && tabs[tabs.length - 1].groupId
-      && tabs[tabs.length - 1].groupId !== TAB_GROUP_ID_NONE;
+    let lastTabIsInTabGroup = !!lastTab && lastTab.groupId >= 0;
 
     for (const tab of tabs) {
       if (pinnedTabs && !tab.pinned) {
@@ -369,7 +362,7 @@ const backgroundLogic = {
         continue;
       }
 
-      if (tab.groupId && tab.groupId !== TAB_GROUP_ID_NONE) {
+      if (tab.groupId >= 0) {
         // Skip over tabs in tab groups until it's possible to handle them better.
         continue;
       }
@@ -402,7 +395,8 @@ const backgroundLogic = {
           windowId: windowObj.id,
           index: pinnedTabs ? pos : -1
         });
-        if (lastTabIsInTabGroup && browser.tabs.ungroup) {
+        // Pinned tabs are never grouped and always inserted in the front.
+        if (!pinnedTabs && lastTabIsInTabGroup && browser.tabs.ungroup) {
           // If the last item in the tab strip is a grouped tab, moving a tab
           // to its position will also add it to the tab group. Since this code
           // is only sorting ungrouped tabs, this forcibly ungroups the first
