@@ -1,11 +1,3 @@
-/**
- * Firefox does not yet have the `tabGroups` API, which exposes this constant
- * to indicate that a tab is not in a tab group. But the Firefox `tabs` API
- * currently returns this constant value for `Tab.groupId`.
- * @see https://searchfox.org/mozilla-central/rev/3b95c8dbe724b10390c96c1b9dd0f12c873e2f2e/browser/components/extensions/schemas/tabs.json#235
- */
-const TAB_GROUP_ID_NONE = -1;
-
 async function load() {
   const searchParams = new URL(window.location).searchParams;
   const redirectUrl = searchParams.get("url");
@@ -120,10 +112,10 @@ async function openInContainer(redirectUrl, cookieStoreId) {
     cookieStoreId,
     url: redirectUrl
   });
-  if (tab.groupId && tab.groupId !== TAB_GROUP_ID_NONE && browser.tabs.group) {
+  if (tab.groupId >= 0) {
     // If the original tab was in a tab group, make sure that the reopened tab
     // stays in the same tab group.
-    browser.tabs.group({ groupId: tab.groupId, tabIds: reopenedTab.id });
+    await browser.tabs.group({ groupId: tab.groupId, tabIds: reopenedTab.id });
   }
-  browser.tabs.remove(tab.id);
+  await browser.tabs.remove(tab.id);
 }

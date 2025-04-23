@@ -1,11 +1,3 @@
-/**
- * Firefox does not yet have the `tabGroups` API, which exposes this constant
- * to indicate that a tab is not in a tab group. But the Firefox `tabs` API
- * currently returns this constant value for `Tab.groupId`.
- * @see https://searchfox.org/mozilla-central/rev/3b95c8dbe724b10390c96c1b9dd0f12c873e2f2e/browser/components/extensions/schemas/tabs.json#235
- */
-const TAB_GROUP_ID_NONE = -1;
-
 window.assignManager = {
   MENU_ASSIGN_ID: "open-in-this-container",
   MENU_REMOVE_ID: "remove-open-in-this-container",
@@ -777,7 +769,7 @@ window.assignManager = {
    * @param {number} index
    * @param {boolean} active
    * @param {number} openerTabId
-   * @param {number} [groupId]
+   * @param {number} [groupId] Tab group ID
    * @returns {Promise<Tab>}
    */
   async createTabWrapper(url, cookieStoreId, index, active, openerTabId, groupId) {
@@ -789,7 +781,7 @@ window.assignManager = {
       openerTabId,
     });
 
-    if (groupId && groupId !== TAB_GROUP_ID_NONE && browser.tabs.group) {
+    if (groupId >= 0) {
       // If the original tab was in a tab group, make sure that the reopened tab
       // stays in the same tab group.
       await browser.tabs.group({ groupId, tabIds: newTab.id });
