@@ -35,8 +35,41 @@ const backgroundLogic = {
     browser.permissions.onRemoved.addListener(permissions => this.resetPermissions(permissions));
 
     // Update Translation in Manifest
-    browser.runtime.onInstalled.addListener(this.updateTranslationInManifest);
+    browser.runtime.onInstalled.addListener((details) => {
+      this.updateTranslationInManifest();
+      this._undoDefault820SortTabsKeyboardShortcut(details);
+    });
     browser.runtime.onStartup.addListener(this.updateTranslationInManifest);
+  },
+
+  /**
+   * One-time migration after updating from v8.2.0:
+   * Unset the default keyboard shortcut (Ctrl+Comma) for the `sort_tabs`
+   * command if it was set in v8.2.0 of this addon. If the user remapped
+   * a different shortcut manually, retain their shortcut. Users who used
+   * the default keyboard shortcut will need to manually set a shortcut.
+   * See https://support.mozilla.org/en-US/kb/manage-extension-shortcuts-firefox
+   *
+   * @param {{reason: runtime.OnInstalledReason, previousVersion?: string}} details
+   */
+  _undoDefault820SortTabsKeyboardShortcut(details) {
+    if (details.reason === "update" && details.previousVersion === "8.2.0") {
+      browser.commands.getAll().then((commands) => {
+        const sortTabsCommand = commands.find(command => command.name === "sort_tabs");
+        if (sortTabsCommand) {
+          const previouslySuggestedKeys = [
+            "Ctrl+Comma", // "default"
+            "MacCtrl+Comma", // "mac"
+          ];
+          if (previouslySuggestedKeys.includes(sortTabsCommand.shortcut)) {
+            browser.commands.update({
+              name: "sort_tabs",
+              shortcut: "",
+            });
+          }
+        }
+      }).catch(err => console.error(err));
+    }
   },
 
   updateTranslationInManifest() {
