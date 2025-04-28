@@ -326,7 +326,8 @@ window.assignManager = {
         options.url,
         tab.index + 1,
         tab.active,
-        openTabId
+        openTabId,
+        tab.groupId
       );
     } else {
       this.reloadPageInContainer(
@@ -336,7 +337,8 @@ window.assignManager = {
         tab.index + 1,
         tab.active,
         siteSettings.neverAsk,
-        openTabId
+        openTabId,
+        tab.groupId
       );
     }
     this.calculateContextMenu(tab);
@@ -727,7 +729,15 @@ window.assignManager = {
     });
   },
 
-  reloadPageInDefaultContainer(url, index, active, openerTabId) {
+  /**
+   * @param {string} url
+   * @param {number} index
+   * @param {boolean} active
+   * @param {number} [openerTabId]
+   * @param {number} [groupId]
+   * @returns {void}
+   */
+  reloadPageInDefaultContainer(url, index, active, openerTabId, groupId) {
     // To create a new tab in the default container, it is easiest just to omit the
     // cookieStoreId entirely.
     //
@@ -746,16 +756,58 @@ window.assignManager = {
     // does not automatically return to the original opener tab. To get this desired behaviour,
     // we MUST specify the openerTabId when creating the new tab.
     const cookieStoreId = "firefox-default";
-    browser.tabs.create({url, cookieStoreId, index, active, openerTabId});
+    this.createTabWrapper(url, cookieStoreId, index, active, openerTabId, groupId);
   },
 
-  reloadPageInContainer(url, currentUserContextId, userContextId, index, active, neverAsk = false, openerTabId = null) {
+
+  /**
+   * Wraps around `browser.tabs.create` and `browser.tabs.group` to create a
+   * tab and ensure that it ends up in the requested tab group, if applicable.
+   *
+   * @param {string} url
+   * @param {string} cookieStoreId
+   * @param {number} index
+   * @param {boolean} active
+   * @param {number} openerTabId
+   * @param {number} [groupId] Tab group ID
+   * @returns {Promise<Tab>}
+   */
+  async createTabWrapper(url, cookieStoreId, index, active, openerTabId, groupId) {
+    const newTab = await browser.tabs.create({
+      url,
+      cookieStoreId,
+      index,
+      active,
+      openerTabId,
+    });
+
+    if (groupId >= 0) {
+      // If the original tab was in a tab group, make sure that the reopened tab
+      // stays in the same tab group.
+      await browser.tabs.group({ groupId, tabIds: newTab.id });
+    }
+
+    return newTab;
+  },
+
+  /**
+   * @param {string} url
+   * @param {string} currentUserContextId
+   * @param {string} userContextId
+   * @param {number} index
+   * @param {boolean} active
+   * @param {boolean} [neverAsk=false]
+   * @param {number} [openerTabId=null]
+   * @param {number} [groupId]
+   * @returns {Promise<Tab>}
+   */
+  reloadPageInContainer(url, currentUserContextId, userContextId, index, active, neverAsk = false, openerTabId = null, groupId = undefined) {
     const cookieStoreId = backgroundLogic.cookieStoreId(userContextId);
     const loadPage = browser.runtime.getURL("confirm-page.html");
     // False represents assignment is not permitted
     // If the user has explicitly checked "Never Ask Again" on the warning page we will send them straight there
     if (neverAsk) {
-      return browser.tabs.create({url, cookieStoreId, index, active, openerTabId});
+      return this.createTabWrapper(url, cookieStoreId, index, active, openerTabId, groupId);
     } else {
       let confirmUrl = `${loadPage}?url=${this.encodeURLProperty(url)}&cookieStoreId=${cookieStoreId}`;
       let currentCookieStoreId;
@@ -763,13 +815,14 @@ window.assignManager = {
         currentCookieStoreId = backgroundLogic.cookieStoreId(currentUserContextId);
         confirmUrl += `&currentCookieStoreId=${currentCookieStoreId}`;
       }
-      return browser.tabs.create({
-        url: confirmUrl,
-        cookieStoreId: currentCookieStoreId,
-        openerTabId,
+      return this.createTabWrapper(
+        confirmUrl,
+        currentCookieStoreId,
         index,
-        active
-      }).then(() => {
+        active,
+        openerTabId,
+        groupId
+      ).then(() => {
         // We don't want to sync this URL ever nor clutter the users history
         browser.history.deleteUrl({url: confirmUrl});
       }).catch((e) => {

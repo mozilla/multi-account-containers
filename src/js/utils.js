@@ -94,6 +94,9 @@ const Utils = {
     return result.join("");
   },
 
+  /**
+   * @returns {Promise<Tab|false>}
+   */
   async currentTab() {
     const activeTabs = await browser.tabs.query({ active: true, windowId: browser.windows.WINDOW_ID_CURRENT });
     if (activeTabs.length > 0) {
@@ -146,14 +149,24 @@ const Utils = {
     });
   },
 
-  async reloadInContainer(url, currentUserContextId, newUserContextId, tabIndex, active) {
+  /**
+   * @param {string} url
+   * @param {string} currentUserContextId
+   * @param {string} newUserContextId
+   * @param {number} tabIndex
+   * @param {boolean} active
+   * @param {number} [groupId]
+   * @returns {Promise<any>}
+   */
+  async reloadInContainer(url, currentUserContextId, newUserContextId, tabIndex, active, groupId = undefined) {
     return await browser.runtime.sendMessage({
       method: "reloadInContainer",
       url,
       currentUserContextId,
       newUserContextId,
       tabIndex,
-      active
+      active,
+      groupId
     });
   },
 
@@ -167,7 +180,8 @@ const Utils = {
         currentUserContextId: false,
         newUserContextId: assignedUserContextId,
         tabIndex: currentTab.index +1,
-        active:currentTab.active
+        active: currentTab.active,
+        groupId: currentTab.groupId
       });
     }
     await Utils.setOrRemoveAssignment(

@@ -1306,7 +1306,8 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
         false,
         newUserContextId,
         currentTab.index + 1,
-        currentTab.active
+        currentTab.active,
+        currentTab.groupId
       );
       window.close();
     };
@@ -1336,7 +1337,8 @@ Logic.registerPanel(REOPEN_IN_CONTAINER_PICKER, {
           false,
           0,
           currentTab.index + 1,
-          currentTab.active
+          currentTab.active,
+          currentTab.groupId
         );
         window.close();
       });
