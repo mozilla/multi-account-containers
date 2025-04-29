@@ -52,23 +52,19 @@ const backgroundLogic = {
    *
    * @param {{reason: runtime.OnInstalledReason, previousVersion?: string}} details
    */
-  _undoDefault820SortTabsKeyboardShortcut(details) {
+  async _undoDefault820SortTabsKeyboardShortcut(details) {
     if (details.reason === "update" && details.previousVersion === "8.2.0") {
-      browser.commands.getAll().then((commands) => {
-        const sortTabsCommand = commands.find(command => command.name === "sort_tabs");
-        if (sortTabsCommand) {
-          const previouslySuggestedKeys = [
-            "Ctrl+Comma", // "default"
-            "MacCtrl+Comma", // "mac"
-          ];
-          if (previouslySuggestedKeys.includes(sortTabsCommand.shortcut)) {
-            browser.commands.update({
-              name: "sort_tabs",
-              shortcut: "",
-            });
-          }
+      const commands = await browser.commands.getAll();
+      const sortTabsCommand = commands.find(command => command.name === "sort_tabs");
+      if (sortTabsCommand) {
+        const previouslySuggestedKeys = [
+          "Ctrl+Comma", // "default"
+          "MacCtrl+Comma", // "mac"
+        ];
+        if (previouslySuggestedKeys.includes(sortTabsCommand.shortcut)) {
+          browser.commands.reset("sort_tabs");
         }
-      }).catch(err => console.error(err));
+      }
     }
   },
 
