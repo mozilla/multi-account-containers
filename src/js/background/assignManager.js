@@ -483,9 +483,7 @@ window.assignManager = {
   },
 
   contextualIdentityRemoved(changeInfo) {
-    browser.contextMenus.remove(
-      changeInfo.contextualIdentity.cookieStoreId
-    );
+    this.removeMenuItem(changeInfo.contextualIdentity.cookieStoreId);
   },
 
   async _onClickedHandler(info, tab) {
@@ -672,11 +670,11 @@ window.assignManager = {
     // See: https://bugzilla.mozilla.org/show_bug.cgi?id=1215376#c16
     // We also can't change for always private mode
     // See: https://bugzilla.mozilla.org/show_bug.cgi?id=1352102
-    browser.contextMenus.remove(this.MENU_ASSIGN_ID);
-    browser.contextMenus.remove(this.MENU_REMOVE_ID);
-    browser.contextMenus.remove(this.MENU_SEPARATOR_ID);
-    browser.contextMenus.remove(this.MENU_HIDE_ID);
-    browser.contextMenus.remove(this.MENU_MOVE_ID);
+    this.removeMenuItem(this.MENU_ASSIGN_ID);
+    this.removeMenuItem(this.MENU_REMOVE_ID);
+    this.removeMenuItem(this.MENU_SEPARATOR_ID);
+    this.removeMenuItem(this.MENU_HIDE_ID);
+    this.removeMenuItem(this.MENU_MOVE_ID);
   },
 
   async calculateContextMenu(tab) {
@@ -850,12 +848,19 @@ window.assignManager = {
   },
 
   async removeBookmarksMenu() {
-    browser.contextMenus.remove(this.OPEN_IN_CONTAINER);
+    this.removeMenuItem(this.OPEN_IN_CONTAINER);
     const identities = await browser.contextualIdentities.query({});
     for (const identity of identities) {
-      browser.contextMenus.remove(identity.cookieStoreId);
+      this.removeMenuItem(identity.cookieStoreId);
     }
   },
+
+  removeMenuItem(menuItemId) {
+    // Callers do not check whether the menu exists before attempting to remove
+    // it. contextMenus.remove rejects when the menu does not exist, so we need
+    // to catch and swallow the error to avoid logspam.
+    browser.contextMenus.remove(menuItemId).catch(() => {});
+  }
 };
 
 assignManager.init();

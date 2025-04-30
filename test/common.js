@@ -32,6 +32,10 @@ const buildDom = async ({background = {}, popup = {}}) => {
         window.crypto = {
           getRandomValues: arr => crypto.randomBytes(arr.length),
         };
+        // By default, the mock contextMenus.remove() returns undefined;
+        // Let it return a Promise instead, so that .then() calls chained to
+        // it (in src/js/background/assignManager.js) do not fail.
+        window.browser.contextMenus.remove.resolves();
       }
     }
   };
