@@ -45,10 +45,6 @@
       "description": "__MSG_openContainerPanel__"
     },
     "sort_tabs": {
-      "suggested_key": {
-        "default": "Ctrl+Comma",
-        "mac": "MacCtrl+Comma"
-      },
       "description": "__MSG_sortTabsByContainer__"
     },
     "open_container_0": {
