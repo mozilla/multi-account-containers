@@ -8,7 +8,7 @@
     "48": "img/multiaccountcontainer-16.svg",
     "96": "img/multiaccountcontainer-16.svg"
   },
-  "homepage_url": "https://github.com/mozilla/multi-account-containers#readme",
+  "homepage_url": "https://github.com/GHolk/multi-account-containers/tree/redirect-disable-switch",
   "permissions": [
     "<all_urls>",
     "activeTab",
@@ -32,7 +32,7 @@
   ],
   "browser_specific_settings": {
     "gecko": {
-      "id": "@testpilot-containers",
+      "id": "gholk@testpilot-containers",
       "strict_min_version": "91.1.0"
     }
   },
