@@ -110,7 +110,6 @@
   --usercontext-bg-hover-color: #f0f0fa;
   --usercontext-bg-focus-color: #e0e0e6;
   --usercontext-bg-active-color: #cfcfd8;
-  --moz-vpn-tout-shadow: 0 0 7px 0 #9498a25e;
 }
 
 [data-theme="dark"] {
@@ -180,7 +179,6 @@
   --usercontext-bg-active-color: #5b5b66;
   --usercontext-bg-focus-color: #2b2a33;
   --usercontext-bg-hover-color: #52525e;
-  --moz-vpn-tout-shadow: 0 0 7px 0 #7478825e;
 }
 
 /* General Rules and Resets */
@@ -635,37 +633,8 @@ input:checked:hover:focus + .slider {
   background-color: var(--button-bg-active-color-primary);
 }
 
-/* Mozilla VPN tout */
-
-#moz-vpn-tout {
-  opacity: 0;
-  background-color: var(--panel-bg-color);
-  visibility: visible;
-  max-block-size: 500px;
-  position: absolute;
-  inset-block-end: var(--footerHeight);
-  inset-inline-start: 0;
-  inset-inline-end: 0;
-  box-shadow: var(--moz-vpn-tout-shadow);
-  animation: appear 0.2s ease-out 0.5s forwards;
-  transition: opacity 0.1s ease-in-out, max-height 0.3s ease-in-out;
-}
-
-@keyframes appear {
-  0% {
-    opacity: 0;
-    transform: translateY(10%);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translateY(0%);
-  }
-}
-
 /* Mozilla VPN Controller UI in Container Management Panel */
 
-.moz-vpn-content,
 .moz-vpn-controller-content {
   display: flex;
   position: relative;
@@ -1053,7 +1022,6 @@ input.proxies {
 
 /* Mozilla VPN Server list */
 
-.moz-vpn-logo,
 .moz-vpn-logotype {
   color: var(--text-color-primary);
   background-image: var(--logoMozillaVpn);
