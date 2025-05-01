@@ -60,6 +60,7 @@ const Logic = {
   _previousPanelPath: [],
   _panels: {},
   _onboardingVariation: null,
+  _initPromise: null,
 
   async init() {
     browser.runtime.sendMessage({
@@ -258,6 +259,7 @@ const Logic = {
         identity.numberOfHiddenTabs = stateObject.numberOfHiddenTabs;
         identity.numberOfOpenTabs = stateObject.numberOfOpenTabs;
         identity.isIsolated = stateObject.isIsolated;
+        identity.redirectDisable = stateObject.redirectDisable;
       }
       if (containerOrder) {
         identity.order = containerOrder[identity.cookieStoreId];
@@ -756,6 +758,25 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     Utils.addEnterHandler(document.querySelector("#always-open-in"), () => {
       Logic.showPanel(ALWAYS_OPEN_IN_PICKER);
     });
+    const redirectEl = document.querySelector("#disable-redirect-all");
+    let redirectSwitchStateTo = false;
+    Logic.initPromise.then(() => {
+      const identities = Logic.identities();
+      redirectSwitchStateTo = identities.some(id => id.redirectDisable);
+      redirectEl.querySelector('.menu-text').textContent = browser.i18n.getMessage(redirectSwitchStateTo ? "enableRedirectAllContainer" : "disableRedirectAllContainer");
+    });
+    Utils.addEnterHandler(redirectEl, async () => {
+      try {
+        await browser.runtime.sendMessage({
+          method: "setRedirectState",
+          state: redirectSwitchStateTo,
+          global: true
+        });
+        window.close();
+      } catch (e) {
+        window.close();
+      }
+    });
     Utils.addEnterHandler(document.querySelector("#sort-containers-link"), async () => {
       try {
         await browser.runtime.sendMessage({
@@ -972,6 +993,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     }
 
     this.intializeShowHide(identity);
+    this.initializeRedirectSwitch(identity);
 
     // Let's retrieve the list of tabs.
     const tabs = await browser.runtime.sendMessage({
@@ -993,6 +1015,27 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     return this.buildOpenTabTable(tabs);
   },
 
+  initializeRedirectSwitch(identity) {
+    const redirectEl = document.querySelector("#disable-redirect");
+    Utils.addEnterHandler(redirectEl, async () => {
+      try {
+        browser.runtime.sendMessage({
+          method: "setRedirectState",
+          state: identity.redirectDisable,
+          cookieStoreId: Logic.currentCookieStoreId()
+        });
+        window.close();
+      } catch (e) {
+        window.close();
+      }
+    });
+
+    // const hideShowIcon = document.getElementById("container-info-hideorshow-icon");
+    // hideShowIcon.src = identity.hasHiddenTabs ? CONTAINER_UNHIDE_SRC : CONTAINER_HIDE_SRC;
+
+    const redirectLabel = document.getElementById("disable-redirect-this-container");
+    redirectLabel.textContent = browser.i18n.getMessage(identity.redirectDisable ?   "enableRedirectThisContainer" : "disableRedirectThisContainer");
+  },
   intializeShowHide(identity) {
     const hideContEl = document.querySelector("#hideorshow-container");
     if (identity.numberOfOpenTabs === 0 && !identity.hasHiddenTabs) {
@@ -2376,7 +2419,7 @@ Logic.registerPanel(P_CONTAINERS_ACHIEVEMENT, {
   },
 });
 
-Logic.init();
+Logic.initPromise = Logic.init();
 
 window.addEventListener("resize", function () {
   //for overflow menu
