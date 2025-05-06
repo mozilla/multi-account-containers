@@ -54,6 +54,9 @@ const messageHandler = {
       case "sortTabs":
         backgroundLogic.sortTabs();
         break;
+      case "unsortTabs":
+        backgroundLogic.unsortTabs();
+        break;
       case "showTabs":
         backgroundLogic.unhideContainer(m.cookieStoreId);
         break;
