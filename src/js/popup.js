@@ -10,7 +10,6 @@ const DEFAULT_ICON = "circle";
 const NEW_CONTAINER_ID = "new";
 
 const ONBOARDING_STORAGE_KEY = "onboarding-stage";
-const CONTAINER_DRAG_DATA_TYPE = "firefox-container";
 
 // List of panels
 const P_ONBOARDING_1 = "onboarding1";
@@ -129,7 +128,7 @@ const Logic = {
     notificationCards.forEach(notificationCard => {
       notificationCard.textContent = text;
       notificationCard.classList.add("is-shown");
-    
+
       setTimeout(() => {
         notificationCard.classList.remove("is-shown");
       }, 2000);
@@ -1172,6 +1171,8 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
 
     const identities = Logic.identities();
 
+    let dataBeingDragged = null;
+
     for (const identity of identities) {
       const tr = document.createElement("tr");
       tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
@@ -1200,42 +1201,49 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
 
       tr.appendChild(td);
 
-      tr.draggable = true;
       tr.dataset.containerId = identity.cookieStoreId;
-      tr.addEventListener("dragstart", (e) => {
-        e.dataTransfer.setData(CONTAINER_DRAG_DATA_TYPE, identity.cookieStoreId);
-      });
-      tr.addEventListener("dragover", (e) => {
-        if (e.dataTransfer.types.includes(CONTAINER_DRAG_DATA_TYPE)) {
-          tr.classList.add("drag-over");
-          e.preventDefault();
+      // Note: The draggable API does not appear to work with this extension on KDE.
+      // Thus we use mouse events instead of drag events.
+      tr.addEventListener("mousedown", (e) => {
+        if (e.target.closest(".move-button")) {
+          dataBeingDragged = identity.cookieStoreId;
         }
       });
-      tr.addEventListener("dragenter", (e) => {
-        if (e.dataTransfer.types.includes(CONTAINER_DRAG_DATA_TYPE)) {
-          e.preventDefault();
-          tr.classList.add("drag-over");
-        }
+      tr.addEventListener("mouseover", () => {
+        if (dataBeingDragged !== null) tr.classList.add("drag-over");
       });
-      tr.addEventListener("dragleave", (e) => {
-        if (e.dataTransfer.types.includes(CONTAINER_DRAG_DATA_TYPE)) {
-          e.preventDefault();
-          tr.classList.remove("drag-over");
-        }
+      tr.addEventListener("mouseleave", () => {
+        if (dataBeingDragged !== null) tr.classList.remove("drag-over");
       });
-      tr.addEventListener("drop", async (e) => {
-        e.preventDefault();
+      tr.addEventListener("mouseup", async () => {
+        if (dataBeingDragged === null) return;
         const parent = tr.parentNode;
-        const containerId = e.dataTransfer.getData(CONTAINER_DRAG_DATA_TYPE);
+        const containerId = dataBeingDragged;
+        dataBeingDragged = null;
         let droppedElement;
+        let dropAfter = false;
         parent.childNodes.forEach((node) => {
+          if (node === tr && droppedElement !== undefined) {
+            // If the element being dropped was before this tr, drop after this tr.
+            dropAfter = true;
+          }
           if (node.dataset.containerId === containerId) {
             droppedElement = node;
           }
         });
         if (droppedElement && droppedElement !== tr) {
           tr.classList.remove("drag-over");
-          parent.insertBefore(droppedElement, tr);
+          if (dropAfter) {
+            // Drop it after this tr.
+            const nextSibling = tr.nextSibling;
+            if (nextSibling) {
+              parent.insertBefore(droppedElement, nextSibling);
+            } else {
+              parent.appendChild(droppedElement);
+            }
+          } else {
+            parent.insertBefore(droppedElement, tr);
+          }
           await Logic.saveContainerOrder(parent.childNodes);
           await Logic.refreshIdentities();
         }
@@ -2295,7 +2303,7 @@ Logic.registerPanel(P_CLEAR_CONTAINER_STORAGE, {
   // This method is called when the panel is shown.
   prepare() {
     const identity = Logic.currentIdentity();
-    
+
     // Populating the panel: name, icon, and warning message
     document.getElementById("container-clear-storage-title").textContent = identity.name;
     return Promise.resolve(null);
