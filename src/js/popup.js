@@ -277,7 +277,7 @@ const Logic = {
   },
 
   async showPanel(panel, currentIdentity = null, backwards = false, addToPreviousPanelPath = true) {
-    if ((!backwards && addToPreviousPanelPath) || !this._currentPanel) {
+    if ((!backwards && addToPreviousPanelPath) && this._currentPanel && this._currentPanel !== panel) {
       this._previousPanelPath.push(this._currentPanel);
     }
 
