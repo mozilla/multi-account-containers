@@ -14,7 +14,7 @@ const backgroundLogic = {
   NUMBER_OF_KEYBOARD_SHORTCUTS: 10,
   unhideQueue: [],
 
-  async init() {
+  init() {
     browser.commands.onCommand.addListener(async function (command) {
       if (command === "sort_tabs") {
         backgroundLogic.sortTabs();
@@ -36,19 +36,7 @@ const backgroundLogic = {
         }
 
         if (command === reopenKey) {
-          const currentTab = await browser.tabs.query({active: true, currentWindow: true});
-          if (currentTab.length > 0) {
-            const tab = currentTab[0];
-
-            await browser.tabs.create({
-              url: tab.url,
-              cookieStoreId: cookieStoreId,
-              index: tab.index + 1,
-              active: tab.active
-            });
-
-            await browser.tabs.remove(tab.id);
-          }
+          backgroundLogic.reopenInContainer(cookieStoreId);
           return;
         }
       }
@@ -89,6 +77,21 @@ const backgroundLogic = {
           browser.commands.reset("sort_tabs");
         }
       }
+
+  async reopenInContainer(cookieStoreId) {
+   const currentTab = await browser.tabs.query({ active: true, currentWindow: true })
+
+    if (currentTab.length > 0) {
+      const tab = currentTab[0];
+
+      browser.tabs.create({
+        url: tab.url,
+        cookieStoreId: cookieStoreId,
+        index: tab.index + 1,
+        active: tab.active
+      });
+
+      browser.tabs.remove(tab.id);
     }
   },
 
@@ -108,7 +111,7 @@ const backgroundLogic = {
 
   updateTranslationInManifest() {
     for (let index = 0; index < 10; index++) {
-      const adjustedIndex = index + 1;
+      const adjustedIndex = index + 1; // We want to start from 1 instead of 0 in the UI.
       browser.commands.update({
         name: `open_container_${index}`,
         description: browser.i18n.getMessage("containerShortcut", `${adjustedIndex}`)
