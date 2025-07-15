@@ -76,6 +76,8 @@ const backgroundLogic = {
           browser.commands.reset("sort_tabs");
         }
       }
+    }
+  },
 
   async reopenInContainer(cookieStoreId) {
    const currentTab = await browser.tabs.query({ active: true, currentWindow: true })
