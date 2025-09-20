@@ -225,14 +225,20 @@ window.assignManager = {
       return {};
     }
     this.removeContextMenu();
-    const [tab, siteSettings] = await Promise.all([
+    const a = await Promise.all([
       browser.tabs.get(options.tabId),
       this.storageArea.get(options.url)
     ]);
-    let container;
+    const tab = a[0];
+    let siteSettings = a[1];
+    let container = false;
+    let cookieStoreId = false;
+    if (siteSettings) {
+      cookieStoreId = backgroundLogic.cookieStoreId(siteSettings.userContextId);
+    }
     try {
-      container = await browser.contextualIdentities
-        .get(backgroundLogic.cookieStoreId(siteSettings.userContextId));
+      container = cookieStoreId && await browser.contextualIdentities
+        .get(cookieStoreId);
     } catch (e) {
       container = false;
     }
@@ -242,6 +248,14 @@ window.assignManager = {
     if (siteSettings && !container) {
       this.deleteContainer(siteSettings.userContextId);
       return {};
+    }
+
+    if (siteSettings && container) {
+      const containerState = await identityState.storageArea.get(cookieStoreId);
+      if (containerState.redirectDisable) {
+        container = false;
+        siteSettings = null;
+      }
     }
     const userContextId = this.getUserContextIdFromCookieStore(tab);
 
@@ -394,7 +408,8 @@ window.assignManager = {
     // Requested page is not assigned to a specific container. If the current tab's container
     // is locked, then the page must be reloaded in the default container.
     const currentContainerState = await identityState.storageArea.get(tab.cookieStoreId);
-    return currentContainerState && currentContainerState.isIsolated;
+    return currentContainerState && currentContainerState.isIsolated &&
+      !currentContainerState.redirectDisable;
   },
 
   maybeAddProxyListeners() {
