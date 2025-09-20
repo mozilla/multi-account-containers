@@ -77,7 +77,6 @@ window.assignManager = {
           this.setExempted(pageUrlorUrlKey, tabId);
         });
       }
-      // eslint-disable-next-line require-atomic-updates
       data.identityMacAddonUUID =
         await identityState.lookupMACaddonUUID(data.userContextId);
       await this.area.set({
@@ -233,7 +232,7 @@ window.assignManager = {
     try {
       container = await browser.contextualIdentities
         .get(backgroundLogic.cookieStoreId(siteSettings.userContextId));
-    } catch (e) {
+    } catch {
       container = false;
     }
 
