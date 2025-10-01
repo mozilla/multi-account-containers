@@ -37,6 +37,7 @@
 :root {
   --fontInter: "Inter", sans-serif;
   --fontInterMedium: "Inter-Medium", sans-serif;
+  --fontInterSemiBold: "Inter-SemiBold", sans-serif;
   --fontMetropolis: "Metropolis", sans-serif;
   --fontMetropolisLight: "Metropolis-Light", sans-serif;
   --iconArrowLeft: url("/img/arrow-icon-left.svg");
@@ -1658,6 +1659,17 @@ input[type=text] {
   background-color: var(--button-bg-hover-color-primary);
 }
 
+#survey-achievement-done-button {
+  color: var(--button-bg-color-primary);
+  transition: color 0.1s ease;
+  font-size: 14px;
+  padding-inline: 3px;
+  padding-block: 1px;
+  border-radius: 1px;
+  text-align: center;
+  margin-inline: auto;
+}
+
 .onboarding-button:focus,
 .half-onboarding-button:focus,
 #survey-achievement-done-button:focus {
@@ -2418,27 +2430,24 @@ tr:hover > td > .reset-button {
   inline-size: 100%;
 }
 
-/* Survey Popup */ 
+/* Survey Popup */
 
 .survey-blurb,
-#survey-panel h3.onboarding-title,
-#survey-achievement-done-button {
+#survey-panel h3.onboarding-title {
   text-align: center;
-  margin: auto;
+  margin-inline: auto;
 }
 
 #survey-panel h3.onboarding-title {
   max-inline-size: 100%;
-  font-family: "Inter-SemiBold";
-
+  font-family: var(--fontInterSemiBold);
   line-height: 24px;
   margin-block-end: 12px;
 }
 
 #survey-panel {
-   padding-block: 40px 32px;
-   padding-inline: 0px;
-   padding: 40px, 0px;
+  padding-block: 40px;
+  padding-inline: 0;
 }
 
 .survey-blurb {
@@ -2452,21 +2461,14 @@ tr:hover > td > .reset-button {
 }
 
 #survey-button {
-  padding: 4px 16px;
-  margin-block: 0px 8px;
+  padding-block: 4px;
+  padding-inline: 16px;
+  margin-block: 0 8px;
   min-block-size: 32px;
 }
 
 .share-ctas.survey-back {
-  margin: auto;
-}
-
-#survey-achievement-done-button {
-  color: var(--button-bg-color-primary);
-  transition: color 0.1s ease;
-  font-size: 14px;
-  padding: 1px 3px;
-  border-radius: 1px;
+  margin-inline: auto;
 }
 
 #survey-achievement-done-button:hover {
