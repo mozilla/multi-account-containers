@@ -2394,6 +2394,10 @@ Logic.registerPanel(P_SURVEY_ACHIEVEMENT, {
       await Logic.setAchievementDone("survey");
       Logic.showPanel(P_CONTAINERS_LIST);
     });
+    Utils.addEnterHandler(document.querySelector("#survey-button"), async () => {
+      await Logic.setAchievementDone("survey");
+      window.close();
+    });
   },
 
   // This method is called when the panel is shown.
