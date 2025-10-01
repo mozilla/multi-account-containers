@@ -338,7 +338,7 @@ async function reconcileIdentities(){
     if (deletedCookieStoreId){
       try{
         await browser.contextualIdentities.remove(deletedCookieStoreId);
-      } catch (error) {
+      } catch {
         // if the identity we are deleting is not there, that's fine.
         console.error("Error deleting contextualIdentity", deletedCookieStoreId);
         continue;
@@ -514,7 +514,7 @@ async function reconcileSiteAssignments() {
         await setAssignmentWithUUID(assignedSite, urlKey);
         continue;
       }
-    } catch (error) {
+    } catch {
       // this is probably old or incorrect site info in Sync
       // skip and move on.
     }
@@ -565,7 +565,6 @@ async function setAssignmentWithUUID(assignedSite, urlKey) {
   const uuid = assignedSite.identityMacAddonUUID;
   const cookieStoreId = await identityState.lookupCookieStoreId(uuid);
   if (cookieStoreId) {
-    // eslint-disable-next-line require-atomic-updates
     assignedSite.userContextId = cookieStoreId
       .replace(/^firefox-container-/, "");
     await assignManager.storageArea.set(

@@ -239,7 +239,7 @@ const backgroundLogic = {
         containerState.isIsolated = "locked";
       }
       return await identityState.storageArea.set(cookieStoreId, containerState);
-    } catch (error) {
+    } catch {
       // console.error(`No container: ${cookieStoreId}`);
     }
   },

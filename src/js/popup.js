@@ -198,7 +198,7 @@ const Logic = {
     // Handle old style rejection with null and also Promise.reject new style
     try {
       return await browser.contextualIdentities.get(cookieStoreId) || defaultContainer;
-    } catch (e) {
+    } catch {
       return defaultContainer;
     }
   },
@@ -425,7 +425,7 @@ const Logic = {
           cookieStoreId: identity.cookieStoreId
         });
         window.close();
-      } catch (e) {
+      } catch {
         window.close();
       }
     }
@@ -762,7 +762,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
           method: "sortTabs"
         });
         window.close();
-      } catch (e) {
+      } catch {
         window.close();
       }
     });
@@ -851,7 +851,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             cookieStoreId: identity.cookieStoreId
           });
           window.close();
-        } catch (e) {
+        } catch {
           window.close();
         }
       });
@@ -862,7 +862,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             cookieStoreId: identity.cookieStoreId
           });
           window.close();
-        } catch (e) {
+        } catch {
           window.close();
         }
       });
@@ -912,7 +912,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       incompatible = await browser.runtime.sendMessage({
         method: "checkIncompatibleAddons"
       });
-    } catch (e) {
+    } catch {
       throw new Error("Could not check for incompatible add-ons.");
     }
 
@@ -947,7 +947,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
           cookieStoreId: identity.cookieStoreId
         });
         window.close();
-      } catch (e) {
+      } catch {
         window.close();
       }
     });
@@ -1009,7 +1009,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
           cookieStoreId: Logic.currentCookieStoreId()
         });
         window.close();
-      } catch (e) {
+      } catch {
         window.close();
       }
     });
@@ -1086,7 +1086,7 @@ Logic.registerPanel(OPEN_NEW_CONTAINER_PICKER, {
           cookieStoreId: identity.cookieStoreId
         });
         window.close();
-      } catch (e) {
+      } catch {
         window.close();
       }
     };
@@ -1848,7 +1848,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       });
       await Logic.refreshIdentities();
       Logic.showPreviousPanel();
-    } catch (e) {
+    } catch {
       Logic.showPreviousPanel();
     }
   },
@@ -2339,7 +2339,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
         await Logic.removeIdentity(Utils.userContextId(Logic.currentIdentity().cookieStoreId));
         await Logic.refreshIdentities();
         Logic.showPreviousPanel();
-      } catch (e) {
+      } catch {
         Logic.showPreviousPanel();
       }
     });

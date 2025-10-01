@@ -88,7 +88,7 @@ const MozillaVPN = {
         el.classList.remove("display-none");
       });
       this.setStatusIndicatorIcons(mozillaVpnInstalled);
-    } catch (e) {
+    } catch {
       mozVpnLogotypes.forEach(el => {
         el.style.display = "none";
       });
@@ -139,7 +139,7 @@ const MozillaVPN = {
         try {
           const proxy = await proxifiedContainers.retrieve(identity.cookieStoreId);
           proxies[identity.cookieStoreId] = proxy;
-        } catch (e) {
+        } catch {
           proxies[identity.cookieStoreId] = {};
         }
       }
