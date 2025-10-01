@@ -1,3 +1,4 @@
+/* global MAC_CONSTANTS */
 window.identityState = {
   keyboardShortcut: {},
   storageArea: {
@@ -50,18 +51,23 @@ window.identityState = {
 
     async loadKeyboardShortcuts () {
       const identities = await browser.contextualIdentities.query({});
-      for (let i=0; i < backgroundLogic.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
-        const key = "open_container_" + i;
-        const storageObject = await this.area.get(key);
-        if (storageObject[key]){
-          identityState.keyboardShortcut[key] = storageObject[key];
+      for (let i=0; i < MAC_CONSTANTS.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
+        const openKey = MAC_CONSTANTS.OPEN_CONTAINER_PREFIX + i;
+        const reopenKey = MAC_CONSTANTS.REOPEN_IN_CONTAINER_PREFIX + i;
+        const storageObject = await this.area.get(openKey);
+
+        if (storageObject[openKey]){
+          identityState.keyboardShortcut[openKey] = storageObject[openKey];
+          identityState.keyboardShortcut[reopenKey] = storageObject[openKey];
           continue;
         }
         if (identities[i]) {
-          identityState.keyboardShortcut[key] = identities[i].cookieStoreId;
+          identityState.keyboardShortcut[openKey] = identities[i].cookieStoreId;
+          identityState.keyboardShortcut[reopenKey] = identities[i].cookieStoreId;
           continue;
         }
-        identityState.keyboardShortcut[key] = "none";
+        identityState.keyboardShortcut[openKey] = "none";
+        identityState.keyboardShortcut[reopenKey] = "none";
       }
       return identityState.keyboardShortcut;
     },
