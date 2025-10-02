@@ -289,7 +289,7 @@ const messageHandler = {
       return;
     }
 
-    // Check if already scheduled in the past; if so, do not show again.
+    // Check if already shown in the past; if so, do not show again.
     const { achievements } = await browser.storage.local.get({ achievements: [] });
     const existing = achievements.find(a => a.name === "survey");
     if (existing) {
