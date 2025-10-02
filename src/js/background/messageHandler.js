@@ -290,8 +290,7 @@ const messageHandler = {
     }
 
     // Check if already scheduled in the past; if so, do not show again.
-    const achievementsStorage = await browser.storage.local.get({ achievements: [] });
-    const achievements = achievementsStorage.achievements;
+    const { achievements } = await browser.storage.local.get({ achievements: [] });
     const existing = achievements.find(a => a.name === "survey");
     if (existing) {
       return;
