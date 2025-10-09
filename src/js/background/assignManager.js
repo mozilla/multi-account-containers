@@ -807,9 +807,8 @@ window.assignManager = {
       return this.createTabWrapper(url, cookieStoreId, index, active, openerTabId, groupId);
     } else {
       let confirmUrl = `${loadPage}?url=${this.encodeURLProperty(url)}&cookieStoreId=${cookieStoreId}`;
-      let currentCookieStoreId;
-      if (currentUserContextId) {
-        currentCookieStoreId = backgroundLogic.cookieStoreId(currentUserContextId);
+      const currentCookieStoreId = backgroundLogic.cookieStoreId(currentUserContextId);
+      if (parseInt(currentUserContextId, 10) > 0) {
         confirmUrl += `&currentCookieStoreId=${currentCookieStoreId}`;
       }
       return this.createTabWrapper(
