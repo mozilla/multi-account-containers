@@ -31,7 +31,6 @@ const P_CONTAINER_INFO = "containerInfo";
 const P_CONTAINER_EDIT = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
 const P_CONTAINERS_ACHIEVEMENT = "containersAchievement";
-const P_SURVEY_ACHIEVEMENT = "surveyAchievement";
 const P_CONTAINER_ASSIGNMENTS = "containerAssignments";
 const P_CLEAR_CONTAINER_STORAGE = "clearContainerStorage";
 
@@ -139,23 +138,18 @@ const Logic = {
 
   async showAchievementOrContainersListPanel() {
     // Do we need to show an achievement panel?
+    let showAchievements = false;
     const achievementsStorage = await browser.storage.local.get({ achievements: [] });
-    const pending = achievementsStorage.achievements.filter(a => !a.done);
-
-    if (pending.length) {
-      // Prefer showing the survey view first if present, otherwise fall back
-      // to the existing achievement panel.
-      const survey = pending.find(a => a.name === "survey");
-      if (survey) {
-        this.showPanel(P_SURVEY_ACHIEVEMENT);
-        return;
+    for (const achievement of achievementsStorage.achievements) {
+      if (!achievement.done) {
+        showAchievements = true;
       }
-
-      this.showPanel(P_CONTAINERS_ACHIEVEMENT);
-      return;
     }
-
-    this.showPanel(P_CONTAINERS_LIST);
+    if (showAchievements) {
+      this.showPanel(P_CONTAINERS_ACHIEVEMENT);
+    } else {
+      this.showPanel(P_CONTAINERS_LIST);
+    }
   },
 
   // In case the user wants to click multiple actions,
@@ -2373,30 +2367,6 @@ Logic.registerPanel(P_CONTAINERS_ACHIEVEMENT, {
     Utils.addEnterHandler(document.querySelector("#achievement-done-button"), async () => {
       await Logic.setAchievementDone("manyContainersOpened");
       Logic.showPanel(P_CONTAINERS_LIST);
-    });
-  },
-
-  // This method is called when the panel is shown.
-  prepare() {
-    return Promise.resolve(null);
-  },
-});
-
-// P_SURVEY_ACHIEVEMENT: A simple survey view.
-// ----------------------------------------------------------------------------
-
-Logic.registerPanel(P_SURVEY_ACHIEVEMENT, {
-  panelSelector: ".survey-panel",
-
-  // This method is called when the object is registered.
-  initialize() {
-    Utils.addEnterHandler(document.querySelector("#survey-achievement-done-button"), async () => {
-      await Logic.setAchievementDone("survey");
-      Logic.showPanel(P_CONTAINERS_LIST);
-    });
-    Utils.addEnterHandler(document.querySelector("#survey-button"), async () => {
-      await Logic.setAchievementDone("survey");
-      window.close();
     });
   },
 
