@@ -143,13 +143,18 @@ const Logic = {
     const pending = achievementsStorage.achievements.filter(a => !a.done);
 
     if (pending.length) {
-      // Prefer showing the survey view first if present, otherwise fall back
-      // to the existing achievement panel.
-      const survey = pending.find(a => a.name === "survey");
-      if (survey) {
-        this.showPanel(P_SURVEY_ACHIEVEMENT);
-        return;
-      }
+
+    // This block is commented out until v8.3.3, when a new 
+    // survey message will be implemented.  
+
+    //   // Prefer showing the survey view first if present, otherwise fall back
+    //   // to the existing achievement panel.
+    //   const survey = pending.find(a => a.name === "survey");
+
+    //   if (survey) {
+    //     this.showPanel(P_SURVEY_ACHIEVEMENT);
+    //     return;
+    //   }
 
       this.showPanel(P_CONTAINERS_ACHIEVEMENT);
       return;
