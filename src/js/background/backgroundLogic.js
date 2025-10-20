@@ -1,3 +1,4 @@
+/* global MAC_CONSTANTS */
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -11,22 +12,35 @@ const backgroundLogic = {
     "about:home",
     "about:blank"
   ]),
-  NUMBER_OF_KEYBOARD_SHORTCUTS: 10,
+  // Use shared constants for counts
+  // NOTE: Keep in sync with MAC_CONSTANTS.NUMBER_OF_KEYBOARD_SHORTCUTS
   unhideQueue: [],
-  init() {
 
-    browser.commands.onCommand.addListener(function (command) {
+  init() {
+    browser.commands.onCommand.addListener(async function (command) {
       if (command === "sort_tabs") {
         backgroundLogic.sortTabs();
-        return;
-      }
-
-      for (let i=0; i < backgroundLogic.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
-        const key = "open_container_" + i;
-        const cookieStoreId = identityState.keyboardShortcut[key];
-        if (command === key) {
-          if (cookieStoreId === "none") return;
-          browser.tabs.create({cookieStoreId});
+      } else if (command.startsWith(MAC_CONSTANTS.OPEN_CONTAINER_PREFIX)) {
+        for (let i = 0; i < MAC_CONSTANTS.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
+          const key = MAC_CONSTANTS.OPEN_CONTAINER_PREFIX + i;
+          const cookieStoreId = identityState.keyboardShortcut[key];
+          if (command === key) {
+            if (cookieStoreId !== "none") {
+              browser.tabs.create({cookieStoreId});
+            }
+            break;
+          }
+        }
+      } else if (command.startsWith(MAC_CONSTANTS.REOPEN_IN_CONTAINER_PREFIX)) {
+        for (let i = 0; i < MAC_CONSTANTS.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
+          const key = MAC_CONSTANTS.REOPEN_IN_CONTAINER_PREFIX + i;
+          const cookieStoreId = identityState.keyboardShortcut[key];
+          if (command === key) {
+            if (cookieStoreId !== "none") {
+              backgroundLogic.reopenInContainer(cookieStoreId);
+            }
+            break;
+          }
         }
       }
     });
@@ -68,12 +82,33 @@ const backgroundLogic = {
     }
   },
 
+  async reopenInContainer(cookieStoreId) {
+    const currentTab = await browser.tabs.query({active: true, currentWindow: true});
+
+    if (currentTab.length > 0) {
+      const tab = currentTab[0];
+
+      browser.tabs.create({
+        url: tab.url,
+        cookieStoreId: cookieStoreId,
+        index: tab.index + 1,
+        active: tab.active
+      });
+
+      browser.tabs.remove(tab.id);
+    }
+  },
+
   updateTranslationInManifest() {
-    for (let index = 0; index < 10; index++) {
-      const ajustedIndex = index + 1; // We want to start from 1 instead of 0 in the UI.
+    for (let index = 0; index < MAC_CONSTANTS.NUMBER_OF_KEYBOARD_SHORTCUTS; index++) {
+      const adjustedIndex = index + 1; // We want to start from 1 instead of 0 in the UI.
       browser.commands.update({
-        name: `open_container_${index}`,
-        description: browser.i18n.getMessage("containerShortcut", `${ajustedIndex}`)
+        name: `${MAC_CONSTANTS.OPEN_CONTAINER_PREFIX}${index}`,
+        description: browser.i18n.getMessage("containerShortcut", `${adjustedIndex}`)
+      });
+      browser.commands.update({
+        name: `${MAC_CONSTANTS.REOPEN_IN_CONTAINER_PREFIX}${index}`,
+        description: browser.i18n.getMessage("reopenInContainerShortcut", `${adjustedIndex}`)
       });
     }
   },
@@ -184,9 +219,9 @@ const backgroundLogic = {
     const protocol = new URL(url).protocol;
     // We can't open these we just have to throw them away
     if (protocol === "about:"
-        || protocol === "chrome:"
-        || protocol === "moz-extension:"
-        || protocol === "file:") {
+      || protocol === "chrome:"
+      || protocol === "moz-extension:"
+      || protocol === "file:") {
       return false;
     }
     return true;
@@ -203,7 +238,7 @@ const backgroundLogic = {
   async getTabs(options) {
     const requiredArguments = ["cookieStoreId", "windowId"];
     this.checkArgs(requiredArguments, options, "getTabs");
-    const { cookieStoreId, windowId } = options;
+    const {cookieStoreId, windowId} = options;
 
     const list = [];
     const tabs = await browser.tabs.query({
@@ -247,7 +282,7 @@ const backgroundLogic = {
   async moveTabsToWindow(options) {
     const requiredArguments = ["cookieStoreId", "windowId"];
     this.checkArgs(requiredArguments, options, "moveTabsToWindow");
-    const { cookieStoreId, windowId } = options;
+    const {cookieStoreId, windowId} = options;
 
     const list = await browser.tabs.query({
       cookieStoreId,
@@ -258,7 +293,7 @@ const backgroundLogic = {
 
     // Nothing to do
     if (list.length === 0 &&
-        containerState.hiddenTabs.length === 0) {
+      containerState.hiddenTabs.length === 0) {
       return;
     }
     let newWindowObj;
@@ -269,7 +304,7 @@ const backgroundLogic = {
       // Pin the default tab in the new window so existing pinned tabs can be moved after it.
       // From the docs (https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/tabs/move):
       //   Note that you can't move pinned tabs to a position after any unpinned tabs in a window, or move any unpinned tabs to a position before any pinned tabs.
-      await browser.tabs.update(newWindowObj.tabs[0].id, { pinned: true });
+      await browser.tabs.update(newWindowObj.tabs[0].id, {pinned: true});
 
       browser.tabs.move(list.map((tab) => tab.id), {
         windowId: newWindowObj.id,
@@ -277,8 +312,7 @@ const backgroundLogic = {
       });
     } else {
       // As we get a blank tab here we will need to await the tabs creation
-      newWindowObj = await browser.windows.create({
-      });
+      newWindowObj = await browser.windows.create({});
       hiddenDefaultTabToClose = true;
     }
 
@@ -339,7 +373,7 @@ const backgroundLogic = {
     const identities = await browser.contextualIdentities.query({});
     const identitiesOutput = {};
     const identitiesPromise = identities.map(async (identity) => {
-      const { cookieStoreId } = identity;
+      const {cookieStoreId} = identity;
       const containerState = await identityState.storageArea.get(cookieStoreId);
       const openTabs = await browser.tabs.query({
         cookieStoreId,
@@ -398,7 +432,7 @@ const backgroundLogic = {
 
       if (!map.has(tab.cookieStoreId)) {
         const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(tab.cookieStoreId);
-        map.set(tab.cookieStoreId, { order: userContextId, tabs: [] });
+        map.set(tab.cookieStoreId, {order: userContextId, tabs: []});
       }
       map.get(tab.cookieStoreId).tabs.push(tab);
     }
@@ -417,7 +451,7 @@ const backgroundLogic = {
     const sortMap = new Map([...map.entries()].sort((a, b) => a[1].order > b[1].order));
 
     // Let's move tabs.
-    for (const { tabs } of sortMap.values()) {
+    for (const {tabs} of sortMap.values()) {
       for (const tab of tabs) {
         ++pos;
         browser.tabs.move(tab.id, {
@@ -441,7 +475,7 @@ const backgroundLogic = {
   async hideTabs(options) {
     const requiredArguments = ["cookieStoreId", "windowId"];
     this.checkArgs(requiredArguments, options, "hideTabs");
-    const { cookieStoreId, windowId } = options;
+    const {cookieStoreId, windowId} = options;
 
     const userContextId = backgroundLogic.getUserContextIdFromCookieStoreId(cookieStoreId);
 
@@ -481,7 +515,7 @@ const backgroundLogic = {
   },
 
   cookieStoreId(userContextId) {
-    if(userContextId === 0) return "firefox-default";
+    if (userContextId === 0) return "firefox-default";
     return `firefox-container-${userContextId}`;
   }
 };
