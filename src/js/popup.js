@@ -140,7 +140,7 @@ const Logic = {
     const achievementsStorage = await browser.storage.local.get({ achievements: [] });
     const achievements = achievementsStorage.achievements;
 
-    let saveAchivements = false;
+    let saveAchievements = false;
     for (const achievement of achievements.filter(a => !a.done)) {
       if (achievement.name === "manyContainersOpened") {
         this.showPanel(P_CONTAINERS_ACHIEVEMENT);
@@ -149,10 +149,10 @@ const Logic = {
 
       // We have found an unknown achievement. Let's mark it as done.
       achievement.done = true;
-      saveAchivements = true;
+      saveAchievements = true;
     }
 
-    if (saveAchivements) {
+    if (saveAchievements) {
       browser.storage.local.set({ achievements });
     }
 
