@@ -38,6 +38,7 @@ const backgroundLogic = {
     browser.runtime.onInstalled.addListener((details) => {
       this.updateTranslationInManifest();
       this._undoDefault820SortTabsKeyboardShortcut(details);
+      this._removeSurveyAchievement();
     });
     browser.runtime.onStartup.addListener(this.updateTranslationInManifest);
   },
@@ -65,6 +66,20 @@ const backgroundLogic = {
           browser.commands.reset("sort_tabs");
         }
       }
+    }
+  },
+
+  /**
+   * We left an achievement entry in storage during a user research study in
+   * version 8.3.1. This method removes that entry to prevent broken logic in
+   * the achievement views.
+   */
+  async _removeSurveyAchievement() {
+    const achievementsStorage = await browser.storage.local.get({ achievements: [] });
+    const achievements = achievementsStorage.achievements;
+    const filtered = achievements.filter(a => a.name !== "survey");
+    if (filtered.length !== achievements.length) {
+      await browser.storage.local.set({achievements: filtered});
     }
   },
 
