@@ -137,19 +137,26 @@ const Logic = {
   },
 
   async showAchievementOrContainersListPanel() {
-    // Do we need to show an achievement panel?
-    let showAchievements = false;
     const achievementsStorage = await browser.storage.local.get({ achievements: [] });
-    for (const achievement of achievementsStorage.achievements) {
-      if (!achievement.done) {
-        showAchievements = true;
+    const achievements = achievementsStorage.achievements;
+
+    let saveAchivements = false;
+    for (const achievement of achievements.filter(a => !a.done)) {
+      if (achievement.name === "manyContainersOpened") {
+        this.showPanel(P_CONTAINERS_ACHIEVEMENT);
+        return;
       }
+
+      // We have found an unknown achievement. Let's mark it as done.
+      achievement.done = true;
+      saveAchivements = true;
     }
-    if (showAchievements) {
-      this.showPanel(P_CONTAINERS_ACHIEVEMENT);
-    } else {
-      this.showPanel(P_CONTAINERS_LIST);
+
+    if (saveAchivements) {
+      browser.storage.local.set({ achievements });
     }
+
+    this.showPanel(P_CONTAINERS_LIST);
   },
 
   // In case the user wants to click multiple actions,
