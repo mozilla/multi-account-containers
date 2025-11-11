@@ -141,7 +141,6 @@ const messageHandler = {
         if (!extensionInfo.permissions.includes("contextualIdentities")) {
           throw new Error("Missing contextualIdentities permission");
         }
-        // eslint-disable-next-line require-atomic-updates
         externalExtensionAllowed[sender.id] = true;
       }
       let response;

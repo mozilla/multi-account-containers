@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Firefox Multi-Account Containers",
-  "version": "8.3.0",
+  "version": "8.3.5",
   "incognito": "not_allowed",
   "description": "__MSG_extensionDescription__",
   "icons": {
@@ -33,7 +33,10 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "@testpilot-containers",
-      "strict_min_version": "91.1.0"
+      "strict_min_version": "91.1.0",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
     }
   },
   "commands": {

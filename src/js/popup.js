@@ -137,19 +137,26 @@ const Logic = {
   },
 
   async showAchievementOrContainersListPanel() {
-    // Do we need to show an achievement panel?
-    let showAchievements = false;
     const achievementsStorage = await browser.storage.local.get({ achievements: [] });
-    for (const achievement of achievementsStorage.achievements) {
-      if (!achievement.done) {
-        showAchievements = true;
+    const achievements = achievementsStorage.achievements;
+
+    let saveAchievements = false;
+    for (const achievement of achievements.filter(a => !a.done)) {
+      if (achievement.name === "manyContainersOpened") {
+        this.showPanel(P_CONTAINERS_ACHIEVEMENT);
+        return;
       }
+
+      // We have found an unknown achievement. Let's mark it as done.
+      achievement.done = true;
+      saveAchievements = true;
     }
-    if (showAchievements) {
-      this.showPanel(P_CONTAINERS_ACHIEVEMENT);
-    } else {
-      this.showPanel(P_CONTAINERS_LIST);
+
+    if (saveAchievements) {
+      browser.storage.local.set({ achievements });
     }
+
+    this.showPanel(P_CONTAINERS_LIST);
   },
 
   // In case the user wants to click multiple actions,
@@ -198,7 +205,7 @@ const Logic = {
     // Handle old style rejection with null and also Promise.reject new style
     try {
       return await browser.contextualIdentities.get(cookieStoreId) || defaultContainer;
-    } catch (e) {
+    } catch {
       return defaultContainer;
     }
   },
@@ -425,7 +432,7 @@ const Logic = {
           cookieStoreId: identity.cookieStoreId
         });
         window.close();
-      } catch (e) {
+      } catch {
         window.close();
       }
     }
@@ -762,7 +769,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
           method: "sortTabs"
         });
         window.close();
-      } catch (e) {
+      } catch {
         window.close();
       }
     });
@@ -851,7 +858,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             cookieStoreId: identity.cookieStoreId
           });
           window.close();
-        } catch (e) {
+        } catch {
           window.close();
         }
       });
@@ -862,7 +869,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
             cookieStoreId: identity.cookieStoreId
           });
           window.close();
-        } catch (e) {
+        } catch {
           window.close();
         }
       });
@@ -912,7 +919,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       incompatible = await browser.runtime.sendMessage({
         method: "checkIncompatibleAddons"
       });
-    } catch (e) {
+    } catch {
       throw new Error("Could not check for incompatible add-ons.");
     }
 
@@ -947,7 +954,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
           cookieStoreId: identity.cookieStoreId
         });
         window.close();
-      } catch (e) {
+      } catch {
         window.close();
       }
     });
@@ -1009,7 +1016,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
           cookieStoreId: Logic.currentCookieStoreId()
         });
         window.close();
-      } catch (e) {
+      } catch {
         window.close();
       }
     });
@@ -1086,7 +1093,7 @@ Logic.registerPanel(OPEN_NEW_CONTAINER_PICKER, {
           cookieStoreId: identity.cookieStoreId
         });
         window.close();
-      } catch (e) {
+      } catch {
         window.close();
       }
     };
@@ -1848,7 +1855,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       });
       await Logic.refreshIdentities();
       Logic.showPreviousPanel();
-    } catch (e) {
+    } catch {
       Logic.showPreviousPanel();
     }
   },
@@ -2339,7 +2346,7 @@ Logic.registerPanel(P_CONTAINER_DELETE, {
         await Logic.removeIdentity(Utils.userContextId(Logic.currentIdentity().cookieStoreId));
         await Logic.refreshIdentities();
         Logic.showPreviousPanel();
-      } catch (e) {
+      } catch {
         Logic.showPreviousPanel();
       }
     });
