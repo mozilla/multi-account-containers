@@ -129,7 +129,7 @@ const Logic = {
     notificationCards.forEach(notificationCard => {
       notificationCard.textContent = text;
       notificationCard.classList.add("is-shown");
-    
+
       setTimeout(() => {
         notificationCard.classList.remove("is-shown");
       }, 2000);
@@ -1437,6 +1437,35 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
     return Promise.resolve(null);
   },
 
+  async addAssignment() {
+    const errorMessage = document.getElementById("edit-sites-add-assignment-error");
+    const assignmentInput = document.getElementById("edit-sites-add-assignment-info");
+
+    let url = document.getElementById("edit-sites-add-assignment-info").value;
+
+    if (!URL.canParse(url)) {
+      url = "http://" + url;
+    }
+
+    if (new URL(url).protocol == "https:" || new URL(url).protocol == "http:") {
+      url = new URL(url);
+    } else {
+      errorMessage.style.display = "block";
+      assignmentInput.style.border = "2px solid var(--input-destructive-border-color)";
+    }
+
+    const userContextId = Logic.currentUserContextId();
+    await Utils.setOrRemoveAssignment(
+      false, url.origin, userContextId, false
+    );
+
+    const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
+    this.showAssignedContainers(assignments);
+
+    errorMessage.style.display = "none";
+    assignmentInput.style.border = "1px solid var(--input-border-color)";
+  },
+
   showAssignedContainers(assignments) {
     const closeContEl = document.querySelector("#close-container-assignment-panel");
     Utils.addEnterHandler(closeContEl, () => {
@@ -1447,6 +1476,12 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
     const assignmentPanel = document.getElementById("edit-sites-assigned");
     const assignmentKeys = Object.keys(assignments);
     assignmentPanel.hidden = !(assignmentKeys.length > 0);
+
+    const addAssignmentButton = document.getElementById("edit-sites-add-assignment");
+    Utils.addEnterHandler(addAssignmentButton, async () => {
+      this.addAssignment();
+    });
+
     if (assignments) {
       const tableElement = document.querySelector("#edit-sites-assigned");
       /* Remove previous assignment list,
@@ -1470,6 +1505,7 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
           <img title="${deleteSiteInfo}" class="trash-button delete-assignment"  src="/img/container-delete.svg" />
         </td>`;
         trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
+
         const deleteButton = trElement.querySelector(".trash-button");
         Utils.addEnterHandler(deleteButton, async () => {
           const userContextId = Logic.currentUserContextId();
@@ -1479,6 +1515,7 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
           delete assignments[siteKey];
           this.showAssignedContainers(assignments);
         });
+
         const resetButton = trElement.querySelector(".reset-button");
         Utils.addEnterHandler(resetButton, async () => {
           const cookieStoreId = Logic.currentCookieStoreId();
@@ -1493,6 +1530,7 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
             Logic.notify({messageId: "cookiesCouldNotBeCleared", placeholders: [site.hostname]});
           }
         });
+
         trElement.classList.add("menu-item", "hover-highlight", "keyboard-nav");
         tableElement.appendChild(trElement);
       });
@@ -2302,7 +2340,7 @@ Logic.registerPanel(P_CLEAR_CONTAINER_STORAGE, {
   // This method is called when the panel is shown.
   prepare() {
     const identity = Logic.currentIdentity();
-    
+
     // Populating the panel: name, icon, and warning message
     document.getElementById("container-clear-storage-title").textContent = identity.name;
     return Promise.resolve(null);
