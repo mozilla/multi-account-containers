@@ -31,6 +31,7 @@ const P_CONTAINER_INFO = "containerInfo";
 const P_CONTAINER_EDIT = "containerEdit";
 const P_CONTAINER_DELETE = "containerDelete";
 const P_CONTAINERS_ACHIEVEMENT = "containersAchievement";
+const P_SURVEY_ACHIEVEMENT = "surveyAchievement";
 const P_CONTAINER_ASSIGNMENTS = "containerAssignments";
 const P_CLEAR_CONTAINER_STORAGE = "clearContainerStorage";
 
@@ -144,6 +145,11 @@ const Logic = {
     for (const achievement of achievements.filter(a => !a.done)) {
       if (achievement.name === "manyContainersOpened") {
         this.showPanel(P_CONTAINERS_ACHIEVEMENT);
+        return;
+      }
+
+      if (achievement.name === "surveyFinal") {
+        this.showPanel(P_SURVEY_ACHIEVEMENT);
         return;
       }
 
@@ -2374,6 +2380,30 @@ Logic.registerPanel(P_CONTAINERS_ACHIEVEMENT, {
     Utils.addEnterHandler(document.querySelector("#achievement-done-button"), async () => {
       await Logic.setAchievementDone("manyContainersOpened");
       Logic.showPanel(P_CONTAINERS_LIST);
+    });
+  },
+
+  // This method is called when the panel is shown.
+  prepare() {
+    return Promise.resolve(null);
+  },
+});
+
+// P_SURVEY_ACHIEVEMENT: A simple survey view.
+// ----------------------------------------------------------------------------
+
+Logic.registerPanel(P_SURVEY_ACHIEVEMENT, {
+  panelSelector: ".survey-panel",
+
+  // This method is called when the object is registered.
+  initialize() {
+    Utils.addEnterHandler(document.querySelector("#survey-achievement-done-button"), async () => {
+      await Logic.setAchievementDone("surveyFinal");
+      Logic.showPanel(P_CONTAINERS_LIST);
+    });
+    Utils.addEnterHandler(document.querySelector("#survey-button"), async () => {
+      await Logic.setAchievementDone("surveyFinal");
+      window.close();
     });
   },
 
