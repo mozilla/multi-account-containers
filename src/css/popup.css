@@ -26,10 +26,18 @@
   src: url("/fonts/Inter-Medium.woff2") format("woff2");
 }
 
+@font-face {
+  font-family: "Inter-SemiBold";
+  font-style: normal;
+  font-weight: 700;
+  src: url("/fonts/Inter-SemiBold.woff2") format("woff2");
+}
+
 [data-theme="light"],
 :root {
   --fontInter: "Inter", sans-serif;
   --fontInterMedium: "Inter-Medium", sans-serif;
+  --fontInterSemiBold: "Inter-SemiBold", sans-serif;
   --fontMetropolis: "Metropolis", sans-serif;
   --fontMetropolisLight: "Metropolis-Light", sans-serif;
   --iconArrowLeft: url("/img/arrow-icon-left.svg");
@@ -1651,8 +1659,20 @@ input[type=text] {
   background-color: var(--button-bg-hover-color-primary);
 }
 
+#survey-achievement-done-button {
+  color: var(--button-bg-color-primary);
+  transition: color 0.1s ease;
+  font-size: 14px;
+  padding-inline: 3px;
+  padding-block: 1px;
+  border-radius: 1px;
+  text-align: center;
+  margin-inline: auto;
+}
+
 .onboarding-button:focus,
-.half-onboarding-button:focus {
+.half-onboarding-button:focus,
+#survey-achievement-done-button:focus {
   box-shadow:
     0 0 0 2px var(--button-bg-color-secondary),
     0 0 0 4px var(--button-bg-focus-color-primary);
@@ -2408,4 +2428,53 @@ tr:hover > td > .reset-button {
 
 .searchbar input {
   inline-size: 100%;
+}
+
+/* Survey Popup */
+
+.survey-blurb,
+#survey-panel h3.onboarding-title {
+  text-align: center;
+  margin-inline: auto;
+}
+
+#survey-panel h3.onboarding-title {
+  max-inline-size: 100%;
+  font-family: var(--fontInterSemiBold);
+  line-height: 24px;
+  margin-block-end: 12px;
+}
+
+#survey-panel {
+  padding-block: 40px;
+  padding-inline: 0;
+}
+
+.survey-blurb {
+  margin-block-end: 16px;
+  margin-inline: 24px;
+}
+
+#survey-img {
+  block-size: 180px;
+  margin-block-end: 16px;
+}
+
+#survey-button {
+  padding-block: 4px;
+  padding-inline: 16px;
+  margin-block: 0 8px;
+  min-block-size: 32px;
+}
+
+.share-ctas.survey-back {
+  margin-inline: auto;
+}
+
+#survey-achievement-done-button:hover {
+  color: var(--button-bg-hover-color-primary);
+}
+
+#survey-achievement-done-button:active {
+  color: var(--button-bg-active-color-primary);
 }
