@@ -136,6 +136,9 @@ const backgroundLogic = {
     if (!cookieStoreId) {
       return false;
     }
+    if (cookieStoreId === "firefox-default") {
+      return "0";
+    }
     const container = cookieStoreId.replace("firefox-container-", "");
     if (container !== cookieStoreId) {
       return container;
@@ -496,7 +499,7 @@ const backgroundLogic = {
   },
 
   cookieStoreId(userContextId) {
-    if(userContextId === 0) return "firefox-default";
+    if (parseInt(userContextId, 10) === 0) return "firefox-default";
     return `firefox-container-${userContextId}`;
   }
 };
