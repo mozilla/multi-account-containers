@@ -11,9 +11,9 @@ const badge = {
 
     if (MAJOR_VERSIONS.indexOf(extensionInfo.version) > -1 &&
       storage.browserActionBadgesClicked.indexOf(extensionInfo.version) < 0) {
-      browser.browserAction.setBadgeBackgroundColor({ color: "rgb(255, 79, 94)" });
-      browser.browserAction.setBadgeText({ text: "!" });
-      browser.browserAction.setBadgeTextColor({ color: "rgb(255, 255, 255)" });
+      browser.action.setBadgeBackgroundColor({ color: "rgb(255, 79, 94)" });
+      browser.action.setBadgeText({ text: "!" });
+      browser.action.setBadgeTextColor({ color: "rgb(255, 255, 255)" });
     }
   }
 };
