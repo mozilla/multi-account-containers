@@ -9,7 +9,7 @@ const crypto = require("crypto");
 const sinon = require("sinon");
 const expect = chai.expect;
 chai.should();
-chai.use(sinonChai);
+chai.use(sinonChai.default || sinonChai);
 const nextTick = () => {
   return new Promise(resolve => {
     setTimeout(() => {
@@ -20,6 +20,8 @@ const nextTick = () => {
 
 const webExtensionsJSDOM = require("webextensions-jsdom");
 const manifestPath = path.resolve(path.join(__dirname, "../src/manifest.json"));
+const manifestDir = path.dirname(manifestPath);
+const manifest = require(manifestPath);
 
 const buildDom = async ({background = {}, popup = {}}) => {
   background = {
@@ -54,6 +56,18 @@ const buildDom = async ({background = {}, popup = {}}) => {
     background,
     popup
   });
+
+  // MV3 uses `action` instead of `browser_action`; build the popup manually
+  // so tests still have access to helper APIs.
+  if (!webExtension.popup) {
+    await webExtension.webExtensionJSDOM.buildPopup(
+      path.resolve(manifestDir, manifest.action.default_popup),
+      {
+        apiFake: true,
+        ...popup
+      }
+    );
+  }
 
   webExtension.browser = webExtension.background.browser;
   return webExtension;

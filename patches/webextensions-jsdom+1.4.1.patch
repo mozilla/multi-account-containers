@@ -1,0 +1,14 @@
+diff --git a/node_modules/webextensions-jsdom/src/nyc.js b/node_modules/webextensions-jsdom/src/nyc.js
+index 4ce55b5..909b822 100644
+--- a/node_modules/webextensions-jsdom/src/nyc.js
++++ b/node_modules/webextensions-jsdom/src/nyc.js
+@@ -27,7 +27,8 @@ class nyc {
+       this.running = true;
+       this._nyc_config = JSON.parse(process.env.NYC_CONFIG);
+       this._instrumentsCachePath = path.join(this._nyc_config.tempDir, 'instruments');
+-      mkdirp(this._instrumentsCachePath);
++      // Ensure the instruments cache directory exists before any instrumentation runs.
++      mkdirp.sync(this._instrumentsCachePath);
+     }
+   }
+ 
