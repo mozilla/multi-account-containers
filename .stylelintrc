@@ -21,6 +21,22 @@
       "/bottom/",
       "padding",
       "margin"
-    ]
+    ],
+    "alpha-value-notation": null,
+    "color-function-notation": null,
+    "color-function-alias-notation": null,
+    "custom-property-pattern": null,
+    "declaration-block-no-redundant-longhand-properties": null,
+    "declaration-block-no-shorthand-property-overrides": null,
+    "declaration-property-value-no-unknown": null,
+    "font-family-name-quotes": null,
+    "function-url-quotes": null,
+    "keyframes-name-pattern": null,
+    "media-feature-range-notation": null,
+    "property-no-vendor-prefix": null,
+    "selector-attribute-quotes": null,
+    "selector-class-pattern": null,
+    "shorthand-property-no-redundant-values": null,
+    "value-keyword-case": null
   }
 }
