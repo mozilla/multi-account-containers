@@ -42,6 +42,9 @@ const MozillaVPN_Background = {
       this._connected = false;
     }
     this.maybeInitPort();
+
+    // This value will be reset when the event page is dismissed. Let's pick a random value.
+    this._isolationKey = Math.floor(Math.random() * 32768);
   },
 
   getConnectionStatus() {

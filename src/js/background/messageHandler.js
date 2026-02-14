@@ -254,8 +254,8 @@ const messageHandler = {
       // use set and spread to create a unique array
       const achievements = [...new Set(storage.achievements)];
       browser.storage.local.set({achievements});
-      browser.browserAction.setBadgeBackgroundColor({color: "rgba(0,217,0,255)"});
-      browser.browserAction.setBadgeText({text: "NEW"});
+      browser.action.setBadgeBackgroundColor({color: "rgba(0,217,0,255)"});
+      browser.action.setBadgeText({text: "NEW"});
     }
 
     this.maybePrepareSurveyAchievementOnUpdate(countOfContainerTabsOpened);
@@ -263,7 +263,7 @@ const messageHandler = {
 
   async onFocusChangedCallback(windowId) {
     assignManager.removeContextMenu();
-    // browserAction loses background color in new windows ...
+    // Action loses background color in new windows ...
     // https://bugzil.la/1314674
     // https://github.com/mozilla/testpilot-containers/issues/608
     // ... so re-call displayBrowserActionBadge on window changes
@@ -300,8 +300,8 @@ const messageHandler = {
     // Ensure the achievement exists and is pending.
     achievements.push({ name: "surveyFinal", done: false });
     browser.storage.local.set({ achievements });
-    browser.browserAction.setBadgeBackgroundColor({color: "rgba(0,217,0,255)"});
-    browser.browserAction.setBadgeText({text: "NEW"});
+    browser.action.setBadgeBackgroundColor({color: "rgba(0,217,0,255)"});
+    browser.action.setBadgeText({text: "NEW"});
   },
 };
 

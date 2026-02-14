@@ -1,5 +1,5 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Firefox Multi-Account Containers",
   "version": "8.3.5",
   "incognito": "not_allowed",
@@ -10,7 +10,6 @@
   },
   "homepage_url": "https://github.com/mozilla/multi-account-containers#readme",
   "permissions": [
-    "<all_urls>",
     "activeTab",
     "cookies",
     "contextMenus",
@@ -24,6 +23,9 @@
     "webRequestBlocking",
     "webRequest"
   ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "optional_permissions": [
     "bookmarks",
     "browsingData",
@@ -33,14 +35,14 @@
   "browser_specific_settings": {
     "gecko": {
       "id": "@testpilot-containers",
-      "strict_min_version": "91.1.0",
+      "strict_min_version": "109.0",
       "data_collection_permissions": {
         "required": ["none"]
       }
     }
   },
   "commands": {
-    "_execute_browser_action": {
+    "_execute_action": {
       "suggested_key": {
         "default": "Ctrl+Period",
         "mac": "MacCtrl+Period"
@@ -111,8 +113,7 @@
       "description": "__MSG_containerShortcut__"
     }
   },
-  "browser_action": {
-    "browser_style": true,
+  "action": {
     "default_icon": "img/multiaccountcontainer-16.svg",
     "default_title": "Firefox Multi-Account Containers",
     "default_popup": "popup.html",
@@ -134,7 +135,17 @@
     "show_matches": ["*://*/*"]
   },
   "background": {
-    "page": "js/background/index.html"
+    "scripts": [
+      "js/utils.js",
+      "js/proxified-containers.js",
+      "js/background/backgroundLogic.js",
+      "js/background/mozillaVpnBackground.js",
+      "js/background/assignManager.js",
+      "js/background/badge.js",
+      "js/background/identityState.js",
+      "js/background/messageHandler.js",
+      "js/background/sync.js"
+    ]
   },
   "content_scripts": [
     {
@@ -152,10 +163,16 @@
   ],
   "default_locale": "en",
   "web_accessible_resources": [
-    "/img/multiaccountcontainer-16.svg"
+    {
+      "resources": [
+        "img/multiaccountcontainer-16.svg"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
   ],
   "options_ui": {
-    "page": "options.html",
-    "browser_style": true
+    "page": "options.html"
   }
 }
