@@ -4,7 +4,7 @@
 }
 
 main {
-  background: url(/img/onboarding-4.png) no-repeat;
+  background: url("/img/onboarding-4.png") no-repeat;
   background-position: 200px 0;
   background-size: 120px;
   margin-inline-start: -350px;
@@ -20,7 +20,7 @@ button .container-name,
   font-weight: bold;
 }
 
-@media only screen and (max-width: 900px) {
+@media only screen and (width <= 900px) {
   main {
     background: none;
   }
@@ -49,10 +49,8 @@ html {
   background: #efedf0; /* Grey 20 */
   border-radius: 2px;
   line-height: 1.5;
-  padding-block-end: 0.5rem;
-  padding-block-start: 0.5rem;
-  padding-inline-end: 0.5rem;
-  padding-inline-start: 0.5rem;
+  padding-block: 0.5rem;
+  padding-inline: 0.5rem;
 }
 
 /* stylelint-disable media-feature-name-no-unknown */

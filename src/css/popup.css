@@ -1,33 +1,33 @@
 @font-face {
-  font-family: "Metropolis";
+  font-family: Metropolis;
   font-style: normal;
   font-weight: 800;
   src: url("/fonts/Metropolis-Medium.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "Metropolis-Light";
+  font-family: Metropolis-Light;
   font-style: normal;
   font-weight: 300;
   src: url("/fonts/Metropolis-Light.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "Inter";
+  font-family: Inter;
   font-style: normal;
   font-weight: 400;
   src: url("/fonts/Inter-Regular.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "Inter-Medium";
+  font-family: Inter-Medium;
   font-style: normal;
   font-weight: 500;
   src: url("/fonts/Inter-Medium.woff2") format("woff2");
 }
 
 @font-face {
-  font-family: "Inter-SemiBold";
+  font-family: Inter-SemiBold;
   font-style: normal;
   font-weight: 700;
   src: url("/fonts/Inter-SemiBold.woff2") format("woff2");
@@ -101,7 +101,7 @@
   --menu-bg-active-color: #cfcfd8;
   --menu-bg-hover-color: #e0e0e6;
   --panel-bg-color: #fff;
-  --panel-separator-color: rgba(240, 240, 244, 1);
+  --panel-separator-color: rgb(240 240 244 / 100%);
   --link-color: #0060df;
   --link-hover-color: #0250bb;
   --toggle-off-bg-color: #f0f0f4;
@@ -132,7 +132,7 @@
   --primaryCtaDefault: var(--blue40);
   --primaryCtaHover: var(--blue50);
   --primaryCtaActive: var(--blue60);
-  --controllerActive: rgb(90, 89, 102);
+  --controllerActive: rgb(90 89 102);
   --bgDark: #2b2932;
 
   /* Proton Colors */
@@ -167,7 +167,7 @@
   --menu-bg-active-color: #5b5b66;
   --menu-bg-hover-color: #52525e;
   --panel-bg-color: #42414d;
-  --panel-separator-color: rgba(82, 82, 94, 1);
+  --panel-separator-color: rgb(82 82 94 / 100%);
 
   /* Toggle is currently called `.slider` in the code below. This should be
    * changed in a follow-up patch to make it more inline with the terms used in
@@ -193,14 +193,10 @@
 
 * {
   font-size: inherit;
-  margin-block-end: 0;
-  margin-block-start: 0;
-  margin-inline-end: 0;
-  margin-inline-start: 0;
-  padding-block-end: 0;
-  padding-block-start: 0;
-  padding-inline-end: 0;
-  padding-inline-start: 0;
+  margin-block: 0;
+  margin-inline: 0;
+  padding-block: 0;
+  padding-inline: 0;
 }
 
 html {
@@ -280,8 +276,7 @@ table {
   inline-size: 100%;
   block-size: 100%;
   overscroll-behavior: none;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden auto;
   padding-block-end: 8px;
 }
 
@@ -446,7 +441,7 @@ table {
 
 #current-tab [data-identity-icon="default-tab"] {
   background: center center no-repeat url("/img/blank-tab.svg");
-  fill: currentColor;
+  fill: currentcolor;
 }
 
 /* Buttons */
@@ -496,8 +491,7 @@ table {
   background-size: 17px;
   background-position: left center;
   font-size: 13px;
-  padding-inline-start: 22px;
-  padding-inline-end: 32px;
+  padding-inline: 22px 32px;
 }
 
 .moz-vpn-status-icon.connected {
@@ -513,8 +507,7 @@ table {
   background-size: 16px;
   background-position: left center;
   font-size: 12px;
-  padding-inline-start: 19px;
-  padding-inline-end: 22px;
+  padding-inline: 19px 22px;
   align-items: center;
 }
 
@@ -541,12 +534,10 @@ table {
 .slider {
   background-color: var(--toggle-off-bg-color);
   border-radius: 13px;
-  inset-block-end: 0;
+  inset-block: 0;
   box-shadow: 0 0 0 2px var(--toggle-off-border-color);
-  inset-inline-start: 0;
+  inset-inline: 0;
   position: absolute;
-  inset-inline-end: 0;
-  inset-block-start: 0;
   transition: 0.1s ease-in-out;
 }
 
@@ -659,7 +650,7 @@ input:checked:hover:focus + .slider {
   background-repeat: no-repeat;
   background-size: contain;
   size: 0;
-  color: rgba(0, 0, 0, 0);
+  color: rgb(0 0 0 / 0%);
   block-size: 24px;
   inline-size: 24px;
 }
@@ -709,13 +700,11 @@ input:checked:hover:focus + .slider {
 fieldset.proxies {
   position: absolute;
   inset-block-start: 120px;
-  inset-inline-start: 0;
-  inset-inline-end: 0;
+  inset-inline: 0;
   block-size: 60px;
   display: flex;
   background: #5cabff;
-  justify-content: center;
-  align-content: center;
+  place-content: center center;
   align-items: center;
   flex-direction: row;
   pointer-events: none;
@@ -734,8 +723,7 @@ input.proxies {
 
 .moz-vpn-cta {
   block-size: 32px;
-  margin-block-start: 16px;
-  margin-block-end: 4px;
+  margin-block: 16px 4px;
   margin-inline: var(--marginInline);
   text-align: center;
 }
@@ -753,7 +741,6 @@ input.proxies {
   border-radius: 4px;
   display: flex;
   block-size: 32px;
-  margin-block-start: 8px;
   background-color: var(--panel-bg-color);
   background-image: var(--iconArrowRight);
   background-position: calc(100% - 24px) center;
@@ -961,7 +948,7 @@ input.proxies {
   background-repeat: no-repeat;
   background-position: center center;
   background-size: 16px;
-  font-size: 1;
+  font-size: 0;
   color: var(--bgColor);
 }
 
@@ -1039,17 +1026,15 @@ input.proxies {
   font-family: var(--fontMetropolis);
   font-size: 15px;
   line-height: 24px;
-  padding-inline-start: 28px;
+  padding-inline: 28px 32px;
   position: relative;
-  padding-inline-end: 32px;
 }
 
 #moz-vpn-server-list-panel {
   block-size: var(--panelSize);
   max-block-size: var(--panelSize);
   min-block-size: var(--panelSize);
-  overflow-x: hidden;
-  overflow-y: hidden;
+  overflow: hidden;
 }
 
 .proxy-panel-title {
@@ -1068,8 +1053,7 @@ input.proxies {
   color: var(--grey50);
   position: absolute;
   inset-block-start: var(--rowHeight);
-  inset-inline-start: 0;
-  inset-inline-end: 0;
+  inset-inline: 0;
   overflow: scroll;
   overflow-x: hidden;
   overscroll-behavior: none;
@@ -1097,8 +1081,7 @@ input.proxies {
 
 .server-country-name {
   padding-block: 0;
-  padding-inline-end: 0;
-  padding-inline-start: 20px;
+  padding-inline: 20px 0;
   font-family: var(--fontMetropolis);
   pointer-events: none;
   color: var(--text-color-primary);
@@ -1108,10 +1091,8 @@ input.proxies {
 .server-city-list-visibility-btn {
   block-size: 40px;
   border-radius: 4px;
-  margin-block-start: 4px;
-  margin-block-end: 4px;
-  margin-inline-start: 8px;
-  margin-inline-end: 8px;
+  margin-block: 4px;
+  margin-inline: 8px;
   inline-size: calc(100% - 16px);
 }
 
@@ -1224,8 +1205,7 @@ input.proxies {
 
 .modal-warning {
   position: absolute;
-  inset-block-start: 0;
-  inset-block-end: 0;
+  inset-block: 0;
   inset-inline-start: 0;
   background-color: #42404c89;
   z-index: 4;
@@ -1310,8 +1290,7 @@ input.proxies {
 }
 
 .tooltip.proxy-unavailable::after {
-  inset-inline-start: 4px;
-  inset-inline-end: auto;
+  inset-inline: 4px auto;
 }
 
 .tooltip.proxy-unavailable::before {
@@ -1349,23 +1328,20 @@ input.proxies {
 }
 
 .server-radio-btn:checked + .server-radio-control {
-  border-color: var(--input-border-focus-color);
   border: 2px solid var(--input-border-focus-color);
 }
 
 .server-radio-control::after {
   border: 2px solid var(--input-border-color);
   border-radius: 50%;
-  inset-block-end: 0;
+  inset-block: 0;
   content: "";
   block-size: 12px;
-  inset-inline-start: 0;
+  inset-inline: 0;
   margin-inline: auto;
   margin-block: auto;
   opacity: 0;
   position: absolute;
-  inset-inline-end: 0;
-  inset-block-start: 0;
   inline-size: 12px;
 }
 
@@ -1448,7 +1424,7 @@ fieldset,
 
 /* ------ Input ----- */
 
-input[type=text] {
+input[type="text"] {
   block-size: 36px;
   border-radius: 4px;
   background-color: var(--input-bg-color);
@@ -1589,8 +1565,7 @@ input[type=text] {
   color: var(--text-color-primary);
   font-size: var(--font-size-heading);
   margin-block: 12px;
-  margin-inline-end: 0;
-  margin-inline-start: 0;
+  margin-inline: 0;
   max-inline-size: 80%;
   font-family: var(--fontMetropolis);
 }
@@ -1785,12 +1760,9 @@ manage things like container crud */
   flex: 0 0 28px;
   font-size: 14px;
   justify-content: flex-start;
-  margin-block-end: 0;
-  margin-block-start: 0;
-  margin-inline-end: 0;
-  margin-inline-start: 0;
-  padding-inline-end: 16px;
-  padding-inline-start: 16px;
+  margin-block: 0;
+  margin-inline: 0;
+  padding-inline: 16px;
 }
 
 /* We disable no-descending-specificity so we can keep [data-theme="dark"]
@@ -1811,8 +1783,7 @@ manage things like container crud */
 
 .delete-container-confirm,
 .clear-container-storage-confirm {
-  padding-inline-end: 20px;
-  padding-inline-start: 20px;
+  padding-inline: 20px;
 }
 
 .delete-container-confirm-title,
@@ -1824,16 +1795,13 @@ manage things like container crud */
 #edit-sites-assigned h3 {
   font-size: 14px;
   font-weight: normal;
-  padding-block-end: 6px;
-  padding-block-start: 6px;
-  padding-inline-end: 16px;
-  padding-inline-start: 16px;
+  padding-block: 6px;
+  padding-inline: 16px;
 }
 
 .assigned-sites-list > div {
   display: flex;
-  padding-block-end: 6px;
-  padding-block-start: 6px;
+  padding-block: 6px;
 }
 
 .assigned-sites-list > div > .icon {
@@ -1859,14 +1827,10 @@ manage things like container crud */
   border-radius: 50%;
   filter: none;
   inline-size: 23px;
-  margin-block-end: 0;
-  margin-block-start: 0;
-  margin-inline-end: 0;
-  margin-inline-start: 0;
-  padding-block-end: 0;
-  padding-block-start: 0;
-  padding-inline-end: 0;
-  padding-inline-start: 0;
+  margin-block: 0;
+  margin-inline: 0;
+  padding-block: 0;
+  padding-inline: 0;
 }
 
 .radio-choice > .radio-container > label:hover {
@@ -1894,7 +1858,7 @@ manage things like container crud */
 }
 
 .radio-choice > .radio-container > [type="radio"] {
-  -moz-appearance: none;
+  appearance: none;
   display: inline;
   opacity: 0;
   position: absolute;
@@ -1927,8 +1891,7 @@ manage things like container crud */
   background: none;
   border: none;
   display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
+  flex-flow: row wrap;
 }
 
 #edit-container-choose-color {
@@ -1957,10 +1920,8 @@ input[type="text"]:focus {
 
 /* Achievement panel elements */
 .share-ctas {
-  padding-block-end: 0.5em;
-  padding-block-start: 0.5em;
-  padding-inline-end: 0.5em;
-  padding-inline-start: 0.5em;
+  padding-block: 0.5em;
+  padding-inline: 0.5em;
   text-align: center;
 }
 
@@ -1972,14 +1933,10 @@ input[type="text"]:focus {
   color: #fff;
   font-size: 0.7em;
   font-weight: bold;
-  margin-block-end: 0.4em;
-  margin-block-start: 0.4em;
-  margin-inline-end: 0.4em;
-  margin-inline-start: 0.4em;
-  padding-block-end: 0.5em;
-  padding-block-start: 0.5em;
-  padding-inline-end: 0.5em;
-  padding-inline-start: 0.5em;
+  margin-block: 0.4em;
+  margin-inline: 0.4em;
+  padding-block: 0.5em;
+  padding-inline: 0.5em;
   text-transform: uppercase;
 }
 
@@ -2090,8 +2047,7 @@ h3.title {
   display: block;
   block-size: 16px;
   inline-size: 23px;
-  margin-block-end: auto;
-  margin-block-start: auto;
+  margin-block: auto;
   margin-inline-end: 8px;
   text-align: center;
 }
@@ -2105,8 +2061,7 @@ h3.title {
 
 .menu-right-float {
   text-align: right;
-  margin-inline-start: auto;
-  margin-inline-end: 0;
+  margin-inline: auto 0;
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -2135,10 +2090,8 @@ h3.title {
 .menu-arrow img {
   block-size: 24px;
   inline-size: 12px;
-  padding-block-end: 2px;
-  padding-block-start: 2px;
-  padding-inline-end: 2px;
-  padding-inline-start: 2px;
+  padding-block: 2px;
+  padding-inline: 2px;
   opacity: 0.9;
 }
 /* stylelint-enable no-descending-specificity */
@@ -2158,18 +2111,15 @@ hr {
   color: var(--text-color-primary);
   block-size: 24px;
   line-height: 24px;
-  padding-block-end: 0;
-  padding-block-start: 0;
+  padding-block: 0;
   font-family: var(--fontInterMedium);
 }
 
 .edit-form {
   color: var(--text-color-primary);
   flex: 1;
-  padding-block-end: 16px;
-  padding-block-start: 16px;
-  padding-inline-end: 16px;
-  padding-inline-start: 16px;
+  padding-block: 16px;
+  padding-inline: 16px;
 }
 
 .bottom-btn {
@@ -2251,10 +2201,8 @@ input {
 }
 
 .form-header {
-  padding-block-end: 0;
-  padding-block-start: 0;
-  padding-inline-end: 0;
-  padding-inline-start: 0;
+  padding-block: 0;
+  padding-inline: 0;
 }
 
 .edit-container-panel-name-input {
@@ -2327,10 +2275,8 @@ input {
 
 .delete-warning,
 .clear-container-storage-warning {
-  padding-block-end: 8px;
-  padding-block-start: 8px;
-  padding-inline-end: 0;
-  padding-inline-start: 0;
+  padding-block: 8px;
+  padding-inline: 0;
 }
 
 /* We disable no-descending-specificity so we can keep [data-theme="dark"]
@@ -2342,8 +2288,7 @@ input {
   display: inline-block;
   block-size: 20px;
   inline-size: 20px;
-  margin-block-end: 4px;
-  margin-block-start: 4px;
+  margin-block: 4px;
   text-align: center;
 }
 
@@ -2386,11 +2331,9 @@ tr:hover > td > .reset-button {
 
 .permissions-overlay {
   position: absolute;
-  inset-inline: 0 0;
-  inset-block-start: 40px;
-  inset-block-end: 0;
-  justify-content: center;
-  align-content: center;
+  inset-inline: 0;
+  inset-block: 40px 0;
+  place-content: center center;
   flex-direction: column;
   background-color: var(--panel-bg-color);
   padding-block: 2.25rem;

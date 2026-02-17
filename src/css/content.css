@@ -8,10 +8,8 @@
   justify-content: start;
   offset-block-start: 0;
   offset-inline-start: 0;
-  padding-block-end: 8px;
-  padding-block-start: 8px;
-  padding-inline-end: 8px;
-  padding-inline-start: 8px;
+  padding-block: 8px;
+  padding-inline: 8px;
   position: fixed;
   text-align: start;
   transform: translateY(-100%);
