@@ -1830,6 +1830,84 @@ manage things like container crud */
   padding-inline-start: 16px;
 }
 
+.add-site-form {
+  padding-block: 8px;
+  padding-inline: 16px;
+}
+
+.add-site-input-wrapper {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+#add-site-input {
+  flex: 1;
+  font-size: 12px;
+  font-family: var(--fontInter);
+  border: 1px solid var(--input-border-color, #ccc);
+  border-radius: 4px;
+  padding-block: 5px;
+  padding-inline: 8px;
+  background: var(--input-bg-color, #fff);
+  color: var(--text-color-primary, #000);
+  outline: none;
+}
+
+#add-site-input:focus {
+  border-color: var(--blue-60, #0060df);
+}
+
+.add-site-button {
+  flex-shrink: 0;
+  inline-size: 24px;
+  block-size: 24px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-color-secondary, #737373);
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+}
+
+.add-site-button::before,
+.add-site-button::after {
+  content: "";
+  position: absolute;
+  background: currentColor;
+  border-radius: 1px;
+  inset-inline-start: 50%;
+  inset-block-start: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.add-site-button::before {
+  inline-size: 12px;
+  block-size: 2px;
+}
+
+.add-site-button::after {
+  inline-size: 2px;
+  block-size: 12px;
+}
+
+.add-site-button:hover {
+  background: var(--grey-20, #ededf0);
+  color: var(--blue-60, #0060df);
+}
+
+.add-site-error {
+  display: block;
+  font-size: 11px;
+  color: var(--red-60, #d70022);
+  padding-block-start: 4px;
+}
+
+.add-site-error.hide {
+  display: none;
+}
+
 .assigned-sites-list > div {
   display: flex;
   padding-block-end: 6px;
