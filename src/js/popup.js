@@ -1427,7 +1427,60 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
   panelSelector: "#edit-container-assignments",
 
   // This method is called when the object is registered.
-  initialize() {  },
+  initialize() {
+    const addSiteButton = document.getElementById("add-site-button");
+    const addSiteInput = document.getElementById("add-site-input");
+
+    const addSite = async () => {
+      const errorEl = document.getElementById("add-site-error");
+      errorEl.classList.add("hide");
+      errorEl.textContent = "";
+
+      let hostname = addSiteInput.value.trim();
+      if (!hostname) {
+        return;
+      }
+
+      // Strip protocol if user pasted a full URL
+      try {
+        if (hostname.includes("://")) {
+          hostname = new URL(hostname).hostname;
+        } else if (hostname.includes("/")) {
+          hostname = new URL("https://" + hostname).hostname;
+        }
+      } catch {
+        errorEl.textContent = "Invalid URL";
+        errorEl.classList.remove("hide");
+        return;
+      }
+
+      // Basic hostname validation
+      if (!hostname || hostname.length < 1 || !hostname.includes(".")) {
+        errorEl.textContent = "Invalid hostname";
+        errorEl.classList.remove("hide");
+        return;
+      }
+
+      const userContextId = Logic.currentUserContextId();
+      const fakeUrl = `https://${hostname}`;
+
+      await Utils.setOrRemoveAssignment(false, fakeUrl, userContextId, false);
+
+      addSiteInput.value = "";
+
+      // Refresh the list
+      const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
+      this.showAssignedContainers(assignments);
+    };
+
+    Utils.addEnterHandler(addSiteButton, addSite);
+    addSiteInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addSite();
+      }
+    });
+  },
 
   // This method is called when the panel is shown.
   async prepare() {

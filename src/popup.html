@@ -399,6 +399,18 @@
     <h3 class="title" id="edit-assignments-title" data-i18n-message-id="default"></h3>
     <button class="btn-return arrow-left controller" id="close-container-assignment-panel"></button>
     <hr>
+    <div class="add-site-form">
+      <div class="add-site-input-wrapper">
+        <input type="text"
+               id="add-site-input"
+               name="add-site-input"
+               placeholder="example.com"
+               data-i18n-attribute="placeholder"
+               data-i18n-attribute-message-id="addSitePlaceholder">
+        <button id="add-site-button" class="add-site-button" aria-label="Add site"></button>
+      </div>
+      <span id="add-site-error" class="add-site-error hide"></span>
+    </div>
     <div class="scrollable edit-sites-assigned">
       <div class="sub-header" data-i18n-attribute-message-id="sitesAssignedToThisContainer"></div>
       <table class="menu scrollable" id="edit-sites-assigned">

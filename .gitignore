@@ -10,8 +10,9 @@ addon.env
 src/web-ext-artifacts/*
 web-ext-artifacts
 
-# JetBrains IDE files
+# IDE files
 .idea
+.vscode
 
 # IstanbulJS
 .nyc_output
