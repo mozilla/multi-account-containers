@@ -1385,6 +1385,46 @@ Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
 
     document.getElementById("new-container-div").innerHTML = "";
 
+    {
+      const tr = document.createElement("tr");
+      tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
+      tr.setAttribute("tabindex", "0");
+      const td = document.createElement("td");
+
+      td.innerHTML = Utils.escaped`
+        <div class="menu-icon hover-highlight">
+          <div class="mac-icon">
+          </div>
+        </div>
+        <span class="menu-text">No Container</span>`;
+
+      tr.appendChild(td);
+      fragment.appendChild(tr);
+
+      Utils.addEnterHandler(tr, async () => {
+        const currentTab = await Utils.currentTab();
+        if (currentTab.cookieStoreId !== "firefox-default") {
+          await browser.runtime.sendMessage({
+            method: "assignAndReloadInContainer",
+            url: currentTab.url,
+            currentUserContextId: false,
+            newUserContextId: 0,
+            tabIndex: currentTab.index + 1,
+            active: currentTab.active,
+            groupId: currentTab.groupId
+          });
+        } else {
+          await Utils.setOrRemoveAssignment(
+            currentTab.id,
+            currentTab.url,
+            0,
+            false
+          );
+        }
+        window.close();
+      });
+    }
+
     for (const identity of identities) {
       const tr = document.createElement("tr");
       tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
