@@ -41,4 +41,4 @@ describe("Reopen Shortcuts Feature", function () {
       this.webExt.background.browser.tabs.remove.should.not.have.been.called;
     });
   });
-}); 
+});

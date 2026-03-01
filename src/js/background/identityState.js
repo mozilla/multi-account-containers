@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 /* global MAC_CONSTANTS */
 window.identityState = {
   keyboardShortcut: {},
@@ -54,20 +58,19 @@ window.identityState = {
       for (let i=0; i < MAC_CONSTANTS.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
         const openKey = MAC_CONSTANTS.OPEN_CONTAINER_PREFIX + i;
         const reopenKey = MAC_CONSTANTS.REOPEN_IN_CONTAINER_PREFIX + i;
-        const storageObject = await this.area.get(openKey);
 
-        if (storageObject[openKey]){
-          identityState.keyboardShortcut[openKey] = storageObject[openKey];
-          identityState.keyboardShortcut[reopenKey] = storageObject[openKey];
-          continue;
+        for (const key of [openKey, reopenKey]) {
+          const storageObject = await this.area.get(key);
+
+          if (storageObject[key]){
+            identityState.keyboardShortcut[key] = storageObject[key];
+          } else if (identities[i]) {
+            identityState.keyboardShortcut[key] = identities[i].cookieStoreId;
+          } else {
+            identityState.keyboardShortcut[key] = "none";
+          }
         }
-        if (identities[i]) {
-          identityState.keyboardShortcut[openKey] = identities[i].cookieStoreId;
-          identityState.keyboardShortcut[reopenKey] = identities[i].cookieStoreId;
-          continue;
-        }
-        identityState.keyboardShortcut[openKey] = "none";
-        identityState.keyboardShortcut[reopenKey] = "none";
+
       }
       return identityState.keyboardShortcut;
     },
