@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+/* global MAC_CONSTANTS */
+
 const DEFAULT_TAB = "about:newtab";
 
 const backgroundLogic = {
@@ -11,22 +13,33 @@ const backgroundLogic = {
     "about:home",
     "about:blank"
   ]),
-  NUMBER_OF_KEYBOARD_SHORTCUTS: 10,
+  NUMBER_OF_KEYBOARD_SHORTCUTS: MAC_CONSTANTS.NUMBER_OF_KEYBOARD_SHORTCUTS,
   unhideQueue: [],
-  init() {
 
-    browser.commands.onCommand.addListener(function (command) {
+  init() {
+    browser.commands.onCommand.addListener(async function (command) {
       if (command === "sort_tabs") {
         backgroundLogic.sortTabs();
         return;
       }
 
       for (let i=0; i < backgroundLogic.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
-        const key = "open_container_" + i;
-        const cookieStoreId = identityState.keyboardShortcut[key];
+        const key = MAC_CONSTANTS.OPEN_CONTAINER_PREFIX + i;
+        const reopenKey = MAC_CONSTANTS.REOPEN_IN_CONTAINER_PREFIX + i;
         if (command === key) {
-          if (cookieStoreId === "none") return;
-          browser.tabs.create({cookieStoreId});
+          const cookieStoreId = identityState.keyboardShortcut[key];
+          if (cookieStoreId && cookieStoreId !== "none") {
+            browser.tabs.create({cookieStoreId});
+          }
+          return;
+        }
+
+        if (command === reopenKey) {
+          const cookieStoreId = identityState.keyboardShortcut[reopenKey];
+          if (cookieStoreId && cookieStoreId !== "none") {
+            backgroundLogic.reopenInContainer(cookieStoreId);
+          }
+          return;
         }
       }
     });
@@ -69,6 +82,23 @@ const backgroundLogic = {
     }
   },
 
+  async reopenInContainer(cookieStoreId) {
+    const currentTab = await browser.tabs.query({ active: true, currentWindow: true });
+
+    if (currentTab.length > 0) {
+      const tab = currentTab[0];
+
+      browser.tabs.create({
+        url: tab.url,
+        cookieStoreId,
+        index: tab.index + 1,
+        active: tab.active
+      });
+
+      browser.tabs.remove(tab.id);
+    }
+  },
+
   /**
    * We left an achievement entry in storage during a user research study in
    * version 8.3.1. This method removes that entry to prevent broken logic in
@@ -84,11 +114,15 @@ const backgroundLogic = {
   },
 
   updateTranslationInManifest() {
-    for (let index = 0; index < 10; index++) {
-      const ajustedIndex = index + 1; // We want to start from 1 instead of 0 in the UI.
+    for (let index = 0; index < MAC_CONSTANTS.NUMBER_OF_KEYBOARD_SHORTCUTS; index++) {
+      const adjustedIndex = index + 1; // We want to start from 1 instead of 0 in the UI.
       browser.commands.update({
-        name: `open_container_${index}`,
-        description: browser.i18n.getMessage("containerShortcut", `${ajustedIndex}`)
+        name: `${MAC_CONSTANTS.OPEN_CONTAINER_PREFIX}${index}`,
+        description: browser.i18n.getMessage("containerShortcut", `${adjustedIndex}`)
+      });
+      browser.commands.update({
+        name: `${MAC_CONSTANTS.REOPEN_IN_CONTAINER_PREFIX}${index}`,
+        description: browser.i18n.getMessage("reopenInContainerShortcut", `${adjustedIndex}`)
       });
     }
   },

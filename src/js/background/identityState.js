@@ -1,3 +1,8 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+/* global MAC_CONSTANTS */
 window.identityState = {
   keyboardShortcut: {},
   storageArea: {
@@ -50,18 +55,22 @@ window.identityState = {
 
     async loadKeyboardShortcuts () {
       const identities = await browser.contextualIdentities.query({});
-      for (let i=0; i < backgroundLogic.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
-        const key = "open_container_" + i;
-        const storageObject = await this.area.get(key);
-        if (storageObject[key]){
-          identityState.keyboardShortcut[key] = storageObject[key];
-          continue;
+      for (let i=0; i < MAC_CONSTANTS.NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
+        const openKey = MAC_CONSTANTS.OPEN_CONTAINER_PREFIX + i;
+        const reopenKey = MAC_CONSTANTS.REOPEN_IN_CONTAINER_PREFIX + i;
+
+        for (const key of [openKey, reopenKey]) {
+          const storageObject = await this.area.get(key);
+
+          if (storageObject[key]){
+            identityState.keyboardShortcut[key] = storageObject[key];
+          } else if (identities[i]) {
+            identityState.keyboardShortcut[key] = identities[i].cookieStoreId;
+          } else {
+            identityState.keyboardShortcut[key] = "none";
+          }
         }
-        if (identities[i]) {
-          identityState.keyboardShortcut[key] = identities[i].cookieStoreId;
-          continue;
-        }
-        identityState.keyboardShortcut[key] = "none";
+
       }
       return identityState.keyboardShortcut;
     },
