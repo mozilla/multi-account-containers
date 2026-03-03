@@ -88,8 +88,13 @@ const backgroundLogic = {
     if (currentTab.length > 0) {
       const tab = currentTab[0];
 
+      let url = tab.url;
+      if (this.NEW_TAB_PAGES.has(url) || !this.isPermissibleURL(url)) {
+        url = undefined;
+      }
+
       browser.tabs.create({
-        url: tab.url,
+        url,
         cookieStoreId,
         index: tab.index + 1,
         active: tab.active
