@@ -316,7 +316,7 @@ const backgroundLogic = {
       newWindowObj = await browser.windows.create();
 
       // Pin the default tab in the new window so existing pinned tabs can be moved after it.
-      // From the docs (https://developer.mozilla.org/en-US/Add-ons/WebExtensions/API/tabs/move):
+      // From the docs (https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/move):
       //   Note that you can't move pinned tabs to a position after any unpinned tabs in a window, or move any unpinned tabs to a position before any pinned tabs.
       await browser.tabs.update(newWindowObj.tabs[0].id, { pinned: true });
 

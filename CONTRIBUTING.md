@@ -51,4 +51,4 @@ If you run into an issue, you can always ask the other community members in the 
 [issues]: https://github.com/mozilla/multi-account-containers/issues
 [l10n]: https://github.com/mozilla-l10n/multi-account-containers-l10n/
 [pr]: https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests
-[web-ext]: https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Getting_started_with_web-ext
+[web-ext]: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Getting_started_with_web-ext
