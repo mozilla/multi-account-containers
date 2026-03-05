@@ -257,8 +257,6 @@ const messageHandler = {
       browser.browserAction.setBadgeBackgroundColor({color: "rgba(0,217,0,255)"});
       browser.browserAction.setBadgeText({text: "NEW"});
     }
-
-    this.maybePrepareSurveyAchievementOnUpdate(countOfContainerTabsOpened);
   },
 
   async onFocusChangedCallback(windowId) {
@@ -275,33 +273,6 @@ const messageHandler = {
     }).catch((e) => {
       throw e;
     });
-  },
-
-  async maybePrepareSurveyAchievementOnUpdate(countOpened) {
-    if (countOpened < 10) {
-      return;
-    }
-
-    // Show the survey only for English locales (en or en-*).
-    const uiLang = browser.i18n.getUILanguage();
-    const lang = (uiLang || "").toLowerCase();
-    if (lang !== "en" && !lang.startsWith("en-")) {
-      return;
-    }
-
-    // Check if already scheduled in the past; if so, do not show again.
-    const achievementsStorage = await browser.storage.local.get({ achievements: [] });
-    const achievements = achievementsStorage.achievements;
-    const existing = achievements.find(a => a.name === "surveyFinal");
-    if (existing) {
-      return;
-    }
-
-    // Ensure the achievement exists and is pending.
-    achievements.push({ name: "surveyFinal", done: false });
-    browser.storage.local.set({ achievements });
-    browser.browserAction.setBadgeBackgroundColor({color: "rgba(0,217,0,255)"});
-    browser.browserAction.setBadgeText({text: "NEW"});
   },
 };
 
