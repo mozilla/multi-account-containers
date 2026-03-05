@@ -2,6 +2,47 @@ async function init() {
   const fragment = document.createDocumentFragment();
   const identities = await browser.contextualIdentities.query({});
 
+  const currentTab = await Utils.currentTab();
+
+  {
+    const tr = document.createElement("tr");
+    tr.classList.add("menu-item", "hover-highlight");
+    const td = document.createElement("td");
+    td.innerHTML = Utils.escaped`
+        <div class="menu-icon">
+          <div class="mac-icon">
+          </div>
+        </div>
+        <span class="menu-text">No Container</span>
+        <img alt="" class="page-action-flag flag-img" src="/img/flags/.png"/>
+        `;
+
+    tr.appendChild(td);
+    fragment.appendChild(tr);
+
+    Utils.addEnterHandler(tr, async () => {
+      if (currentTab.cookieStoreId !== "firefox-default") {
+        await browser.runtime.sendMessage({
+          method: "assignAndReloadInContainer",
+          url: currentTab.url,
+          currentUserContextId: false,
+          newUserContextId: 0,
+          tabIndex: currentTab.index + 1,
+          active: currentTab.active,
+          groupId: currentTab.groupId
+        });
+      } else {
+        await Utils.setOrRemoveAssignment(
+          currentTab.id,
+          currentTab.url,
+          0,
+          false
+        );
+      }
+      window.close();
+    });
+  }
+
   for (const identity of identities) {
     const tr = document.createElement("tr");
     tr.classList.add("menu-item", "hover-highlight");
