@@ -89,9 +89,13 @@
   --input-border-color: #8f8f9d;
   --input-border-focus-color: #0060df;
   --input-border-active-color: #054096;
+  --input-destructive-border-color: rgba(226, 40, 80, 1);
   --text-color-primary: #15141a;
   --menu-bg-active-color: #cfcfd8;
   --menu-bg-hover-color: #e0e0e6;
+  --messagebar-destructive-bg-color: rgba(255, 232, 232, 1);
+  --messagebar-destructive-border-color: rgba(0, 0, 0, 0.08);
+  --messagebar-destructive-text-color: rgba(21, 20, 26, 1);
   --panel-bg-color: #fff;
   --panel-separator-color: rgba(240, 240, 244, 1);
   --link-color: #0060df;
@@ -153,11 +157,15 @@
   --input-border-color: #8f8f9d;
   --input-border-active-color: #aaf2ff;
   --input-border-focus-color: #0df;
+  --input-destructive-border-color: rgba(255, 132, 128, 1);
   --link-color: #0df;
   --link-hover-color: #80ebff;
   --text-color-primary: #fbfbfe;
   --menu-bg-active-color: #5b5b66;
   --menu-bg-hover-color: #52525e;
+  --messagebar-destructive-bg-color: rgba(105, 15, 34, 1);
+  --messagebar-destructive-border-color: rgba(255, 255, 255, 0.08);
+  --messagebar-destructive-text-color: rgba(251, 251, 254, 1);
   --panel-bg-color: #42414d;
   --panel-separator-color: rgba(82, 82, 94, 1);
 
@@ -445,6 +453,7 @@ table {
 
 .button {
   background-color: var(--button-bg-color-secondary);
+  border: none;
   color: var(--text-color-primary);
 }
 
@@ -2408,4 +2417,38 @@ tr:hover > td > .reset-button {
 
 .searchbar input {
   inline-size: 100%;
+}
+
+/* Assignment panel */
+#edit-sites-new-assignment {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px;
+}
+
+#edit-sites-add-assignment {
+  block-size: 32px;
+  border: none;
+  border-radius: 4px;
+  font-family: inherit;
+  font-weight: bold;
+  text-align: center;
+}
+
+#edit-sites-add-assignment-info {
+
+}
+
+#edit-sites-add-assignment-error {
+  background-color: var(--messagebar-destructive-bg-color);
+  border: 1px solid var(--messagebar-destructive-border-color);
+  border-radius: 4px;
+  color: var(--messagebar-destructive-text-color);
+  display: none;
+  padding: 8px;
+}
+
+#edit-sites-add-assignment:hover {
+  cursor: pointer;
 }
