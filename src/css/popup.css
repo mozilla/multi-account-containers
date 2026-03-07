@@ -309,9 +309,9 @@ table {
   transition: opacity 0s;
 }
 
-/* effect borrowed from tabs in firefox, ensure that the element flexes to the full width */
+/* Allow flex item to shrink below content size for proper text truncation */
 .truncate-text {
-  inline-size: calc(100vw - 100px);
+  min-inline-size: 0;
   overflow: hidden;
   position: relative;
   white-space: nowrap;
