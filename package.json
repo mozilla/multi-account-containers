@@ -44,7 +44,7 @@
     "lint:css": "stylelint src/css/*.css",
     "lint:html": "htmllint *.html",
     "lint:js": "eslint .",
-    "package": "rm -rf src/web-ext-artifacts && npm run build && mv src/web-ext-artifacts/firefox_multi-account_containers-*.zip addon.xpi",
+    "package": "rm -rf web-ext-artifacts && npm run build && mv web-ext-artifacts/firefox_multi-account_containers-*.zip addon.xpi",
     "restore-locales-github": "cd src/_locales && git restore .github/",
     "remove-locales-github": "rm -rf src/_locales/.github",
     "test": "npm run lint && npm run coverage",
