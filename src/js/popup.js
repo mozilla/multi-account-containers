@@ -375,7 +375,7 @@ const Logic = {
   },
 
   getAssignmentObjectByContainer(userContextId) {
-    if (!userContextId) {
+    if (!userContextId && userContextId !== 0 && userContextId !== "0") {
       return {};
     }
     return browser.runtime.sendMessage({
@@ -1179,6 +1179,31 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
 
     const identities = Logic.identities();
 
+    {
+      const noContainerIdentity = {
+        name: "No Container",
+        cookieStoreId: "firefox-default",
+      };
+      const tr = document.createElement("tr");
+      tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
+      tr.setAttribute("tabindex", "0");
+      const td = document.createElement("td");
+
+      td.innerHTML = Utils.escaped`
+        <div class="menu-icon hover-highlight">
+          <div class="mac-icon">
+          </div>
+        </div>
+        <span class="menu-text">No Container</span>`;
+
+      tr.appendChild(td);
+      fragment.appendChild(tr);
+
+      Utils.addEnterHandler(tr, () => {
+        Logic.showPanel(P_CONTAINER_ASSIGNMENTS, noContainerIdentity);
+      });
+    }
+
     for (const identity of identities) {
       const tr = document.createElement("tr");
       tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
@@ -1379,6 +1404,46 @@ Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
 
     document.getElementById("new-container-div").innerHTML = "";
 
+    {
+      const tr = document.createElement("tr");
+      tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
+      tr.setAttribute("tabindex", "0");
+      const td = document.createElement("td");
+
+      td.innerHTML = Utils.escaped`
+        <div class="menu-icon hover-highlight">
+          <div class="mac-icon">
+          </div>
+        </div>
+        <span class="menu-text">No Container</span>`;
+
+      tr.appendChild(td);
+      fragment.appendChild(tr);
+
+      Utils.addEnterHandler(tr, async () => {
+        const currentTab = await Utils.currentTab();
+        if (currentTab.cookieStoreId !== "firefox-default") {
+          await browser.runtime.sendMessage({
+            method: "assignAndReloadInContainer",
+            url: currentTab.url,
+            currentUserContextId: false,
+            newUserContextId: 0,
+            tabIndex: currentTab.index + 1,
+            active: currentTab.active,
+            groupId: currentTab.groupId
+          });
+        } else {
+          await Utils.setOrRemoveAssignment(
+            currentTab.id,
+            currentTab.url,
+            0,
+            false
+          );
+        }
+        window.close();
+      });
+    }
+
     for (const identity of identities) {
       const tr = document.createElement("tr");
       tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
@@ -1426,22 +1491,27 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
   // This method is called when the panel is shown.
   async prepare() {
     const identity = Logic.currentIdentity();
+    const isNoContainer = identity.cookieStoreId === "firefox-default";
 
     // Populating the panel: name and icon
     document.getElementById("edit-assignments-title").textContent = identity.name;
 
-    const userContextId = Logic.currentUserContextId();
+    const userContextId = isNoContainer ? "0" : Logic.currentUserContextId();
     const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
-    this.showAssignedContainers(assignments);
+    this.showAssignedContainers(assignments, isNoContainer);
 
     return Promise.resolve(null);
   },
 
-  showAssignedContainers(assignments) {
+  showAssignedContainers(assignments, isNoContainer) {
     const closeContEl = document.querySelector("#close-container-assignment-panel");
     Utils.addEnterHandler(closeContEl, () => {
-      const identity = Logic.currentIdentity();
-      Logic.showPanel(P_CONTAINER_EDIT, identity, false, false);
+      if (isNoContainer) {
+        Logic.showPanel(MANAGE_CONTAINERS_PICKER, null, false, false);
+      } else {
+        const identity = Logic.currentIdentity();
+        Logic.showPanel(P_CONTAINER_EDIT, identity, false, false);
+      }
     });
 
     const assignmentPanel = document.getElementById("edit-sites-assigned");
@@ -1472,12 +1542,12 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
         trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
         const deleteButton = trElement.querySelector(".trash-button");
         Utils.addEnterHandler(deleteButton, async () => {
-          const userContextId = Logic.currentUserContextId();
+          const userContextId = isNoContainer ? "0" : Logic.currentUserContextId();
           // Lets show the message to the current tab
           // const currentTab = await Utils.currentTab();
           Utils.setOrRemoveAssignment(false, assumedUrl, userContextId, true);
           delete assignments[siteKey];
-          this.showAssignedContainers(assignments);
+          this.showAssignedContainers(assignments, isNoContainer);
         });
         const resetButton = trElement.querySelector(".reset-button");
         Utils.addEnterHandler(resetButton, async () => {
