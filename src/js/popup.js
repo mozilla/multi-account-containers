@@ -200,7 +200,8 @@ const Logic = {
       icon: "default-tab",
       color: "default-tab",
       numberOfHiddenTabs: 0,
-      numberOfOpenTabs: 0
+      numberOfOpenTabs: 0,
+      numberOfOpenTabsCurrWin: 0
     };
     // Handle old style rejection with null and also Promise.reject new style
     try {
@@ -215,14 +216,14 @@ const Logic = {
     return activeTabs.length;
   },
 
-  _disableMenuItem(message, elementToDisable = document.querySelector("#move-to-new-window")) {
+  _disableMenuItem(message, elementToDisable) {
     elementToDisable.setAttribute("title", message);
     elementToDisable.removeAttribute("tabindex");
     elementToDisable.classList.remove("hover-highlight");
     elementToDisable.classList.add("disabled-menu-item");
   },
 
-  _enableMenuItems(elementToEnable = document.querySelector("#move-to-new-window")) {
+  _enableMenuItems(elementToEnable) {
     elementToEnable.removeAttribute("title");
     elementToEnable.setAttribute("tabindex", "0");
     elementToEnable.classList.add("hover-highlight");
@@ -264,6 +265,7 @@ const Logic = {
         identity.hasHiddenTabs = stateObject.hasHiddenTabs;
         identity.numberOfHiddenTabs = stateObject.numberOfHiddenTabs;
         identity.numberOfOpenTabs = stateObject.numberOfOpenTabs;
+        identity.numberOfOpenTabsCurrWin = stateObject.numberOfOpenTabsCurrWin;
         identity.isIsolated = stateObject.isIsolated;
       }
       if (containerOrder) {
@@ -924,15 +926,20 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     }
 
     const moveTabsEl = document.querySelector("#move-to-new-window");
-    const numTabs = await Logic.numTabs();
+    const moveAllTabsEl = document.querySelector("#move-all-to-new-window");
     if (incompatible) {
-      Logic._disableMenuItem("Moving container tabs is incompatible with Pulse, PageShot, and SnoozeTabs.");
-      return;
-    } else if (numTabs === 1) {
-      Logic._disableMenuItem("Cannot move a tab from a single-tab window.");
+      Logic._disableMenuItem("Moving container tabs is incompatible with Pulse, PageShot, and SnoozeTabs.", moveTabsEl);
+      Logic._disableMenuItem("Moving container tabs is incompatible with Pulse, PageShot, and SnoozeTabs.", moveAllTabsEl);
       return;
     }
 
+    Utils.addEnterHandler(moveAllTabsEl, async () => {
+      await browser.runtime.sendMessage({
+        method: "moveTabsToWindow",
+        cookieStoreId: Logic.currentIdentity().cookieStoreId,
+      });
+      window.close();
+    });
     Utils.addEnterHandler(moveTabsEl, async () => {
       await browser.runtime.sendMessage({
         method: "moveTabsToWindow",
@@ -972,10 +979,13 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       trHasTabs.style.display = !identity.hasHiddenTabs && !identity.hasOpenTabs ? "none" : "";
     }
 
+    const moveTabs = document.querySelector("#move-to-new-window");
+    const moveTabsAll = document.querySelector("#move-all-to-new-window");
+    if (identity.numberOfOpenTabsCurrWin === 0) {
+      Logic._disableMenuItem("No tabs available for this container in this window", moveTabs);
+    }
     if (identity.numberOfOpenTabs === 0) {
-      Logic._disableMenuItem("No tabs available for this container");
-    } else {
-      Logic._enableMenuItems();
+      Logic._disableMenuItem("No tabs available for this container", moveTabsAll);
     }
 
     this.intializeShowHide(identity);
@@ -983,9 +993,9 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     // Let's retrieve the list of tabs.
     const tabs = await browser.runtime.sendMessage({
       method: "getTabs",
-      windowId: browser.windows.WINDOW_ID_CURRENT,
       cookieStoreId: Logic.currentIdentity().cookieStoreId
     });
+    const currentWindowId = (await browser.windows.getCurrent()).id;
     const manageContainer = document.querySelector("#manage-container-link");
     Utils.addEnterHandler(manageContainer, async () => {
       Logic.showPanel(P_CONTAINER_EDIT, identity);
@@ -997,7 +1007,7 @@ Logic.registerPanel(P_CONTAINER_INFO, {
         Logic.showPanel(P_CLEAR_CONTAINER_STORAGE, identity);
       }
     });
-    return this.buildOpenTabTable(tabs);
+    return this.buildOpenTabTable(tabs, currentWindowId);
   },
 
   intializeShowHide(identity) {
@@ -1029,12 +1039,23 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     return;
   },
 
-  buildOpenTabTable(tabs) {
+  buildOpenTabTable(tabs, currentWindowId) {
     // Let's remove all the previous tabs.
-    const table = document.getElementById("container-info-table");
-    while (table.firstChild) {
-      table.firstChild.remove();
+    const tableCurrWin = document.getElementById("container-info-table-curr-windows");
+    while (tableCurrWin.firstChild) {
+      tableCurrWin.firstChild.remove();
     }
+
+    const tableOtherWin = document.getElementById("container-info-table-other-windows");
+    while (tableOtherWin.firstChild) {
+      tableOtherWin.firstChild.remove();
+    }
+
+    // Sort tabs by window id so that we'll be able to display horizontal rules between tabs in different windows below
+    tabs.sort((a, b) => a.windowId - b.windowId);
+    // For making horizontal rules between tabs of different windows
+    let prevWindowId = undefined;
+    const makeHorizontalRule = () => document.createElement("hr");
 
     // For each one, let's create a new line.
     const fragment = document.createDocumentFragment();
@@ -1051,12 +1072,21 @@ Logic.registerPanel(P_CONTAINER_INFO, {
         </td>`;
       tr.querySelector(".favicon").appendChild(Utils.createFavIconElement(tab.favIconUrl));
       tr.setAttribute("tabindex", "0");
-      table.appendChild(fragment);
+      if (tab.windowId === currentWindowId) {
+        tableCurrWin.appendChild(fragment);
+      } else {
+        if (prevWindowId !== undefined && tab.windowId !== prevWindowId) {
+          tableOtherWin.appendChild(makeHorizontalRule());
+        }
+        prevWindowId = tab.windowId;
+        tableOtherWin.appendChild(fragment);
+      }
 
       // On click, we activate this tab. But only if this tab is active.
       if (!tab.hiddenState) {
         Utils.addEnterHandler(tr, async () => {
           await browser.tabs.update(tab.id, { active: true });
+          await browser.windows.update(tab.windowId, { focused: true });
           window.close();
         });
 
