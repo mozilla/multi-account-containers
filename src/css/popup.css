@@ -242,7 +242,8 @@ body {
 [data-theme="dark"] img.clear-storage-icon,
 [data-theme="dark"] img.delete-assignment,
 [data-theme="dark"] #edit-sites-assigned .menu-icon,
-[data-theme="dark"] #container-info-table .menu-icon,
+[data-theme="dark"] #container-info-table-curr-windows .menu-icon,
+[data-theme="dark"] #container-info-table-other-windows .menu-icon,
 [data-theme="dark"] #always-open .menu-icon,
 [data-theme="dark"] #always-open-in .menu-icon {
   filter: invert(0);
@@ -2084,7 +2085,8 @@ h3.title {
 
 /* Maintain 1:1 square ratio for favicons of websites added to a specific container */
 #edit-sites-assigned .menu-icon,
-#container-info-table .menu-icon {
+#container-info-table-curr-windows .menu-icon,
+#container-info-table-other-windows .menu-icon {
   inline-size: 16px;
 }
 /* stylelint-enable no-descending-specificity */
@@ -2133,6 +2135,11 @@ hr {
   border: 0;
   border-block-start: 1px solid var(--panel-separator-color);
   display: block;
+}
+
+#container-info-table-other-windows hr {
+  margin-block: 4px;
+  margin-inline: 4px;
 }
 
 .sub-header-wrapper {
