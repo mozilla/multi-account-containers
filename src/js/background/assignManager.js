@@ -264,7 +264,11 @@ window.assignManager = {
     const siteIsolatedReloadInDefault =
       await this._maybeSiteIsolatedReloadInDefault(siteSettings, tab);
 
-    if (!siteIsolatedReloadInDefault) {
+    const fallbackCookieStoreId = (!siteSettings && !siteIsolatedReloadInDefault)
+      ? await this._maybeFallbackContainerCookieStoreId(tab)
+      : null;
+
+    if (!siteIsolatedReloadInDefault && !fallbackCookieStoreId) {
       if (!siteSettings
           || userContextId === siteSettings.userContextId
           || this.storageArea.isExempted(options.url, tab.id)) {
@@ -323,6 +327,15 @@ window.assignManager = {
     if (siteIsolatedReloadInDefault) {
       this.reloadPageInDefaultContainer(
         options.url,
+        tab.index + 1,
+        tab.active,
+        openTabId,
+        tab.groupId
+      );
+    } else if (fallbackCookieStoreId) {
+      this.createTabWrapper(
+        options.url,
+        fallbackCookieStoreId,
         tab.index + 1,
         tab.active,
         openTabId,
@@ -394,6 +407,22 @@ window.assignManager = {
     // is locked, then the page must be reloaded in the default container.
     const currentContainerState = await identityState.storageArea.get(tab.cookieStoreId);
     return currentContainerState && currentContainerState.isIsolated;
+  },
+
+  async _maybeFallbackContainerCookieStoreId(tab) {
+    const { fallbackContainerCookieStoreId } = await browser.storage.local.get("fallbackContainerCookieStoreId");
+    if (!fallbackContainerCookieStoreId) return null;
+    // Already in the fallback container, no redirect needed
+    if (tab.cookieStoreId === fallbackContainerCookieStoreId) return null;
+    // Verify the container still exists
+    try {
+      await browser.contextualIdentities.get(fallbackContainerCookieStoreId);
+      return fallbackContainerCookieStoreId;
+    } catch {
+      // Container was deleted, clean up the setting
+      browser.storage.local.remove("fallbackContainerCookieStoreId");
+      return null;
+    }
   },
 
   maybeAddProxyListeners() {
