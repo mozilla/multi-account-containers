@@ -283,6 +283,10 @@ table {
   padding-block-end: 8px;
 }
 
+.edit-sites-assigned {
+  scrollbar-gutter: stable;
+}
+
 .offpage {
   opacity: 0;
 }
