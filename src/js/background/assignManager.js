@@ -466,9 +466,7 @@ window.assignManager = {
       parentId: assignManager.OPEN_IN_CONTAINER,
       id: changeInfo.contextualIdentity.cookieStoreId,
       title: changeInfo.contextualIdentity.name,
-      icons: { "16": `img/usercontext.svg#${
-        changeInfo.contextualIdentity.icon
-      }` }
+      icons: { "16": ContainerStyle.iconMenuPath(changeInfo.contextualIdentity.icon) }
     });
   },
 
@@ -476,8 +474,7 @@ window.assignManager = {
     browser.contextMenus.update(
       changeInfo.contextualIdentity.cookieStoreId, {
         title: changeInfo.contextualIdentity.name,
-        icons: { "16": `img/usercontext.svg#${
-          changeInfo.contextualIdentity.icon}` }
+        icons: { "16": ContainerStyle.iconMenuPath(changeInfo.contextualIdentity.icon) }
       });
   },
 
@@ -829,6 +826,8 @@ window.assignManager = {
   },
 
   async initBookmarksMenu() {
+    await ContainerStyle.load();
+
     browser.contextMenus.create({
       id: this.OPEN_IN_CONTAINER,
       title: browser.i18n.getMessage("openBookmarkInContainerTab"),
@@ -841,7 +840,7 @@ window.assignManager = {
         parentId: this.OPEN_IN_CONTAINER,
         id: identity.cookieStoreId,
         title: identity.name,
-        icons: { "16": `img/usercontext.svg#${identity.icon}` }
+        icons: { "16": ContainerStyle.iconMenuPath(identity.icon) }
       });
     }
   },

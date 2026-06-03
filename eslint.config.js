@@ -18,6 +18,7 @@ module.exports = defineConfig([{
       ...globals.node,
       ...globals.webextensions,
       "Utils": true,
+      "ContainerStyle": true,
       "CustomizableUI": true,
       "CustomizableWidgets": true,
       "SessionStore": true,
