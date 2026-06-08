@@ -69,6 +69,8 @@ const Logic = {
     // Set the theme
     Utils.applyTheme();
 
+    await ContainerStyle.injectStylesheet();
+
     // Remove browserAction "upgraded" badge when opening panel
     this.clearBrowserActionBadge();
 
@@ -1508,7 +1510,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
 
   // This method is called when the object is registered.
   async initialize() {
-    this.initializeRadioButtons();
+    this._radioButtonsInitialized = this.initializeRadioButtons();
 
     await browser.runtime.sendMessage({ method: "MozillaVPN_queryServers" });
     await browser.runtime.sendMessage({ method: "MozillaVPN_queryStatus" });
@@ -1878,14 +1880,15 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     return editedIdentity;
   },
 
-  initializeRadioButtons() {
+  async initializeRadioButtons() {
+    await ContainerStyle.load();
+
     const colorRadioTemplate = (containerColor) => {
       return Utils.escaped`<input type="radio" value="${containerColor}" name="container-color" id="edit-container-panel-choose-color-${containerColor}" />
      <label for="edit-container-panel-choose-color-${containerColor}" class="usercontext-icon choose-color-icon" data-identity-icon="circle" data-identity-color="${containerColor}">`;
     };
-    const colors = ["blue", "turquoise", "green", "yellow", "orange", "red", "pink", "purple"];
     const colorRadioFieldset = document.getElementById("edit-container-panel-choose-color");
-    colors.forEach((containerColor) => {
+    ContainerStyle.colorNames().forEach((containerColor) => {
       const templateInstance = document.createElement("div");
       templateInstance.classList.add("radio-container");
       // eslint-disable-next-line no-unsanitized/property
@@ -1897,15 +1900,21 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
       return Utils.escaped`<input type="radio" value="${containerIcon}" name="container-icon" id="edit-container-panel-choose-icon-${containerIcon}" />
      <label for="edit-container-panel-choose-icon-${containerIcon}" class="usercontext-icon choose-color-icon" data-identity-color="grey" data-identity-icon="${containerIcon}">`;
     };
-    const icons = ["fingerprint", "briefcase", "dollar", "cart", "vacation", "gift", "food", "fruit", "pet", "tree", "chill", "circle", "fence"];
     const iconRadioFieldset = document.getElementById("edit-container-panel-choose-icon");
-    icons.forEach((containerIcon) => {
+    ContainerStyle.iconNames().forEach((containerIcon) => {
       const templateInstance = document.createElement("div");
       templateInstance.classList.add("radio-container");
       // eslint-disable-next-line no-unsanitized/property
       templateInstance.innerHTML = iconRadioTemplate(containerIcon);
       iconRadioFieldset.appendChild(templateInstance);
     });
+
+    // Keep the colors on one row so a larger browser palette doesn't add rows
+    // and push the panel past its max height (which would give the popup a
+    // scrollbar that clips the bottom buttons). Capped to keep swatches legible.
+    const columns = Math.min(ContainerStyle.colorNames().length || 8, 10);
+    colorRadioFieldset.style.setProperty("--icon-fit", columns);
+    iconRadioFieldset.style.setProperty("--icon-fit", columns);
   },
 
   // This method is called when the panel is shown.
@@ -1940,6 +1949,7 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     const siteIsolation = document.querySelector("#site-isolation");
     siteIsolation.checked = !!identity.isIsolated;
     siteIsolation.addEventListener( "change", addRemoveSiteIsolation, false);
+    await this._radioButtonsInitialized;
     [...document.querySelectorAll("[name='container-color']")].forEach(colorInput => {
       colorInput.checked = colorInput.value === identity.color;
     });
