@@ -1,4 +1,6 @@
 async function init() {
+  await ContainerStyle.injectStylesheet();
+
   const fragment = document.createDocumentFragment();
   const identities = await browser.contextualIdentities.query({});
 
