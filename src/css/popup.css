@@ -1,39 +1,6 @@
-@font-face {
-  font-family: "Metropolis";
-  font-style: normal;
-  font-weight: 800;
-  src: url("/fonts/Metropolis-Medium.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Metropolis-Light";
-  font-style: normal;
-  font-weight: 300;
-  src: url("/fonts/Metropolis-Light.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Inter";
-  font-style: normal;
-  font-weight: 400;
-  src: url("/fonts/Inter-Regular.woff2") format("woff2");
-}
-
-@font-face {
-  font-family: "Inter-Medium";
-  font-style: normal;
-  font-weight: 500;
-  src: url("/fonts/Inter-Medium.woff2") format("woff2");
-}
-
 [data-theme="light"],
 :root {
   color-scheme: light;
-
-  --fontInter: "Inter", sans-serif;
-  --fontInterMedium: "Inter-Medium", sans-serif;
-  --fontMetropolis: "Metropolis", sans-serif;
-  --fontMetropolisLight: "Metropolis-Light", sans-serif;
   --iconArrowLeft: url("/img/arrow-icon-left.svg");
   --iconArrowRight: url("/img/arrow-icon-right.svg");
   --iconCloseX: url("/img/close.svg");
@@ -209,7 +176,6 @@ html {
 body {
   background-color: var(--panel-bg-color);
   color: var(--text-color-primary);
-  font-family: var(--fontInter);
   font-size: 13px;
   inline-size: 352px;
   letter-spacing: -0.125px;
@@ -939,7 +905,6 @@ input.proxies {
   background-repeat: no-repeat;
   background-size: 24px;
   background-position: left center;
-  font-family: var(--fontMetropolis);
   font-size: 15px;
   line-height: 24px;
   padding-inline-start: 28px;
@@ -1002,7 +967,6 @@ input.proxies {
   padding-block: 0;
   padding-inline-end: 0;
   padding-inline-start: 20px;
-  font-family: var(--fontMetropolis);
   pointer-events: none;
   color: var(--text-color-primary);
 }
@@ -1091,7 +1055,6 @@ input.proxies {
 }
 
 .server-city-name {
-  font-family: var(--fontMetropolisLight);
   font-weight: 300;
   color: var(--text-color-primary);
   padding-inline-start: 18px;
@@ -1171,7 +1134,6 @@ input.proxies {
   inset-block-start: 24px;
   inset-inline-end: -3px;
   font-size: 11px;
-  font-family: var(--fontInter) !important;
   font-weight: 300;
   color: var(--text-color-primary);
   background-color: var(--panel-bg-color);
@@ -1495,7 +1457,6 @@ input[type=text] {
   margin-inline-end: 0;
   margin-inline-start: 0;
   max-inline-size: 80%;
-  font-family: var(--fontMetropolis);
 }
 
 .onboarding p {
@@ -1525,7 +1486,6 @@ input[type=text] {
   flex-direction: row;
   block-size: 44px;
   inline-size: 100%;
-  font-family: var(--fontMetropolis);
 }
 
 .half-onboarding-button {
@@ -1899,7 +1859,6 @@ input[type="text"]:focus {
 h3.title {
   block-size: 48px;
   color: var(--text-color-primary);
-  font-family: var(--fontMetropolis);
   font-size: 14px;
   font-weight: bold;
   inline-size: 100%;
@@ -2051,7 +2010,6 @@ hr {
   line-height: 24px;
   padding-block-end: 0;
   padding-block-start: 0;
-  font-family: var(--fontInterMedium);
 }
 
 .edit-form {
@@ -2068,7 +2026,6 @@ hr {
   border-radius: 4px;
   color: var(--text-color-primary);
   cursor: pointer;
-  font-family: var(--fontMetropolis);
   font-size: 14px;
   inline-size: calc(100% - 16px);
   inset-block-end: 0;
@@ -2102,7 +2059,6 @@ hr {
 }
 
 .alert-text {
-  font-family: var(--fontMetropolis);
   cursor: pointer;
   text-align: center;
 }
@@ -2291,7 +2247,6 @@ tr:hover > td > .reset-button {
 
 #enable-proxy-permissions {
   text-align: center;
-  font-family: var(--fontMetropolis);
   font-size: 14px;
   margin-block-start: 1rem;
 }
