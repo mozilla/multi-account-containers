@@ -187,6 +187,27 @@ describe("Sync", function() {
       this.syncHelper.lookupIdentityBy(identities, {name: "Mozilla"});
     (mozillaContainer.icon === "pet").should.be.true;
   });
+
+  // Firefox 153 renamed turquoise -> cyan / toolbar -> gray. Sync must store
+  // the legacy name so a device on an older Firefox can apply it and the two
+  // versions don't keep overwriting each other's value (endless sync loop).
+  it("normalizesNewColorNamesToLegacyOnBackup", async function() {
+    await this.syncHelper.stopSyncListeners();
+    await this.syncHelper.setState({}, LOCAL_DATA, [
+      { name: "Cyan", color: "cyan", icon: "fingerprint" },
+      { name: "Gray", color: "gray", icon: "briefcase" },
+    ], []);
+
+    await this.webExt.background.window.identityState.storageArea.upgradeData();
+    await this.webExt.background.window.sync.storageArea.backup();
+
+    const syncIdentities =
+      await this.webExt.background.window.sync.storageArea.getIdentities();
+    const cyan = syncIdentities.find(identity => identity.name === "Cyan");
+    const gray = syncIdentities.find(identity => identity.name === "Gray");
+    (cyan.color === "turquoise").should.be.true;
+    (gray.color === "toolbar").should.be.true;
+  });
 });
 
 class SyncTestHelper {
