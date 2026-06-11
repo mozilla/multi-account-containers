@@ -1,5 +1,17 @@
 const SYNC_DEBUG = false;
 
+// Firefox 153 renamed turquoise -> cyan and toolbar -> gray. We store the
+// legacy names in sync, which every Firefox version accepts, so two devices on
+// different versions don't keep rewriting each other's value (endless loop).
+const SYNC_COLOR_TO_LEGACY = {
+  cyan: "turquoise",
+  gray: "toolbar",
+};
+
+function colorForSync(color) {
+  return SYNC_COLOR_TO_LEGACY[color] || color;
+}
+
 const sync = {
   storageArea: {
     area: browser.storage.sync,
@@ -133,6 +145,9 @@ const sync = {
         for (const identity of identities) {
           delete identity.colorCode;
           delete identity.iconUrl;
+          // Store a version-agnostic color name so two Firefox versions don't
+          // keep overwriting each other's value (see SYNC_COLOR_TO_LEGACY).
+          identity.color = colorForSync(identity.color);
           identity.macAddonUUID = await identityState.lookupMACaddonUUID(identity.cookieStoreId);
           if(identity.macAddonUUID) {
             const storageKey = "identity@@_" + identity.macAddonUUID;
@@ -397,15 +412,25 @@ async function reconcileIdentities(){
 }
 
 async function updateIdentityWithSyncInfo(syncIdentity, localMatch) {
-  // Sync is truth. if there is a match, compare data and update as needed
-  if (syncIdentity.color !== localMatch.color 
+  // Sync is truth. if there is a match, compare data and update as needed.
+  // Compare colors in their legacy form so a device on a newer Firefox (whose
+  // local color is e.g. "cyan") doesn't see a spurious difference against the
+  // normalized synced value ("turquoise") and re-update on every sync.
+  if (colorForSync(syncIdentity.color) !== colorForSync(localMatch.color)
       || syncIdentity.icon !== localMatch.icon) {
-    await browser.contextualIdentities.update(
-      localMatch.cookieStoreId, {
-        name: syncIdentity.name, 
-        color: syncIdentity.color, 
-        icon: syncIdentity.icon
-      });
+    try {
+      await browser.contextualIdentities.update(
+        localMatch.cookieStoreId, {
+          name: syncIdentity.name,
+          color: syncIdentity.color,
+          icon: syncIdentity.icon
+        });
+    } catch (error) {
+      // The synced color/icon may be unknown to this Firefox version (e.g. a
+      // brand-new color with no legacy alias). Skip this identity rather than
+      // aborting the whole restore.
+      console.error("Error updating CI from sync", error);
+    }
 
     if (SYNC_DEBUG) {
       if (localMatch.color !== syncIdentity.color) {
@@ -465,14 +490,22 @@ async function ifUUIDMatch(syncIdentity, localCookieStoreID) {
 async function ifNoMatch(syncIdentity){
   // if no uuid match either, make new identity
   if (SYNC_DEBUG) console.log("create new ident: ", syncIdentity.name);
-  const newIdentity = 
+  let newIdentity;
+  try {
+    newIdentity =
         await browser.contextualIdentities.create({
-          name: syncIdentity.name, 
-          color: syncIdentity.color, 
+          name: syncIdentity.name,
+          color: syncIdentity.color,
           icon: syncIdentity.icon
         });
+  } catch (error) {
+    // The synced color/icon may be unknown to this Firefox version. Skip
+    // creating this identity rather than aborting the whole restore.
+    console.error("Error creating CI from sync", error);
+    return;
+  }
   await identityState.updateUUID(
-    newIdentity.cookieStoreId, 
+    newIdentity.cookieStoreId,
     syncIdentity.macAddonUUID
   );
   return;
