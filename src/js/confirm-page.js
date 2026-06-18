@@ -1,7 +1,22 @@
+function isSafeUrl(url) {
+  try {
+    const { protocol } = new URL(url);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 async function load() {
   const searchParams = new URL(window.location).searchParams;
   const redirectUrl = searchParams.get("url");
   const cookieStoreId = searchParams.get("cookieStoreId");
+
+  if (!isSafeUrl(redirectUrl)) {
+    window.close();
+    return;
+  }
+
   const currentCookieStoreId = searchParams.get("currentCookieStoreId");
   const redirectUrlElement = document.getElementById("redirect-url");
   redirectUrlElement.textContent = redirectUrl;
