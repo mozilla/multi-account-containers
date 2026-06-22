@@ -1,4 +1,4 @@
-const {initializeWithTab} = require("../common");
+const {initializeWithTab, nextTick} = require("../common");
 
 describe("Assignment Reopen Feature", function () {
   const url = "http://example.com";
@@ -18,6 +18,7 @@ describe("Assignment Reopen Feature", function () {
     beforeEach(async function () {
       // popup click to set assignment for activeTab.url
       await this.webExt.popup.helper.clickElementById("always-open-in");
+      await nextTick();
       await this.webExt.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item");
     });
 
@@ -54,6 +55,7 @@ describe("Assignment Comfirm Page Feature", function () {
     let newTab;
     beforeEach(async function () {
       await this.webExt.popup.helper.clickElementById("always-open-in");
+      await nextTick();
       await this.webExt.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item");
 
       // new Tab opening activeTab.url in default container
