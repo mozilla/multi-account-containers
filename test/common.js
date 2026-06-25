@@ -22,7 +22,7 @@ const webExtensionsJSDOM = require("webextensions-jsdom");
 const manifestPath = path.resolve(path.join(__dirname, "../src/manifest.json"));
 
 const buildDom = async ({background = {}, popup = {}}) => {
-  background = {
+  background = background === false ? false : {
     ...background,
     jsdom: {
       ...background.jsom,
@@ -39,7 +39,7 @@ const buildDom = async ({background = {}, popup = {}}) => {
     }
   };
 
-  popup = {
+  popup = popup === false ? false : {
     ...popup,
     jsdom: {
       ...popup.jsdom,
@@ -52,7 +52,8 @@ const buildDom = async ({background = {}, popup = {}}) => {
     wiring: true,
     sinon: global.sinon,
     background,
-    popup
+    popup,
+    pageActionPopup: false,
   });
 
   webExtension.browser = webExtension.background.browser;
@@ -96,6 +97,10 @@ const initializeWithTab = async (details = {
           });
           window.browser.storage.local.set.resetHistory();
           window.browser.storage.sync.clear();
+
+          // window.matchMedia not supported by jsdom:
+          // https://github.com/jsdom/jsdom/issues/3522
+          window.matchMedia = () => ({ matches: false });
         }
       }
     }
