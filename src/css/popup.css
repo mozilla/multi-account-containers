@@ -2264,6 +2264,15 @@ tr:hover > td > .reset-button {
 .move-button > img {
   block-size: 16px;
 }
+
+/* ----- urlbar button dropdown: make container list scrollable (fixes #2888) ----- */
+
+#container-picker-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 /* stylelint-enable no-descending-specificity */
 
 /* ----- Permissions Overlay ---------- */
