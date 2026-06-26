@@ -204,6 +204,10 @@ window.assignManager = {
       return {};
     }
 
+    if (!MozillaVPN_Background.getInstallationStatus() || !MozillaVPN_Background.getConnectionStatus()) {
+      return {};
+    }
+
     // proxyDNS only works for SOCKS proxies
     if (["socks", "socks4"].includes(result.proxy.type)) {
       result.proxy.proxyDNS = true;
