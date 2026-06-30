@@ -255,7 +255,7 @@ const backgroundLogic = {
   },
 
   async getTabs(options) {
-    const requiredArguments = ["cookieStoreId", "windowId"];
+    const requiredArguments = ["cookieStoreId"];
     this.checkArgs(requiredArguments, options, "getTabs");
     const { cookieStoreId, windowId } = options;
 
@@ -299,7 +299,7 @@ const backgroundLogic = {
   },
 
   async moveTabsToWindow(options) {
-    const requiredArguments = ["cookieStoreId", "windowId"];
+    const requiredArguments = ["cookieStoreId"];
     this.checkArgs(requiredArguments, options, "moveTabsToWindow");
     const { cookieStoreId, windowId } = options;
 
@@ -397,6 +397,9 @@ const backgroundLogic = {
       const containerState = await identityState.storageArea.get(cookieStoreId);
       const openTabs = await browser.tabs.query({
         cookieStoreId,
+      });
+      const openTabsCurrWin = await browser.tabs.query({
+        cookieStoreId,
         windowId
       });
       identitiesOutput[cookieStoreId] = {
@@ -404,6 +407,7 @@ const backgroundLogic = {
         hasOpenTabs: !!openTabs.length,
         numberOfHiddenTabs: containerState.hiddenTabs.length,
         numberOfOpenTabs: openTabs.length,
+        numberOfOpenTabsCurrWin: openTabsCurrWin.length,
         isIsolated: !!containerState.isIsolated
       };
       return;

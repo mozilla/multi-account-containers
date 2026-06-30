@@ -229,6 +229,14 @@
             </span>
         </td>
       </tr>
+      <tr class="menu-item hover-highlight keyboard-nav" id="move-all-to-new-window" tabindex="0">
+        <td>
+          <img class="menu-icon" alt="" src="/img/movetowindow-16.svg" />
+          <span class="menu-text" data-i18n-message-id="moveTabsInAllWinsToASingleWindow"></span>
+            <span class="menu-arrow">
+            </span>
+        </td>
+      </tr>
       <tr class="menu-item hover-highlight keyboard-nav" id="always-open" tabindex="0">
         <td>
           <img class="menu-icon" alt="" src="/img/container-openin-16.svg" />
@@ -251,7 +259,19 @@
       <div class="sub-header" data-i18n-message-id="openTabs"></div>
     </div>
     <div class="scrollable">
-      <table class="menu" id="container-info-table">
+      <table class="menu" id="container-info-table-curr-windows">
+        <tr class="menu-item hover-highlight keyboard-nav" tabindex="0">
+          <td>
+            <div class="favicon"><img class="menu-icon" src="https://www.mozilla.org/favicon.ico" /></div>
+            <span class="menu-text truncate-text">www.mozillllllllllllllllllllllllllllllllllllla.org</span>
+            <img class="trash-button" src="/img/close.svg" />
+          </td>
+        </tr>
+      </table>
+      <div class="sub-header-wrapper">
+        <div class="sub-header" data-i18n-message-id="openTabsInOtherWindows"></div>
+      </div>
+      <table class="menu" id="container-info-table-other-windows">
         <tr class="menu-item hover-highlight keyboard-nav" tabindex="0">
           <td>
             <div class="favicon"><img class="menu-icon" src="https://www.mozilla.org/favicon.ico" /></div>
