@@ -229,6 +229,7 @@ body {
 }
 
 /* Hack for menu icons to use a light color without affecting container icons */
+[data-theme="light"] img.clear-storage-icon,
 [data-theme="light"] img.delete-assignment,
 [data-theme="dark"] img.reset-assignment,
 [data-theme="dark"] .trash-button,
