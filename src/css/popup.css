@@ -1669,6 +1669,19 @@ manage things like container crud */
   block-size: 100vh;
 }
 
+/* Used to hide actions that do not apply to the default container */
+#container-info-panel.container-default {
+  #move-to-new-window,
+  #hideorshow-container,
+  #always-open,
+  #open-tabs-separator,
+  #open-tabs-header,
+  #container-info-table,
+  #manage-container-link {
+    display: none;
+  }
+}
+
 .container-info-has-tabs,
 .container-info-tab-row {
   align-items: center;
