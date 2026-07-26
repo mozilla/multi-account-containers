@@ -424,13 +424,13 @@ const Logic = {
   },
 
   shortcutListener(e){
-    function openTopContainers() {
+    async function openTopContainers() {
       const identities = Logic.identities();
       const key = e.code.substring(5);
       const identity = e.code === "Digit0" ? identities[9] : identities[key - 1];
 
       try {
-        browser.tabs.create({
+        await browser.tabs.create({
           cookieStoreId: identity.cookieStoreId
         });
         window.close();
@@ -693,7 +693,7 @@ Logic.registerPanel(P_ONBOARDING_7, {
   initialize() {
     // Let's move to the containers list panel.
     Utils.addEnterHandler(document.querySelector("#sign-in"), async () => {
-      browser.tabs.create({
+      await browser.tabs.create({
         url: "https://accounts.firefox.com/?service=sync&action=email&context=fx_desktop_v3&entrypoint=multi-account-containers&utm_source=addon&utm_medium=panel&utm_campaign=container-sync&brand=mozilla",
       });
       await Logic.setOnboardingStage(7);
@@ -850,13 +850,13 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       tr.appendChild(td);
 
       const openInThisContainer = tr.querySelector(".menu-item-name");
-      Utils.addEnterHandler(openInThisContainer, (e) => {
+      Utils.addEnterHandler(openInThisContainer, async (e) => {
         e.preventDefault();
         if (openInThisContainer.dataset.mozProxyWarning === "proxy-unavailable") {
           return;
         }
         try {
-          browser.tabs.create({
+          await browser.tabs.create({
             cookieStoreId: identity.cookieStoreId
           });
           window.close();
@@ -865,9 +865,9 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         }
       });
 
-      Utils.addEnterOnlyHandler(tr, () => {
+      Utils.addEnterOnlyHandler(tr, async () => {
         try {
-          browser.tabs.create({
+          await browser.tabs.create({
             cookieStoreId: identity.cookieStoreId
           });
           window.close();
@@ -950,9 +950,9 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     const identity = Logic.currentIdentity();
 
     const newTab = document.querySelector("#open-new-tab-in-info");
-    Utils.addEnterHandler(newTab, () => {
+    Utils.addEnterHandler(newTab, async () => {
       try {
-        browser.tabs.create({
+        await browser.tabs.create({
           cookieStoreId: identity.cookieStoreId
         });
         window.close();
@@ -1089,9 +1089,9 @@ Logic.registerPanel(OPEN_NEW_CONTAINER_PICKER, {
     Logic.listenToPickerBackButton();
     document.getElementById("picker-title").textContent = browser.i18n.getMessage("openANewTabIn");
     const fragment = document.createDocumentFragment();
-    const pickedFunction = function (identity) {
+    const pickedFunction = async function (identity) {
       try {
-        browser.tabs.create({
+        await browser.tabs.create({
           cookieStoreId: identity.cookieStoreId
         });
         window.close();
@@ -2038,8 +2038,8 @@ Logic.registerPanel(P_ADVANCED_PROXY_SETTINGS, {
     });
 
     const learnMoreButton = document.getElementById("advanced-proxy-settings-learn-more");
-    Utils.addEnterHandler(learnMoreButton, () => {
-      browser.tabs.create({ url: "https://support.mozilla.org/kb/containers" });
+    Utils.addEnterHandler(learnMoreButton, async () => {
+      await browser.tabs.create({ url: "https://support.mozilla.org/kb/containers" });
     });
   },
 
