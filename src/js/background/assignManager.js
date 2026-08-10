@@ -70,7 +70,8 @@ window.assignManager = {
       });
     },
 
-    async set(pageUrlorUrlKey, data, exemptedTabIds, backup = true) {
+    async set(pageUrlorUrlKey, data, exemptedTabIds, backup = true,
+      fromFirefox = false) {
       const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
       if (exemptedTabIds) {
         exemptedTabIds.forEach((tabId) => {
@@ -82,6 +83,9 @@ window.assignManager = {
       await this.area.set({
         [siteStoreKey]: data
       });
+      if (!fromFirefox) {
+        await siteAssociation.set(siteStoreKey, data.userContextId);
+      }
       const syncEnabled = await this.getSyncEnabled();
       if (backup && syncEnabled) {
         await sync.storageArea.backup({undeleteSiteStoreKey: siteStoreKey});
@@ -89,11 +93,18 @@ window.assignManager = {
       return;
     },
 
-    async remove(pageUrlorUrlKey, shouldSync = true) {
+    async remove(pageUrlorUrlKey, shouldSync = true, fromFirefox = false) {
       const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
+      const assignment = await this.getByUrlKey(siteStoreKey);
       // When we remove an assignment we should clear all the exemptions
       this.removeExempted(pageUrlorUrlKey);
       await this.area.remove([siteStoreKey]);
+      if (!fromFirefox) {
+        await siteAssociation.remove(siteStoreKey);
+      }
+      if (assignment) {
+        await assignManager._maybeRemoveSiteIsolation(assignment.userContextId);
+      }
       const syncEnabled = await this.getSyncEnabled();
       if (shouldSync && syncEnabled) await sync.storageArea.backup({siteStoreKey});
       return;
@@ -616,9 +627,6 @@ window.assignManager = {
       await this.storageArea.remove(pageUrl);
 
       actionName = "removed from assigned sites list";
-
-      // remove site isolation if now empty
-      await this._maybeRemoveSiteIsolation(userContextId);
     }
 
     if (tabId) {

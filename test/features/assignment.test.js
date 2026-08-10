@@ -1,4 +1,4 @@
-const {initializeWithTab} = require("../common");
+const {initializeWithTab, expect} = require("../common");
 
 describe("Assignment Reopen Feature", function () {
   const url = "http://example.com";
@@ -34,6 +34,60 @@ describe("Assignment Reopen Feature", function () {
 
   });
 
+});
+
+describe("Assignment Site Isolation", function () {
+  const cookieStoreId = "firefox-container-4";
+
+  beforeEach(async function () {
+    this.webExt = await initializeWithTab({
+      cookieStoreId,
+      url: "http://example.com"
+    });
+
+    const {assignManager, identityState} = this.webExt.background.window;
+    await assignManager.storageArea.set("http://example.com", {
+      userContextId: "4",
+      neverAsk: false
+    });
+    const state = await identityState.storageArea.get(cookieStoreId);
+    state.isIsolated = "locked";
+    await identityState.storageArea.set(cookieStoreId, state);
+  });
+
+  afterEach(function () {
+    this.webExt.destroy();
+  });
+
+  function isolationState(webExt) {
+    return webExt.background.window
+      .identityState.storageArea.get(cookieStoreId);
+  }
+
+  it("should be locked while the container has an assignment", async function () {
+    const state = await isolationState(this.webExt);
+    expect(state.isIsolated).to.equal("locked");
+  });
+
+  it("should go away with the last assignment of the container", async function () {
+    const {assignManager} = this.webExt.background.window;
+    await assignManager.storageArea.remove("http://example.com");
+
+    const state = await isolationState(this.webExt);
+    expect(state).to.not.have.property("isIsolated");
+  });
+
+  it("should stay while the container has another assignment", async function () {
+    const {assignManager} = this.webExt.background.window;
+    await assignManager.storageArea.set("http://other.example", {
+      userContextId: "4",
+      neverAsk: false
+    });
+    await assignManager.storageArea.remove("http://example.com");
+
+    const state = await isolationState(this.webExt);
+    expect(state.isIsolated).to.equal("locked");
+  });
 });
 
 describe("Assignment Comfirm Page Feature", function () {

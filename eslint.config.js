@@ -95,6 +95,7 @@ module.exports = defineConfig([{
       "backgroundLogic": true,
       "identityState": true,
       "messageHandler": true,
+      "siteAssociation": true,
       "sync": true,
     },
   },
