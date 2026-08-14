@@ -54,6 +54,10 @@ const backgroundLogic = {
       this._removeSurveyAchievement();
     });
     browser.runtime.onStartup.addListener(this.updateTranslationInManifest);
+
+    browser.contextualIdentities.onCreated.addListener(() => this.sortContainersAlphabetically());
+    browser.contextualIdentities.onUpdated.addListener(() => this.sortContainersAlphabetically());
+    this.sortContainersAlphabetically();
   },
 
   /**
@@ -410,6 +414,24 @@ const backgroundLogic = {
     });
     await Promise.all(identitiesPromise);
     return identitiesOutput;
+  },
+
+  async sortContainersAlphabetically() {
+    // Reordering containers requires contextualIdentities.move (Firefox 141+).
+    if (typeof browser.contextualIdentities.move !== "function") {
+      return;
+    }
+    const { alphabeticalSortEnabled } = await browser.storage.local.get("alphabeticalSortEnabled");
+    if (!alphabeticalSortEnabled) {
+      return;
+    }
+    const identities = await browser.contextualIdentities.query({});
+    const sorted = identities.slice().sort((a, b) => a.name.localeCompare(b.name));
+    // Skipping when already sorted also stops any onUpdated retrigger from move().
+    if (sorted.every((identity, index) => identity === identities[index])) {
+      return;
+    }
+    await browser.contextualIdentities.move(sorted.map((identity) => identity.cookieStoreId), 0);
   },
 
   async sortTabs() {
