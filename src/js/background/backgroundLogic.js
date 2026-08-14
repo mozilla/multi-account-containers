@@ -417,7 +417,8 @@ const backgroundLogic = {
   },
 
   async sortContainersAlphabetically() {
-    // Reordering containers requires contextualIdentities.move (Firefox 141+).
+    // Reordering containers requires contextualIdentities.move, which older
+    // Firefox versions do not have.
     if (typeof browser.contextualIdentities.move !== "function") {
       return;
     }
@@ -431,7 +432,12 @@ const backgroundLogic = {
     if (sorted.every((identity, index) => identity === identities[index])) {
       return;
     }
-    await browser.contextualIdentities.move(sorted.map((identity) => identity.cookieStoreId), 0);
+    // move() keeps the identities' current relative order regardless of the
+    // order of the ids passed to it, so one call with the full sorted list
+    // cannot permute. Place one container at a time instead.
+    for (const [index, identity] of sorted.entries()) {
+      await browser.contextualIdentities.move(identity.cookieStoreId, index);
+    }
   },
 
   async sortTabs() {
