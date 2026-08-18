@@ -50,6 +50,16 @@ proxifiedContainers = {
       return false;
     }
 
+    if (
+      (matches.groups.type === "http" || matches.groups.type === "https") &&
+      matches.groups.username && matches.groups.password
+    ) {
+      matches.groups.proxyAuthorizationHeader =
+        "Basic " + btoa(matches.groups.username + ":" + matches.groups.password);
+      delete matches.groups.username;
+      delete matches.groups.password;
+    }
+
     if (mozillaVpnData && mozillaVpnData.mozProxyEnabled === undefined) {
       matches.groups.type = null;
     }
