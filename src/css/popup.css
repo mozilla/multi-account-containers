@@ -242,6 +242,7 @@ body {
 [data-theme="dark"] img.clear-storage-icon,
 [data-theme="dark"] img.delete-assignment,
 [data-theme="dark"] #edit-sites-assigned .menu-icon,
+[data-theme="dark"] #edit-domains-assigned .menu-icon,
 [data-theme="dark"] #container-info-table .menu-icon,
 [data-theme="dark"] #always-open .menu-icon,
 [data-theme="dark"] #always-open-in .menu-icon {
@@ -1989,6 +1990,7 @@ h3.title {
 
 /* Maintain 1:1 square ratio for favicons of websites added to a specific container */
 #edit-sites-assigned .menu-icon,
+#edit-domains-assigned .menu-icon,
 #container-info-table .menu-icon {
   inline-size: 16px;
 }

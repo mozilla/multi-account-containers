@@ -93,6 +93,7 @@ module.exports = defineConfig([{
       "assignManager": true,
       "badge": true,
       "backgroundLogic": true,
+      "domainManager": true,
       "identityState": true,
       "messageHandler": true,
       "sync": true,

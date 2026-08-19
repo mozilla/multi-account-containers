@@ -388,9 +388,26 @@
     <button class="btn-return arrow-left controller" id="close-container-assignment-panel"></button>
     <hr>
     <div class="scrollable edit-sites-assigned">
-      <div class="sub-header" data-i18n-attribute-message-id="sitesAssignedToThisContainer"></div>
-      <table class="menu scrollable" id="edit-sites-assigned">
-        <tr class="menu-item hover-highlight" tabindex="0">
+      <div class="sub-header-wrapper" id="edit-domains-assigned-header">
+        <div class="sub-header" data-i18n-message-id="enableAllSubdomains"></div>
+      </div>
+      <table class="menu" id="edit-domains-assigned">
+        <tr class="menu-item" tabindex="0">
+          <td>
+            <div class="favicon"><img class="menu-icon" src="https://www.mozilla.org/favicon.ico" /></div>
+            <span class="menu-text truncate-text">www.mozillllllllllllllllllllllllllllla.org</span>
+            <label class="switch">
+              <input id="domain-enabled" class="switch-input" name="domain-enabled" type="checkbox">
+              <span class="slider round"></span>
+            </label>
+          </td>
+        </tr>
+      </table>
+      <div class="sub-header-wrapper" id="edit-sites-assigned-header">
+        <div class="sub-header" data-i18n-message-id="sitesAssignedToThisContainer"></div>
+      </div>
+      <table class="menu" id="edit-sites-assigned">
+        <tr class="menu-item hover-highlight" tabindex="1">
           <td>
             <div class="favicon"><img class="menu-icon" src="https://www.mozilla.org/favicon.ico" /></div>
             <span class="menu-text truncate-text">www.mozillllllllllllllllllllllllllllla.org</span>

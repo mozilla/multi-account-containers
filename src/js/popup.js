@@ -1433,13 +1433,13 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
     document.getElementById("edit-assignments-title").textContent = identity.name;
 
     const userContextId = Logic.currentUserContextId();
-    const assignments = await Logic.getAssignmentObjectByContainer(userContextId);
-    this.showAssignedContainers(assignments);
+    const { domains, assignments } = await Logic.getAssignmentObjectByContainer(userContextId);
+    this.showAssignedContainers(domains, assignments);
 
     return Promise.resolve(null);
   },
 
-  showAssignedContainers(assignments) {
+  showAssignedContainers(domains, assignments) {
     const closeContEl = document.querySelector("#close-container-assignment-panel");
     Utils.addEnterHandler(closeContEl, () => {
       const identity = Logic.currentIdentity();
@@ -1447,15 +1447,63 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
     });
 
     const assignmentPanel = document.getElementById("edit-sites-assigned");
-    const assignmentKeys = Object.keys(assignments);
-    assignmentPanel.hidden = !(assignmentKeys.length > 0);
-    if (assignments) {
-      const tableElement = document.querySelector("#edit-sites-assigned");
-      /* Remove previous assignment list,
-         after removing one we rerender the list */
-      while (tableElement.firstChild) {
-        tableElement.firstChild.remove();
+    const domainsHeaderElement = document.querySelector("#edit-domains-assigned-header");
+    const assignmentsHeaderElement = document.querySelector("#edit-sites-assigned-header");
+    const domainsTableElement = document.querySelector("#edit-domains-assigned");
+    const assignmentsTableElement = document.querySelector("#edit-sites-assigned");
+    const domainKeys = Object.keys(domains).sort();
+    const assignmentKeys = Object.keys(assignments).sort();
+    assignmentPanel.hidden = !assignmentKeys.length && !domainKeys.length;
+    if (domainKeys.length) {
+      domainsHeaderElement.classList.remove("hide");
+    } else {
+      domainsHeaderElement.classList.add("hide");
+    }
+    if (assignmentKeys.length) {
+      assignmentsHeaderElement.classList.remove("hide");
+    } else {
+      assignmentsHeaderElement.classList.add("hide");
+    }
+    domainsTableElement.replaceChildren();
+    assignmentsTableElement.replaceChildren();
+    domainKeys.forEach((domainKey) => {
+      const domain = domains[domainKey];
+      const domainName = domain.hostname;
+      const trElement = document.createElement("tr");
+      const assumedUrl = `https://${domainName}/favicon.ico`;
+      trElement.innerHTML = Utils.escaped`
+      <td>
+        <div class="favicon"></div>
+        <span title="${domainName}" class="menu-text truncate-text">${domainName}</span>
+        <label class="switch">
+          <input id="domain-enabled" class="switch-input" name="domain-enabled" type="checkbox">
+          <span class="slider round"></span>
+        </label>
+      </td>`;
+      trElement.getElementsByClassName("favicon")[0].appendChild(Utils.createFavIconElement(assumedUrl));
+      const checkboxElement = trElement.querySelector("#domain-enabled");
+      if (domain.disabled) {
+        checkboxElement.removeAttribute("checked");
+      } else {
+        checkboxElement.setAttribute("checked", "checked");
       }
+      checkboxElement.addEventListener("click", (event) => {
+        event.target.setAttribute("disabled", "disabled");
+        setTimeout(async () => {
+          const userContextId = Logic.currentUserContextId();
+          const remove = !domain.disabled;
+          try {
+            await Utils.setOrRemoveDomain(domainName, userContextId, remove);
+          } finally {
+            const { domains, assignments } = await Logic.getAssignmentObjectByContainer(userContextId);
+            this.showAssignedContainers(domains, assignments);
+          }
+        });
+      });
+      trElement.classList.add("menu-item", "hover-highlight", "keyboard-nav");
+      domainsTableElement.appendChild(trElement);
+    });
+    if (assignments) {
       assignmentKeys.forEach((siteKey) => {
         const site = assignments[siteKey];
         const trElement = document.createElement("tr");
@@ -1479,7 +1527,7 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
           // const currentTab = await Utils.currentTab();
           Utils.setOrRemoveAssignment(false, assumedUrl, userContextId, true);
           delete assignments[siteKey];
-          this.showAssignedContainers(assignments);
+          this.showAssignedContainers(domains, assignments);
         });
         const resetButton = trElement.querySelector(".reset-button");
         Utils.addEnterHandler(resetButton, async () => {
@@ -1496,7 +1544,7 @@ Logic.registerPanel(P_CONTAINER_ASSIGNMENTS, {
           }
         });
         trElement.classList.add("menu-item", "hover-highlight", "keyboard-nav");
-        tableElement.appendChild(trElement);
+        assignmentsTableElement.appendChild(trElement);
       });
     }
   },

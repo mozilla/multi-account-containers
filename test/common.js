@@ -35,6 +35,13 @@ const buildDom = async ({background = {}, popup = {}}) => {
         // Let it return a Promise instead, so that .then() calls chained to
         // it (in src/js/background/assignManager.js) do not fail.
         window.browser.contextMenus.remove.resolves();
+
+        window.browser.publicSuffix = {
+          getDomain: (domain) => {
+            // Just return the last 2 domain labels
+            return domain.split(".").slice(-2).join(".");
+          }
+        };
       }
     }
   };
