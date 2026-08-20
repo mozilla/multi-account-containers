@@ -255,10 +255,12 @@ const Logic = {
           windowId: browser.windows.WINDOW_ID_CURRENT
         }
       }),
-      browser.storage.local.get([CONTAINER_ORDER_STORAGE_KEY])
+      browser.storage.local.get([CONTAINER_ORDER_STORAGE_KEY, "alphabeticalSortEnabled"])
     ]);
     const containerOrder =
       containerOrderStorage && containerOrderStorage[CONTAINER_ORDER_STORAGE_KEY];
+    this._sortAlphabetically =
+      !!(containerOrderStorage && containerOrderStorage.alphabeticalSortEnabled);
     this._identities = identities.map((identity) => {
       const stateObject = state[identity.cookieStoreId];
       if (stateObject) {
@@ -272,7 +274,12 @@ const Logic = {
         identity.order = containerOrder[identity.cookieStoreId];
       }
       return identity;
-    }).sort((i1, i2) => i1.order - i2.order);
+    }).sort((i1, i2) => {
+      if (this._sortAlphabetically) {
+        return i1.name.localeCompare(i2.name);
+      }
+      return i1.order - i2.order;
+    });
   },
 
   getPanelSelector(panel) {
@@ -1209,7 +1216,10 @@ Logic.registerPanel(MANAGE_CONTAINERS_PICKER, {
 
       tr.appendChild(td);
 
-      tr.draggable = true;
+      tr.draggable = !Logic._sortAlphabetically;
+      if (Logic._sortAlphabetically) {
+        td.querySelector(".move-button").remove();
+      }
       tr.dataset.containerId = identity.cookieStoreId;
       tr.addEventListener("dragstart", (e) => {
         e.dataTransfer.setData(CONTAINER_DRAG_DATA_TYPE, identity.cookieStoreId);
