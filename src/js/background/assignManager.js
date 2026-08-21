@@ -272,7 +272,7 @@ window.assignManager = {
       }
     }
     const replaceTabEnabled = await this.storageArea.getReplaceTabEnabled();
-    const removeTab = backgroundLogic.NEW_TAB_PAGES.has(tab.url)
+    const removeTab = await backgroundLogic.isNewTabPage(tab.url)
       || (messageHandler.lastCreatedTab
         && messageHandler.lastCreatedTab.id === tab.id)
       || replaceTabEnabled;

@@ -12,6 +12,7 @@
   "permissions": [
     "<all_urls>",
     "activeTab",
+    "browserSettings",
     "cookies",
     "contextMenus",
     "contextualIdentities",
