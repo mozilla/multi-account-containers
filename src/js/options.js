@@ -59,6 +59,37 @@ async function changeTheme(event) {
   await browser.storage.local.set({currentThemeId: theme.selectedIndex});
 }
 
+async function setupDefaultContainerSelect() {
+  const select = document.querySelector("#defaultContainerSelect");
+  const identities = await browser.contextualIdentities.query({});
+
+  const noneOption = document.createElement("option");
+  noneOption.value = "";
+  noneOption.textContent = browser.i18n.getMessage("defaultContainerNone");
+  select.appendChild(noneOption);
+
+  for (const identity of identities) {
+    const option = document.createElement("option");
+    option.value = identity.cookieStoreId;
+    option.textContent = identity.name;
+    select.appendChild(option);
+  }
+
+  const { fallbackContainerCookieStoreId } = await browser.storage.local.get("fallbackContainerCookieStoreId");
+  if (fallbackContainerCookieStoreId) {
+    select.value = fallbackContainerCookieStoreId;
+  }
+}
+
+async function changeDefaultContainer(event) {
+  const cookieStoreId = event.target.value || null;
+  if (cookieStoreId) {
+    await browser.storage.local.set({ fallbackContainerCookieStoreId: cookieStoreId });
+  } else {
+    await browser.storage.local.remove("fallbackContainerCookieStoreId");
+  }
+}
+
 async function setupOptions() {
   const { syncEnabled } = await browser.storage.local.get("syncEnabled");
   const { replaceTabEnabled } = await browser.storage.local.get("replaceTabEnabled");
@@ -68,6 +99,7 @@ async function setupOptions() {
   document.querySelector("#replaceTabCheck").checked = !!replaceTabEnabled;
   document.querySelector("#changeTheme").selectedIndex = currentThemeId;
   setupContainerShortcutSelects();
+  setupDefaultContainerSelect();
 }
 
 async function setupContainerShortcutSelects () {
@@ -124,6 +156,7 @@ document.addEventListener("DOMContentLoaded", setupOptions);
 document.querySelector("#syncCheck").addEventListener( "change", enableDisableSync);
 document.querySelector("#replaceTabCheck").addEventListener( "change", enableDisableReplaceTab);
 document.querySelector("#changeTheme").addEventListener( "change", changeTheme);
+document.querySelector("#defaultContainerSelect").addEventListener("change", changeDefaultContainer);
 
 maybeShowPermissionsWarningIcon();
 for (let i=0; i < NUMBER_OF_KEYBOARD_SHORTCUTS; i++) {
