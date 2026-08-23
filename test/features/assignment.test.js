@@ -18,7 +18,7 @@ describe("Assignment Reopen Feature", function () {
     beforeEach(async function () {
       // popup click to set assignment for activeTab.url
       await this.webExt.popup.helper.clickElementById("always-open-in");
-      await this.webExt.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item");
+      await this.webExt.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item[data-cookie-store-id]");
     });
 
     it("should open the page in the assigned container", async function () {
@@ -32,6 +32,26 @@ describe("Assignment Reopen Feature", function () {
       });
     });
 
+  });
+
+  describe("set to 'Always open in' Default Container", function () {
+    beforeEach(async function () {
+      // simulate having an existing assignment
+      await this.webExt.background.window.assignManager.storageArea.set(url, {
+        userContextId: "4",
+        neverAsk: false
+      }, []);
+
+      // click 'Always open in'
+      await this.webExt.popup.helper.clickElementById("always-open-in");
+      // click the 'Default Container' option (which is the first menu item)
+      await this.webExt.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item:not([data-cookie-store-id])");
+    });
+
+    it("should clear the assignment", async function () {
+      const assignment = await this.webExt.background.window.assignManager.storageArea.get(url);
+      expect(assignment).to.be.null;
+    });
   });
 
 });
@@ -54,7 +74,7 @@ describe("Assignment Comfirm Page Feature", function () {
     let newTab;
     beforeEach(async function () {
       await this.webExt.popup.helper.clickElementById("always-open-in");
-      await this.webExt.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item");
+      await this.webExt.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item[data-cookie-store-id]");
 
       // new Tab opening activeTab.url in default container
       newTab = await this.webExt.background.browser.tabs._create({

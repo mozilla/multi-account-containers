@@ -131,7 +131,7 @@ const Logic = {
     notificationCards.forEach(notificationCard => {
       notificationCard.textContent = text;
       notificationCard.classList.add("is-shown");
-    
+
       setTimeout(() => {
         notificationCard.classList.remove("is-shown");
       }, 2000);
@@ -843,8 +843,6 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
         </span>`;
 
-
-
       fragment.appendChild(tr);
 
       tr.appendChild(td);
@@ -1381,10 +1379,31 @@ Logic.registerPanel(ALWAYS_OPEN_IN_PICKER, {
 
     document.getElementById("new-container-div").innerHTML = "";
 
+    const defaultTr = document.createElement("tr");
+    defaultTr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
+    defaultTr.setAttribute("tabindex", "0");
+    const defaultTd = document.createElement("td");
+
+    defaultTd.innerHTML = Utils.escaped`
+      <div class="menu-icon hover-highlight">
+        <div class="mac-icon">
+        </div>
+      </div>
+      <span class="menu-text">Default Container</span>`;
+
+    fragment.appendChild(defaultTr);
+    defaultTr.appendChild(defaultTd);
+
+    Utils.addEnterHandler(defaultTr, async () => {
+      await Utils.removeAlwaysOpenInContainer();
+      window.close();
+    });
+
     for (const identity of identities) {
       const tr = document.createElement("tr");
       tr.classList.add("menu-item", "hover-highlight", "keyboard-nav");
       tr.setAttribute("tabindex", "0");
+      tr.setAttribute("data-cookie-store-id", identity.cookieStoreId);
       const td = document.createElement("td");
 
       td.innerHTML = Utils.escaped`
@@ -1674,7 +1693,6 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
         }
       }
 
-
       async enableDisableProxyButtons() {
         const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
 
@@ -1963,7 +1981,6 @@ Logic.registerPanel(P_CONTAINER_EDIT, {
     });
     const mozillaVpnConnected = await browser.runtime.sendMessage({ method: "MozillaVPN_getConnectionStatus" });
 
-
     const mozillaVpnUi = document.querySelector(".moz-vpn-controller-content");
     mozillaVpnUi.updateMozVpnStatusDependentUi();
 
@@ -2100,7 +2117,6 @@ Logic.registerPanel(P_ADVANCED_PROXY_SETTINGS, {
       });
     }
 
-
     // reset input
     const resetProxyInput = () => {
       if (!advancedProxyInput) {
@@ -2211,7 +2227,6 @@ Logic.registerPanel(P_MOZILLA_VPN_SERVER_LIST, {
     });
   },
 
-
   toggleCityListVisibility(listItem) {
     const citiesList = listItem.querySelector("ul");
     listItem.classList.toggle("expanded");
@@ -2312,7 +2327,7 @@ Logic.registerPanel(P_CLEAR_CONTAINER_STORAGE, {
   // This method is called when the panel is shown.
   prepare() {
     const identity = Logic.currentIdentity();
-    
+
     // Populating the panel: name, icon, and warning message
     document.getElementById("container-clear-storage-title").textContent = identity.name;
     return Promise.resolve(null);

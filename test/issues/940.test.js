@@ -9,7 +9,7 @@ describe("#940", function () {
       });
 
       await webExtension.popup.helper.clickElementById("always-open-in");
-      await webExtension.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item");
+      await webExtension.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item[data-cookie-store-id]");
 
       const responses = {};
       await webExtension.background.browser.tabs._create({
@@ -35,15 +35,15 @@ describe("#940", function () {
 
   describe("when redirects change requestId midflight", function () {
     beforeEach(async function () {
-      
+
       this.webExt = await initializeWithTab({
         cookieStoreId: "firefox-container-4",
         url: "https://www.youtube.com"
       });
 
       await this.webExt.popup.helper.clickElementById("always-open-in");
-      await this.webExt.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item");
-      
+      await this.webExt.popup.helper.clickElementByQuerySelectorAll("#picker-identities-list > .menu-item[data-cookie-store-id]");
+
       global.clock = sinon.useFakeTimers();
       this.redirectedRequest = async (options = {}) => {
         const newTabResponses = {};
@@ -66,7 +66,7 @@ describe("#940", function () {
           }, options),
           responses: newTabResponses
         });
-  
+
         return [newTabResponses, newTab];
       };
     });
