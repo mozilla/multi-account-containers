@@ -1,4 +1,4 @@
-const {initializeWithTab} = require("../common");
+const {expect, initializeWithTab} = require("../common");
 
 describe("Assignment Reopen Feature", function () {
   const url = "http://example.com";

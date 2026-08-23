@@ -250,7 +250,7 @@ const Utils = {
     if (typeof currentTheme !== "undefined" && currentTheme !== "auto") {
       return currentTheme;
     }
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    if (window && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
       return "dark";
     }
     return "light";
