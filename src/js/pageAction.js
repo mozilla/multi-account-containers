@@ -4,6 +4,24 @@ async function init() {
   const fragment = document.createDocumentFragment();
   const identities = await browser.contextualIdentities.query({});
 
+  const defaultTr = document.createElement("tr");
+  defaultTr.classList.add("menu-item", "hover-highlight");
+  const defaultTd = document.createElement("td");
+  defaultTd.innerHTML = Utils.escaped`
+      <div class="menu-icon">
+        <div class="mac-icon">
+        </div>
+      </div>
+      <span class="menu-text">Default Container</span>
+      `;
+  defaultTr.appendChild(defaultTd);
+  fragment.appendChild(defaultTr);
+
+  Utils.addEnterHandler(defaultTr, async () => {
+    await Utils.removeAlwaysOpenInContainer();
+    window.close();
+  });
+
   for (const identity of identities) {
     const tr = document.createElement("tr");
     tr.classList.add("menu-item", "hover-highlight");

@@ -191,6 +191,56 @@ const Utils = {
       false
     );
   },
+
+  async removeAlwaysOpenInContainer() {
+    const currentTab = await this.currentTab();
+    const currentTabUserContextId = this.userContextId(currentTab.cookieStoreId);
+    
+    // We must remove the assignment FIRST to prevent the webRequest listener 
+    // from instantly intercepting the new tab and forcing it back into the custom container.
+    await this.setOrRemoveAssignment(
+      false, // Don't trigger the content script message yet
+      currentTab.url,
+      currentTabUserContextId,
+      true
+    );
+
+    if (currentTab.cookieStoreId !== "firefox-default") {
+      // Open the page in the default container
+      const newTab = await browser.tabs.create({
+        url: currentTab.url,
+        cookieStoreId: "firefox-default",
+        index: currentTab.index + 1,
+        active: currentTab.active
+      });
+      
+      if (currentTab.groupId >= 0) {
+        await browser.tabs.group({ groupId: currentTab.groupId, tabIds: newTab.id });
+      }
+
+      // Call it again with the new tab ID to show the success message in the new tab
+      await this.setOrRemoveAssignment(
+        newTab.id,
+        currentTab.url,
+        currentTabUserContextId,
+        true
+      );
+
+      // Close the old custom container tab
+      await browser.tabs.remove(currentTab.id);
+      return;
+    }
+    
+    // If we are already in the default container, we just needed to remove it.
+    // Call it with the current tab ID to show the success message.
+    await this.setOrRemoveAssignment(
+      currentTab.id,
+      currentTab.url,
+      currentTabUserContextId,
+      true
+    );
+  },
+
   /* Theme helper
    *
    * First, we look if there's a theme already set in the local storage. If
@@ -200,7 +250,7 @@ const Utils = {
     if (typeof currentTheme !== "undefined" && currentTheme !== "auto") {
       return currentTheme;
     }
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    if (window && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) {
       return "dark";
     }
     return "light";
