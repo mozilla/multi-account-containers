@@ -41,9 +41,17 @@ window.assignManager = {
       return this.exemptedTabs[siteStoreKey].includes(tabId);
     },
 
-    get(pageUrlorUrlKey) {
+    async get(pageUrlorUrlKey) {
       const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
-      return this.getByUrlKey(siteStoreKey);
+      const site = await this.getByUrlKey(siteStoreKey);
+      if (site && !pageUrlorUrlKey.includes("siteContainerMap@@_")) {
+        const hostname = new window.URL(pageUrlorUrlKey).host;
+        if (site.hostname !== hostname) {
+          site.hostname = hostname;
+          await this.area.set({[siteStoreKey]: site});
+        }
+      }
+      return site;
     },
 
     async getSyncEnabled() {
@@ -72,6 +80,9 @@ window.assignManager = {
 
     async set(pageUrlorUrlKey, data, exemptedTabIds, backup = true) {
       const siteStoreKey = this.getSiteStoreKey(pageUrlorUrlKey);
+      if (!pageUrlorUrlKey.includes("siteContainerMap@@_")) {
+        data.hostname = new window.URL(pageUrlorUrlKey).host;
+      }
       if (exemptedTabIds) {
         exemptedTabIds.forEach((tabId) => {
           this.setExempted(pageUrlorUrlKey, tabId);
@@ -120,7 +131,9 @@ window.assignManager = {
           const site = siteConfigs[urlKey];
           // In hindsight we should have stored this
           // TODO file a follow up to clean the storage onLoad
-          site.hostname = urlKey.replace(/^siteContainerMap@@_/, "");
+          if (!site.hostname) {
+            site.hostname = urlKey.replace(/^siteContainerMap@@_/, "");
+          }
           sites[urlKey] = site;
         }
       }
