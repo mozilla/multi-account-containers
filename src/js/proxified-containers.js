@@ -44,20 +44,30 @@ proxifiedContainers = {
 
   // Parses a proxy description string of the format type://host[:port] or type://username:password@host[:port] (port is optional)
   parseProxy(proxy_str, mozillaVpnData = null) {
-    const proxyRegexp = /(?<type>(https?)|(socks4?)):\/\/(\b(?<username>[\w-]+):(?<password>[\w-]+)@)?(?<host>((?:\d{1,3}\.){3}\d{1,3}\b)|(\b([\w.-]+)+))(:(?<port>\d+))?/;
+    const proxyRegexp = /^(?<type>https?|socks4?):\/\/(?:(?<username>[^\s:@/?#]+):(?<password>[^\s@/?#]+)@)?(?<host>[\w.-]+)(?::(?<port>\d+))?$/;
     const matches = proxyRegexp.exec(proxy_str);
     if (!matches) {
       return false;
     }
 
-    if (
-      (matches.groups.type === "http" || matches.groups.type === "https") &&
-      matches.groups.username && matches.groups.password
-    ) {
-      matches.groups.proxyAuthorizationHeader =
-        "Basic " + btoa(matches.groups.username + ":" + matches.groups.password);
-      delete matches.groups.username;
-      delete matches.groups.password;
+    try {
+      if (matches.groups.username !== undefined) {
+        matches.groups.username = decodeURIComponent(matches.groups.username);
+        matches.groups.password = decodeURIComponent(matches.groups.password);
+      }
+      if (
+        (matches.groups.type === "http" || matches.groups.type === "https") &&
+        matches.groups.username && matches.groups.password
+      ) {
+        // Basic authentication uses the first colon to separate the username.
+        if (matches.groups.username.includes(":")) return false;
+        matches.groups.proxyAuthorizationHeader =
+          "Basic " + btoa(matches.groups.username + ":" + matches.groups.password);
+        delete matches.groups.username;
+        delete matches.groups.password;
+      }
+    } catch {
+      return false;
     }
 
     if (mozillaVpnData && mozillaVpnData.mozProxyEnabled === undefined) {
