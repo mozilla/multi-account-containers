@@ -141,6 +141,15 @@ const Utils = {
     });
   },
 
+  setOrRemoveDomain(domain, userContextId, value) {
+    return browser.runtime.sendMessage({
+      method: "setOrRemoveDomain",
+      domain,
+      userContextId,
+      value
+    });
+  },
+
   resetCookiesForSite(pageUrl, cookieStoreId) {
     return browser.runtime.sendMessage({ 
       method: "resetCookiesForSite", 
