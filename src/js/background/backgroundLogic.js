@@ -54,6 +54,10 @@ const backgroundLogic = {
       this._removeSurveyAchievement();
     });
     browser.runtime.onStartup.addListener(this.updateTranslationInManifest);
+
+    browser.contextualIdentities.onCreated.addListener(() => this.sortContainersAlphabetically());
+    browser.contextualIdentities.onUpdated.addListener(() => this.sortContainersAlphabetically());
+    this.sortContainersAlphabetically();
   },
 
   /**
@@ -410,6 +414,30 @@ const backgroundLogic = {
     });
     await Promise.all(identitiesPromise);
     return identitiesOutput;
+  },
+
+  async sortContainersAlphabetically() {
+    // Reordering containers requires contextualIdentities.move, which older
+    // Firefox versions do not have.
+    if (typeof browser.contextualIdentities.move !== "function") {
+      return;
+    }
+    const { alphabeticalSortEnabled } = await browser.storage.local.get("alphabeticalSortEnabled");
+    if (!alphabeticalSortEnabled) {
+      return;
+    }
+    const identities = await browser.contextualIdentities.query({});
+    const sorted = identities.slice().sort((a, b) => a.name.localeCompare(b.name));
+    // Skipping when already sorted also stops any onUpdated retrigger from move().
+    if (sorted.every((identity, index) => identity === identities[index])) {
+      return;
+    }
+    // move() keeps the identities' current relative order regardless of the
+    // order of the ids passed to it, so one call with the full sorted list
+    // cannot permute. Place one container at a time instead.
+    for (const [index, identity] of sorted.entries()) {
+      await browser.contextualIdentities.move(identity.cookieStoreId, index);
+    }
   },
 
   async sortTabs() {
