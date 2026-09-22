@@ -204,13 +204,7 @@ window.assignManager = {
 
   async handleProxifiedRequest(requestInfo) {
     // The following blocks potentially dangerous requests for privacy that come without a tabId
-
-    if(requestInfo.tabId === -1) {
-      return {};
-    }
-
-    const tab = await browser.tabs.get(requestInfo.tabId);
-    const result = await proxifiedContainers.retrieve(tab.cookieStoreId);
+    const result = await proxifiedContainers.retrieve(requestInfo.cookieStoreId);
     if (!result || !result.proxy) {
       return {};
     }
