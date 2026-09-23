@@ -3,7 +3,7 @@
   background: #efefef;
   color: #003f07;
   display: flex;
-  font: 12px sans-serif;
+  font-size: 12px;
   inline-size: 100vw;
   justify-content: start;
   offset-block-start: 0;
