@@ -1,3 +1,8 @@
+:root {
+  /* Opt UI chrome such as form controls into user's color scheme. */
+  color-scheme: light dark;
+}
+
 body {
   --grey10: #e7e7e7;
 
