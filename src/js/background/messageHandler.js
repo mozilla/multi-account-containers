@@ -54,6 +54,9 @@ const messageHandler = {
       case "sortTabs":
         backgroundLogic.sortTabs();
         break;
+      case "sortContainersAlphabetically":
+        backgroundLogic.sortContainersAlphabetically();
+        break;
       case "showTabs":
         backgroundLogic.unhideContainer(m.cookieStoreId);
         break;

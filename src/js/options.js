@@ -48,6 +48,14 @@ async function enableDisableSync() {
   browser.runtime.sendMessage({ method: "resetSync" });
 }
 
+async function enableDisableAlphabeticalSort() {
+  const checkbox = document.querySelector("#alphabeticalSortCheck");
+  await browser.storage.local.set({alphabeticalSortEnabled: !!checkbox.checked});
+  if (checkbox.checked) {
+    browser.runtime.sendMessage({ method: "sortContainersAlphabetically" });
+  }
+}
+
 async function enableDisableReplaceTab() {
   const checkbox = document.querySelector("#replaceTabCheck");
   await browser.storage.local.set({replaceTabEnabled: !!checkbox.checked});
@@ -62,10 +70,12 @@ async function changeTheme(event) {
 async function setupOptions() {
   const { syncEnabled } = await browser.storage.local.get("syncEnabled");
   const { replaceTabEnabled } = await browser.storage.local.get("replaceTabEnabled");
+  const { alphabeticalSortEnabled } = await browser.storage.local.get("alphabeticalSortEnabled");
   const { currentThemeId } = await browser.storage.local.get("currentThemeId");
 
   document.querySelector("#syncCheck").checked = !!syncEnabled;
   document.querySelector("#replaceTabCheck").checked = !!replaceTabEnabled;
+  document.querySelector("#alphabeticalSortCheck").checked = !!alphabeticalSortEnabled;
   document.querySelector("#changeTheme").selectedIndex = currentThemeId;
   setupContainerShortcutSelects();
 }
@@ -123,6 +133,7 @@ browser.permissions.onRemoved.addListener(resetPermissionsUi);
 document.addEventListener("DOMContentLoaded", setupOptions);
 document.querySelector("#syncCheck").addEventListener( "change", enableDisableSync);
 document.querySelector("#replaceTabCheck").addEventListener( "change", enableDisableReplaceTab);
+document.querySelector("#alphabeticalSortCheck").addEventListener( "change", enableDisableAlphabeticalSort);
 document.querySelector("#changeTheme").addEventListener( "change", changeTheme);
 
 maybeShowPermissionsWarningIcon();
