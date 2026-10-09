@@ -5,10 +5,18 @@
 
 main {
   background: url(/img/onboarding-4.png) no-repeat;
-  background-position: 200px 0;
+  background-position: 200px 40px;
   background-size: 120px;
   margin-inline-start: -350px;
   padding-inline-start: 350px;
+  position: absolute;
+  top: 80px;
+}
+
+.button-container {
+  position: absolute;
+  top: -80px;
+  width: 666px;
 }
 
 .container-name {
@@ -82,10 +90,12 @@ dfn {
 }
 
 .button-container > button {
-  min-inline-size: 240px;
+  min-inline-size: 300px;
 }
 
 .check-label {
   align-items: center;
   display: flex;
+  position: absolute;
+  top: 0px;
 }
