@@ -810,15 +810,29 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
   // This method is called when the panel is shown.
   async prepare() {
     const fragment = document.createDocumentFragment();
-    const identities = Logic.identities();
+    const containerIdentities = Logic.identities();
+    const defaultCookieStoreId = Logic.cookieStoreId(0);
+    // Append a pseudo identity in order to support the default container. The web extension API for them
+    // do not support querying the default one, so many features are not possible.
+    const identities = containerIdentities.concat([{
+      name: browser.i18n.getMessage("defaultContainerLabel"),
+      cookieStoreId: defaultCookieStoreId,
+      numberOfOpenTabs: 0,
+    }]);
 
     for (const identity of identities) {
+      const isContainer = identity.cookieStoreId !== defaultCookieStoreId;
+
       const tr = document.createElement("tr");
       tr.classList.add("menu-item", "hover-highlight", "keyboard-nav", "keyboard-right-arrow-override");
       tr.setAttribute("tabindex", "0");
-      tr.setAttribute("data-cookie-store-id", identity.cookieStoreId);
+      if (isContainer) {
+        // This attribute is used by the Mozilla VPN feature with real identities.
+        tr.setAttribute("data-cookie-store-id", identity.cookieStoreId);
+      }
       const td = document.createElement("td");
       const openTabs = identity.numberOfOpenTabs || "" ;
+      const iconClass = isContainer ? "" : "mac-icon";
 
       // TODO get UX and content decision on how to message and block clicks to containers with Mozilla VPN proxy configs
       // when Mozilla VPN app is disconnected.
@@ -827,9 +841,9 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         <div data-moz-proxy-warning="" class="menu-item-name">
           <div class="menu-icon">
 
-            <div class="usercontext-icon"
-              data-identity-icon="${identity.icon}"
-              data-identity-color="${identity.color}">
+            <div class="usercontext-icon ${iconClass}"
+              data-identity-icon="${identity.icon ?? ""}"
+              data-identity-color="${identity.color ?? ""}">
             </div>
           </div>
           <span class="menu-text">${identity.name}</span>
@@ -849,6 +863,8 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
 
       tr.appendChild(td);
 
+      // To open in default context the store id must not be present.
+      const containerStoreId = isContainer ? identity.cookieStoreId : undefined;
       const openInThisContainer = tr.querySelector(".menu-item-name");
       Utils.addEnterHandler(openInThisContainer, (e) => {
         e.preventDefault();
@@ -857,7 +873,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
         }
         try {
           browser.tabs.create({
-            cookieStoreId: identity.cookieStoreId
+            cookieStoreId: containerStoreId
           });
           window.close();
         } catch {
@@ -868,7 +884,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
       Utils.addEnterOnlyHandler(tr, () => {
         try {
           browser.tabs.create({
-            cookieStoreId: identity.cookieStoreId
+            cookieStoreId: containerStoreId
           });
           window.close();
         } catch {
@@ -893,7 +909,7 @@ Logic.registerPanel(P_CONTAINERS_LIST, {
     document.addEventListener("keydown", Logic.shortcutListener);
     document.addEventListener("input", Logic.filterContainerList);
 
-    MozillaVPN.handleContainerList(identities);
+    MozillaVPN.handleContainerList(containerIdentities);
 
     // reset path
     this._previousPanelPath = [];
@@ -948,12 +964,13 @@ Logic.registerPanel(P_CONTAINER_INFO, {
   // This method is called when the panel is shown.
   async prepare() {
     const identity = Logic.currentIdentity();
+    const isDefault = identity.cookieStoreId === Logic.cookieStoreId(0);
 
     const newTab = document.querySelector("#open-new-tab-in-info");
     Utils.addEnterHandler(newTab, () => {
       try {
         browser.tabs.create({
-          cookieStoreId: identity.cookieStoreId
+          cookieStoreId: isDefault ? undefined : identity.cookieStoreId
         });
         window.close();
       } catch {
@@ -980,10 +997,10 @@ Logic.registerPanel(P_CONTAINER_INFO, {
       Logic._enableMenuItems();
     }
 
-    this.intializeShowHide(identity);
+    this.intializeShowHide(identity, isDefault);
 
     // Let's retrieve the list of tabs.
-    const tabs = await browser.runtime.sendMessage({
+    const tabs = isDefault ? [] : await browser.runtime.sendMessage({
       method: "getTabs",
       windowId: browser.windows.WINDOW_ID_CURRENT,
       cookieStoreId: Logic.currentIdentity().cookieStoreId
@@ -1002,7 +1019,14 @@ Logic.registerPanel(P_CONTAINER_INFO, {
     return this.buildOpenTabTable(tabs);
   },
 
-  intializeShowHide(identity) {
+  intializeShowHide(identity, isDefault) {
+    const panelEl = document.querySelector("#container-info-panel");
+    if (isDefault) {
+      panelEl.classList.add("container-default");
+    } else {
+      panelEl.classList.remove("container-default");
+    }
+
     const hideContEl = document.querySelector("#hideorshow-container");
     if (identity.numberOfOpenTabs === 0 && !identity.hasHiddenTabs) {
       return Logic._disableMenuItem("No tabs available for this container",  hideContEl);
