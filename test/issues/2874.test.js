@@ -52,10 +52,15 @@ describe("#2874 container shortcuts use the typed character", function () {
     expect(this.create.callCount).to.equal(0);
   });
 
-  it("opens the container of a digit typed on another layout", async function () {
-    // "2" is typed with shift+* on a French AZERTY layout, i.e. on the physical
-    // Digit3 key.
+  it("opens the container of a digit typed on another key", async function () {
+    // Whatever physical key produces the "2", the second container is the one to
+    // open.
     await press(this.popup, {code: "Digit3", key: "2"});
+    expect(openedContainerIds(this.webExt)).to.deep.equal(["firefox-container-2"]);
+  });
+
+  it("opens the container of a digit typed on the numpad", async function () {
+    await press(this.popup, {code: "Numpad2", key: "2"});
     expect(openedContainerIds(this.webExt)).to.deep.equal(["firefox-container-2"]);
   });
 
