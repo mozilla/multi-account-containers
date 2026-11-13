@@ -148,6 +148,7 @@ window.assignManager = {
       const macConfigs = await this.area.get();
       for(const configKey of Object.keys(macConfigs)) {
         if (configKey.includes("siteContainerMap@@_")) {
+          if (String(macConfigs[configKey].userContextId) === "0") continue;
           const cookieStoreId =
             "firefox-container-" + macConfigs[configKey].userContextId;
           const match = identitiesList.find(
@@ -239,19 +240,22 @@ window.assignManager = {
       browser.tabs.get(options.tabId),
       this.storageArea.get(options.url)
     ]);
+    const isDefaultContainerAssignment = siteSettings && String(siteSettings.userContextId) === "0";
     let container;
-    try {
-      container = await browser.contextualIdentities
-        .get(backgroundLogic.cookieStoreId(siteSettings.userContextId));
-    } catch {
-      container = false;
-    }
+    if (!isDefaultContainerAssignment) {
+      try {
+        container = await browser.contextualIdentities
+          .get(backgroundLogic.cookieStoreId(siteSettings.userContextId));
+      } catch {
+        container = false;
+      }
 
-    // The container we have in the assignment map isn't present any
-    // more so lets remove it then continue the existing load
-    if (siteSettings && !container) {
-      this.deleteContainer(siteSettings.userContextId);
-      return {};
+      // The container we have in the assignment map isn't present any
+      // more so lets remove it then continue the existing load
+      if (siteSettings && !container) {
+        this.deleteContainer(siteSettings.userContextId);
+        return {};
+      }
     }
     const userContextId = this.getUserContextIdFromCookieStore(tab);
 
@@ -278,6 +282,7 @@ window.assignManager = {
     if (!siteIsolatedReloadInDefault) {
       if (!siteSettings
           || userContextId === siteSettings.userContextId
+          || (isDefaultContainerAssignment && tab.cookieStoreId === "firefox-default")
           || this.storageArea.isExempted(options.url, tab.id)) {
         return {};
       }
@@ -331,7 +336,7 @@ window.assignManager = {
       }
     }
 
-    if (siteIsolatedReloadInDefault) {
+    if (siteIsolatedReloadInDefault || isDefaultContainerAssignment) {
       this.reloadPageInDefaultContainer(
         options.url,
         tab.index + 1,
