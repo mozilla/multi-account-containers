@@ -18,6 +18,12 @@ const nextTick = () => {
   });
 };
 
+// Work around https://github.com/stoically/webextensions-jsdom/pull/6
+if (process.env.NYC_CONFIG) {
+  const {tempDir} = JSON.parse(process.env.NYC_CONFIG);
+  require("fs").mkdirSync(path.join(tempDir, "instruments"), {recursive: true});
+}
+
 const webExtensionsJSDOM = require("webextensions-jsdom");
 const manifestPath = path.resolve(path.join(__dirname, "../src/manifest.json"));
 

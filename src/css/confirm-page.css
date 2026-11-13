@@ -1,6 +1,17 @@
-/* General Rules and Resets */
-.title {
-  background-image: none;
+:root {
+  font: message-box;
+  font-size: 15px;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-block-size: 100vh;
+  padding: 40px 48px;
+  align-items: center;
+  justify-content: center;
 }
 
 main {
@@ -27,13 +38,8 @@ button .container-name,
 
   /* for a mid sized window we have enough for this but not our image */
   .title {
-    background-image: url('chrome://global/skin/icons/info.svg');
+    background-image: url(/img/info.svg);
   }
-}
-
-html {
-  box-sizing: border-box;
-  font: message-box;
 }
 
 #redirect-url,
@@ -53,16 +59,12 @@ html {
   padding-block-start: 0.5rem;
   padding-inline-end: 0.5rem;
   padding-inline-start: 0.5rem;
-}
 
-/* stylelint-disable media-feature-name-no-unknown */
-@media (prefers-color-scheme: dark) {
-  #redirect-url {
+  @media (prefers-color-scheme: dark) {
     background: #38383d; /* Grey 70 */
     color: #eee; /* White 20 */
   }
 }
-/* stylelint-enable */
 
 #redirect-url img {
   block-size: 16px;
@@ -81,8 +83,18 @@ dfn {
   flex-grow: 1;
 }
 
-.button-container > button {
-  min-inline-size: 240px;
+.button-container {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: end;
+  margin-block-start: 1rem;
+
+  > button {
+    min-block-size: 32px;
+    min-inline-size: 240px;
+    padding: 0 1.5rem;
+    margin-inline: 0.25rem;
+  }
 }
 
 .check-label {
