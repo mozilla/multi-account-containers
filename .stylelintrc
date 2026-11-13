@@ -18,9 +18,7 @@
       "/(min[-]|max[-])height/",
       "/width/",
       "/top/",
-      "/bottom/",
-      "padding",
-      "margin"
+      "/bottom/"
     ]
   }
 }
