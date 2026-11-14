@@ -132,11 +132,14 @@ describe("Assignment Comfirm Page Feature", function () {
         cookieStoreId: undefined,
         openerTabId: null,
         index: 2,
-        active: true
+        active: true,
+        windowId: newTab.windowId
       });
     });
 
-    it("should remove the new Tab that got opened in the default container", function () {
+    it("should remove the new Tab that got opened in the default container", async function () {
+      // The tab is removed once the tab which replaces it was created.
+      await nextTick();
       this.webExt.background.browser.tabs.remove.should.have.been.calledWith(newTab.id);
     });
   });
