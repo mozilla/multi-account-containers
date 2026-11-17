@@ -426,8 +426,7 @@ const Logic = {
   shortcutListener(e){
     function openTopContainers() {
       const identities = Logic.identities();
-      const key = e.code.substring(5);
-      const identity = e.code === "Digit0" ? identities[9] : identities[key - 1];
+      const identity = e.key === "0" ? identities[9] : identities[e.key - 1];
 
       try {
         browser.tabs.create({
@@ -449,20 +448,20 @@ const Logic = {
     }
 
     if (Logic._currentPanel === "containersList" && !isSearchInputFocused) {
-      switch(e.code) {
-      case "Digit0":
-      case "Digit1":
-      case "Digit2":
-      case "Digit3":
-      case "Digit4":
-      case "Digit5":
-      case "Digit6":
-      case "Digit7":
-      case "Digit8":
-      case "Digit9":
+      switch(e.key) {
+      case "0":
+      case "1":
+      case "2":
+      case "3":
+      case "4":
+      case "5":
+      case "6":
+      case "7":
+      case "8":
+      case "9":
         openTopContainers();
         break;
-      case "Slash":
+      case "/":
         document.getElementById("search-terms").focus();
         e.preventDefault();
         break;
