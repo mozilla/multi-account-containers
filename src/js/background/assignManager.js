@@ -16,7 +16,7 @@ window.assignManager = {
       if (url.port === "80" || url.port === "443") {
         return `${storagePrefix}${url.hostname}`;
       } else {
-        return `${storagePrefix}${url.hostname}${url.port}`;
+        return `${storagePrefix}${url.hostname}:${url.port}`;
       }
     },
 
