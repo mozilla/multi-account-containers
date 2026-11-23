@@ -93,12 +93,9 @@ const ContainerStyle = {
     return iconUrl || `/img/usercontext.svg#${name}`;
   },
 
-  // Usable as a contextMenus icon path: the bundled svg fragment for icons we
-  // ship (known-good for menus), else the browser's icon URL.
+  // Usable as a contextMenus icon path: the browser's icon URL, or the bundled
+  // svg fragment when the browser didn't give one.
   iconMenuPath(name) {
-    if (this.FALLBACK_ICONS.includes(name)) {
-      return `img/usercontext.svg#${name}`;
-    }
     const iconUrl = this._iconUrls && this._iconUrls.get(name);
     return iconUrl || `img/usercontext.svg#${name}`;
   },
