@@ -43,9 +43,10 @@ const sync = {
     async deleteSite(siteStoreKey) {
       const deletedSiteList = 
         await sync.storageArea.getDeletedSiteList();
-      if (deletedSiteList.find(element => element === siteStoreKey)) return;
-      deletedSiteList.push(siteStoreKey);
-      await sync.storageArea.set({ deletedSiteList });
+      if (!deletedSiteList.find(element => element === siteStoreKey)) {
+        deletedSiteList.push(siteStoreKey);
+        await sync.storageArea.set({ deletedSiteList });
+      }
       await sync.storageArea.area.remove(siteStoreKey);
     },
 
@@ -533,6 +534,8 @@ async function reconcileSiteAssignments() {
   }
 
   for(const urlKey of Object.keys(assignedSitesFromSync)) {
+    if (deletedSiteList.find(element => element === urlKey)) continue;
+
     const assignedSite = assignedSitesFromSync[urlKey];
     try{
       if (assignedSite.identityMacAddonUUID) {
