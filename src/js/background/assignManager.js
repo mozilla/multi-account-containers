@@ -331,16 +331,22 @@ window.assignManager = {
       }
     }
 
+    // The new tab opens in the window of the tab it replaces, and not in the
+    // window which had the focus last, which can be another one, for example
+    // when the tab was opened in a new window for a link from another
+    // application.
+    let reopening;
     if (siteIsolatedReloadInDefault) {
-      this.reloadPageInDefaultContainer(
+      reopening = this.reloadPageInDefaultContainer(
         options.url,
         tab.index + 1,
         tab.active,
         openTabId,
-        tab.groupId
+        tab.groupId,
+        tab.windowId
       );
     } else {
-      this.reloadPageInContainer(
+      reopening = this.reloadPageInContainer(
         options.url,
         userContextId,
         siteSettings.userContextId,
@@ -348,7 +354,8 @@ window.assignManager = {
         tab.active,
         siteSettings.neverAsk,
         openTabId,
-        tab.groupId
+        tab.groupId,
+        tab.windowId
       );
     }
     this.calculateContextMenu(tab);
@@ -376,8 +383,13 @@ window.assignManager = {
         the timeout to try to capture pages which haven't had user
         interaction or history.
     */
+    // The tab is removed only once the new one exists, since removing the
+    // only tab of a window closes the window, and the new tab could not open
+    // in it anymore. When the new tab cannot be opened, the tab stays.
     if (removeTab) {
-      browser.tabs.remove(tab.id);
+      reopening.then(() => browser.tabs.remove(tab.id)).catch((e) => {
+        console.error("Cannot reopen the tab in its container", e);
+      });
     }
     return {
       cancel: true,
@@ -737,9 +749,11 @@ window.assignManager = {
    * @param {boolean} active
    * @param {number} [openerTabId]
    * @param {number} [groupId]
-   * @returns {void}
+   * @param {number} [windowId] Window to open the tab in, by default the
+   *   current one
+   * @returns {Promise<Tab>}
    */
-  reloadPageInDefaultContainer(url, index, active, openerTabId, groupId) {
+  reloadPageInDefaultContainer(url, index, active, openerTabId, groupId, windowId) {
     // To create a new tab in the default container, it is easiest just to omit the
     // cookieStoreId entirely.
     //
@@ -758,7 +772,7 @@ window.assignManager = {
     // does not automatically return to the original opener tab. To get this desired behaviour,
     // we MUST specify the openerTabId when creating the new tab.
     const cookieStoreId = "firefox-default";
-    this.createTabWrapper(url, cookieStoreId, index, active, openerTabId, groupId);
+    return this.createTabWrapper(url, cookieStoreId, index, active, openerTabId, groupId, windowId);
   },
 
 
@@ -772,15 +786,18 @@ window.assignManager = {
    * @param {boolean} active
    * @param {number} openerTabId
    * @param {number} [groupId] Tab group ID
+   * @param {number} [windowId] Window to open the tab in, by default the
+   *   current one
    * @returns {Promise<Tab>}
    */
-  async createTabWrapper(url, cookieStoreId, index, active, openerTabId, groupId) {
+  async createTabWrapper(url, cookieStoreId, index, active, openerTabId, groupId, windowId) {
     const newTab = await browser.tabs.create({
       url,
       cookieStoreId,
       index,
       active,
       openerTabId,
+      windowId,
     });
 
     if (groupId >= 0) {
@@ -801,15 +818,17 @@ window.assignManager = {
    * @param {boolean} [neverAsk=false]
    * @param {number} [openerTabId=null]
    * @param {number} [groupId]
+   * @param {number} [windowId] Window to open the tab in, by default the
+   *   current one
    * @returns {Promise<Tab>}
    */
-  reloadPageInContainer(url, currentUserContextId, userContextId, index, active, neverAsk = false, openerTabId = null, groupId = undefined) {
+  reloadPageInContainer(url, currentUserContextId, userContextId, index, active, neverAsk = false, openerTabId = null, groupId = undefined, windowId = undefined) {
     const cookieStoreId = backgroundLogic.cookieStoreId(userContextId);
     const loadPage = browser.runtime.getURL("confirm-page.html");
     // False represents assignment is not permitted
     // If the user has explicitly checked "Never Ask Again" on the warning page we will send them straight there
     if (neverAsk) {
-      return this.createTabWrapper(url, cookieStoreId, index, active, openerTabId, groupId);
+      return this.createTabWrapper(url, cookieStoreId, index, active, openerTabId, groupId, windowId);
     } else {
       let confirmUrl = `${loadPage}?url=${this.encodeURLProperty(url)}&cookieStoreId=${cookieStoreId}`;
       let currentCookieStoreId;
@@ -823,7 +842,8 @@ window.assignManager = {
         index,
         active,
         openerTabId,
-        groupId
+        groupId,
+        windowId
       ).then(() => {
         // We don't want to sync this URL ever nor clutter the users history
         browser.history.deleteUrl({url: confirmUrl});
