@@ -82,6 +82,28 @@ const backgroundLogic = {
     }
   },
 
+  /**
+   * Returns true if url is a page the user would not miss if it were
+   * replaced/closed: a built-in "new tab" page, or the page currently
+   * shown by the browser's homepage or new-tab-page setting (which may be
+   * overridden by another extension, e.g. a "new tab" replacement).
+   */
+  async isNewTabPage(url) {
+    if (this.NEW_TAB_PAGES.has(url)) {
+      return true;
+    }
+    try {
+      const [homepage, newTabPage] = await Promise.all([
+        browser.browserSettings.homepageOverride.get({}),
+        browser.browserSettings.newTabPageOverride.get({})
+      ]);
+      const homepageUrls = homepage && homepage.value ? homepage.value.split("|") : [];
+      return homepageUrls.includes(url) || !!(newTabPage && newTabPage.value === url);
+    } catch {
+      return false;
+    }
+  },
+
   async reopenInContainer(cookieStoreId) {
     const currentTab = await browser.tabs.query({ active: true, currentWindow: true });
 
